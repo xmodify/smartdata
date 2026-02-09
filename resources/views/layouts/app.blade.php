@@ -228,6 +228,16 @@
         #sidebar-wrapper::-webkit-scrollbar-thumb:hover {
             background-color: rgba(78, 115, 223, 0.7);
         }
+
+        /* Sidebar Section Header */
+        .sidebar-section-header {
+            padding: 1.5rem 1.25rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            color: #b7b9cc;
+        }
     </style>
     @stack('styles')
 </head>
@@ -246,13 +256,19 @@
                 </a>
 
                 @auth
-                <!-- Service Menu -->
+                <div class="sidebar-section-header">รายงาน HOSxP</div>
+
+                <a href="{{ url('/medicalrecord') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <i class="fas fa-file-waveform me-2" style="color: #4e73df;"></i> ข้อมูลและสถิติ
+                </a>
+
+                <!-- Service Menu (Renamed and Merged) -->
                 <div class="sidebar-dropdown">
                     <a href="#serviceSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
-                        <i class="fas fa-user-md" style="color: #20c997;"></i> งานบริการ
+                        <i class="fas fa-hospital" style="color: #20c997;"></i> หน่วยบริการ
                     </a>
-                    <div class="collapse sidebar-submenu" id="serviceSubmenu">
-                        <a href="{{ url('/service_opd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <div class="collapse sidebar-submenu shadow-sm" id="serviceSubmenu">
+                        <a href="{{ url('/service_opd') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-user-nurse me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก
                         </a>
                         <a href="{{ url('/service_ipd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
@@ -291,53 +307,6 @@
                         <a href="{{ url('/service_operation') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                             <i class="fas fa-scissors me-2" style="color: #e74a3b;"></i> ห้องผ่าตัด
                         </a>
-                        <a href="{{ url('/service_refer') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-share-nodes me-2" style="color: #4e73df;"></i> ข้อมูลการส่งต่อ
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Support Menu -->
-                <div class="sidebar-dropdown">
-                    <a href="#supportSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
-                        <i class="fas fa-tools" style="color: #36b9cc;"></i> งานสนับสนุน
-                    </a>
-                    <div class="collapse sidebar-submenu" id="supportSubmenu">
-                        <a href="{{ url('/backoffice_asset') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-boxes-stacked me-2" style="color: #4e73df;"></i> งานทรัพย์สิน
-                        </a>
-                        <a href="{{ url('/backoffice_hrd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-id-card me-2" style="color: #1cc88a;"></i> บุคลากร
-                        </a>
-                        <a href="{{ url('/backoffice_risk') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-triangle-exclamation me-2" style="color: #e74a3b;"></i> ความเสี่ยง
-                        </a>
-                        <a href="{{ url('/skpcard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆประชาร่วมใจ
-                        </a>   
-                        <a href="{{ url('/form') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-check-to-slot me-2" style="color: #6610f2;"></i> ระบบตรวจสอบ|ประเมิน
-                        </a> 
-                    </div>
-                </div>
-
-                <!-- Medical Record Menu -->
-                <div class="sidebar-dropdown">
-                    <a href="#recordSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
-                        <i class="fas fa-file-medical" style="color: #e74a3b;"></i> งานเวชระเบียน
-                    </a>
-                    <div class="collapse sidebar-submenu" id="recordSubmenu">
-                        <a href="{{ url('/medicalrecord_opd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-file-waveform me-2" style="color: #4e73df;"></i> เวชระเบียนผู้ป่วยนอก
-                        </a>
-                        
-                        <a href="{{ url('/medicalrecord_ipd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-file-waveform me-2" style="color: #1cc88a;"></i> เวชระเบียนผู้ป่วยใน
-                        </a>
-
-                        <a href="{{ url('/service_death') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-book-dead me-2" style="color: #e74a3b;"></i> ข้อมูลการตาย
-                        </a>
                     </div>
                 </div>
 
@@ -346,47 +315,65 @@
                     <a href="#diseaseSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
                         <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
                     </a>
-                    <div class="collapse sidebar-submenu" id="diseaseSubmenu">
-                        <a href="{{ url('medicalrecord_diag/alcohol_withdrawal') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <div class="collapse sidebar-submenu shadow-sm" id="diseaseSubmenu">
+                        <a href="{{ url('medicalrecord_diag/alcohol_withdrawal') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-glass-whiskey me-2" style="color: #fd7e14;"></i> Alcohol Withdrawal
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/asthma') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/asthma') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-lungs me-2" style="color: #36b9cc;"></i> Asthma
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/copd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/copd') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-lungs-virus me-2" style="color: #1cc88a;"></i> COPD
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/fracture') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/fracture') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-bone me-2" style="color: #858796;"></i> กระดูกสะโพกหัก
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/head_injury') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/head_injury') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-user-injured me-2" style="color: #e74a3b;"></i> Head Injury
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/ihd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/ihd') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-heart-pulse me-2" style="color: #e74a3b;"></i> IHD
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/mi') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/mi') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-heart-circle-exclamation me-2" style="color: #e74a3b;"></i> MI
                         </a>                                         
-                        <a href="{{ url('medicalrecord_diag/palliative_care') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/palliative_care') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-hands-holding-child me-2" style="color: #20c997;"></i> Palliative Care
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/pneumonia') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/pneumonia') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-biohazard me-2" style="color: #6610f2;"></i> Pneumonia
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/sepsis') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/sepsis') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-bacteria me-2" style="color: #f6c23e;"></i> Sepsis
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/septic_shock') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/septic_shock') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-burst me-2" style="color: #e74a3b;"></i> Septic Shock
                         </a> 
-                        <a href="{{ url('medicalrecord_diag/stroke') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/stroke') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-brain me-2" style="color: #6610f2;"></i> Stroke
                         </a>   
-                        <a href="{{ url('medicalrecord_diag/trauma') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <a href="{{ url('medicalrecord_diag/trauma') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-person-falling me-2" style="color: #fd7e14;"></i> Trauma
                         </a> 
                     </div>
+                </div>
+
+                <!-- Dashboard Menu -->
+                <div class="sidebar-dropdown">
+                    <a href="#dashboardSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
+                        <i class="fas fa-chart-line" style="color: #6610f2;"></i> Dashboard
+                    </a>
+                    <div class="collapse sidebar-submenu shadow-sm" id="dashboardSubmenu">  
+                        <a href="{{ url('/dashboard/opd_mornitor') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2" target="_blank">
+                            <i class="fas fa-desktop me-2" style="color: #4e73df;"></i> OPD Monitor
+                        </a>   
+                        <a href="{{ url('/dashboard/ipd_mornitor') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2" target="_blank">
+                            <i class="fas fa-procedures me-2" style="color: #1cc88a;"></i> IPD Monitor
+                        </a>   
+                        <a href="{{ url('/dashboard/digitalhealth') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2" target="_blank">
+                            <i class="fas fa-hand-holding-medical me-2" style="color: #36b9cc;"></i> นโยบาย 30 บาท
+                        </a> 
+                    </div>                 
                 </div>
 
                 <!-- HOSxP Setting Menu -->
@@ -394,23 +381,27 @@
                     <i class="fas fa-database me-2" style="color: #4e73df;"></i> ข้อมูลพื้นฐาน HOSxP
                 </a>
 
-                <!-- Dashboard Menu -->
-                <div class="sidebar-dropdown">
-                    <a href="#dashboardSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
-                        <i class="fas fa-chart-line" style="color: #6610f2;"></i> Dashboard
-                    </a>
-                    <div class="collapse sidebar-submenu" id="dashboardSubmenu">  
-                        <a href="{{ url('/dashboard/opd_mornitor') }}" class="list-group-item list-group-item-action bg-transparent text-dark" target="_blank">
-                            <i class="fas fa-desktop me-2" style="color: #4e73df;"></i> OPD Monitor
-                        </a>   
-                        <a href="{{ url('/dashboard/ipd_mornitor') }}" class="list-group-item list-group-item-action bg-transparent text-dark" target="_blank">
-                            <i class="fas fa-procedures me-2" style="color: #1cc88a;"></i> IPD Monitor
-                        </a>   
-                        <a href="{{ url('/dashboard/digitalhealth') }}" class="list-group-item list-group-item-action bg-transparent text-dark" target="_blank">
-                            <i class="fas fa-hand-holding-medical me-2" style="color: #36b9cc;"></i> นโยบาย 30 บาท
-                        </a> 
-                    </div>                 
-                </div>
+                <div class="sidebar-section-header">รายงาน BackOffice</div>
+                <a href="{{ url('/backoffice_hrd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <i class="fas fa-id-card me-2" style="color: #1cc88a;"></i> งานบุคลากร
+                </a>
+                <a href="{{ url('/backoffice_asset') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <i class="fas fa-boxes-stacked me-2" style="color: #4e73df;"></i> งานทรัพย์สิน
+                </a>
+                <a href="{{ url('/backoffice_risk') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <i class="fas fa-triangle-exclamation me-2" style="color: #e74a3b;"></i> รายงานอุบัติการณ์
+                </a>
+
+                <div class="sidebar-section-header">ระบบ SmartData</div>
+                <a href="{{ url('/skpcard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆประชาร่วมใจ
+                </a>
+                <a href="{{ url('/form') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <i class="fas fa-check-to-slot me-2" style="color: #6610f2;"></i> ระบบตรวจสอบ
+                </a>
+                <a href="{{ url('/form') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <i class="fas fa-clipboard-check me-2" style="color: #20c997;"></i> แบบประเมิน
+                </a>
                 @endauth
             </div>
             
