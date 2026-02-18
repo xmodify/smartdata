@@ -22,8 +22,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (!app()->runningInConsole()) {
-            URL::forceRootUrl(config('app.url'));
-            if (str_contains(config('app.url'), 'https://')) {
+            if (config('app.url')) {
+                URL::forceRootUrl(config('app.url'));
+            }
+
+            if (request()->header('X-Forwarded-Proto') === 'https' || str_contains(config('app.url'), 'https://')) {
                 URL::forceScheme('https');
             }
         }
