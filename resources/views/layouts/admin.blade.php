@@ -12,6 +12,7 @@
     <!-- Styles -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     @stack('styles')
@@ -22,12 +23,31 @@
             <a class="navbar-brand fw-bold" href="{{ route('admin.dashboard') }}">
                 <i class="fas fa-home me-2"></i>SmartData | Admin Panel
             </a>
-            <div class="d-flex">
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
-                </form>
-            </div>
+            @auth
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle text-white fw-bold d-flex align-items-center" href="#" id="adminNavbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle fa-lg me-2 text-white-50"></i>
+                        {{ Auth::user()->name }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="adminNavbarDropdown">                        
+                        <li>
+                            <a class="dropdown-item" href="{{ route('dashboard') }}">
+                                <i class="fas fa-external-link-alt me-2 text-primary"></i> User Dashboard
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ route('logout') }}"
+                               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                <i class="fas fa-sign-out-alt me-2"></i> {{ __('Logout') }}
+                            </a>
+                        </li>
+                    </ul>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
+                </div>
+            @endauth
         </div>
     </nav>
 

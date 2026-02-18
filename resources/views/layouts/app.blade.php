@@ -428,10 +428,12 @@
                                 {{ Auth::user()->name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="navbarDropdown">
-                                @if (auth()->user()->hasAccessRole('admin'))
-                                    <li><h6 class="dropdown-header">Admin Settings</h6></li>
-                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">Admin Dashboard</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('admin.lookup_ward.index') }}">Lookup ward</a></li>
+                                @if (auth()->user()->hasAccessRole('admin'))                                    
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
+                                            <i class="fas fa-external-link-alt me-2 text-success"></i> Admin Dashboard
+                                        </a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
                                 @endif
                                 <li>
