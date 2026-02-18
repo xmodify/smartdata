@@ -73,11 +73,19 @@
                             </div>
                         </div>
 
+                        @if(session('success'))
+                            <div class="alert alert-success small py-2 text-center mb-3">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
                         <div class="row mb-0">
                             <div class="col-md-12 text-center">
-                                <button type="submit" class="btn btn-primary px-5">
+                                <button type="submit" class="btn btn-primary px-5 mb-3">
                                     {{ __('Login') }}
                                 </button>
+                                <hr>
+                                <p class="mb-0 small text-white text-muted">ยังไม่มีบัญชี? <a href="{{ route('register') }}" class="text-primary fw-bold">ลงทะเบียนที่นี่</a></p>
                             </div>
                         </div>
                     </form>

@@ -6,30 +6,31 @@ Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLog
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
+Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/admin', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+    Route::get('/admin', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.dashboard');
 
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
-    Route::post('/admin/git-pull', function (Illuminate\Http\Request $request) {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+    Route::post('/admin/git-pull', [App\Http\Controllers\Admin\StructureController::class, 'gitPull'])->name('admin.git_pull');
+    Route::post('/admin/upgrade-structure', [App\Http\Controllers\Admin\StructureController::class, 'upgrade'])->name('admin.upgrade_structure');
+    Route::put('/admin/sys-var/{sysVar}', [App\Http\Controllers\Admin\StructureController::class, 'update_sysvar'])->name('admin.sys_var.update');
 
-        $details = $request->input('details');
-        if ($details) {
-            \Illuminate\Support\Facades\Log::info('Git Pull triggered by ' . auth()->user()->name . ' with details: ' . $details);
-        }
-
-        $output = shell_exec('git pull 2>&1');
-        return back()->with('git_output', $output);
-    })->name('admin.git_pull');
+    Route::resource('/admin/users', App\Http\Controllers\Admin\UserController::class)->names([
+        'index' => 'admin.users.index',
+        'create' => 'admin.users.create',
+        'store' => 'admin.users.store',
+        'show' => 'admin.users.show',
+        'edit' => 'admin.users.edit',
+        'update' => 'admin.users.update',
+        'destroy' => 'admin.users.destroy',
+    ]);
 });
