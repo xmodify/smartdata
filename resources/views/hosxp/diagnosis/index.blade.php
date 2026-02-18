@@ -27,15 +27,15 @@
                         <h5 class="fw-bold mb-0">หัวใจและหลอดเลือด</h5>
                     </div>
                     <div class="list-group list-group-flush mt-3">
-                        <a href="{{ url('medicalrecord_diag/stroke') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'stroke']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>Stroke (หลอดเลือดสมอง)</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
-                        <a href="{{ url('medicalrecord_diag/ihd') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'ihd']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>IHD (หัวใจขาดเลือด)</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
-                        <a href="{{ url('medicalrecord_diag/mi') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'mi']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>MI (กล้ามเนื้อหัวใจตาย)</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
@@ -55,19 +55,19 @@
                         <h5 class="fw-bold mb-0">ทางเดินหายใจและติดเชื้อ</h5>
                     </div>
                     <div class="list-group list-group-flush mt-3">
-                        <a href="{{ url('medicalrecord_diag/asthma') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'asthma']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>Asthma (หอบหืด)</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
-                        <a href="{{ url('medicalrecord_diag/copd') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'copd']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>COPD (ปอดอุดกั้นเรื้อรัง)</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
-                        <a href="{{ url('medicalrecord_diag/pneumonia') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'pneumonia']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>Pneumonia (ปอดบวม)</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
-                        <a href="{{ url('medicalrecord_diag/sepsis') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'sepsis']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>Sepsis (ติดเชื้อในกระแสเลือด)</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
@@ -87,23 +87,23 @@
                         <h5 class="fw-bold mb-0">กลุ่มโรคอื่นๆ</h5>
                     </div>
                     <div class="list-group list-group-flush mt-3">
-                        <a href="{{ url('medicalrecord_diag/alcohol_withdrawal') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'alcohol_withdrawal']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>Alcohol Withdrawal</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
-                        <a href="{{ url('medicalrecord_diag/fracture') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'fracture']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>กระดูกสะโพกหัก</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
-                        <a href="{{ url('medicalrecord_diag/head_injury') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'head_injury']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>Head Injury</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
-                        <a href="{{ url('medicalrecord_diag/trauma') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'trauma']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>Trauma</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>
-                        <a href="{{ url('medicalrecord_diag/palliative_care') }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => 'palliative_care']) }}" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
                             <span>Palliative Care</span>
                             <i class="fas fa-chevron-right small text-muted"></i>
                         </a>

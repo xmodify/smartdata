@@ -239,6 +239,24 @@
             letter-spacing: 0.1rem;
             color: #b7b9cc;
         }
+
+        /* Mobile Fix for Menu Toggle */
+        @media (max-width: 768px) {
+            #menu-toggle {
+                position: fixed !important;
+                top: 15px;
+                left: 15px;
+                z-index: 2001 !important;
+                background-color: rgba(2, 104, 199, 0.8); /* Semi-transparent blue */
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -372,9 +390,12 @@
         <div id="page-content-wrapper">
             <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary-custom navbar-custom">
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-link text-white" id="menu-toggle">
+                    <button class="btn btn-link text-white" id="menu-toggle" style="z-index: 1001; position: relative;">
                         <i class="fas fa-bars fa-lg"></i>
                     </button>
+                    <div class="ms-3">
+                        @yield('topbar_actions')
+                    </div>
                 </div>
 
                 <div class="d-flex align-items-center">
