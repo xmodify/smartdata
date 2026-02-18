@@ -12,6 +12,7 @@
     <!-- Styles -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <style>
@@ -434,8 +435,13 @@
                                             <i class="fas fa-external-link-alt me-2 text-success"></i> Admin Dashboard
                                         </a>
                                     </li>
-                                    <li><hr class="dropdown-divider"></li>
                                 @endif
+                                <li>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                        <i class="fas fa-key me-2 text-warning"></i> เปลี่ยนรหัสผ่าน
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item text-danger" href="{{ route('logout') }}"
                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -459,6 +465,40 @@
     </div>
     <!-- /#wrapper -->
 
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px; overflow: hidden;">
+                <div class="modal-header bg-gradient-primary-custom text-white border-0">
+                    <h5 class="modal-title fw-bold" id="changePasswordModalLabel"><i class="fas fa-key me-2"></i>เปลี่ยนรหัสผ่าน</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="changePasswordForm">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">รหัสผ่านปัจจุบัน</label>
+                            <input type="password" name="current_password" class="form-control shadow-sm border-0 bg-light" placeholder="ระบุรหัสผ่านเดิม" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">รหัสผ่านใหม่</label>
+                            <input type="password" name="password" class="form-control shadow-sm border-0 bg-light" placeholder="อย่างน้อย 8 ตัวอักษร" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">ยืนยันรหัสผ่านใหม่</label>
+                            <input type="password" name="password_confirmation" class="form-control shadow-sm border-0 bg-light" placeholder="ระบุรหัสผ่านใหม่ซ้ำอีกครั้ง" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
+                        <button type="submit" class="btn text-white px-4 shadow-sm bg-gradient-primary-custom" style="border: none;">บันทึกการเปลี่ยนแปลง</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -472,6 +512,64 @@
                     wrapper.classList.toggle('toggled');
                 });
             }
+
+            // Password Change Form Handling
+            document.getElementById('changePasswordForm')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const form = this;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                
+                submitBtn.disabled = true;
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>กำลังบันทึก...';
+
+                fetch('{{ route("profile.password.update") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(Object.fromEntries(new FormData(form)))
+                })
+                .then(response => response.json().then(data => ({ status: response.status, data })))
+                .then(({ status, data }) => {
+                    if (status === 200) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                            if (modal) modal.hide();
+                            form.reset();
+                        });
+                    } else {
+                        let errorMsg = data.message;
+                        if (data.errors) {
+                            errorMsg = Object.values(data.errors).flat().join('\n');
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: errorMsg
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ข้อผิดพลาดระบบ',
+                        text: 'ไม่สามารถดำเนินการได้ในขณะนี้'
+                    });
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
+            });
         });
     </script>
     @stack('scripts')

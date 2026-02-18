@@ -24,6 +24,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/upgrade-structure', [App\Http\Controllers\Admin\StructureController::class, 'upgrade'])->name('admin.upgrade_structure');
     Route::put('/admin/sys-var/{sysVar}', [App\Http\Controllers\Admin\StructureController::class, 'update_sysvar'])->name('admin.sys_var.update');
 
+    // Profile Routes
+    Route::put('/profile/password', [App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
     Route::resource('/admin/users', App\Http\Controllers\Admin\UserController::class)->names([
         'index' => 'admin.users.index',
         'create' => 'admin.users.create',
