@@ -27,6 +27,10 @@ Route::middleware(['auth'])->group(function () {
     // Profile Routes
     Route::put('/profile/password', [App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
+    // HOSxP Stats Routes
+    Route::get('/hosxp/stats', [App\Http\Controllers\Hosxp\StatsController::class, 'index'])->name('hosxp.stats.index');
+    Route::get('/hosxp/diagnosis', [App\Http\Controllers\Hosxp\DiagnosisController::class, 'index'])->name('hosxp.diagnosis.index');
+
     Route::resource('/admin/users', App\Http\Controllers\Admin\UserController::class)->names([
         'index' => 'admin.users.index',
         'create' => 'admin.users.create',

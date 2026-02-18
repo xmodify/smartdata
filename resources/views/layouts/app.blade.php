@@ -259,14 +259,13 @@
                 @auth
                 <div class="sidebar-section-header">รายงาน HOSxP</div>
 
-                <a href="{{ url('/medicalrecord') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                <a href="{{ route('hosxp.stats.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                     <i class="fas fa-file-waveform me-2" style="color: #4e73df;"></i> ข้อมูลและสถิติ
                 </a>
 
-                <!-- Service Menu (Renamed and Merged) -->
                 <div class="sidebar-dropdown">
                     <a href="#serviceSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
-                        <i class="fas fa-hospital" style="color: #20c997;"></i> หน่วยบริการ
+                        <i class="fas fa-hospital" style="color: #20c997;"></i> แยกตามหน่วยงาน
                     </a>
                     <div class="collapse sidebar-submenu shadow-sm" id="serviceSubmenu">
                         <a href="{{ url('/service_opd') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
@@ -312,52 +311,9 @@
                 </div>
 
                 <!-- Major Disease Menu -->
-                <div class="sidebar-dropdown">
-                    <a href="#diseaseSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
-                        <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
-                    </a>
-                    <div class="collapse sidebar-submenu shadow-sm" id="diseaseSubmenu">
-                        <a href="{{ url('medicalrecord_diag/alcohol_withdrawal') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-glass-whiskey me-2" style="color: #fd7e14;"></i> Alcohol Withdrawal
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/asthma') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-lungs me-2" style="color: #36b9cc;"></i> Asthma
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/copd') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-lungs-virus me-2" style="color: #1cc88a;"></i> COPD
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/fracture') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-bone me-2" style="color: #858796;"></i> กระดูกสะโพกหัก
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/head_injury') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-user-injured me-2" style="color: #e74a3b;"></i> Head Injury
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/ihd') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-heart-pulse me-2" style="color: #e74a3b;"></i> IHD
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/mi') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-heart-circle-exclamation me-2" style="color: #e74a3b;"></i> MI
-                        </a>                                         
-                        <a href="{{ url('medicalrecord_diag/palliative_care') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-hands-holding-child me-2" style="color: #20c997;"></i> Palliative Care
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/pneumonia') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-biohazard me-2" style="color: #6610f2;"></i> Pneumonia
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/sepsis') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-bacteria me-2" style="color: #f6c23e;"></i> Sepsis
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/septic_shock') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-burst me-2" style="color: #e74a3b;"></i> Septic Shock
-                        </a> 
-                        <a href="{{ url('medicalrecord_diag/stroke') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-brain me-2" style="color: #6610f2;"></i> Stroke
-                        </a>   
-                        <a href="{{ url('medicalrecord_diag/trauma') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-person-falling me-2" style="color: #fd7e14;"></i> Trauma
-                        </a> 
-                    </div>
-                </div>
+                <a href="{{ route('hosxp.diagnosis.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                    <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
+                </a>
 
                 <!-- Dashboard Menu -->
                 <div class="sidebar-dropdown">
