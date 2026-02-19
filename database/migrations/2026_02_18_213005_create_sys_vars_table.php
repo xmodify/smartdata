@@ -10,12 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('sys_var', function (Blueprint $table) {
-            $table->string('sys_name')->primary();
-            $table->string('sys_name_th')->nullable();
-            $table->text('sys_value')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('sys_var')) {
+            Schema::create('sys_var', function (Blueprint $table) {
+                $table->string('sys_name')->primary();
+                $table->string('sys_name_th')->nullable();
+                $table->text('sys_value')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
