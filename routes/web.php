@@ -11,13 +11,16 @@ Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, '
 
 Route::get('/', function () {
     if (Auth::check()) {
+        if (Auth::user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
         return redirect()->route('dashboard');
     }
     return redirect()->route('login');
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/admin', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::get('/dashboard', function () {
         return view('dashboard');

@@ -26,7 +26,7 @@ class StructureController extends Controller
         }
 
         $output = shell_exec('git pull 2>&1');
-        return back()->with('git_output', $output);
+        return back()->with('git_output', $output)->with('active_tab', 'system');
     }
 
     /**
@@ -51,9 +51,9 @@ class StructureController extends Controller
 
             $result .= "\nRecords in sys_var have been synchronized using upsert.";
 
-            return back()->with('success', 'อัปเกรดโครงสร้างฐานข้อมูลเสร็จสิ้น')->with('migrate_output', $result);
+            return back()->with('success', 'อัปเกรดโครงสร้างฐานข้อมูลเสร็จสิ้น')->with('migrate_output', $result)->with('active_tab', 'system');
         } catch (\Exception $e) {
-            return back()->with('error', 'เกิดข้อผิดพลาดในการอัปเกรด: ' . $e->getMessage());
+            return back()->with('error', 'เกิดข้อผิดพลาดในการอัปเกรด: ' . $e->getMessage())->with('active_tab', 'system');
         }
     }
 
@@ -72,6 +72,6 @@ class StructureController extends Controller
 
         $sysVar->update($validated);
 
-        return back()->with('success', 'อัปเดตค่า ' . $sysVar->sys_name_th . ' เรียบร้อยแล้ว');
+        return back()->with('success', 'อัปเดตค่า ' . $sysVar->sys_name_th . ' เรียบร้อยแล้ว')->with('active_tab', 'system');
     }
 }

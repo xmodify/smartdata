@@ -18,12 +18,12 @@
                 <!-- Nav Tabs -->
                 <ul class="nav nav-tabs border-0" id="adminTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active fw-bold border-0 px-4" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="true">
+                        <button class="nav-link {{ session('active_tab') == 'system' ? '' : 'active' }} fw-bold border-0 px-4" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="{{ session('active_tab') == 'system' ? 'false' : 'true' }}">
                             <i class="fas fa-users-cog me-2"></i>จัดการผู้ใช้งาน
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link fw-bold border-0 px-4" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab" aria-controls="system" aria-selected="false">
+                        <button class="nav-link {{ session('active_tab') == 'system' ? 'active' : '' }} fw-bold border-0 px-4" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab" aria-controls="system" aria-selected="{{ session('active_tab') == 'system' ? 'true' : 'false' }}">
                             <i class="fas fa-server me-2"></i>ตั้งค่าระบบ
                         </button>
                     </li>
@@ -32,7 +32,7 @@
             <div class="card-body p-4">
                 <div class="tab-content" id="adminTabsContent">
                     <!-- User Management Tab -->
-                    <div class="tab-pane fade show active" id="users" role="tabpanel" aria-labelledby="users-tab">
+                    <div class="tab-pane fade {{ session('active_tab') == 'system' ? '' : 'show active' }}" id="users" role="tabpanel" aria-labelledby="users-tab">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0">รายชื่อผู้ใช้งานระบบ</h5>
                             <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#addUserModal">
@@ -100,7 +100,7 @@
                     </div>
 
                     <!-- System Setting Tab -->
-                    <div class="tab-pane fade" id="system" role="tabpanel" aria-labelledby="system-tab">
+                    <div class="tab-pane fade {{ session('active_tab') == 'system' ? 'show active' : '' }}" id="system" role="tabpanel" aria-labelledby="system-tab">
                         <div class="row g-4">
                             <!-- Maintenance Card -->
                             <div class="col-md-12">

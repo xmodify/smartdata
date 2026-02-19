@@ -11,15 +11,7 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $users = User::all();
-        $sysVars = SysVar::all();
-        return view('admin.dashboard', compact('users', 'sysVars'));
-    }
+
 
     /**
      * Store a newly created resource in storage.
