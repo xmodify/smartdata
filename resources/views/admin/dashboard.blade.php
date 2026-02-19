@@ -344,7 +344,7 @@
         button.addEventListener('click', function() {
             const user = JSON.parse(this.dataset.user);
             const form = document.getElementById('editUserForm');
-            form.action = `/admin/users/${user.id}`;
+            form.action = `{{ url('/') }}/admin/users/${user.id}`; // ใช้ url('/') เพื่อรองรับทั้งแบบ root และ subfolder
             
             document.getElementById('edit_name').value = user.name;
             document.getElementById('edit_email').value = user.email;
@@ -444,7 +444,7 @@
         button.addEventListener('click', function() {
             const sysVar = JSON.parse(this.dataset.var);
             const form = document.getElementById('editSysVarForm');
-            form.action = `/admin/sys-var/${sysVar.sys_name}`;
+            form.action = `{{ url('/') }}/admin/sys-var/${sysVar.sys_name}`; // ใช้ url('/') เพื่อรองรับทั้งแบบ root และ subfolder
             
             document.getElementById('sys_name_th_label').innerText = sysVar.sys_name_th;
             document.getElementById('sys_name_label').innerText = sysVar.sys_name;
