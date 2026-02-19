@@ -153,7 +153,15 @@
         }
 
         .sidebar-submenu {
-            background-color: #f8f9fc;
+            background-color: #f8f9fc !important;
+        }
+        
+        /* Force visibility for collapse-show in sidebar */
+        .sidebar-submenu.collapse.show {
+            display: block !important;
+            height: auto !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         
         .sidebar-submenu .list-group-item {
@@ -282,7 +290,7 @@
                     <a href="javascript:void(0)" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#serviceSubmenu" aria-expanded="false">
                         <i class="fas fa-hospital" style="color: #20c997;"></i> แยกตามหน่วยงาน
                     </a>
-                    <div class="collapse sidebar-submenu shadow-sm" id="serviceSubmenu">
+                    <div class="collapse sidebar-submenu" id="serviceSubmenu" style="background-color: #f8f9fc !important;">
                         <a href="{{ url('/service_opd') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-user-nurse me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก
                         </a>
@@ -330,7 +338,7 @@
                     <a href="javascript:void(0)" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#diagnosisSubmenu" aria-expanded="false">
                         <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
                     </a>
-                    <div class="collapse sidebar-submenu shadow-sm" id="diagnosisSubmenu">
+                    <div class="collapse sidebar-submenu" id="diagnosisSubmenu" style="background-color: #f8f9fc !important;">
                         <a href="{{ route('hosxp.diagnosis.index', ['category' => 'opd']) }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
                             <i class="fas fa-user-nurse me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก OPD
                         </a>
@@ -348,7 +356,7 @@
                     <a href="javascript:void(0)" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#dashboardSubmenu" aria-expanded="false">
                         <i class="fas fa-chart-line" style="color: #6610f2;"></i> Dashboard
                     </a>
-                    <div class="collapse sidebar-submenu shadow-sm" id="dashboardSubmenu">  
+                    <div class="collapse sidebar-submenu" id="dashboardSubmenu">
                         <a href="{{ url('/dashboard/opd_mornitor') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2" target="_blank">
                             <i class="fas fa-desktop me-2" style="color: #4e73df;"></i> OPD Monitor
                         </a>   
