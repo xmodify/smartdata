@@ -1,6 +1,14 @@
 @extends('layouts.app')
+@php
+    $category_names = [
+        'opd' => 'ผู้ป่วยนอก OPD',
+        'ipd' => 'ผู้ป่วยใน IPD',
+        'refer' => 'ผู้ป่วยส่งต่อ Refer'
+    ];
+    $category_label = $category_names[(string)$category] ?? 'ผู้ป่วยนอก OPD';
+@endphp
 
-@section('title', 'รายชื่อผู้ป่วยนอกโรค ' . $config['name'])
+@section('title', 'รายชื่อ' . $category_label . 'โรค ' . $config['name'])
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -10,12 +18,12 @@
     .page-header-container {
         background: #fff;
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 1rem 1.25rem; /* Reduced padding */
         box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem; /* Reduced margin */
     }
     .report-title-box h5 {
-        font-size: 1.25rem;
+        font-size: 1.1rem; /* Smaller title */
         letter-spacing: -0.01em;
     }
     .budget-select-box {
@@ -29,13 +37,14 @@
         color: #0d47a1;
         font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.8rem;
-        padding: 12px 10px;
+        font-size: 0.75rem; /* Smaller header font */
+        padding: 10px 8px; /* Reduced padding */
         border-bottom: 2px solid #bbdefb !important;
     }
     .table-modern tbody td {
         vertical-align: middle;
-        padding: 12px 10px;
+        padding: 8px 10px; /* Reduced vertical padding */
+        font-size: 0.85rem; /* Smaller table body font */
     }
     .col-order { background-color: #f1f8fe; width: 50px; }
     .badge-pdx { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
@@ -48,17 +57,40 @@
     .card-header-premium {
         background: #fff;
         border-bottom: 1px solid #f0f0f0;
-        padding: 1.25rem;
+        padding: 0.75rem 1.25rem; /* Reduced padding */
     }
     
-    /* Override DataTables Buttons */
+    /* Override DataTables UI */
     button.dt-button.btn-success {
         background-color: #198754 !important;
         border-color: #198754 !important;
         color: #fff !important;
-        border-radius: 0.2rem !important; /* sm radius */
-        font-size: 0.875rem !important; /* sm font */
-        padding: 0.25rem 0.5rem !important; /* sm padding */
+        border-radius: 0.25rem !important;
+        font-size: 0.75rem !important;
+        padding: 5px 12px !important; /* Adjusted for better alignment */
+        line-height: 1 !important;
+        margin: 0 !important;
+        height: 31px !important; /* Fixed height for perfect alignment */
+        display: flex !important;
+        align-items: center !important;
+    }
+    .dataTables_filter input, .dataTables_length select {
+        border-radius: 0.25rem !important;
+        border: 1px solid #dee2e6 !important;
+        font-size: 0.75rem !important;
+        padding: 4px 10px !important;
+        height: 31px !important; /* Same as button */
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    .dataTables_filter label, .dataTables_length label {
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        color: #64748b !important;
+        margin-bottom: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
     }
     button.dt-button.btn-success:hover {
         background-color: #157347 !important;
@@ -68,20 +100,20 @@
 @endpush
 
 @section('topbar_actions')
-<a href="{{ route('hosxp.diagnosis.index') }}" class="btn btn-light btn-sm shadow-sm text-primary fw-bold">
+<a href="{{ route('hosxp.diagnosis.index', ['category' => $category]) }}" class="btn btn-light btn-sm shadow-sm text-primary fw-bold">
     <i class="fas fa-chevron-left me-1"></i> ย้อนกลับ
 </a>
 @endsection
 
 @section('content')
-<div class="container-fluid px-lg-4">
+<div class="container-fluid px-2 px-md-3">
     <!-- Header Box -->
     <div class="page-header-container d-flex justify-content-between align-items-center mt-3">
         <div class="d-flex align-items-center report-title-box">
             <div class="ps-3 py-1">
                 <h5 class="text-dark mb-0 fw-bold">
                     <i class="{{ $config['icon'] }} {{ $config['color'] }} me-2"></i>
-                    รายชื่อผู้ป่วยนอกโรค {{ $config['name'] }}
+                    รายชื่อ{{ $category_label }}โรค {{ $config['name'] }}
                 </h5>
                 <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
             </div>
@@ -92,7 +124,7 @@
                 @csrf
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-white border-end-0 border-radius-start-8"><i class="bi bi-calendar-event text-primary"></i></span>
-                    <select class="form-select form-select-sm border-start-0 border-end-0" name="budget_year" style="min-width: 140px;">
+                    <select class="form-select form-select-sm border-start-0 border-end-0" name="budget_year" style="min-width: 120px; font-size: 0.8rem;">
                         @foreach ($budget_year_select as $row)
                             <option value="{{ $row->LEAVE_YEAR_ID }}"
                                 {{ (int)$budget_year === (int)$row->LEAVE_YEAR_ID ? 'selected' : '' }}>
@@ -100,8 +132,8 @@
                             </option>
                         @endforeach
                     </select>
-                    <button type="submit" class="btn btn-primary btn-sm px-4 border-radius-end-8">
-                        <i class="bi bi-search me-2"></i> ค้นหา
+                    <button type="submit" class="btn btn-primary btn-sm px-3 border-radius-end-8" style="font-size: 0.8rem;">
+                        <i class="bi bi-search me-1"></i> ค้นหา
                     </button>
                 </div>
             </form>
@@ -115,7 +147,7 @@
                 <div class="card-header card-header-premium">
                     <h6 class="fw-bold text-dark mb-0">
                         <i class="bi bi-bar-chart-fill text-info me-2"></i>
-                        สถิติรายเดือน (ครั้ง/คน/Admit/Refer)
+                        สถิติรายเดือน (ครั้ง/คน)
                     </h6>
                 </div>
                 <div class="card-body">
@@ -143,66 +175,17 @@
         <div class="card-header card-header-premium">
             <h6 class="fw-bold text-dark mb-0">
                 <i class="bi bi-people-fill text-primary me-2"></i>
-                รายชื่อผู้ป่วยนอกโรค {{ $config['name'] }} ปีงบประมาณ {{ $budget_year }}
+                รายชื่อ{{ $category_label }}โรค {{ $config['name'] }} ปีงบประมาณ {{ $budget_year }}
             </h6>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">            
-                <table id="diag_list" class="table table-modern w-100 mb-0">
-                    <thead>
-                        <tr>
-                            <th class="text-center col-order">ลำดับ</th>
-                            <th class="text-center">วัน-เวลาที่รับบริการ</th>     
-                            <th class="text-center">HN</th>
-                            <th class="text-center">ชื่อ-สกุล | อายุ</th>
-                            <th class="text-center">สิทธิ์การรักษา</th>
-                            <th class="text-center">อาการสำคัญ</th>
-                            <th class="text-center">PDX | DX</th> 
-                            <th class="text-center">ADMIT/REFER</th>  
-                            <th class="text-center">ยา/LAB</th>          
-                        </tr>     
-                    </thead> 
-                    <tbody> 
-                        @php $count = 1 ; @endphp
-                        @foreach($diag_list as $row)          
-                        <tr>
-                            <td class="text-center col-order text-muted small">{{ $count }}</td> 
-                            <td class="text-start">
-                                <div class="small fw-bold">{{ DateThai($row->vstdate) }}</div>
-                                <div class="text-muted xsmall">เวลา {{ $row->vsttime }} | Q: {{ $row->oqueue }}</div>
-                            </td> 
-                            <td class="text-center">
-                                <span class="fw-bold text-primary">{{ $row->hn }}</span>
-                            </td> 
-                            <td class="text-start">
-                                <div class="text-dark fw-bold small">{{ $row->ptname }}</div>
-                                <div class="text-info xsmall">อายุ {{ $row->age_y }} ปี</div>
-                            </td>
-                            <td class="text-start">
-                                <div class="small text-truncate" style="max-width: 140px;" title="{{ $row->pttype }}">{{ $row->pttype }}</div>
-                            </td>
-                            <td class="text-start">
-                                <div class="small text-muted" style="font-size: 0.75rem; line-height: 1.2;">{{ Str::limit($row->cc, 80) }}</div>
-                            </td>
-                            <td class="text-center">
-                                <div class="badge badge-pdx mb-1">{{ $row->pdx }}</div>
-                                <div class="xsmall text-muted text-truncate" style="max-width: 120px;">{{ $row->dx }}</div>
-                            </td>
-                            <td class="text-center">
-                                @if($row->admit == 'Y') <span class="badge bg-warning text-dark xsmall">Admit</span> @endif
-                                @if($row->refer == 'Y') <span class="badge bg-danger text-white xsmall">Refer</span> @endif
-                                @if($row->admit != 'Y' && $row->refer != 'Y') <span class="text-muted">-</span> @endif
-                            </td>      
-                            <td class="text-end">
-                                <div class="xsmall text-primary">ยา: {{ number_format($row->inc_drug,2) }}</div>
-                                <div class="xsmall text-success">Lab: {{ number_format($row->inc_lab,2) }}</div>
-                            </td>                 
-                        </tr>                
-                        @php $count++; @endphp
-                        @endforeach                
-                    </tbody>
-                </table>  
-            </div>         
+            @if($category === 'ipd')
+                @include('hosxp.diagnosis.partials._table_ipd')
+            @elseif($category === 'refer')
+                @include('hosxp.diagnosis.partials._table_refer')
+            @else
+                @include('hosxp.diagnosis.partials._table_opd')
+            @endif
         </div> 
     </div>  
 </div>
@@ -226,13 +209,13 @@
 
     $(document).ready(function () {
       $('#diag_list').DataTable({
-        dom: '<"d-flex justify-content-between align-items-center p-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center p-3"ip>',
+        dom: '<"d-flex justify-content-between align-items-center py-2 px-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-2"fB>>rt<"d-flex justify-content-between align-items-center p-3"ip>',
         buttons: [
             {
               extend: 'excelHtml5',
               text: '<i class="bi bi-file-earmark-excel me-1"></i> Excel',
               className: 'btn btn-success btn-sm px-3',
-              title: 'รายชื่อผู้ป่วยนอกโรค {{ $config['name'] }} ปีงบประมาณ {{$budget_year}}'
+              title: 'รายชื่อ{{ $category_label }}โรค {{ $config['name'] }} ปีงบประมาณ {{$budget_year}}'
             }
         ],
         language: {
@@ -270,24 +253,6 @@
               borderWidth: 1,
               borderRadius: 6,
               datalabels: { align: 'end', anchor: 'end' }
-            },
-            {
-              label: 'Admit',
-              data: @json($diag_admit_m),
-              backgroundColor: 'rgba(255, 205, 86, 0.7)',
-              borderColor: 'rgb(255, 205, 86)',
-              borderWidth: 1,
-              borderRadius: 6,
-              datalabels: { align: 'end', anchor: 'end' }
-            },
-            {
-              label: 'Refer',
-              data: @json($diag_refer_m),
-              backgroundColor: 'rgba(255, 99, 132, 0.7)',
-              borderColor: 'rgb(255, 99, 132)',
-              borderWidth: 1,
-              borderRadius: 6,
-              datalabels: { align: 'end', anchor: 'end' }
             }
           ]
         },
@@ -318,9 +283,7 @@
       new ApexCharts(document.querySelector("#diag_year"), {
           series: [
             { name: 'ครั้ง', data: @json($diag_visit_y) },
-            { name: 'คน', data: @json($diag_hn_y) },
-            { name: 'Admit', data: @json($diag_admit_y) },
-            { name: 'Refer', data: @json($diag_refer_y) }
+            { name: 'คน', data: @json($diag_hn_y) }
           ],
           chart: {
               height: 350,
@@ -329,7 +292,7 @@
               fontFamily: 'Nunito, sans-serif'
           },
           markers: { size: 5, strokeWidth: 3, hover: { size: 7 } },
-          colors: [ '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444' ],
+          colors: [ '#3b82f6', '#8b5cf6' ],
           fill: {
               type: "gradient",
               gradient: {

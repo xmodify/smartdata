@@ -12,82 +12,150 @@ class DiagnosisController extends Controller
     /**
      * Display the HOSxP Diagnosis Index.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('hosxp.diagnosis.index');
+        $category = $request->get('category', 'all');
+        $configs = $this->disease_configs;
+
+        if ($category !== 'all') {
+            $configs = array_filter($configs, function ($config) use ($category) {
+                return in_array($category, $config['categories'] ?? []);
+            });
+        }
+
+        return view('hosxp.diagnosis.index', compact('category', 'configs'));
     }
+
     private $disease_configs = [
-        'pneumonia' => [
-            'name' => 'Pneumonia (ปอดบวม)',
-            'icon' => 'bi bi-lungs-fill',
-            'color' => 'text-primary',
-            'codes' => ['J12', 'J13', 'J14', 'J15', 'J16', 'J17', 'J18']
-        ],
         'stroke' => [
-            'name' => 'Stroke (หลอดเลือดสมอง)',
-            'icon' => 'bi bi-brain-fill',
+            'name' => 'Stroke (โรคหลอดเลือดสมอง)',
+            'icon' => 'fas fa-brain',
             'color' => 'text-danger',
-            'codes' => ['I60', 'I61', 'I62', 'I63', 'I64']
-        ],
-        'ihd' => [
-            'name' => 'IHD (หัวใจขาดเลือด)',
-            'icon' => 'bi bi-heart-pulse-fill',
-            'color' => 'text-warning',
-            'codes' => ['I20', 'I21', 'I22', 'I23', 'I24', 'I25']
-        ],
-        'mi' => [
-            'name' => 'MI (กล้ามเนื้อหัวใจตาย)',
-            'icon' => 'bi bi-heart-fill',
-            'color' => 'text-danger',
-            'codes' => ['I21']
-        ],
-        'asthma' => [
-            'name' => 'Asthma (หอบหืด)',
-            'icon' => 'bi bi-wind',
-            'color' => 'text-info',
-            'codes' => ['J45', 'J46']
-        ],
-        'copd' => [
-            'name' => 'COPD (ปอดอุดกั้นเรื้อรัง)',
-            'icon' => 'bi bi-moisture',
-            'color' => 'text-secondary',
-            'codes' => ['J44']
+            'codes' => ['I64', 'I619', 'I639', 'I609'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Cardiovascular & Neurology',
+            'group_icon' => 'fas fa-heart-pulse',
+            'group_color' => '#fee2e2'
         ],
         'sepsis' => [
-            'name' => 'Sepsis (ติดเชื้อในกระแสเลือด)',
-            'icon' => 'bi bi-bug-fill',
+            'name' => 'Sepsis (ภาวะติดเชื้อในกระแสเลือด)',
+            'icon' => 'fas fa-bug',
             'color' => 'text-primary',
-            'codes' => ['A40', 'A41']
+            'codes' => ['A419', 'A415', 'A410'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Respiratory & Sepsis',
+            'group_icon' => 'fas fa-lungs',
+            'group_color' => '#e0f2fe'
         ],
-        'alcohol_withdrawal' => [
-            'name' => 'Alcohol Withdrawal',
-            'icon' => 'bi bi-cup-straw',
-            'color' => 'text-warning',
-            'codes' => ['F103']
+        'septic_shock' => [
+            'name' => 'Septic Shock (ช็อกจากการติดเชื้อ)',
+            'icon' => 'fas fa-biohazard',
+            'color' => 'text-danger',
+            'codes' => ['R572'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Respiratory & Sepsis',
+            'group_icon' => 'fas fa-lungs',
+            'group_color' => '#e0f2fe'
         ],
-        'fracture' => [
-            'name' => 'กระดูกสะโพกหัก (Hip Fracture)',
-            'icon' => 'bi bi-bandaid-fill',
+        'pneumonia' => [
+            'name' => 'Pneumonia (ปอดอักเสบ)',
+            'icon' => 'fas fa-lungs',
+            'color' => 'text-primary',
+            'codes' => ['J189', 'J180', 'J159', 'J129'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Respiratory & Sepsis',
+            'group_icon' => 'fas fa-lungs',
+            'group_color' => '#e0f2fe'
+        ],
+        'mi' => [
+            'name' => 'MI (กล้ามเนื้อหัวใจตายเฉียบพลัน)',
+            'icon' => 'fas fa-heart',
+            'color' => 'text-danger',
+            'codes' => ['I219', 'I210', 'I211'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Cardiovascular & Neurology',
+            'group_icon' => 'fas fa-heart-pulse',
+            'group_color' => '#fee2e2'
+        ],
+        'ihd' => [
+            'name' => 'IHD (โรคหัวใจขาดเลือดเรื้อรัง)',
+            'icon' => 'fas fa-heart-pulse',
             'color' => 'text-warning',
-            'codes' => ['S720', 'S721', 'S722']
+            'codes' => ['I259', 'I209'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Cardiovascular & Neurology',
+            'group_icon' => 'fas fa-heart-pulse',
+            'group_color' => '#fee2e2'
+        ],
+        'copd' => [
+            'name' => 'COPD (โรคปอดอุดกั้นเรื้อรัง)',
+            'icon' => 'fas fa-smog',
+            'color' => 'text-secondary',
+            'codes' => ['J449', 'J440', 'J441'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Respiratory & Sepsis',
+            'group_icon' => 'fas fa-lungs',
+            'group_color' => '#e0f2fe'
+        ],
+        'asthma' => [
+            'name' => 'Asthma (โรคหืด)',
+            'icon' => 'fas fa-wind',
+            'color' => 'text-info',
+            'codes' => ['J459', 'J450', 'J451', 'J46'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Respiratory & Sepsis',
+            'group_icon' => 'fas fa-lungs',
+            'group_color' => '#e0f2fe'
         ],
         'head_injury' => [
-            'name' => 'Head Injury',
-            'icon' => 'bi bi-headset-vr',
+            'name' => 'Head Injury (การบาดเจ็บที่ศีรษะ)',
+            'icon' => 'fas fa-head-side-virus',
             'color' => 'text-warning',
-            'codes' => ['S06']
+            'codes' => ['S099', 'S060', 'S062'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Trauma & Injury',
+            'group_icon' => 'fas fa-car-crash',
+            'group_color' => '#ffedd5'
+        ],
+        'fracture' => [
+            'name' => 'Broken Hip (กระดูกสะโพกหัก)',
+            'icon' => 'fas fa-bone',
+            'color' => 'text-warning',
+            'codes' => ['S7200', 'S7210', 'S7290'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Trauma & Injury',
+            'group_icon' => 'fas fa-car-crash',
+            'group_color' => '#ffedd5'
         ],
         'trauma' => [
-            'name' => 'Trauma',
-            'icon' => 'bi bi-exclamation-triangle-fill',
+            'name' => 'Trauma (การบาดเจ็บ)',
+            'icon' => 'fas fa-car-burst',
             'color' => 'text-warning',
-            'codes' => ['V01', 'V02', 'V03', 'V04', 'V05', 'V06', 'V07', 'V08', 'V09', 'V10']
+            'codes' => ['T149', 'V892'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Trauma & Injury',
+            'group_icon' => 'fas fa-car-crash',
+            'group_color' => '#ffedd5'
+        ],
+        'alcohol_withdrawal' => [
+            'name' => 'Alcohol Withdrawal (ภาวะถอนแอลกอฮอล์)',
+            'icon' => 'fas fa-wine-glass-empty',
+            'color' => 'text-warning',
+            'codes' => ['F103', 'F104'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Others',
+            'group_icon' => 'fas fa-clipboard-check',
+            'group_color' => '#fef3c7'
         ],
         'palliative_care' => [
-            'name' => 'Palliative Care',
-            'icon' => 'bi bi-heart-fill',
+            'name' => 'Palliative Care (การดูแลแบบประคับประคอง)',
+            'icon' => 'fas fa-hand-holding-heart',
             'color' => 'text-warning',
-            'codes' => ['Z515']
+            'codes' => ['Z515'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Others',
+            'group_icon' => 'fas fa-clipboard-check',
+            'group_color' => '#fef3c7'
         ]
     ];
 
@@ -98,10 +166,12 @@ class DiagnosisController extends Controller
         }
 
         $config = $this->disease_configs[$type];
-        return $this->get_diag_report($request, $type, $config);
+        $category = $request->get('category', 'opd');
+
+        return $this->get_diag_report($request, $type, $config, $category);
     }
 
-    private function get_diag_report(Request $request, $type, $config)
+    private function get_diag_report(Request $request, $type, $config, $category)
     {
         set_time_limit(300);
 
@@ -129,7 +199,6 @@ class DiagnosisController extends Controller
             ->value('DATE_END');
 
         if (!$start_date) {
-            // Fallback if specific year ID not found
             $start_date = ($budget_year - 543) . '-10-01';
             $end_date = ($budget_year - 542) . '-09-30';
             $start_date_y = ($budget_year - 547) . '-10-01';
@@ -137,121 +206,224 @@ class DiagnosisController extends Controller
 
         $codes = $config['codes'];
 
-        // Build robust diagnosis where clause using LIKE for prefix matching (e.g., A41 matching A419)
-        $diag_cols = ['pdx', 'dx0', 'dx1', 'dx2', 'dx3', 'dx4', 'dx5'];
-        $where_clauses = [];
-        $params_set = [];
+        // Build Dynamic Stats Query based on Category
+        if ($category === 'ipd') {
+            $stats_base = "ipt i JOIN an_stat a ON a.an=i.an";
+            $v_prefix = "a";
+            $date_col = "i.dchdate";
+            $hn_col = "i.hn";
+            $vn_col = "i.an";
+        } elseif ($category === 'refer') {
+            $stats_base = "referout r LEFT JOIN vn_stat v ON v.vn=r.vn LEFT JOIN an_stat a ON a.an=r.vn";
+            $v_prefix = "r"; // Referout PDX
+            $date_col = "r.refer_date";
+            $hn_col = "r.hn";
+            $vn_col = "r.vn";
+        } else { // OPD
+            $stats_base = "ovst o JOIN vn_stat v ON v.vn=o.vn";
+            $v_prefix = "v";
+            $date_col = "o.vstdate";
+            $hn_col = "o.hn";
+            $vn_col = "o.vn";
+        }
 
-        foreach ($diag_cols as $col) {
+        $diag_cols = ['pdx', 'dx0', 'dx1', 'dx2', 'dx3', 'dx4', 'dx5'];
+        $params_set = [];
+        $where_clauses = [];
+
+        if ($category === 'refer') {
             $col_likes = [];
             foreach ($codes as $code) {
-                $col_likes[] = "v.$col LIKE ?";
+                // For Refer, we only check primary diagnosis (pdx) across all 3 tables
+                $col_likes[] = "r.pdx LIKE ?";
+                $params_set[] = $code . '%';
+                $col_likes[] = "v.pdx LIKE ?";
+                $params_set[] = $code . '%';
+                $col_likes[] = "a.pdx LIKE ?";
                 $params_set[] = $code . '%';
             }
-            $where_clauses[] = "(" . implode(' OR ', $col_likes) . ")";
+            $diag_where = "(" . implode(' OR ', $col_likes) . ")";
+        } else {
+            foreach ($diag_cols as $col) {
+                $col_likes = [];
+                foreach ($codes as $code) {
+                    $col_likes[] = "$v_prefix.$col LIKE ?";
+                    $params_set[] = $code . '%';
+                }
+                $where_clauses[] = "(" . implode(' OR ', $col_likes) . ")";
+            }
+            $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
         }
-        $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
 
         // Monthly Stats
         $diag_month = DB::connection('hosxp')->select("
             SELECT CASE 
-                WHEN MONTH(vstdate)=10 THEN CONCAT('ต.ค. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=11 THEN CONCAT('พ.ย. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=12 THEN CONCAT('ธ.ค. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=1 THEN CONCAT('ม.ค. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=2 THEN CONCAT('ก.พ. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=3 THEN CONCAT('มี.ค. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=4 THEN CONCAT('เม.ย. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=5 THEN CONCAT('พ.ค. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=6 THEN CONCAT('มิ.ย. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=7 THEN CONCAT('ก.ค. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=8 THEN CONCAT('ส.ค. ',RIGHT(YEAR(vstdate)+543,2))
-                WHEN MONTH(vstdate)=9 THEN CONCAT('ก.ย. ',RIGHT(YEAR(vstdate)+543,2))
-            END AS 'month', COUNT(DISTINCT hn) AS 'hn', COUNT(vn) AS 'visit',
-            SUM(CASE WHEN admit <> '' THEN 1 ELSE 0 END) AS admit,
-            SUM(CASE WHEN refer <> '' THEN 1 ELSE 0 END) AS refer
-            FROM (
-                SELECT o.vn, o.vstdate, o.hn, o.an AS admit, r.vn AS refer
-                FROM ovst o 
-                LEFT JOIN vn_stat v ON v.vn=o.vn
-                LEFT JOIN referout r ON r.vn=o.vn
-                WHERE o.vstdate BETWEEN ? AND ?
-                AND $diag_where
-                GROUP BY o.vn 
-            ) AS a
-            GROUP BY MONTH(vstdate)
-            ORDER BY YEAR(vstdate), MONTH(vstdate)", array_merge([$start_date, $end_date], $params_set));
+                WHEN MONTH($date_col)=10 THEN CONCAT('ต.ค. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=11 THEN CONCAT('พ.ย. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=12 THEN CONCAT('ธ.ค. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=1 THEN CONCAT('ม.ค. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=2 THEN CONCAT('ก.พ. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=3 THEN CONCAT('มี.ค. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=4 THEN CONCAT('เม.ย. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=5 THEN CONCAT('พ.ค. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=6 THEN CONCAT('มิ.ย. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=7 THEN CONCAT('ก.ค. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=8 THEN CONCAT('ส.ค. ',RIGHT(YEAR($date_col)+543,2))
+                WHEN MONTH($date_col)=9 THEN CONCAT('ก.ย. ',RIGHT(YEAR($date_col)+543,2))
+            END AS 'month', COUNT(DISTINCT $hn_col) AS 'hn', COUNT($vn_col) AS 'visit'
+            FROM $stats_base
+            WHERE $date_col BETWEEN ? AND ?
+            AND $diag_where
+            GROUP BY MONTH($date_col)
+            ORDER BY YEAR($date_col), MONTH($date_col)", array_merge([$start_date, $end_date], $params_set));
 
         $diag_m = array_column($diag_month, 'month');
         $diag_visit_m = array_column($diag_month, 'visit');
         $diag_hn_m = array_column($diag_month, 'hn');
-        $diag_admit_m = array_column($diag_month, 'admit');
-        $diag_refer_m = array_column($diag_month, 'refer');
 
-        // Yearly Trend (5 years)
+        // Yearly Trend
         $diag_year = DB::connection('hosxp')->select("
-            SELECT IF(MONTH(vstdate)>9,YEAR(vstdate)+1,YEAR(vstdate)) + 543 AS year_bud,
-            COUNT(DISTINCT hn) AS 'hn', COUNT(vn) AS 'visit',
-            SUM(CASE WHEN admit <> '' THEN 1 ELSE 0 END) AS admit,
-            SUM(CASE WHEN refer <> '' THEN 1 ELSE 0 END) AS refer
-            FROM (
-                SELECT o.vn, o.vstdate, o.hn, o.an AS admit, r.vn AS refer
-                FROM ovst o 
-                LEFT JOIN vn_stat v ON v.vn=o.vn
-                LEFT JOIN referout r ON r.vn=o.vn
-                WHERE o.vstdate BETWEEN ? AND ?
-                AND $diag_where
-                GROUP BY o.vn 
-            ) AS a
+            SELECT IF(MONTH($date_col)>9,YEAR($date_col)+1,YEAR($date_col)) + 543 AS year_bud,
+            COUNT(DISTINCT $hn_col) AS 'hn', COUNT($vn_col) AS 'visit'
+            FROM $stats_base
+            WHERE $date_col BETWEEN ? AND ?
+            AND $diag_where
             GROUP BY year_bud
             ORDER BY year_bud", array_merge([$start_date_y, $end_date], $params_set));
 
         $diag_y = array_column($diag_year, 'year_bud');
         $diag_visit_y = array_column($diag_year, 'visit');
         $diag_hn_y = array_column($diag_year, 'hn');
-        $diag_admit_y = array_column($diag_year, 'admit');
-        $diag_refer_y = array_column($diag_year, 'refer');
 
-        // Detailed Patient List
-        $diag_list = DB::connection('hosxp')->select("
-            SELECT o.vn, o.vstdate, o.vsttime, o.oqueue, o.hn, CONCAT(pt.pname,pt.fname,SPACE(1),pt.lname) AS ptname,
-            v.age_y, CONCAT(p.hipdata_code,'-',p.name) AS pttype, oc.cc, v.pdx, od.dx, od.icd9,
-            o.an AS admit, CONCAT(h.`name`,' [',r.pdx,']') AS refer,
-            v.inc03 AS inc_lab, v.inc12 AS inc_drug
-            FROM ovst o 
-            LEFT JOIN opdscreen oc ON oc.vn=o.vn
-            LEFT JOIN vn_stat v ON v.vn=o.vn
-            LEFT JOIN (
-                SELECT vn, 
-                GROUP_CONCAT(DISTINCT IF(diagtype NOT IN ('1','2'), icd10, NULL) SEPARATOR ', ') AS dx,
-                GROUP_CONCAT(DISTINCT IF(diagtype = '2', icd10, NULL) SEPARATOR ', ') AS icd9
-                FROM ovstdiag GROUP BY vn
-            ) od ON od.vn=o.vn
-            LEFT JOIN referout r ON r.vn=o.vn
-            LEFT JOIN hospcode h ON h.hospcode=r.refer_hospcode
-            LEFT JOIN patient pt ON pt.hn=o.hn
-            LEFT JOIN pttype p ON p.pttype=o.pttype
-            WHERE o.vstdate BETWEEN ? AND ?
-            AND $diag_where
-            GROUP BY o.vn
-            ORDER BY o.vstdate DESC, o.vsttime DESC", array_merge([$start_date, $end_date], $params_set));
+        // Fetch category-specific list
+        if ($category === 'ipd') {
+            $diag_list = $this->fetch_ipd_list($start_date, $end_date, $codes);
+        } elseif ($category === 'refer') {
+            $diag_list = $this->fetch_refer_list($start_date, $end_date, $codes);
+        } else {
+            $diag_list = $this->fetch_opd_list($start_date, $end_date, $codes);
+        }
 
         return view('hosxp.diagnosis.report', compact(
             'budget_year_select',
             'budget_year',
             'config',
+            'category',
             'diag_m',
             'diag_visit_m',
             'diag_hn_m',
-            'diag_admit_m',
-            'diag_refer_m',
             'diag_y',
             'diag_visit_y',
             'diag_hn_y',
-            'diag_admit_y',
-            'diag_refer_y',
             'diag_list'
         ));
+    }
+
+    private function fetch_opd_list($start_date, $end_date, $codes)
+    {
+        $params = [$start_date, $end_date];
+        $diag_cols = ['pdx', 'dx0', 'dx1', 'dx2', 'dx3', 'dx4', 'dx5'];
+        $where_clauses = [];
+        foreach ($diag_cols as $col) {
+            $col_likes = [];
+            foreach ($codes as $code) {
+                $col_likes[] = "v.$col LIKE ?";
+                $params[] = $code . '%';
+            }
+            $where_clauses[] = "(" . implode(' OR ', $col_likes) . ")";
+        }
+        $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
+
+        return DB::connection('hosxp')->select("
+            SELECT o.vn, o3.name AS ovstist, o.oqueue, o.vstdate, o.vsttime, o.hn, CONCAT(p.pname,p.fname,SPACE(1),p.lname) AS ptname,
+            v.age_y, CONCAT(o.pttype,' [',p1.hipdata_code,']') AS pttype, o1.cc, v.pdx, od.dx,
+            d.`name` AS dx_doctor, CONCAT(h.`name`,' [',r.pdx,']') AS refer
+            FROM ovst o             
+            LEFT JOIN opdscreen o1 ON o1.vn=o.vn
+            LEFT JOIN vn_stat v ON v.vn=o.vn
+            LEFT JOIN (
+                SELECT vn, GROUP_CONCAT(icd10) AS dx FROM ovstdiag WHERE diagtype <> '1' GROUP BY vn
+            ) od ON od.vn=o.vn
+            LEFT JOIN ovstist o3 ON o3.ovstist=o.ovstist
+            LEFT JOIN referout r ON r.vn=o.vn
+            LEFT JOIN hospcode h ON h.hospcode=r.refer_hospcode
+            LEFT JOIN patient p ON p.hn=o.hn
+            LEFT JOIN pttype p1 ON p1.pttype=o.pttype
+            LEFT JOIN doctor d ON d.`code`=v.dx_doctor
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND $diag_where
+            GROUP BY o.vn 
+            ORDER BY o.vstdate DESC, o.vsttime DESC", $params);
+    }
+
+    private function fetch_ipd_list($start_date, $end_date, $codes)
+    {
+        $params = [$start_date, $end_date];
+        $diag_cols = ['pdx', 'dx0', 'dx1', 'dx2', 'dx3', 'dx4', 'dx5'];
+        $where_clauses = [];
+        foreach ($diag_cols as $col) {
+            $col_likes = [];
+            foreach ($codes as $code) {
+                $col_likes[] = "a.$col LIKE ?";
+                $params[] = $code . '%';
+            }
+            $where_clauses[] = "(" . implode(' OR ', $col_likes) . ")";
+        }
+        $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
+
+        return DB::connection('hosxp')->select("
+            SELECT i.an, i.hn, i.regdate, i.regtime, CONCAT(p.pname,p.fname,SPACE(1),p.lname) AS ptname,
+            a.age_y, CONCAT(i.pttype,' [',p1.hipdata_code,']') AS pttype, i.prediag, a.pdx, id.dx,
+            d.`name` AS dx_doctor, CONCAT(h.`name`,' [',r.pdx,']') AS refer, i.dchdate, i.dchtime 
+            FROM ipt i
+            LEFT JOIN an_stat a ON a.an=i.an
+            LEFT JOIN (
+                SELECT an, GROUP_CONCAT(icd10) AS dx FROM iptdiag WHERE diagtype <> '1' GROUP BY an
+            ) id ON id.an=i.an
+            LEFT JOIN referout r ON r.vn=i.an
+            LEFT JOIN hospcode h ON h.hospcode=r.refer_hospcode
+            LEFT JOIN patient p ON p.hn=i.hn
+            LEFT JOIN pttype p1 ON p1.pttype=i.pttype
+            LEFT JOIN doctor d ON d.`code`=a.dx_doctor
+            WHERE i.dchdate BETWEEN ? AND ?   
+            AND $diag_where
+            GROUP BY i.an 
+            ORDER BY i.dchdate DESC, i.dchtime DESC", $params);
+    }
+
+    private function fetch_refer_list($start_date, $end_date, $codes)
+    {
+        $params = [$start_date, $end_date];
+
+        // Refer logic matching user example
+        $where_clauses = [];
+        foreach ($codes as $code) {
+            $where_clauses[] = "r.pdx LIKE ?";
+            $params[] = $code . '%';
+            $where_clauses[] = "v.pdx LIKE ?";
+            $params[] = $code . '%';
+            $where_clauses[] = "a.pdx LIKE ?";
+            $params[] = $code . '%';
+        }
+        $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
+
+        return DB::connection('hosxp')->select("
+            SELECT o.hn, CONCAT(p.pname,p.fname,SPACE(1),p.lname) AS ptname, pmh.cc_persist_disease AS pmh,
+            GROUP_CONCAT(DISTINCT c1.`name`) AS clinic, r.department, r.refer_point, o.vstdate, o.vsttime,
+            IFNULL(v.pdx, a.pdx) AS pdx, r.refer_date, r.refer_time, r.pre_diagnosis, r.pdx AS pdx_refer, h.`name` AS refer_hos
+            FROM referout r 
+            LEFT JOIN ovst o ON o.vn=r.vn
+            LEFT JOIN vn_stat v ON v.vn=r.vn 
+            LEFT JOIN an_stat a ON a.an=r.vn
+            LEFT JOIN clinicmember c ON c.hn=r.hn
+            LEFT JOIN clinic c1 ON c1.clinic=c.clinic
+            LEFT JOIN opd_ill_history pmh ON pmh.hn=r.hn
+            LEFT JOIN patient p ON p.hn=r.hn
+            LEFT JOIN hospcode h ON h.hospcode=r.refer_hospcode
+            WHERE r.refer_date BETWEEN ? AND ?		 
+            AND $diag_where
+            GROUP BY r.vn							
+            ORDER BY r.refer_date DESC, r.refer_time DESC", $params);
     }
 
 }

@@ -25,6 +25,7 @@
             overflow-x: hidden;
             font-family: 'Nunito', sans-serif;
             background-color: #f8f9fc;
+            font-size: 0.9rem; /* Slightly smaller base font */
         }
 
         #wrapper {
@@ -98,14 +99,15 @@
         .list-group-item {
             position: relative;
             display: block;
-            padding: 0.8rem 1.25rem;
-            margin: 0.2rem 0.8rem;
+            padding: 0.6rem 1rem; /* Reduced padding */
+            margin: 0.1rem 0.6rem;
             background-color: transparent;
             border: none;
             color: #5a5c69;
             font-weight: 600;
             border-radius: 0.5rem;
             transition: all 0.25s ease;
+            font-size: 0.85rem; /* Smaller sidebar font */
         }
 
         .list-group-item:hover, .list-group-item:focus {
@@ -152,18 +154,13 @@
 
         .sidebar-submenu {
             background-color: #f8f9fc;
-            display: none;
-        }
-        
-        .sidebar-submenu.show {
-            display: block;
         }
         
         .sidebar-submenu .list-group-item {
-            padding-left: 3.2rem;
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-            font-size: 0.9rem;
+            padding-left: 2.8rem;
+            padding-top: 0.4rem;
+            padding-bottom: 0.4rem;
+            font-size: 0.85rem;
             color: #6e707e;
         }
 
@@ -282,7 +279,7 @@
                 </a>
 
                 <div class="sidebar-dropdown">
-                    <a href="#serviceSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
+                    <a href="javascript:void(0)" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#serviceSubmenu" aria-expanded="false">
                         <i class="fas fa-hospital" style="color: #20c997;"></i> แยกตามหน่วยงาน
                     </a>
                     <div class="collapse sidebar-submenu shadow-sm" id="serviceSubmenu">
@@ -329,13 +326,26 @@
                 </div>
 
                 <!-- Major Disease Menu -->
-                <a href="{{ route('hosxp.diagnosis.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                    <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
-                </a>
+                <div class="sidebar-dropdown">
+                    <a href="javascript:void(0)" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#diagnosisSubmenu" aria-expanded="false">
+                        <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
+                    </a>
+                    <div class="collapse sidebar-submenu shadow-sm" id="diagnosisSubmenu">
+                        <a href="{{ route('hosxp.diagnosis.index', ['category' => 'opd']) }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
+                            <i class="fas fa-user-nurse me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก OPD
+                        </a>
+                        <a href="{{ route('hosxp.diagnosis.index', ['category' => 'ipd']) }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <i class="fas fa-bed-pulse me-2" style="color: #1cc88a;"></i> ผู้ป่วยใน IPD
+                        </a>
+                        <a href="{{ route('hosxp.diagnosis.index', ['category' => 'refer']) }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <i class="fas fa-ambulance me-2" style="color: #e74a3b;"></i> ผู้ป่วยส่งต่อ Refer
+                        </a>
+                    </div>
+                </div>
 
                 <!-- Dashboard Menu -->
                 <div class="sidebar-dropdown">
-                    <a href="#dashboardSubmenu" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" aria-expanded="false">
+                    <a href="javascript:void(0)" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#dashboardSubmenu" aria-expanded="false">
                         <i class="fas fa-chart-line" style="color: #6610f2;"></i> Dashboard
                     </a>
                     <div class="collapse sidebar-submenu shadow-sm" id="dashboardSubmenu">  
@@ -434,7 +444,7 @@
                 </div>
             </nav>
 
-            <main class="container-fluid py-4 px-4 content-area">
+            <main class="container-fluid py-4 px-0 content-area">
                 @yield('content')
             </main>
         </div>

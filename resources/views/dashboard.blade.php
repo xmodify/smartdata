@@ -3,7 +3,7 @@
 @section('title', 'SmartData')
 
 @section('content')
-<div>
+<div class="container-fluid px-2 px-md-3">
     <!-- Service Icon Links -->
     <div class="row mb-4">
         <div class="col-md-12">
@@ -35,7 +35,7 @@
                         @foreach($services as $service)
                         <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                             <a href="{{ url($service['url']) }}" class="text-decoration-none transition-hover h-100 d-block">
-                                <div class="card h-100 border-0 shadow text-center p-3" style="border-radius: 16px; background: #fff;">
+                                <div class="card h-100 border-0 shadow text-center p-2" style="border-radius: 12px; background: #fff;">
                                     <div class="mx-auto mb-2 icon-box-grid" style="background-color: {{ $service['color'] }}15; color: {{ $service['color'] }};">
                                         <i class="fas {{ $service['icon'] }}"></i>
                                     </div>
@@ -54,8 +54,8 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card dashboard-card border-0 shadow-sm">
-                <div class="card-header bg-pastel-teal py-3 border-bottom-0">
-                    <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-tools me-2"></i>ข้อมูลงานสนับสนุน BackOffice</h6>
+                <div class="card-header bg-pastel-teal py-2 border-bottom-0"> <!-- Reduced py-3 to py-2 -->
+                    <h6 class="m-0 font-weight-bold text-primary small"><i class="fas fa-tools me-2"></i>ข้อมูลงานสนับสนุน BackOffice</h6>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
@@ -72,7 +72,7 @@
                         @foreach($supportItems as $item)
                         <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                             <a href="{{ url($item['url']) }}" class="text-decoration-none transition-hover h-100 d-block">
-                                <div class="card h-100 border-0 shadow text-center p-3" style="border-radius: 16px; background: #fff;">
+                                <div class="card h-100 border-0 shadow text-center p-2" style="border-radius: 12px; background: #fff;">
                                     <div class="mx-auto mb-2 icon-box-grid" style="background-color: {{ $item['color'] }}15; color: {{ $item['color'] }};">
                                         <i class="fas {{ $item['icon'] }}"></i>
                                     </div>
