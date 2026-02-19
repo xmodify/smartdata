@@ -12,6 +12,21 @@
     </div>
 
     <div class="row g-4 justify-content-center">
+        <!-- User Dashboard Card -->
+        <div class="col-md-5 col-lg-4">
+            <a href="{{ route('dashboard') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm glass-card border-hover-info transition-all">
+                    <div class="card-body p-5 text-center">
+                        <div class="icon-shape bg-info-subtle text-info rounded-circle mb-4 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-3">User Dashboard</h3>
+                        <p class="text-muted mb-0">เข้าชมหน้าแสดงผลข้อมูลสำหรับผู้ใช้งานทั่วไป (Data Visualization)</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
         <!-- User Management Card -->
         <div class="col-md-5 col-lg-4">
             <a href="{{ route('admin.users.index') }}" class="text-decoration-none">
@@ -59,6 +74,10 @@
     }
     .border-hover-primary:hover {
         border: 1px solid #0d6efd !important;
+        transform: translateY(-10px);
+    }
+    .border-hover-info:hover {
+        border: 1px solid #0dcaf0 !important;
         transform: translateY(-10px);
     }
     .icon-shape {
