@@ -12,8 +12,18 @@ use Symfony\Component\Console\Output\BufferedOutput;
 class StructureController extends Controller
 {
     /**
-     * Execute git pull to update source code.
+     * Display system settings and variables.
      */
+    public function index()
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+        $sysVars = SysVar::all();
+        return view('admin.system.index', compact('sysVars'));
+    }    /**
+         * Execute git pull to update source code.
+         */
     public function gitPull(Request $request)
     {
         if (auth()->user()->role !== 'admin') {

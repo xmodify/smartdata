@@ -11,7 +11,14 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-
+    /**
+     * Display a listing of the users.
+     */
+    public function index()
+    {
+        $users = User::all();
+        return view('admin.users.index', compact('users'));
+    }
 
     /**
      * Store a newly created resource in storage.

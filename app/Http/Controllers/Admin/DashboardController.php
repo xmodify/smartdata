@@ -14,8 +14,6 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $users = User::all();
-        $sysVars = SysVar::all();
-        return view('admin.dashboard', compact('users', 'sysVars'));
+        return view('admin.index');
     }
 }

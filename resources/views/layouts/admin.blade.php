@@ -23,6 +23,12 @@
         .bg-gradient-success-custom {
             background: linear-gradient(135deg, #13855c 0%, #17a6a7 100%);
         }
+        .hover-translate-x:hover {
+            transform: translateX(-5px);
+        }
+        .transition-all {
+            transition: all 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-light">
