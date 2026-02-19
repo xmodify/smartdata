@@ -43,7 +43,12 @@
                         <i class="fas fa-user-circle fa-lg me-2 text-white-50"></i>
                         {{ Auth::user()->name }}
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="adminNavbarDropdown">                        
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="adminNavbarDropdown">
+                        <li>
+                            <a class="dropdown-item fw-bold" href="{{ route('dashboard') }}">
+                                <i class="fas fa-desktop me-2 text-primary"></i> User Dashboard
+                            </a>
+                        </li>
                         <li>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                                 <i class="fas fa-key me-2 text-warning"></i> เปลี่ยนรหัสผ่าน
