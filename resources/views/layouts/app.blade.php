@@ -303,9 +303,6 @@
                         <a href="{{ url('/service_drug') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                             <i class="fas fa-pills me-2" style="color: #f6c23e;"></i> เภสัชกรรม
                         </a>
-                        <a href="{{ url('/service_mental') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-brain me-2" style="color: #36b9cc;"></i> สุขภาพจิต|ยาเสพติด
-                        </a>
                         <a href="{{ url('/service_physic') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                             <i class="fas fa-walking me-2" style="color: #6610f2;"></i> กายภาพบำบัด
                         </a>
@@ -320,15 +317,6 @@
                         </a>
                         <a href="{{ url('/service_pcu') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                             <i class="fas fa-hand-holding-heart me-2" style="color: #5a5c69;"></i> งานเชิงรุก
-                        </a>
-                        <a href="{{ url('/service_xray') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-x-ray me-2" style="color: #4e73df;"></i> รังสีวิทยา
-                        </a> 
-                        <a href="{{ url('/service_lab') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-flask me-2" style="color: #36b9cc;"></i> เทคนิคการแพทย์
-                        </a>
-                        <a href="{{ url('/service_operation') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-scissors me-2" style="color: #e74a3b;"></i> ห้องผ่าตัด
                         </a>
                     </div>
                 </div>

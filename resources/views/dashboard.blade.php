@@ -19,16 +19,11 @@
                                 ['url' => '/service_ipd', 'label' => 'ผู้ป่วยใน', 'icon' => 'fa-bed-pulse', 'color' => '#1cc88a'],
                                 ['url' => '/service_er', 'label' => 'อุบัติเหตุ-ฉุกเฉิน', 'icon' => 'fa-truck-medical', 'color' => '#e74a3b'],
                                 ['url' => '/service_drug', 'label' => 'เภสัชกรรม', 'icon' => 'fa-pills', 'color' => '#f6c23e'],
-                                ['url' => '/service_mental', 'label' => 'สุขภาพจิต/ยาเสพติด', 'icon' => 'fa-brain', 'color' => '#36b9cc'],
                                 ['url' => '/service_physic', 'label' => 'กายภาพบำบัด', 'icon' => 'fa-walking', 'color' => '#6610f2'],
                                 ['url' => '/service_healthmed', 'label' => 'แพทย์แผนไทย', 'icon' => 'fa-leaf', 'color' => '#20c997'],
                                 ['url' => '/service_dent', 'label' => 'ทันตกรรม', 'icon' => 'fa-tooth', 'color' => '#fd7e14'],
                                 ['url' => '/service_ncd', 'label' => 'คลินิกโรคเรื้อรัง', 'icon' => 'fa-clipboard-list', 'color' => '#858796'],
                                 ['url' => '/service_pcu', 'label' => 'งานเชิงรุก', 'icon' => 'fa-hand-holding-heart', 'color' => '#5a5c69'],
-                                ['url' => '/service_xray', 'label' => 'รังสีวิทยา', 'icon' => 'fa-x-ray', 'color' => '#4e73df'],
-                                ['url' => '/service_lab', 'label' => 'เทคนิคการแพทย์', 'icon' => 'fa-flask', 'color' => '#36b9cc'],
-                                ['url' => '/service_operation', 'label' => 'ห้องผ่าตัด', 'icon' => 'fa-scissors', 'color' => '#e74a3b'],
-                                ['url' => '/service_refer', 'label' => 'ข้อมูลการส่งต่อ', 'icon' => 'fa-share-nodes', 'color' => '#4e73df'],
                             ];
                         @endphp
 

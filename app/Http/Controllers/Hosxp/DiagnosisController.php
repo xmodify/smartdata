@@ -227,30 +227,25 @@ class DiagnosisController extends Controller
             $vn_col = "o.vn";
         }
 
-        $diag_cols = ['pdx', 'dx0', 'dx1', 'dx2', 'dx3', 'dx4', 'dx5'];
         $params_set = [];
         $where_clauses = [];
 
         if ($category === 'refer') {
-            $col_likes = [];
             foreach ($codes as $code) {
-                // For Refer, we only check primary diagnosis (pdx) across all 3 tables
-                $col_likes[] = "r.pdx LIKE ?";
+                // Stats (Graph) should use PDX only
+                $where_clauses[] = "r.pdx LIKE ?";
                 $params_set[] = $code . '%';
-                $col_likes[] = "v.pdx LIKE ?";
+                $where_clauses[] = "v.pdx LIKE ?";
                 $params_set[] = $code . '%';
-                $col_likes[] = "a.pdx LIKE ?";
+                $where_clauses[] = "a.pdx LIKE ?";
                 $params_set[] = $code . '%';
             }
-            $diag_where = "(" . implode(' OR ', $col_likes) . ")";
+            $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
         } else {
-            foreach ($diag_cols as $col) {
-                $col_likes = [];
-                foreach ($codes as $code) {
-                    $col_likes[] = "$v_prefix.$col LIKE ?";
-                    $params_set[] = $code . '%';
-                }
-                $where_clauses[] = "(" . implode(' OR ', $col_likes) . ")";
+            // PDX Only for Charts (OPD/IPD)
+            foreach ($codes as $code) {
+                $where_clauses[] = "$v_prefix.pdx LIKE ?";
+                $params_set[] = $code . '%';
             }
             $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
         }
@@ -395,15 +390,20 @@ class DiagnosisController extends Controller
     {
         $params = [$start_date, $end_date];
 
-        // Refer logic matching user example
+        // List should use PDX + DX0-DX5
+        $diag_cols = ['pdx', 'dx0', 'dx1', 'dx2', 'dx3', 'dx4', 'dx5'];
         $where_clauses = [];
-        foreach ($codes as $code) {
-            $where_clauses[] = "r.pdx LIKE ?";
-            $params[] = $code . '%';
-            $where_clauses[] = "v.pdx LIKE ?";
-            $params[] = $code . '%';
-            $where_clauses[] = "a.pdx LIKE ?";
-            $params[] = $code . '%';
+        foreach ($diag_cols as $col) {
+            foreach ($codes as $code) {
+                if ($col === 'pdx') {
+                    $where_clauses[] = "r.pdx LIKE ?";
+                    $params[] = $code . '%';
+                }
+                $where_clauses[] = "v.$col LIKE ?";
+                $params[] = $code . '%';
+                $where_clauses[] = "a.$col LIKE ?";
+                $params[] = $code . '%';
+            }
         }
         $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
 
