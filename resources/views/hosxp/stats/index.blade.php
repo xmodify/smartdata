@@ -28,19 +28,11 @@
                     </div>
                     <div class="list-group list-group-flush mt-2">
                         <a href="{{ route('hosxp.stats.top20_opd') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
-                            <span class="small">รายงาน 20 อันดับโรค (Primary Diagnosis) ผู้ป่วยนอก</span>
-                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
-                        </a>
-                        <a href="{{ route('hosxp.stats.group_504') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
-                            <span class="small">รายงานกลุ่มสาเหตุ (21 กลุ่มโรค) (รง.504) ผู้ป่วยนอก</span>
+                            <span class="small">รายงาน 20 อันดับโรค ผู้ป่วยนอก</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="{{ route('hosxp.stats.top20_ipd') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
-                            <span class="small">รายงาน 20 อันดับโรค (Primary Diagnosis) ผู้ป่วยใน</span>
-                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
-                        </a>
-                        <a href="{{ route('hosxp.stats.group_505') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
-                            <span class="small">รายงานกลุ่มโรค (75 กลุ่มโรค) (รง.505) ผู้ป่วยใน</span>
+                            <span class="small">รายงาน 20 อันดับโรค ผู้ป่วยใน</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="{{ route('hosxp.stats.group_506') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
@@ -76,7 +68,7 @@
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="{{ route('hosxp.stats.refer_out_top20') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
-                            <span class="small">รายงานผู้ป่วยส่งต่อ Refer Out 30 อันดับโรค (Primary Diagnosis)</span>
+                            <span class="small">รายงานผู้ป่วยส่งต่อ Refer Out 20 อันดับโรค (Primary Diagnosis)</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>
@@ -100,7 +92,7 @@
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="{{ route('hosxp.stats.death_top20') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
-                            <span class="small">รายงาน 20 อันดับโรค (Primary Diagnosis) การเสียชีวิต</span>
+                            <span class="small">รายงาน 20 อันดับโรค การเสียชีวิต</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>

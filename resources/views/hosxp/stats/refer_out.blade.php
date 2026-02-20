@@ -9,18 +9,80 @@
 @endsection
 
 @push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 <style>
     .page-header-container {
         background: #fff;
         border-radius: 12px;
-        padding: 1rem 1.25rem; /* Reduced padding */
+        padding: 1rem 1.25rem;
         box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        margin-bottom: 1.5rem; /* Reduced margin */
+        margin-bottom: 1.5rem;
         border: 1px solid #f0f0f0;
     }
     .report-title-box h5 {
-        font-size: 1.1rem; /* Smaller title */
+        font-size: 1.1rem;
         letter-spacing: -0.01em;
+    }
+    .header-form-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .input-group-date {
+        width: 160px !important;
+    }
+    .input-group-budget {
+        width: 200px !important;
+    }
+    
+    /* Override DataTables UI */
+    button.dt-button.btn-excel {
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+        color: #fff !important;
+        border-radius: 8px !important;
+        font-size: 0.8rem !important;
+        padding: 6px 15px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        box-shadow: 0 2px 4px rgba(25, 135, 84, 0.2) !important;
+        transition: all 0.2s !important;
+    }
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+    .nav-tabs-custom {
+        border-bottom: 2px solid #f0f0f0;
+        margin-bottom: 1.5rem;
+    }
+    .nav-tabs-custom .nav-link {
+        border: none;
+        color: #6e707e;
+        font-weight: 600;
+        padding: 10px 20px;
+        position: relative;
+        transition: all 0.3s;
+    }
+    .nav-tabs-custom .nav-link.active {
+        color: #4e73df;
+        background: transparent;
+    }
+    .nav-tabs-custom .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: #4e73df;
+    }
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
     }
 </style>
 @endpush
@@ -40,10 +102,17 @@
         </div>
         
         <div class="d-flex align-items-center">
-            <form action="" method="GET" class="m-0">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white border-end-0" style="border-radius: 8px 0 0 8px;"><i class="fas fa-calendar-alt text-primary"></i></span>
-                    <select class="form-select form-select-sm border-start-0 border-end-0" name="budget_year" style="min-width: 120px; font-size: 0.8rem;">
+            <form action="" method="GET" class="m-0 header-form-controls">
+                <div class="input-group input-group-sm shadow-sm input-group-date" style="border-radius: 8px; overflow: hidden;">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-alt"></i></span>
+                    <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0" value="{{ $start_date }}" placeholder="วันที่เริ่ม" style="font-size: 0.8rem;">
+                </div>
+                <div class="input-group input-group-sm shadow-sm input-group-date" style="border-radius: 8px; overflow: hidden;">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-alt"></i></span>
+                    <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0" value="{{ $end_date }}" placeholder="วันที่สิ้นสุด" style="font-size: 0.8rem;">
+                </div>
+                <div class="input-group input-group-sm shadow-sm input-group-budget" style="border-radius: 8px; overflow: hidden;">
+                    <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
                         @foreach ($budget_year_select as $row)
                             <option value="{{ $row->LEAVE_YEAR_ID }}"
                                 {{ (int)$budget_year === (int)$row->LEAVE_YEAR_ID ? 'selected' : '' }}>
@@ -51,25 +120,311 @@
                             </option>
                         @endforeach
                     </select>
-                    <button type="submit" class="btn btn-primary btn-sm px-3" style="border-radius: 0 8px 8px 0; font-size: 0.8rem;">
-                        <i class="fas fa-search me-1"></i> ค้นหา
+                    <button type="submit" class="btn btn-primary px-3" style="font-size: 0.8rem;">
+                        <i class="fas fa-search"></i> ค้นหา
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-        <div class="card-body p-5 text-center">
-            <div class="mb-4">
-                <i class="fas fa-tools fa-4x text-muted opacity-25"></i>
+    <!-- Summary & Trends -->
+    <div class="row g-3 mb-4">
+        <!-- Summary Cards -->
+        <div class="col-xl-3">
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm text-white" style="border-radius: 12px; background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                        <div class="card-body p-3">
+                            <div class="small opacity-75">รวมส่งต่อทั้งหมด</div>
+                            <div class="h4 mb-0 fw-bold">{{ number_format(count($refer_list_opd) + count($refer_list_ipd)) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm text-white" style="border-radius: 12px; background: linear-gradient(135deg, #36b9cc 0%, #1a8a97 100%);">
+                        <div class="card-body p-3">
+                            <div class="small opacity-75">OPD Refer Out</div>
+                            <div class="h4 mb-0 fw-bold">{{ number_format(count($refer_list_opd)) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm text-white" style="border-radius: 12px; background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);">
+                        <div class="card-body p-3">
+                            <div class="small opacity-75">IPD Refer Out</div>
+                            <div class="h4 mb-0 fw-bold">{{ number_format(count($refer_list_ipd)) }}</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h4 class="fw-bold text-muted">กำลังพัฒนา</h4>
-            <p class="text-muted">หน้านี้กำลังอยู่ระหว่างการเชื่อมโยงข้อมูลและออกแบบการแสดงผล กรุณากลับมาตรวจสอบอีกครั้งในภายหลัง</p>
-            <a href="{{ route('hosxp.stats.index') }}" class="btn btn-primary px-4 mt-3" style="border-radius: 10px;">
-                <i class="fas fa-chevron-left me-2"></i> กลับไปหน้าสถิติ
-            </a>
+        </div>
+        
+        <!-- Monthly Trend Chart -->
+        <div class="col-xl-5">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0">
+                    <h6 class="m-0 fw-bold text-primary">แนวโน้มรายเดือน (ตามตัวเลือก)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yearly Trend Chart -->
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0">
+                    <h6 class="m-0 fw-bold text-primary">แนวโน้ม 5 ปี ย้อนหลัง</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="yearlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Lists -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+        <div class="card-body p-4">
+            <ul class="nav nav-tabs nav-tabs-custom" id="referTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="opd-tab" data-bs-toggle="tab" data-bs-target="#opd-panel" type="button" role="tab">
+                        <i class="fas fa-user-md me-2"></i>ผู้ป่วยนอก (OPD)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ipd-tab" data-bs-toggle="tab" data-bs-target="#ipd-panel" type="button" role="tab">
+                        <i class="fas fa-bed me-2"></i>ผู้ป่วยใน (IPD)
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="referTabsContent">
+                <!-- OPD Panel -->
+                <div class="tab-pane fade show active" id="opd-panel" role="tabpanel">
+                    <div class="table-responsive">
+                        <table id="opdTable" class="table table-hover align-middle" style="width:100%">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>HN</th>
+                                    <th>ชื่อ-นามสกุล</th>
+                                    <th>โรคหลัก</th>
+                                    <th>Refer Hos</th>
+                                    <th>วันที่ส่งต่อ</th>
+                                    <th>จุดส่งต่อ</th>
+                                    <th class="text-center">Ambulance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($refer_list_opd as $row)
+                                    <tr>
+                                        <td><span class="badge bg-light text-primary border px-2">{{ $row->hn }}</span></td>
+                                        <td><div class="fw-bold">{{ $row->ptname }}</div></td>
+                                        <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ $row->pdx }}</span></td>
+                                        <td>{{ $row->refer_hos }}</td>
+                                        <td>{{ DateThai($row->refer_date) }} {{ $row->refer_time }}</td>
+                                        <td>{{ $row->refer_point }}</td>
+                                        <td class="text-center">
+                                            @if($row->with_ambulance == 'Y')
+                                                <i class="fas fa-truck-medical text-danger"></i>
+                                            @else
+                                                <i class="fas fa-times text-muted opacity-50"></i>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- IPD Panel -->
+                <div class="tab-pane fade" id="ipd-panel" role="tabpanel">
+                    <div class="table-responsive">
+                        <table id="ipdTable" class="table table-hover align-middle" style="width:100%">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>HN</th>
+                                    <th>ชื่อ-นามสกุล</th>
+                                    <th>โรคหลัก</th>
+                                    <th>Refer Hos</th>
+                                    <th>วันที่ส่งต่อ</th>
+                                    <th>จุดส่งต่อ</th>
+                                    <th class="text-center">Ambulance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($refer_list_ipd as $row)
+                                    <tr>
+                                        <td><span class="badge bg-light text-primary border px-2">{{ $row->hn }}</span></td>
+                                        <td><div class="fw-bold">{{ $row->ptname }}</div></td>
+                                        <td><span class="badge bg-info bg-opacity-10 text-info">{{ $row->pdx }}</span></td>
+                                        <td>{{ $row->refer_hos }}</td>
+                                        <td>{{ DateThai($row->refer_date) }} {{ $row->refer_time }}</td>
+                                        <td>{{ $row->refer_point }}</td>
+                                        <td class="text-center">
+                                            @if($row->with_ambulance == 'Y')
+                                                <i class="fas fa-truck-medical text-danger"></i>
+                                            @else
+                                                <i class="fas fa-times text-muted opacity-50"></i>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+<script>
+    $(document).ready(function() {
+        Chart.register(ChartDataLabels);
+        // Flatpickr setup
+        if (typeof flatpickr !== 'undefined') {
+            const yearOffset = 543;
+            const commonConfig = {
+                locale: "th",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "j M Y",
+                allowInput: true,
+                onReady: function(selectedDates, dateStr, instance) {
+                    const todayBtn = document.createElement("div");
+                    todayBtn.innerHTML = "วันนี้";
+                    todayBtn.className = "text-primary fw-bold text-center py-2 border-top";
+                    todayBtn.style.cursor = "pointer";
+                    todayBtn.addEventListener("click", () => {
+                        instance.setDate(new Date(), true);
+                        instance.close();
+                    });
+                    instance.calendarContainer.appendChild(todayBtn);
+                }
+            };
+            flatpickr("#start_date", commonConfig);
+            flatpickr("#end_date", commonConfig);
+        }
+
+        // DataTables setup
+        const dtConfig = {
+            language: { url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json" },
+            pageLength: 10,
+            dom: '<"d-flex justify-content-between align-items-center mb-3"<"dt-left-info"> <"d-flex gap-2"fB>>rtip',
+            buttons: [{
+                extend: 'excelHtml5',
+                text: '<i class="fas fa-file-excel"></i> Excel',
+                className: 'btn-excel',
+                title: '{{ $title }}',
+                messageTop: 'ช่วงวันที่: {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}'
+            }],
+            initComplete: function() {
+                $("div.dt-left-info").html('<div class="text-primary fw-bold"><i class="fas fa-calendar-alt me-1"></i> ช่วงวันที่: {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}</div>');
+            }
+        };
+        $('#opdTable').DataTable(dtConfig);
+        $('#ipdTable').DataTable(dtConfig);
+
+        // Chart Data from PHP
+        const monthlyData = @json($monthly_trend);
+        const yearlyData = @json($yearly_trend);
+
+        // Monthly Trend Chart
+        new Chart(document.getElementById('monthlyChart'), {
+            type: 'line',
+            data: {
+                labels: monthlyData.map(d => d.label),
+                datasets: [
+                    {
+                        label: 'OPD',
+                        data: monthlyData.map(d => d.opd_count),
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'IPD',
+                        data: monthlyData.map(d => d.ipd_count),
+                        borderColor: '#1cc88a',
+                        backgroundColor: 'rgba(28, 200, 138, 0.05)',
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        color: (ctx) => ctx.dataset.borderColor,
+                        font: { weight: 'bold' }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } }
+                }
+            }
+        });
+
+        // Yearly Trend Chart
+        new Chart(document.getElementById('yearlyChart'), {
+            type: 'bar',
+            data: {
+                labels: yearlyData.map(d => 'ปีงบ ' + d.year_be),
+                datasets: [
+                    {
+                        label: 'OPD',
+                        data: yearlyData.map(d => d.opd_count),
+                        backgroundColor: '#4e73df'
+                    },
+                    {
+                        label: 'IPD',
+                        data: yearlyData.map(d => d.ipd_count),
+                        backgroundColor: '#1cc88a'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        color: '#444',
+                        font: { weight: 'bold' }
+                    }
+                },
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true, grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
+@endpush
 @endsection

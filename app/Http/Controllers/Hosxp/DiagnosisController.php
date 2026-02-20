@@ -175,34 +175,12 @@ class DiagnosisController extends Controller
     {
         set_time_limit(300);
 
-        $budget_year_select = DB::table('budget_year')
-            ->select('LEAVE_YEAR_ID', 'LEAVE_YEAR_NAME')
-            ->orderByDesc('LEAVE_YEAR_ID')
-            ->limit(7)
-            ->get();
-
-        $budget_year_now = DB::table('budget_year')
-            ->whereDate('DATE_END', '>=', date('Y-m-d'))
-            ->whereDate('DATE_BEGIN', '<=', date('Y-m-d'))
-            ->value('LEAVE_YEAR_ID');
-
-        $budget_year = $request->budget_year ?: $budget_year_now;
-
-        $year_data = DB::table('budget_year')
-            ->whereIn('LEAVE_YEAR_ID', [$budget_year, $budget_year - 4])
-            ->pluck('DATE_BEGIN', 'LEAVE_YEAR_ID');
-
-        $start_date = $year_data[$budget_year] ?? null;
-        $start_date_y = $year_data[$budget_year - 4] ?? null;
-        $end_date = DB::table('budget_year')
-            ->where('LEAVE_YEAR_ID', $budget_year)
-            ->value('DATE_END');
-
-        if (!$start_date) {
-            $start_date = ($budget_year - 543) . '-10-01';
-            $end_date = ($budget_year - 542) . '-09-30';
-            $start_date_y = ($budget_year - 547) . '-10-01';
-        }
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+        $start_date_y = $dates['start_date_y'];
 
         $codes = $config['codes'];
 
@@ -300,10 +278,13 @@ class DiagnosisController extends Controller
         }
 
         return view('hosxp.diagnosis.report', compact(
-            'budget_year_select',
-            'budget_year',
+            'type',
             'config',
             'category',
+            'budget_year',
+            'budget_year_select',
+            'start_date',
+            'end_date',
             'diag_m',
             'diag_visit_m',
             'diag_hn_m',
@@ -312,6 +293,68 @@ class DiagnosisController extends Controller
             'diag_hn_y',
             'diag_list'
         ));
+    }
+
+    /**
+     * Standard Date Range Resolver for all reports
+     */
+    private function resolveDateRange(Request $request)
+    {
+        $budget_year_select = \DB::table('budget_year')
+            ->select('LEAVE_YEAR_ID', 'LEAVE_YEAR_NAME')
+            ->orderByDesc('LEAVE_YEAR_ID')
+            ->limit(7)
+            ->get();
+
+        $budget_year_now = \DB::table('budget_year')
+            ->whereDate('DATE_END', '>=', date('Y-m-d'))
+            ->whereDate('DATE_BEGIN', '<=', date('Y-m-d'))
+            ->value('LEAVE_YEAR_ID');
+
+        $budget_year = $request->budget_year ?: $budget_year_now;
+
+        if ($request->start_date && $request->end_date) {
+            $start_date = $request->start_date;
+            $end_date = $request->end_date;
+
+            $matched_year = \DB::table('budget_year')
+                ->where('DATE_BEGIN', '<=', $start_date)
+                ->where('DATE_END', '>=', $start_date)
+                ->first();
+
+            if ($matched_year) {
+                $budget_year = $matched_year->LEAVE_YEAR_ID;
+            }
+        } else {
+            $year_data = \DB::table('budget_year')
+                ->where('LEAVE_YEAR_ID', $budget_year)
+                ->first();
+
+            if ($year_data) {
+                $start_date = $year_data->DATE_BEGIN;
+                $end_date = $year_data->DATE_END;
+            } else {
+                $start_date = ($budget_year - 543) . '-10-01';
+                $end_date = ($budget_year - 542) . '-09-30';
+            }
+        }
+
+        // Specifically for Diagnosis reports (5-year trend)
+        $start_date_y = \DB::table('budget_year')
+            ->where('LEAVE_YEAR_ID', $budget_year - 4)
+            ->value('DATE_BEGIN');
+
+        if (!$start_date_y) {
+            $start_date_y = ($budget_year - 547) . '-10-01';
+        }
+
+        return [
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'budget_year' => $budget_year,
+            'budget_year_select' => $budget_year_select,
+            'start_date_y' => $start_date_y
+        ];
     }
 
     private function fetch_opd_list($start_date, $end_date, $codes)

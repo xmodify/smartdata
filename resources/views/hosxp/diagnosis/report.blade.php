@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     .page-header-container {
         background: #fff;
@@ -120,11 +121,17 @@
         </div>
         
         <div class="d-flex align-items-center">
-            <form method="POST" enctype="multipart/form-data" class="m-0">
-                @csrf
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white border-end-0 border-radius-start-8"><i class="bi bi-calendar-event text-primary"></i></span>
-                    <select class="form-select form-select-sm border-start-0 border-end-0" name="budget_year" style="min-width: 120px; font-size: 0.8rem;">
+            <form action="" method="GET" class="m-0 d-md-flex align-items-center gap-2">
+                <div class="input-group input-group-sm mb-2 mb-md-0 shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-alt"></i></span>
+                    <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0" value="{{ $start_date }}" placeholder="วันที่เริ่ม" style="width: 130px; font-size: 0.8rem;">
+                </div>
+                <div class="input-group input-group-sm mb-2 mb-md-0 shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-alt"></i></span>
+                    <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0" value="{{ $end_date }}" placeholder="วันที่สิ้นสุด" style="width: 130px; font-size: 0.8rem;">
+                </div>
+                <div class="input-group input-group-sm shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                    <select class="form-select border-end-0" name="budget_year" style="min-width: 120px; font-size: 0.8rem;">
                         @foreach ($budget_year_select as $row)
                             <option value="{{ $row->LEAVE_YEAR_ID }}"
                                 {{ (int)$budget_year === (int)$row->LEAVE_YEAR_ID ? 'selected' : '' }}>
@@ -132,12 +139,17 @@
                             </option>
                         @endforeach
                     </select>
-                    <button type="submit" class="btn btn-primary btn-sm px-3 border-radius-end-8" style="font-size: 0.8rem;">
-                        <i class="bi bi-search me-1"></i> ค้นหา
+                    <button type="submit" class="btn btn-primary px-3" style="font-size: 0.8rem;">
+                        <i class="fas fa-search"></i> ค้นหา
                     </button>
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- Date Info Section -->
+    <div class="mb-4 d-flex justify-content-start align-items-center px-3 py-2 bg-white rounded shadow-sm border" style="border-radius: 12px !important;">
+        <div class="text-primary fw-bold"><i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}</div>
     </div>
 
     <!-- Chart Row -->
@@ -202,12 +214,49 @@
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
   
   <script>
     // Register the plugin to all charts if needed, or just specific ones
     Chart.register(ChartDataLabels);
 
     $(document).ready(function () {
+      if (typeof flatpickr !== 'undefined') {
+          const commonConfig = {
+              locale: "th",
+              dateFormat: "Y-m-d",
+              altInput: true,
+              altFormat: "j M Y",
+              allowInput: true,
+              onReady: function(selectedDates, dateStr, instance) {
+                  const todayBtn = document.createElement("div");
+                  todayBtn.innerHTML = "วันนี้";
+                  todayBtn.style.cursor = "pointer";
+                  todayBtn.style.textAlign = "center";
+                  todayBtn.style.padding = "10px";
+                  todayBtn.style.color = "#4e73df";
+                  todayBtn.style.fontWeight = "bold";
+                  todayBtn.style.borderTop = "1px solid #e9ecef";
+                  todayBtn.addEventListener("click", () => {
+                      instance.setDate(new Date());
+                      instance.close();
+                  });
+                  instance.calendarContainer.appendChild(todayBtn);
+              }
+          };
+
+          const startPicker = flatpickr("#start_date", commonConfig);
+          const endPicker = flatpickr("#end_date", commonConfig);
+
+          // Synchronize: Clear dates when budget year changes
+          $('select[name="budget_year"]').on('change', function() {
+              if (typeof startPicker !== 'undefined') startPicker.clear();
+              if (typeof endPicker !== 'undefined') endPicker.clear();
+              $('#start_date, #end_date').val('');
+          });
+      }
+
       $('#diag_list').DataTable({
         dom: '<"d-flex justify-content-between align-items-center py-2 px-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-2"fB>>rt<"d-flex justify-content-between align-items-center p-3"ip>',
         buttons: [

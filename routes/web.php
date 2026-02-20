@@ -39,9 +39,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('hosxp/stats')->group(function () {
         Route::get('/top20-opd', [App\Http\Controllers\Hosxp\StatsController::class, 'top20_opd'])->name('hosxp.stats.top20_opd');
-        Route::get('/group-504', [App\Http\Controllers\Hosxp\StatsController::class, 'group_504'])->name('hosxp.stats.group_504');
         Route::get('/top20-ipd', [App\Http\Controllers\Hosxp\StatsController::class, 'top20_ipd'])->name('hosxp.stats.top20_ipd');
-        Route::get('/group-505', [App\Http\Controllers\Hosxp\StatsController::class, 'group_505'])->name('hosxp.stats.group_505');
         Route::get('/group-506', [App\Http\Controllers\Hosxp\StatsController::class, 'group_506'])->name('hosxp.stats.group_506');
         Route::get('/refer-out', [App\Http\Controllers\Hosxp\StatsController::class, 'refer_out'])->name('hosxp.stats.refer_out');
         Route::get('/refer-out-4h', [App\Http\Controllers\Hosxp\StatsController::class, 'refer_out_4h'])->name('hosxp.stats.refer_out_4h');
