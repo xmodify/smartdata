@@ -58,7 +58,7 @@
                     <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0" value="{{ $end_date }}" placeholder="วันที่สิ้นสุด" style="font-size: 0.8rem;">
                 </div>
                 <div class="input-group input-group-sm shadow-sm input-group-budget" style="border-radius: 8px; overflow: hidden;">
-                    <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
+                    <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;" onchange="document.getElementById('start_date').value=''; document.getElementById('end_date').value='';">
                         @foreach ($budget_year_select as $row)
                             <option value="{{ $row->LEAVE_YEAR_ID }}"
                                 {{ (int)$budget_year === (int)$row->LEAVE_YEAR_ID ? 'selected' : '' }}>

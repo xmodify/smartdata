@@ -37,17 +37,17 @@ class ErController extends Controller
 
         $budget_year = $request->budget_year ?: $budget_year_now;
 
-        if ($request->start_date && $request->end_date) {
+        if ($request->start_date && $request->end_date && !$request->has('budget_year_changed')) {
             $start_date = $request->start_date;
             $end_date = $request->end_date;
 
             $matched_year = DB::table('budget_year')
                 ->where('DATE_BEGIN', '<=', $start_date)
                 ->where('DATE_END', '>=', $start_date)
-                ->first();
+                ->value('LEAVE_YEAR_ID');
 
             if ($matched_year) {
-                $budget_year = $matched_year->LEAVE_YEAR_ID;
+                $budget_year = $matched_year;
             }
         } else {
             $year_data = DB::table('budget_year')
