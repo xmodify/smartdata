@@ -286,40 +286,6 @@
                     <i class="fas fa-file-waveform me-2" style="color: #4e73df;"></i> ข้อมูลและสถิติ
                 </a>
 
-                <div class="sidebar-dropdown">
-                    <a href="javascript:void(0)" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#serviceSubmenu" aria-expanded="false">
-                        <i class="fas fa-hospital" style="color: #20c997;"></i> แยกตามหน่วยงาน
-                    </a>
-                    <div class="collapse sidebar-submenu" id="serviceSubmenu" style="background-color: #f8f9fc !important;">
-                        <a href="{{ url('/service_opd') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-user-nurse me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก
-                        </a>
-                        <a href="{{ url('/service_ipd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-bed-pulse me-2" style="color: #1cc88a;"></i> ผู้ป่วยใน
-                        </a>
-                        <a href="{{ url('/service_er') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-truck-medical me-2" style="color: #e74a3b;"></i> อุบัติเหตุ-ฉุกเฉิน
-                        </a>
-                        <a href="{{ url('/service_drug') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-pills me-2" style="color: #f6c23e;"></i> เภสัชกรรม
-                        </a>
-                        <a href="{{ url('/service_physic') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-walking me-2" style="color: #6610f2;"></i> กายภาพบำบัด
-                        </a>
-                        <a href="{{ url('/service_healthmed') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-leaf me-2" style="color: #20c997;"></i> แพทย์แผนไทย
-                        </a>
-                        <a href="{{ url('/service_dent') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-tooth me-2" style="color: #fd7e14;"></i> ทันตกรรม
-                        </a> 
-                        <a href="{{ url('/service_ncd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-clipboard-list me-2" style="color: #858796;"></i> คลินิกโรคเรื้อรัง
-                        </a>
-                        <a href="{{ url('/service_pcu') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-hand-holding-heart me-2" style="color: #5a5c69;"></i> งานเชิงรุก
-                        </a>
-                    </div>
-                </div>
 
                 <!-- Major Disease Menu -->
                 <div class="sidebar-dropdown">

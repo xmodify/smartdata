@@ -11,9 +11,6 @@ Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, '
 
 Route::get('/', function () {
     if (Auth::check()) {
-        if (Auth::user()->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
         return redirect()->route('dashboard');
     }
     return redirect()->route('login');
