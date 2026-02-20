@@ -27,17 +27,9 @@
                         <h6 class="fw-bold mb-0">รายงานทั่วไป</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="{{ route('hosxp.opd.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center fw-bold text-primary">
-                            <span class="small">ระบบงานบริการผู้ป่วยนอก (OPD)</span>
-                            <i class="fas fa-arrow-right smaller" style="font-size: 0.7rem;"></i>
-                        </a>
                         <a href="{{ route('hosxp.stats.top20_opd') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงาน 20 อันดับโรค ผู้ป่วยนอก</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
-                        </a>
-                        <a href="{{ route('hosxp.ipd.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center fw-bold text-success">
-                            <span class="small">ระบบงานบริการผู้ป่วยใน (IPD)</span>
-                            <i class="fas fa-arrow-right smaller" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="{{ route('hosxp.stats.top20_ipd') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงาน 20 อันดับโรค ผู้ป่วยใน</span>
@@ -121,9 +113,9 @@
                         <h6 class="fw-bold mb-0">ผู้ป่วยนอก (OPD)</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
+                        <a href="{{ route('hosxp.opd.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานข้อมูลบริการผู้ป่วยนอก</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
                             <span class="small">รายงานการให้บริการแพทย์ทางไกล Telehealth</span>
@@ -149,9 +141,9 @@
                         <h6 class="fw-bold mb-0">ผู้ป่วยใน (IPD)</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
+                        <a href="{{ route('hosxp.ipd.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานข้อมูลบริการผู้ป่วยใน</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
                             <span class="small">รายงานจำนวนผู้ป่วยในแยกระดับความรุนแรง</span>
