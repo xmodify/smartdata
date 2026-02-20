@@ -27,9 +27,17 @@
                         <h6 class="fw-bold mb-0">รายงานทั่วไป</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
+                        <a href="{{ route('hosxp.opd.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center fw-bold text-primary">
+                            <span class="small">ระบบงานบริการผู้ป่วยนอก (OPD)</span>
+                            <i class="fas fa-arrow-right smaller" style="font-size: 0.7rem;"></i>
+                        </a>
                         <a href="{{ route('hosxp.stats.top20_opd') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงาน 20 อันดับโรค ผู้ป่วยนอก</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
+                        </a>
+                        <a href="{{ route('hosxp.ipd.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center fw-bold text-success">
+                            <span class="small">ระบบงานบริการผู้ป่วยใน (IPD)</span>
+                            <i class="fas fa-arrow-right smaller" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="{{ route('hosxp.stats.top20_ipd') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงาน 20 อันดับโรค ผู้ป่วยใน</span>
@@ -169,9 +177,9 @@
                         <h6 class="fw-bold mb-0">อุบัติเหตุ-ฉุกเฉิน (ER)</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
+                        <a href="{{ route('hosxp.er.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานข้อมูลบริการผู้ป่วยอุบัติเหตุ-ฉุกเฉิน</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
                             <span class="small">รายงานจำนวนผู้ป่วยอุบัติเหตุ-ฉุกเฉิน แยกระดับความรุนแรง</span>
@@ -208,9 +216,9 @@
                         <h6 class="fw-bold mb-0">กายภาพบำบัด</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
-                            <span class="small">--- รายงานรอดำเนินการ ---</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                        <a href="{{ route('hosxp.physic.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="small">รายงานข้อมูลบริการงานกายภาพบำบัด</span>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>
                 </div>
@@ -228,9 +236,9 @@
                         <h6 class="fw-bold mb-0">แพทย์แผนไทย</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
-                            <span class="small">--- รายงานรอดำเนินการ ---</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                        <a href="{{ route('hosxp.hmed.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="small">รายงานข้อมูลบริการงานแพทย์แผนไทย</span>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>
                 </div>
@@ -248,9 +256,9 @@
                         <h6 class="fw-bold mb-0">ทันตกรรม</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
-                            <span class="small">--- รายงานรอดำเนินการ ---</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                        <a href="{{ route('hosxp.dent.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="small">รายงานข้อมูลบริการงานทันตกรรม</span>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>
                 </div>
@@ -268,9 +276,9 @@
                         <h6 class="fw-bold mb-0">เภสัชกรรม</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
-                            <span class="small">--- รายงานรอดำเนินการ ---</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                        <a href="{{ route('hosxp.phar.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="small">รายงานข้อมูลบริการงานเภสัชกรรม</span>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>
                 </div>
@@ -288,9 +296,9 @@
                         <h6 class="fw-bold mb-0">คลินิกโรคเรื้อรัง</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
-                            <span class="small">--- รายงานรอดำเนินการ ---</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                        <a href="{{ route('hosxp.ncd.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="small">รายงานข้อมูลบริการคลินิกโรคเรื้อรัง (NCD)</span>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>
                 </div>
@@ -308,9 +316,9 @@
                         <h6 class="fw-bold mb-0">งานเชิงรุก PCU</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
-                            <span class="small">--- รายงานรอดำเนินการ ---</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                        <a href="{{ route('hosxp.pcu.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="small">รายงานข้อมูลบริการงานเชิงรุก PCU</span>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>
                 </div>

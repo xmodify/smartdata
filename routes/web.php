@@ -40,6 +40,51 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/group-506', [App\Http\Controllers\Hosxp\StatsController::class, 'group_506'])->name('hosxp.stats.group_506');
     });
 
+    // OPD Routes
+    Route::prefix('hosxp/opd')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\OpdController::class, 'index'])->name('hosxp.opd.index');
+    });
+
+    // IPD Routes
+    Route::prefix('hosxp/ipd')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\IpdController::class, 'index'])->name('hosxp.ipd.index');
+    });
+
+    // Physic Routes
+    Route::prefix('hosxp/physic')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\PhysicController::class, 'index'])->name('hosxp.physic.index');
+    });
+
+    // Hmed Routes
+    Route::prefix('hosxp/hmed')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\HmedController::class, 'index'])->name('hosxp.hmed.index');
+    });
+
+    // Dent Routes
+    Route::prefix('hosxp/dent')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\DentController::class, 'index'])->name('hosxp.dent.index');
+    });
+
+    // Phar Routes
+    Route::prefix('hosxp/phar')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\PharController::class, 'index'])->name('hosxp.phar.index');
+    });
+
+    // NCD Routes
+    Route::prefix('hosxp/ncd')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\NcdController::class, 'index'])->name('hosxp.ncd.index');
+    });
+
+    // PCU Routes
+    Route::prefix('hosxp/pcu')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\PcuController::class, 'index'])->name('hosxp.pcu.index');
+    });
+
+    // ER Routes
+    Route::prefix('hosxp/er')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\ErController::class, 'index'])->name('hosxp.er.index');
+    });
+
     // Refer Routes
     Route::prefix('hosxp/refer')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\ReferController::class, 'index'])->name('hosxp.refer.index');

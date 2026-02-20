@@ -26,9 +26,9 @@ class RegisterController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'username' => $request->username,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
             'role' => 'user',
-            'active' => 0, // Set to N (Inactive) by default
+            'active' => 'N', // Set to N (Inactive) by default
         ]);
 
         // Send Telegram Notification

@@ -129,7 +129,6 @@ class StatsController extends Controller
             left outer join icd101 i on i.code=v.pdx 
             where v.vstdate BETWEEN ? AND ?
             and v.pdx<>'' AND v.pdx is not null 
-            /* and v.pdx not in (SELECT icd10 FROM hrims.lookup_icd10 WHERE pp = 'Y') */
             group by v.pdx,i.name  
             order by sum desc limit 20
         ", [$start_date, $end_date]);
