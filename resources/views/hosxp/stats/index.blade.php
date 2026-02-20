@@ -55,19 +55,19 @@
                         <h6 class="fw-bold mb-0">รายงานรับ-ส่ง Refer</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="{{ route('hosxp.stats.refer_out') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.refer.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานผู้ป่วยส่งต่อ Refer Out</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
-                        <a href="{{ route('hosxp.stats.refer_out_4h') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.refer.refer_out_4h') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานผู้ป่วยส่งต่อ Refer Out ภายใน 4 ชม.หลัง Admit</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
-                        <a href="{{ route('hosxp.stats.refer_out_24h') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.refer.refer_out_24h') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานผู้ป่วยส่งต่อ Refer Out ภายใน 24 ชม.หลัง Admit</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
-                        <a href="{{ route('hosxp.stats.refer_out_top20') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.refer.refer_out_top20') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานผู้ป่วยส่งต่อ Refer Out 20 อันดับโรค (Primary Diagnosis)</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
@@ -87,11 +87,11 @@
                         <h6 class="fw-bold mb-0">รายงานการเสียชีวิต</h6>
                     </div>
                     <div class="list-group list-group-flush mt-2">
-                        <a href="{{ route('hosxp.stats.death') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.death.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานการเสียชีวิต</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
-                        <a href="{{ route('hosxp.stats.death_top20') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('hosxp.death.death_top20') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงาน 20 อันดับโรค การเสียชีวิต</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>

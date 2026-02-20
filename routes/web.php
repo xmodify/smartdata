@@ -38,12 +38,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/top20-opd', [App\Http\Controllers\Hosxp\StatsController::class, 'top20_opd'])->name('hosxp.stats.top20_opd');
         Route::get('/top20-ipd', [App\Http\Controllers\Hosxp\StatsController::class, 'top20_ipd'])->name('hosxp.stats.top20_ipd');
         Route::get('/group-506', [App\Http\Controllers\Hosxp\StatsController::class, 'group_506'])->name('hosxp.stats.group_506');
-        Route::get('/refer-out', [App\Http\Controllers\Hosxp\StatsController::class, 'refer_out'])->name('hosxp.stats.refer_out');
-        Route::get('/refer-out-4h', [App\Http\Controllers\Hosxp\StatsController::class, 'refer_out_4h'])->name('hosxp.stats.refer_out_4h');
-        Route::get('/refer-out-24h', [App\Http\Controllers\Hosxp\StatsController::class, 'refer_out_24h'])->name('hosxp.stats.refer_out_24h');
-        Route::get('/refer-out-top20', [App\Http\Controllers\Hosxp\StatsController::class, 'refer_out_top20'])->name('hosxp.stats.refer_out_top20');
-        Route::get('/death', [App\Http\Controllers\Hosxp\StatsController::class, 'death'])->name('hosxp.stats.death');
-        Route::get('/death-top20', [App\Http\Controllers\Hosxp\StatsController::class, 'death_top20'])->name('hosxp.stats.death_top20');
+    });
+
+    // Refer Routes
+    Route::prefix('hosxp/refer')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\ReferController::class, 'index'])->name('hosxp.refer.index');
+        Route::get('/refer-out-4h', [App\Http\Controllers\Hosxp\ReferController::class, 'refer_out_4h'])->name('hosxp.refer.refer_out_4h');
+        Route::get('/refer-out-24h', [App\Http\Controllers\Hosxp\ReferController::class, 'refer_out_24h'])->name('hosxp.refer.refer_out_24h');
+        Route::get('/refer-out-top20', [App\Http\Controllers\Hosxp\ReferController::class, 'refer_out_top20'])->name('hosxp.refer.refer_out_top20');
+    });
+
+    // Death Routes
+    Route::prefix('hosxp/death')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\DeathController::class, 'index'])->name('hosxp.death.index');
+        Route::get('/death-top20', [App\Http\Controllers\Hosxp\DeathController::class, 'death_top20'])->name('hosxp.death.death_top20');
     });
 
     Route::get('/hosxp/diagnosis', [App\Http\Controllers\Hosxp\DiagnosisController::class, 'index'])->name('hosxp.diagnosis.index');
