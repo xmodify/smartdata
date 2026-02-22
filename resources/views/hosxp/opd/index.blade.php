@@ -38,7 +38,41 @@
         }
 
         .input-group-budget {
-            width: 200px !important;
+            width: 250px !important;
+        }
+
+        @media (max-width: 768px) {
+            .page-header-container {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 1rem;
+            }
+
+            .header-form-controls {
+                width: 100%;
+            }
+
+            .input-group-date,
+            .input-group-budget {
+                width: 100% !important;
+            }
+        }
+
+        .flatpickr-today-button {
+            border-top: 1px solid #e6e6e6;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            color: #4e73df;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .flatpickr-today-button:hover {
+            background: #f8f9fc;
+            color: #2e59d9;
         }
 
         .bg-pastel-blue {
@@ -145,6 +179,23 @@
         .chart-container {
             min-height: 350px;
         }
+
+        .flatpickr-today-button {
+            border-top: 1px solid #e6e6e6;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            color: #4e73df;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .flatpickr-today-button:hover {
+            background: #f8f9fc;
+            color: #2e59d9;
+        }
     </style>
 @endpush
 
@@ -160,11 +211,16 @@
                     <div class="text-muted small mt-1">สรุปผลการดำเนินงานและสถิติบริการ ปีงบประมาณ
                         <strong>{{ $budget_year }}</strong>
                     </div>
+                    <div class="text-primary small fw-bold mt-1">
+                        <i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง
+                        {{ DateThai($end_date) }}
+                    </div>
                 </div>
             </div>
 
             <div class="d-flex align-items-center">
                 <form action="" method="GET" class="m-0 header-form-controls">
+                    <span class="me-1 fw-bold text-muted small">ช่วงวันที่:</span>
                     <div class="input-group input-group-sm shadow-sm input-group-date"
                         style="border-radius: 8px; overflow: hidden;">
                         <span class="input-group-text bg-white border-end-0 text-primary"><i
@@ -592,6 +648,21 @@
                                     const year = date.getFullYear() + yearOffset;
                                     instance.altInput.value = `${day} ${month} ${year}`;
                                 }
+                            }
+
+                            // Add Today Button
+                            const container = instance.calendarContainer;
+                            if (container && !container.querySelector('.flatpickr-today-button')) {
+                                const btn = document.createElement("div");
+                                btn.className = "flatpickr-today-button";
+                                btn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> วันนี้';
+                                btn.addEventListener("mousedown", function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    instance.setDate(new Date());
+                                    instance.close();
+                                });
+                                container.appendChild(btn);
                             }
                         },
                         onChange: function(selectedDates, dateStr, instance) {
