@@ -37,8 +37,12 @@ class OpdController extends Controller
             SUM(inc12) AS "inc_drug",SUM(inc03) AS "inc_lab",
             SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "Y" THEN 1 ELSE 0 END) AS "ucs_incup",
             SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "Y" THEN income ELSE 0 END) AS "ucs_incup_income",  
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "Y" THEN inc12 ELSE 0 END) AS "ucs_incup_inc_drug",
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "Y" THEN inc03 ELSE 0 END) AS "ucs_incup_inc_lab",
             SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "N" THEN 1 ELSE 0 END) AS "ucs_outcup",
             SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "N" THEN income ELSE 0 END) AS "ucs_outcup_income",            
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "N" THEN inc12 ELSE 0 END) AS "ucs_outcup_inc_drug",
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "N" THEN inc03 ELSE 0 END) AS "ucs_outcup_inc_lab",
             SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") THEN inc12 ELSE 0 END) AS "ucs_inc_drug",
             SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") THEN inc03 ELSE 0 END) AS "ucs_inc_lab",
             SUM(CASE WHEN hipdata_code IN ("OFC","BKK","BMT") AND paidst NOT IN ("01","03") THEN 1 ELSE 0 END) AS "ofc",
@@ -79,6 +83,9 @@ class OpdController extends Controller
         $months = array_column($visit_month, 'month');
         $visits = array_map('intval', array_column($visit_month, 'visit'));
         $hns = array_map('intval', array_column($visit_month, 'hn'));
+        $repeat_visits = array_map(function ($v, $h) {
+            return $v - $h;
+        }, $visits, $hns);
         $visit_ops = array_map('intval', array_column($visit_month, 'visit_op'));
         $visit_pps = array_map('intval', array_column($visit_month, 'visit_pp'));
         $incomes = array_map('floatval', array_column($visit_month, 'income'));
@@ -93,6 +100,7 @@ class OpdController extends Controller
             'months',
             'visits',
             'hns',
+            'repeat_visits',
             'visit_ops',
             'visit_pps',
             'incomes'
@@ -133,7 +141,8 @@ class OpdController extends Controller
             if ($matched_year) {
                 $budget_year = $matched_year;
             }
-        } else {
+        }
+        else {
             // Use budget_year to get the range
             $year_data = DB::table('budget_year')
                 ->where('LEAVE_YEAR_ID', $budget_year)
@@ -142,7 +151,8 @@ class OpdController extends Controller
             if ($year_data) {
                 $start_date = $year_data->DATE_BEGIN;
                 $end_date = $year_data->DATE_END;
-            } else {
+            }
+            else {
                 $start_date = ($budget_year - 543) . '-10-01';
                 $end_date = ($budget_year - 542) . '-09-30';
             }

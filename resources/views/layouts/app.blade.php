@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'SmartData')</title>
     <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
-    
+
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -14,18 +15,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+
     <style>
         :root {
             --sidebar-width: 280px;
             --topbar-height: 70px;
         }
-        
+
         body {
             overflow-x: hidden;
             font-family: 'Nunito', sans-serif;
             background-color: #f8f9fc;
-            font-size: 0.9rem; /* Slightly smaller base font */
+            font-size: 0.9rem;
+            /* Slightly smaller base font */
         }
 
         #wrapper {
@@ -54,7 +56,9 @@
         }
 
         #page-content-wrapper {
-            width: 100%;
+            flex: 1;
+            min-width: 0;
+            /* ป้องกันเนื้อหาดันให้ flex item ขยายเกินพื้นที่ */
             margin-left: var(--sidebar-width);
             transition: margin 0.25s ease-out;
             display: flex;
@@ -73,11 +77,12 @@
             padding: 0 1.5rem;
             color: #fff;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 10;
         }
+
         .sidebar-brand {
             font-size: 1.5rem;
             font-weight: 800;
@@ -87,8 +92,9 @@
             text-decoration: none !important;
             display: flex;
             align-items: center;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
+
         .sidebar-version {
             font-size: 0.75rem;
             color: rgba(255, 255, 255, 0.7);
@@ -99,7 +105,8 @@
         .list-group-item {
             position: relative;
             display: block;
-            padding: 0.6rem 1rem; /* Reduced padding */
+            padding: 0.6rem 1rem;
+            /* Reduced padding */
             margin: 0.1rem 0.6rem;
             background-color: transparent;
             border: none;
@@ -107,20 +114,22 @@
             font-weight: 600;
             border-radius: 0.5rem;
             transition: all 0.25s ease;
-            font-size: 0.85rem; /* Smaller sidebar font */
+            font-size: 0.85rem;
+            /* Smaller sidebar font */
         }
 
-        .list-group-item:hover, .list-group-item:focus {
+        .list-group-item:hover,
+        .list-group-item:focus {
             color: #4e73df;
             background-color: #f8f9fc;
             transform: translateX(5px);
             text-decoration: none;
         }
-        
+
         .list-group-item.active {
             color: #4e73df !important;
             background-color: #eaecf4;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .list-group-item i {
@@ -147,7 +156,7 @@
             transform: translateY(-50%);
             transition: transform 0.2s;
         }
-        
+
         .sidebar-dropdown .dropdown-toggle[aria-expanded="true"]::after {
             transform: translateY(-50%) rotate(-180deg);
         }
@@ -155,7 +164,7 @@
         .sidebar-submenu {
             background-color: #f8f9fc !important;
         }
-        
+
         /* Force visibility for collapse-show in sidebar */
         .sidebar-submenu.collapse.show {
             display: block !important;
@@ -163,7 +172,7 @@
             visibility: visible !important;
             opacity: 1 !important;
         }
-        
+
         .sidebar-submenu .list-group-item {
             padding-left: 2.8rem;
             padding-top: 0.4rem;
@@ -175,7 +184,7 @@
         /* Topbar */
         .navbar-custom {
             height: var(--topbar-height);
-            box-shadow: 0 .15rem 1.75rem 0 rgba(58,59,69,.15);
+            box-shadow: 0 .15rem 1.75rem 0 rgba(58, 59, 69, .15);
             background-color: #fff;
             padding: 0 1.5rem;
             display: flex;
@@ -187,12 +196,15 @@
             #sidebar-wrapper {
                 margin-left: calc(-1 * var(--sidebar-width));
             }
+
             #wrapper.toggled #sidebar-wrapper {
                 margin-left: 0;
             }
+
             #page-content-wrapper {
                 margin-left: 0;
             }
+
             #wrapper.toggled #page-content-wrapper {
                 position: absolute;
                 margin-right: calc(-1 * var(--sidebar-width));
@@ -203,34 +215,59 @@
         .bg-gradient-primary-custom {
             background: linear-gradient(135deg, #0268c7 0%, #17a6a7 100%);
         }
-        .bg-pastel-blue { background-color: #e0f2fe; }
-        .bg-pastel-teal { background-color: #f0fdfa; }
+
+        .bg-pastel-blue {
+            background-color: #e0f2fe;
+        }
+
+        .bg-pastel-teal {
+            background-color: #f0fdfa;
+        }
 
         .dashboard-card {
             border: none;
             border-radius: 15px;
             transition: transform 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
-        .dashboard-card:hover { transform: translateY(-5px); }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
         .icon-box-grid {
-            width: 45px; height: 45px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
         }
-        .transition-hover { transition: all 0.2s ease-in-out; }
-        .transition-hover:hover { transform: translateY(-3px); z-index: 10; }
+
+        .transition-hover {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .transition-hover:hover {
+            transform: translateY(-3px);
+            z-index: 10;
+        }
 
         /* Scrollbar styles for sidebar */
         #sidebar-wrapper::-webkit-scrollbar {
             width: 5px;
         }
+
         #sidebar-wrapper::-webkit-scrollbar-track {
             background: transparent;
         }
+
         #sidebar-wrapper::-webkit-scrollbar-thumb {
             background-color: rgba(78, 115, 223, 0.4);
             border-radius: 10px;
         }
+
         #sidebar-wrapper::-webkit-scrollbar-thumb:hover {
             background-color: rgba(78, 115, 223, 0.7);
         }
@@ -252,106 +289,132 @@
                 top: 15px;
                 left: 15px;
                 z-index: 2001 !important;
-                background-color: rgba(2, 104, 199, 0.8); /* Semi-transparent blue */
+                background-color: rgba(2, 104, 199, 0.8);
+                /* Semi-transparent blue */
                 border-radius: 50%;
                 width: 40px;
                 height: 40px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             }
         }
     </style>
     @stack('styles')
 </head>
+
 <body>
     <div id="wrapper">
         <!-- Sidebar -->
-        <div class="bg-white" id="sidebar-wrapper" style="box-shadow: 0.15rem 0 1.75rem 0 rgba(58, 59, 69, 0.15); border-right: none;">
+        <div class="bg-white" id="sidebar-wrapper"
+            style="box-shadow: 0.15rem 0 1.75rem 0 rgba(58, 59, 69, 0.15); border-right: none;">
             <div class="sidebar-heading bg-gradient-primary-custom">
                 <a href="{{ route('dashboard') }}" class="sidebar-brand">
                     <i class="fas fa-hospital-user me-2"></i> SmartData
                 </a>
             </div>
             <div class="list-group list-group-flush my-3">
-                <a href="{{ route('dashboard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                <a href="{{ route('dashboard') }}"
+                    class="list-group-item list-group-item-action bg-transparent text-dark">
                     <i class="fas fa-home" style="color: #4e73df;"></i> หน้าแรก
                 </a>
 
                 @auth
-                <div class="sidebar-section-header">รายงาน HOSxP</div>
+                    <div class="sidebar-section-header">รายงาน HOSxP</div>
 
-                <a href="{{ route('hosxp.stats.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                    <i class="fas fa-file-waveform me-2" style="color: #4e73df;"></i> ข้อมูลและสถิติ
-                </a>
-
-
-                <!-- Major Disease Menu -->
-                <div class="sidebar-dropdown">
-                    <a href="javascript:void(0)" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#diagnosisSubmenu" aria-expanded="false">
-                        <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
+                    <a href="{{ route('hosxp.stats.index') }}"
+                        class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-file-waveform me-2" style="color: #4e73df;"></i> ข้อมูลและสถิติ
                     </a>
-                    <div class="collapse sidebar-submenu" id="diagnosisSubmenu" style="background-color: #f8f9fc !important;">
-                        <a href="{{ route('hosxp.diagnosis.index', ['category' => 'opd']) }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                            <i class="fas fa-user-nurse me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก OPD
+
+
+                    <!-- Major Disease Menu -->
+                    <div class="sidebar-dropdown">
+                        <a href="javascript:void(0)"
+                            class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle"
+                            data-bs-toggle="collapse" data-bs-target="#diagnosisSubmenu" aria-expanded="false">
+                            <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
                         </a>
-                        <a href="{{ route('hosxp.diagnosis.index', ['category' => 'ipd']) }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-bed-pulse me-2" style="color: #1cc88a;"></i> ผู้ป่วยใน IPD
-                        </a>
-                        <a href="{{ route('hosxp.diagnosis.index', ['category' => 'refer']) }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-ambulance me-2" style="color: #e74a3b;"></i> ผู้ป่วยส่งต่อ Refer
-                        </a>
+                        <div class="collapse sidebar-submenu" id="diagnosisSubmenu"
+                            style="background-color: #f8f9fc !important;">
+                            <a href="{{ route('hosxp.diagnosis.index', ['category' => 'opd']) }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark py-2">
+                                <i class="fas fa-user-nurse me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก OPD
+                            </a>
+                            <a href="{{ route('hosxp.diagnosis.index', ['category' => 'ipd']) }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-bed-pulse me-2" style="color: #1cc88a;"></i> ผู้ป่วยใน IPD
+                            </a>
+                            <a href="{{ route('hosxp.diagnosis.index', ['category' => 'refer']) }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-ambulance me-2" style="color: #e74a3b;"></i> ผู้ป่วยส่งต่อ Refer
+                            </a>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Dashboard Menu -->
-                <div class="sidebar-dropdown">
-                    <a href="javascript:void(0)" class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#dashboardSubmenu" aria-expanded="false">
-                        <i class="fas fa-chart-line" style="color: #6610f2;"></i> Dashboard
+                    <!-- Dashboard Menu -->
+                    <div class="sidebar-dropdown">
+                        <a href="javascript:void(0)"
+                            class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle"
+                            data-bs-toggle="collapse" data-bs-target="#dashboardSubmenu" aria-expanded="false">
+                            <i class="fas fa-chart-line" style="color: #6610f2;"></i> Dashboard
+                        </a>
+                        <div class="collapse sidebar-submenu" id="dashboardSubmenu">
+                            <a href="{{ url('/dashboard/opd_mornitor') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark py-2"
+                                target="_blank">
+                                <i class="fas fa-desktop me-2" style="color: #4e73df;"></i> OPD Monitor
+                            </a>
+                            <a href="{{ url('/dashboard/ipd_mornitor') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark py-2"
+                                target="_blank">
+                                <i class="fas fa-procedures me-2" style="color: #1cc88a;"></i> IPD Monitor
+                            </a>
+                            <a href="{{ url('/dashboard/digitalhealth') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark py-2"
+                                target="_blank">
+                                <i class="fas fa-hand-holding-medical me-2" style="color: #36b9cc;"></i> นโยบาย 30 บาท
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- HOSxP Setting Menu -->
+                    <a href="{{ url('/hosxp_setting') }}"
+                        class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-database me-2" style="color: #4e73df;"></i> ข้อมูลพื้นฐาน HOSxP
                     </a>
-                    <div class="collapse sidebar-submenu" id="dashboardSubmenu">
-                        <a href="{{ url('/dashboard/opd_mornitor') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2" target="_blank">
-                            <i class="fas fa-desktop me-2" style="color: #4e73df;"></i> OPD Monitor
-                        </a>   
-                        <a href="{{ url('/dashboard/ipd_mornitor') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2" target="_blank">
-                            <i class="fas fa-procedures me-2" style="color: #1cc88a;"></i> IPD Monitor
-                        </a>   
-                        <a href="{{ url('/dashboard/digitalhealth') }}" class="list-group-item list-group-item-action bg-transparent text-dark py-2" target="_blank">
-                            <i class="fas fa-hand-holding-medical me-2" style="color: #36b9cc;"></i> นโยบาย 30 บาท
-                        </a> 
-                    </div>                 
-                </div>
 
-                <!-- HOSxP Setting Menu -->
-                <a href="{{ url('/hosxp_setting') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                    <i class="fas fa-database me-2" style="color: #4e73df;"></i> ข้อมูลพื้นฐาน HOSxP
-                </a>
+                    <div class="sidebar-section-header">รายงาน BackOffice</div>
+                    <a href="{{ url('/backoffice_hrd') }}"
+                        class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-id-card me-2" style="color: #1cc88a;"></i> งานบุคลากร
+                    </a>
+                    <a href="{{ url('/backoffice_asset') }}"
+                        class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-boxes-stacked me-2" style="color: #4e73df;"></i> งานทรัพย์สิน
+                    </a>
+                    <a href="{{ url('/backoffice_risk') }}"
+                        class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-triangle-exclamation me-2" style="color: #e74a3b;"></i> รายงานอุบัติการณ์
+                    </a>
 
-                <div class="sidebar-section-header">รายงาน BackOffice</div>
-                <a href="{{ url('/backoffice_hrd') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                    <i class="fas fa-id-card me-2" style="color: #1cc88a;"></i> งานบุคลากร
-                </a>
-                <a href="{{ url('/backoffice_asset') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                    <i class="fas fa-boxes-stacked me-2" style="color: #4e73df;"></i> งานทรัพย์สิน
-                </a>
-                <a href="{{ url('/backoffice_risk') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                    <i class="fas fa-triangle-exclamation me-2" style="color: #e74a3b;"></i> รายงานอุบัติการณ์
-                </a>
-
-                <div class="sidebar-section-header">ระบบ SmartData</div>
-                <a href="{{ url('/skpcard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                    <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆประชาร่วมใจ
-                </a>
-                <a href="{{ url('/form') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                    <i class="fas fa-check-to-slot me-2" style="color: #6610f2;"></i> ระบบตรวจสอบ
-                </a>
-                <a href="{{ url('/form') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                    <i class="fas fa-clipboard-check me-2" style="color: #20c997;"></i> แบบประเมิน
-                </a>
+                    <div class="sidebar-section-header">ระบบ SmartData</div>
+                    <a href="{{ url('/skpcard') }}"
+                        class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆประชาร่วมใจ
+                    </a>
+                    <a href="{{ url('/form') }}"
+                        class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-check-to-slot me-2" style="color: #6610f2;"></i> ระบบตรวจสอบ
+                    </a>
+                    <a href="{{ url('/form') }}"
+                        class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-clipboard-check me-2" style="color: #20c997;"></i> แบบประเมิน
+                    </a>
                 @endauth
             </div>
-            
+
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
                 V. 69-02-20 13.30
             </div>
@@ -362,7 +425,8 @@
         <div id="page-content-wrapper">
             <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary-custom navbar-custom">
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-link text-white" id="menu-toggle" style="z-index: 1001; position: relative;">
+                    <button class="btn btn-link text-white" id="menu-toggle"
+                        style="z-index: 1001; position: relative;">
                         <i class="fas fa-bars fa-lg"></i>
                     </button>
                     <div class="ms-3">
@@ -373,12 +437,14 @@
                 <div class="d-flex align-items-center">
                     @auth
                         <div class="dropdown">
-                            <a class="nav-link dropdown-toggle text-white fw-bold d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle text-white fw-bold d-flex align-items-center"
+                                href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
                                 <i class="fas fa-user-circle fa-lg me-2 text-white-50"></i>
                                 {{ Auth::user()->name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="navbarDropdown">
-                                @if (auth()->user()->hasAccessRole('admin'))                                    
+                                @if (auth()->user()->hasAccessRole('admin'))
                                     <li>
                                         <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
                                             <i class="fas fa-external-link-alt me-2 text-success"></i> Admin Dashboard
@@ -386,14 +452,17 @@
                                     </li>
                                 @endif
                                 <li>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#changePasswordModal">
                                         <i class="fas fa-key me-2 text-warning"></i> เปลี่ยนรหัสผ่าน
                                     </a>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li>
                                     <a class="dropdown-item text-danger" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                         <i class="fas fa-sign-out-alt me-2"></i> {{ __('Logout') }}
                                     </a>
                                 </li>
@@ -415,12 +484,15 @@
     <!-- /#wrapper -->
 
     <!-- Change Password Modal -->
-    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 15px; overflow: hidden;">
                 <div class="modal-header bg-gradient-primary-custom text-white border-0">
-                    <h5 class="modal-title fw-bold" id="changePasswordModalLabel"><i class="fas fa-key me-2"></i>เปลี่ยนรหัสผ่าน</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title fw-bold" id="changePasswordModalLabel"><i
+                            class="fas fa-key me-2"></i>เปลี่ยนรหัสผ่าน</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <form id="changePasswordForm">
                     @csrf
@@ -428,20 +500,26 @@
                     <div class="modal-body p-4">
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">รหัสผ่านปัจจุบัน</label>
-                            <input type="password" name="current_password" class="form-control shadow-sm border-0 bg-light" placeholder="ระบุรหัสผ่านเดิม" required>
+                            <input type="password" name="current_password"
+                                class="form-control shadow-sm border-0 bg-light" placeholder="ระบุรหัสผ่านเดิม"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">รหัสผ่านใหม่</label>
-                            <input type="password" name="password" class="form-control shadow-sm border-0 bg-light" placeholder="อย่างน้อย 8 ตัวอักษร" required>
+                            <input type="password" name="password" class="form-control shadow-sm border-0 bg-light"
+                                placeholder="อย่างน้อย 8 ตัวอักษร" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">ยืนยันรหัสผ่านใหม่</label>
-                            <input type="password" name="password_confirmation" class="form-control shadow-sm border-0 bg-light" placeholder="ระบุรหัสผ่านใหม่ซ้ำอีกครั้ง" required>
+                            <input type="password" name="password_confirmation"
+                                class="form-control shadow-sm border-0 bg-light"
+                                placeholder="ระบุรหัสผ่านใหม่ซ้ำอีกครั้ง" required>
                         </div>
                     </div>
                     <div class="modal-footer border-0 p-4 pt-0">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
-                        <button type="submit" class="btn text-white px-4 shadow-sm bg-gradient-primary-custom" style="border: none;">บันทึกการเปลี่ยนแปลง</button>
+                        <button type="submit" class="btn text-white px-4 shadow-sm bg-gradient-primary-custom"
+                            style="border: none;">บันทึกการเปลี่ยนแปลง</button>
                     </div>
                 </form>
             </div>
@@ -454,8 +532,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             var menuToggle = document.getElementById('menu-toggle');
             var wrapper = document.getElementById('wrapper');
-            
-            if(menuToggle) {
+
+            if (menuToggle) {
                 menuToggle.addEventListener('click', function(e) {
                     e.preventDefault();
                     wrapper.classList.toggle('toggled');
@@ -467,60 +545,69 @@
                 e.preventDefault();
                 const form = this;
                 const submitBtn = form.querySelector('button[type="submit"]');
-                
+
                 submitBtn.disabled = true;
                 const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>กำลังบันทึก...';
+                submitBtn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2"></span>กำลังบันทึก...';
 
-                fetch('{{ route("profile.password.update") }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(Object.fromEntries(new FormData(form)))
-                })
-                .then(response => response.json().then(data => ({ status: response.status, data })))
-                .then(({ status, data }) => {
-                    if (status === 200) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'สำเร็จ!',
-                            text: data.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
-                            if (modal) modal.hide();
-                            form.reset();
-                        });
-                    } else {
-                        let errorMsg = data.message;
-                        if (data.errors) {
-                            errorMsg = Object.values(data.errors).flat().join('\n');
+                fetch('{{ route('profile.password.update') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(Object.fromEntries(new FormData(form)))
+                    })
+                    .then(response => response.json().then(data => ({
+                        status: response.status,
+                        data
+                    })))
+                    .then(({
+                        status,
+                        data
+                    }) => {
+                        if (status === 200) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'สำเร็จ!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                const modal = bootstrap.Modal.getInstance(document
+                                    .getElementById('changePasswordModal'));
+                                if (modal) modal.hide();
+                                form.reset();
+                            });
+                        } else {
+                            let errorMsg = data.message;
+                            if (data.errors) {
+                                errorMsg = Object.values(data.errors).flat().join('\n');
+                            }
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: errorMsg
+                            });
                         }
+                    })
+                    .catch(error => {
                         Swal.fire({
                             icon: 'error',
-                            title: 'เกิดข้อผิดพลาด',
-                            text: errorMsg
+                            title: 'ข้อผิดพลาดระบบ',
+                            text: 'ไม่สามารถดำเนินการได้ในขณะนี้'
                         });
-                    }
-                })
-                .catch(error => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ข้อผิดพลาดระบบ',
-                        text: 'ไม่สามารถดำเนินการได้ในขณะนี้'
+                    })
+                    .finally(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
                     });
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                });
             });
         });
     </script>
     @stack('scripts')
 </body>
+
 </html>
