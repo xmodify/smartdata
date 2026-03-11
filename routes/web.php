@@ -102,6 +102,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/hosxp/diagnosis', [App\Http\Controllers\Hosxp\DiagnosisController::class, 'index'])->name('hosxp.diagnosis.index');
     Route::match(['get', 'post'], '/hosxp/diagnosis/{type}', [App\Http\Controllers\Hosxp\DiagnosisController::class, 'report'])->name('hosxp.diagnosis.report');
 
+    Route::resource('/skpcard', App\Http\Controllers\Smartdata\SkpcardController::class)->names([
+        'index' => 'skpcard.index',
+        'create' => 'skpcard.create',
+        'store' => 'skpcard.store',
+        'update' => 'skpcard.update',
+        'destroy' => 'skpcard.destroy',
+    ]);
+
     Route::resource('/admin/users', App\Http\Controllers\Admin\UserController::class)->names([
         'index' => 'admin.users.index',
         'create' => 'admin.users.create',

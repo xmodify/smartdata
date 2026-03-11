@@ -24,6 +24,13 @@ class User extends Authenticatable
         'username',
         'role',
         'active',
+        'allow_hosxp_report',
+        'allow_asset',
+        'allow_personnel',
+        'allow_incident',
+        'allow_skpcard',
+        'allow_audit',
+        'allow_assessment',
     ];
 
     /**
@@ -49,14 +56,39 @@ class User extends Authenticatable
         ];
     }
 
-    public function hasAccessHnplus()
+    public function hasAccessHosxpReport()
     {
-        return true; // Placeholder logic
+        return $this->role === 'admin' || $this->allow_hosxp_report === 'Y';
     }
 
-    public function hasAccessHrims()
+    public function hasAccessAsset()
     {
-        return true; // Placeholder logic
+        return $this->role === 'admin' || $this->allow_asset === 'Y';
+    }
+
+    public function hasAccessPersonnel()
+    {
+        return $this->role === 'admin' || $this->allow_personnel === 'Y';
+    }
+
+    public function hasAccessIncident()
+    {
+        return $this->role === 'admin' || $this->allow_incident === 'Y';
+    }
+
+    public function hasAccessSkpcard()
+    {
+        return $this->role === 'admin' || $this->allow_skpcard === 'Y';
+    }
+
+    public function hasAccessAudit()
+    {
+        return $this->role === 'admin' || $this->allow_audit === 'Y';
+    }
+
+    public function hasAccessAssessment()
+    {
+        return $this->role === 'admin' || $this->allow_assessment === 'Y';
     }
 
     public function hasAccessRole($role)

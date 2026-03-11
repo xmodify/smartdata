@@ -26,6 +26,7 @@
                         <th class="px-4 py-3">#</th>
                         <th>ชื่อ-นามสกุล</th>
                         <th>Username</th>
+                        <th>การเข้าถึงเมนู</th>
                         <th>สิทธิ์การใช้งาน</th>
                         <th>สถานะ</th>
                         <th class="text-center px-4">จัดการ</th>
@@ -40,6 +41,35 @@
                             <small class="text-muted">{{ $user->email }}</small>
                         </td>
                         <td><code>{{ $user->username }}</code></td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                @if($user->hasAccessHosxpReport())
+                                    <span class="badge bg-secondary-subtle text-indigo border border-indigo-subtle rounded-pill">รายงาน HOSxP</span>
+                                @endif
+                                @if($user->hasAccessAsset())
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">งานทรัพย์สิน</span>
+                                @endif
+                                @if($user->hasAccessPersonnel())
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">บุคลากร</span>
+                                @endif
+                                @if($user->hasAccessIncident())
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">อุบัติการณ์</span>
+                                @endif
+                                @if($user->hasAccessSkpcard())
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">บัตรสังฆะประชาร่วมใจ</span>
+                                @endif
+                                @if($user->hasAccessAudit())
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">ระบบตรวจสอบ</span>
+                                @endif
+                                @if($user->hasAccessAssessment())
+                                    <span class="badge bg-success-subtle text-indigo border border-indigo-subtle rounded-pill">แบบประเมิน</span>
+                                @endif
+                                
+                                @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessAudit() && !$user->hasAccessAssessment())
+                                    <span class="text-muted small">ไม่มีสิทธิ์เข้าถึง</span>
+                                @endif
+                            </div>
+                        </td>
                         <td>
                             @if($user->role === 'admin')
                                 <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Administrator</span>
@@ -98,6 +128,14 @@
             document.getElementById('edit_username').value = user.username;
             document.getElementById('edit_role').value = user.role;
             document.getElementById('edit_active').checked = !!user.active;
+
+            document.getElementById('edit_allow_hosxp_report').checked = user.allow_hosxp_report === 'Y';
+            document.getElementById('edit_allow_asset').checked = user.allow_asset === 'Y';
+            document.getElementById('edit_allow_personnel').checked = user.allow_personnel === 'Y';
+            document.getElementById('edit_allow_incident').checked = user.allow_incident === 'Y';
+            document.getElementById('edit_allow_skpcard').checked = user.allow_skpcard === 'Y';
+            document.getElementById('edit_allow_audit').checked = user.allow_audit === 'Y';
+            document.getElementById('edit_allow_assessment').checked = user.allow_assessment === 'Y';
         });
     });
 

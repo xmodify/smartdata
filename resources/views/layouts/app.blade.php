@@ -321,6 +321,7 @@
                 </a>
 
                 @auth
+                @if(auth()->user()->hasAccessHosxpReport())
                     <div class="sidebar-section-header">รายงาน HOSxP</div>
 
                     <a href="{{ route('hosxp.stats.index') }}"
@@ -378,6 +379,7 @@
                             </a>
                         </div>
                     </div>
+                @endif
 
                     <!-- HOSxP Setting Menu -->
                     <a href="{{ url('/hosxp_setting') }}"
@@ -385,38 +387,54 @@
                         <i class="fas fa-database me-2" style="color: #4e73df;"></i> ข้อมูลพื้นฐาน HOSxP
                     </a>
 
-                    <div class="sidebar-section-header">รายงาน BackOffice</div>
-                    <a href="{{ url('/backoffice_hrd') }}"
-                        class="list-group-item list-group-item-action bg-transparent text-dark">
-                        <i class="fas fa-id-card me-2" style="color: #1cc88a;"></i> งานบุคลากร
-                    </a>
-                    <a href="{{ url('/backoffice_asset') }}"
-                        class="list-group-item list-group-item-action bg-transparent text-dark">
-                        <i class="fas fa-boxes-stacked me-2" style="color: #4e73df;"></i> งานทรัพย์สิน
-                    </a>
-                    <a href="{{ url('/backoffice_risk') }}"
-                        class="list-group-item list-group-item-action bg-transparent text-dark">
-                        <i class="fas fa-triangle-exclamation me-2" style="color: #e74a3b;"></i> รายงานอุบัติการณ์
-                    </a>
+                    @if(auth()->user()->hasAccessPersonnel() || auth()->user()->hasAccessAsset() || auth()->user()->hasAccessIncident())
+                        <div class="sidebar-section-header">รายงาน BackOffice</div>
+                        @if(auth()->user()->hasAccessPersonnel())
+                            <a href="{{ url('/backoffice_hrd') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-id-card me-2" style="color: #1cc88a;"></i> งานบุคลากร
+                            </a>
+                        @endif
+                        @if(auth()->user()->hasAccessAsset())
+                            <a href="{{ url('/backoffice_asset') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-boxes-stacked me-2" style="color: #4e73df;"></i> งานทรัพย์สิน
+                            </a>
+                        @endif
+                        @if(auth()->user()->hasAccessIncident())
+                            <a href="{{ url('/backoffice_risk') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-triangle-exclamation me-2" style="color: #e74a3b;"></i> รายงานอุบัติการณ์
+                            </a>
+                        @endif
+                    @endif
 
-                    <div class="sidebar-section-header">ระบบ SmartData</div>
-                    <a href="{{ url('/skpcard') }}"
-                        class="list-group-item list-group-item-action bg-transparent text-dark">
-                        <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆประชาร่วมใจ
-                    </a>
-                    <a href="{{ url('/form') }}"
-                        class="list-group-item list-group-item-action bg-transparent text-dark">
-                        <i class="fas fa-check-to-slot me-2" style="color: #6610f2;"></i> ระบบตรวจสอบ
-                    </a>
-                    <a href="{{ url('/form') }}"
-                        class="list-group-item list-group-item-action bg-transparent text-dark">
-                        <i class="fas fa-clipboard-check me-2" style="color: #20c997;"></i> แบบประเมิน
-                    </a>
+                    @if(auth()->user()->hasAccessSkpcard() || auth()->user()->hasAccessAudit() || auth()->user()->hasAccessAssessment())
+                        <div class="sidebar-section-header">ระบบ SmartData</div>
+                        @if(auth()->user()->hasAccessSkpcard())
+                            <a href="{{ url('/skpcard') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆะประชาร่วมใจ
+                            </a>
+                        @endif
+                        @if(auth()->user()->hasAccessAudit())
+                            <a href="{{ url('/form') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-check-to-slot me-2" style="color: #6610f2;"></i> ระบบตรวจสอบ
+                            </a>
+                        @endif
+                        @if(auth()->user()->hasAccessAssessment())
+                            <a href="{{ url('/form') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-clipboard-check me-2" style="color: #20c997;"></i> แบบประเมิน
+                            </a>
+                        @endif
+                    @endif
                 @endauth
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-02-20 13.30
+                V. 69-03-12 10.00
             </div>
         </div>
         <!-- /#sidebar-wrapper -->
@@ -539,6 +557,26 @@
                     wrapper.classList.toggle('toggled');
                 });
             }
+
+            // Global Session Messages
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ',
+                    text: "{{ session('success') }}",
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ข้อผิดพลาด',
+                    text: "{{ session('error') }}",
+                    confirmButtonText: 'ตกลง'
+                });
+            @endif
 
             // Password Change Form Handling
             document.getElementById('changePasswordForm')?.addEventListener('submit', function(e) {

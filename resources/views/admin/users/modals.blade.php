@@ -40,6 +40,54 @@
                                 <label class="form-check-label fw-bold small" for="activeAdd">เปิดใช้งานบัญชี</label>
                             </div>
                         </div>
+                        <div class="col-md-12">
+                            <hr class="my-2">
+                            <label class="form-label fw-bold small text-muted mb-2">สิทธิ์การเข้าถึงเมนู (BackOffice)</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_hosxp_report" value="Y" id="add_allow_hosxp_report">
+                                        <label class="form-check-label small" for="add_allow_hosxp_report">รายงาน HOSxP</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_asset" value="Y" id="add_allow_asset">
+                                        <label class="form-check-label small" for="add_allow_asset">งานทรัพย์สิน</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_personnel" value="Y" id="add_allow_personnel">
+                                        <label class="form-check-label small" for="add_allow_personnel">บุคลากร</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_incident" value="Y" id="add_allow_incident">
+                                        <label class="form-check-label small" for="add_allow_incident">อุบัติการณ์</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_skpcard" value="Y" id="add_allow_skpcard">
+                                        <label class="form-check-label small" for="add_allow_skpcard">บัตรสังฆะประชาร่วมใจ</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_audit" value="Y" id="add_allow_audit">
+                                        <label class="form-check-label small" for="add_allow_audit">ระบบตรวจสอบ</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_assessment" value="Y" id="add_allow_assessment">
+                                        <label class="form-check-label small" for="add_allow_assessment">แบบประเมิน</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
@@ -92,6 +140,54 @@
                                 <input type="hidden" name="active" value="0">
                                 <input name="active" value="1" class="form-check-input" type="checkbox" role="switch" id="edit_active">
                                 <label class="form-check-label fw-bold small" for="edit_active">เปิดใช้งานบัญชี</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <hr class="my-2">
+                            <label class="form-label fw-bold small text-muted mb-2">สิทธิ์การเข้าถึงเมนู (BackOffice)</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_hosxp_report" value="Y" id="edit_allow_hosxp_report">
+                                        <label class="form-check-label small" for="edit_allow_hosxp_report">รายงาน HOSxP</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_asset" value="Y" id="edit_allow_asset">
+                                        <label class="form-check-label small" for="edit_allow_asset">งานทรัพย์สิน</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_personnel" value="Y" id="edit_allow_personnel">
+                                        <label class="form-check-label small" for="edit_allow_personnel">บุคลากร</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_incident" value="Y" id="edit_allow_incident">
+                                        <label class="form-check-label small" for="edit_allow_incident">อุบัติการณ์</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_skpcard" value="Y" id="edit_allow_skpcard">
+                                        <label class="form-check-label small" for="edit_allow_skpcard">บัตรสังฆะประชาร่วมใจ</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_audit" value="Y" id="edit_allow_audit">
+                                        <label class="form-check-label small" for="edit_allow_audit">ระบบตรวจสอบ</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_assessment" value="Y" id="edit_allow_assessment">
+                                        <label class="form-check-label small" for="edit_allow_assessment">แบบประเมิน</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

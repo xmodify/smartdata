@@ -113,6 +113,26 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Global Session Messages
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ',
+                text: "{{ session('success') }}",
+                timer: 2500,
+                showConfirmButton: false
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'ข้อผิดพลาด',
+                text: "{{ session('error') }}",
+                confirmButtonText: 'ตกลง'
+            });
+        @endif
+
         document.getElementById('changePasswordForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
             const form = this;

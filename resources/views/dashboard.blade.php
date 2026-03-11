@@ -56,15 +56,17 @@
                     <div class="row g-3">
                         @php
                             $supportItems = [
-                                ['url' => '/backoffice_asset', 'label' => 'งานทรัพย์สิน', 'icon' => 'fa-boxes-stacked', 'color' => '#4e73df'],
-                                ['url' => '/backoffice_hrd', 'label' => 'บุคลากร', 'icon' => 'fa-id-card', 'color' => '#1cc88a'],
-                                ['url' => '/backoffice_risk', 'label' => 'ความเสี่ยง', 'icon' => 'fa-triangle-exclamation', 'color' => '#e74a3b'],
-                                ['url' => '/skpcard', 'label' => 'บัตรสังฆประชาร่วมใจ', 'icon' => 'fa-address-card', 'color' => '#f6c23e'],
-                                ['url' => '/form', 'label' => 'ระบบตรวจสอบ|ประเมิน', 'icon' => 'fa-check-to-slot', 'color' => '#6610f2'],
+                                ['url' => '/backoffice_asset', 'label' => 'งานทรัพย์สิน', 'icon' => 'fa-boxes-stacked', 'color' => '#4e73df', 'permission' => 'hasAccessAsset'],
+                                ['url' => '/backoffice_hrd', 'label' => 'บุคลากร', 'icon' => 'fa-id-card', 'color' => '#1cc88a', 'permission' => 'hasAccessPersonnel'],
+                                ['url' => '/backoffice_risk', 'label' => 'อุบัติการณ์', 'icon' => 'fa-triangle-exclamation', 'color' => '#e74a3b', 'permission' => 'hasAccessIncident'],
+                                ['url' => '/skpcard', 'label' => 'บัตรสังฆะประชาร่วมใจ', 'icon' => 'fa-address-card', 'color' => '#f6c23e', 'permission' => 'hasAccessSkpcard'],
+                                ['url' => '/form', 'label' => 'ระบบตรวจสอบ', 'icon' => 'fa-check-to-slot', 'color' => '#6610f2', 'permission' => 'hasAccessAudit'],
+                                ['url' => '/form', 'label' => 'แบบประเมิน', 'icon' => 'fa-clipboard-check', 'color' => '#20c997', 'permission' => 'hasAccessAssessment'],
                             ];
                         @endphp
 
                         @foreach($supportItems as $item)
+                        @if(auth()->user()->{$item['permission']}())
                         <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                             <a href="{{ url($item['url']) }}" class="text-decoration-none transition-hover h-100 d-block">
                                 <div class="card h-100 border-0 shadow text-center p-2" style="border-radius: 12px; background: #fff;">
@@ -75,6 +77,7 @@
                                 </div>
                             </a>
                         </div>
+                        @endif
                         @endforeach
                     </div>
                 </div>

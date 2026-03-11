@@ -32,11 +32,22 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
             'role' => 'required|string|in:admin,user',
             'active' => 'required|boolean',
+            'allow_asset' => 'nullable|string|in:Y,N',
+            'allow_personnel' => 'nullable|string|in:Y,N',
+            'allow_incident' => 'nullable|string|in:Y,N',
+            'allow_skpcard' => 'nullable|string|in:Y,N',
+            'allow_audit' => 'nullable|string|in:Y,N',
         ]);
+
+        $validated['allow_asset'] = $request->has('allow_asset') ? 'Y' : 'N';
+        $validated['allow_personnel'] = $request->has('allow_personnel') ? 'Y' : 'N';
+        $validated['allow_incident'] = $request->has('allow_incident') ? 'Y' : 'N';
+        $validated['allow_skpcard'] = $request->has('allow_skpcard') ? 'Y' : 'N';
+        $validated['allow_audit'] = $request->has('allow_audit') ? 'Y' : 'N';
 
         User::create($validated);
 
-        return redirect()->route('admin.dashboard')->with('success', 'User created successfully.');
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
 
     /**
@@ -51,15 +62,26 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8',
             'role' => 'required|string|in:admin,user',
             'active' => 'required|boolean',
+            'allow_asset' => 'nullable|string|in:Y,N',
+            'allow_personnel' => 'nullable|string|in:Y,N',
+            'allow_incident' => 'nullable|string|in:Y,N',
+            'allow_skpcard' => 'nullable|string|in:Y,N',
+            'allow_audit' => 'nullable|string|in:Y,N',
         ]);
 
         if (empty($validated['password'])) {
             unset($validated['password']);
         }
 
+        $validated['allow_asset'] = $request->has('allow_asset') ? 'Y' : 'N';
+        $validated['allow_personnel'] = $request->has('allow_personnel') ? 'Y' : 'N';
+        $validated['allow_incident'] = $request->has('allow_incident') ? 'Y' : 'N';
+        $validated['allow_skpcard'] = $request->has('allow_skpcard') ? 'Y' : 'N';
+        $validated['allow_audit'] = $request->has('allow_audit') ? 'Y' : 'N';
+
         $user->update($validated);
 
-        return redirect()->route('admin.dashboard')->with('success', 'User updated successfully.');
+        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
 
     /**
@@ -73,6 +95,6 @@ class UserController extends Controller
 
         $user->delete();
 
-        return redirect()->route('admin.dashboard')->with('success', 'User deleted successfully.');
+        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
 }
