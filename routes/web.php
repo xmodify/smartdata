@@ -16,6 +16,11 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Moph Notify Service Routes (Public for Task Scheduler)
+Route::post('/moph-notify/night', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_night']);
+Route::post('/moph-notify/morning', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_morning']);
+Route::post('/moph-notify/afternoon', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_afternoon']);
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 

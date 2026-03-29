@@ -118,7 +118,15 @@
                                     @foreach($mophNotifies as $moph)
                                     <tr>
                                         <td>
-                                            <div class="fw-bold small">{{ $moph->name }}</div>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-light text-dark border me-2 xsmall fw-normal" style="font-size: 0.65rem;">#{{ $moph->id }}</span>
+                                                <div class="fw-bold small">{{ $moph->name }}</div>
+                                                @if($moph->active === 'Y')
+                                                    <span class="badge bg-success ms-2 xsmall shadow-sm" style="font-size: 0.65rem;"><i class="fas fa-check-circle me-1"></i>Active</span>
+                                                @else
+                                                    <span class="badge bg-secondary ms-2 xsmall shadow-sm" style="font-size: 0.65rem;"><i class="fas fa-times-circle me-1"></i>Inactive</span>
+                                                @endif
+                                            </div>
                                             <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
                                                 <div class="d-flex align-items-center me-2">
                                                     <span class="xsmall text-muted me-1">ClientID:</span>
@@ -155,6 +163,34 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                        
+                        <!-- Task Scheduler Help -->
+                        <div class="mt-4 pt-3 border-top">
+                            <h6 class="fw-bold mb-3 small text-muted"><i class="fas fa-clock me-2"></i> ตัวอย่างคำสั่ง Windows Task Scheduler (รายเวร)</h6>
+                            @php
+                                $shifts = [
+                                    ['label' => 'ดึก (00-08)', 'slug' => 'night', 'color' => 'dark'],
+                                    ['label' => 'เช้า (08-16)', 'slug' => 'morning', 'color' => 'primary'],
+                                    ['label' => 'บ่าย (16-24)', 'slug' => 'afternoon', 'color' => 'info']
+                                ];
+                            @endphp
+                            <div class="row g-2">
+                                @foreach($shifts as $shift)
+                                <div class="col-12 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-{{ $shift['color'] }} xsmall" style="font-size: 0.65rem;">เวร{{ $shift['label'] }}</span>
+                                        <button class="btn btn-link btn-xs text-muted p-0 text-decoration-none" type="button" onclick="copyText('cmd_{{ $shift['slug'] }}')">
+                                            <i class="fas fa-copy me-1"></i> คัดลอกคำสั่ง (Copy)
+                                        </button>
+                                    </div>
+                                    <div class="bg-dark text-light p-3 rounded xsmall shadow-sm" id="cmd_{{ $shift['slug'] }}" style="font-size: 0.75rem; white-space: pre-wrap; font-family: monospace;">-ExecutionPolicy Bypass -WindowStyle Hidden -Command "Invoke-RestMethod -Uri '{{ url('/') }}/moph-notify/{{ $shift['slug'] }}' -Method Post"</div>
+                                </div>
+                                @endforeach
+                            </div>
+                            <p class="xsmall text-muted mt-2 mb-0">
+                                <i class="fas fa-info-circle me-1"></i> ใช้คู่กับโปรแกรม <code>powershell.exe</code> ในส่วน Action ของ Task Scheduler
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -252,8 +288,11 @@
                 @method('PUT')
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">ชื่อรายการ</label>
-                        <input type="text" id="moph_name" class="form-control shadow-sm bg-light" readonly disabled>
+                        <label class="form-label fw-bold small">ID / รายการ</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light text-muted border-end-0 xsmall">#<span id="moph_id_label"></span></span>
+                            <input type="text" id="moph_name" class="form-control shadow-sm bg-light" readonly disabled>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Client ID</label>
@@ -271,6 +310,12 @@
                             <button class="btn btn-outline-secondary toggle-password" type="button" data-target="moph_secret_edit">
                                 <i class="fas fa-eye"></i>
                             </button>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="active" id="moph_active_edit" value="1">
+                            <label class="form-check-label fw-bold small ms-1" for="moph_active_edit">เปิดใช้งาน (Enable Notification)</label>
                         </div>
                     </div>
                 </div>
@@ -377,9 +422,11 @@
             const moph = JSON.parse(this.dataset.moph);
             const form = document.getElementById('editMophForm');
             form.action = `{{ url('/') }}/admin/moph-notify/${moph.id}`;
+            document.getElementById('moph_id_label').innerText = moph.id;
             document.getElementById('moph_name').value = moph.name;
             document.getElementById('moph_client_id_edit').value = moph.client_id;
             document.getElementById('moph_secret_edit').value = moph.secret;
+            document.getElementById('moph_active_edit').checked = moph.active === 'Y';
         });
     });
 
@@ -455,6 +502,42 @@
             }
         });
     });
+
+    // Copy to Clipboard (Updated for Pre/Code)
+    function copyText(id) {
+        const element = document.getElementById(id);
+        const text = element.innerText;
+        
+        const tempInput = document.createElement("textarea");
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        
+        // Visual feedback
+        const btn = element.nextElementSibling;
+        const icon = btn.querySelector('i');
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.add('text-success', 'border-success');
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'คัดลอกคำสั่งสำเร็จ!',
+            text: 'คุณสามารถนำไปวางใน Task Scheduler ได้ทันที',
+            timer: 1500,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('text-success', 'border-success');
+        }, 2000);
+    }
 </script>
 @endpush
 @endsection

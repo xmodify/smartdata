@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('client_id')->nullable();
             $table->string('secret')->nullable();
+            $table->char('active', 1)->default('Y');
             $table->timestamps();
         });
     }

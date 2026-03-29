@@ -81,6 +81,13 @@ class StructureController extends Controller
             $output = new BufferedOutput();
             Artisan::call('migrate', [], $output);
 
+            // Ensure active column exists if the table was created before this update
+            if (Schema::hasTable('moph_notify') && !Schema::hasColumn('moph_notify', 'active')) {
+                Schema::table('moph_notify', function ($table) {
+                    $table->char('active', 1)->default('Y')->after('secret');
+                });
+            }
+
             // Sync Moph Notify Records (From User Screenshot)
             if (Schema::hasTable('moph_notify')) {
                 $mophRecords = [
@@ -150,6 +157,9 @@ class StructureController extends Controller
             'client_id' => 'nullable|string',
             'secret' => 'nullable|string',
         ]);
+
+        // Handle checkbox (send 'Y' or 'N' instead of boolean)
+        $validated['active'] = $request->has('active') ? 'Y' : 'N';
 
         $mophNotify->update($validated);
 

@@ -321,65 +321,65 @@
                 </a>
 
                 @auth
-                @if(auth()->user()->hasAccessHosxpReport())
-                    <div class="sidebar-section-header">รายงาน HOSxP</div>
+                    @if(auth()->user()->hasAccessHosxpReport())
+                        <div class="sidebar-section-header">รายงาน HOSxP</div>
 
-                    <a href="{{ route('hosxp.stats.index') }}"
-                        class="list-group-item list-group-item-action bg-transparent text-dark">
-                        <i class="fas fa-file-waveform me-2" style="color: #4e73df;"></i> ข้อมูลและสถิติ
-                    </a>
-
-
-                    <!-- Major Disease Menu -->
-                    <div class="sidebar-dropdown">
-                        <a href="javascript:void(0)"
-                            class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle"
-                            data-bs-toggle="collapse" data-bs-target="#diagnosisSubmenu" aria-expanded="false">
-                            <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
+                        <a href="{{ route('hosxp.stats.index') }}"
+                            class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <i class="fas fa-file-waveform me-2" style="color: #4e73df;"></i> ข้อมูลและสถิติ
                         </a>
-                        <div class="collapse sidebar-submenu" id="diagnosisSubmenu"
-                            style="background-color: #f8f9fc !important;">
-                            <a href="{{ route('hosxp.diagnosis.index', ['category' => 'opd']) }}"
-                                class="list-group-item list-group-item-action bg-transparent text-dark py-2">
-                                <i class="fas fa-user-nurse me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก OPD
-                            </a>
-                            <a href="{{ route('hosxp.diagnosis.index', ['category' => 'ipd']) }}"
-                                class="list-group-item list-group-item-action bg-transparent text-dark">
-                                <i class="fas fa-bed-pulse me-2" style="color: #1cc88a;"></i> ผู้ป่วยใน IPD
-                            </a>
-                            <a href="{{ route('hosxp.diagnosis.index', ['category' => 'refer']) }}"
-                                class="list-group-item list-group-item-action bg-transparent text-dark">
-                                <i class="fas fa-ambulance me-2" style="color: #e74a3b;"></i> ผู้ป่วยส่งต่อ Refer
-                            </a>
-                        </div>
-                    </div>
 
-                    <!-- Dashboard Menu -->
-                    <div class="sidebar-dropdown">
-                        <a href="javascript:void(0)"
-                            class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle"
-                            data-bs-toggle="collapse" data-bs-target="#dashboardSubmenu" aria-expanded="false">
-                            <i class="fas fa-chart-line" style="color: #6610f2;"></i> Dashboard
-                        </a>
-                        <div class="collapse sidebar-submenu" id="dashboardSubmenu">
-                            <a href="{{ url('/dashboard/opd_mornitor') }}"
-                                class="list-group-item list-group-item-action bg-transparent text-dark py-2"
-                                target="_blank">
-                                <i class="fas fa-desktop me-2" style="color: #4e73df;"></i> OPD Monitor
+
+                        <!-- Major Disease Menu -->
+                        <div class="sidebar-dropdown">
+                            <a href="javascript:void(0)"
+                                class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle"
+                                data-bs-toggle="collapse" data-bs-target="#diagnosisSubmenu" aria-expanded="false">
+                                <i class="fas fa-virus" style="color: #e74a3b;"></i> รายโรคสำคัญ
                             </a>
-                            <a href="{{ url('/dashboard/ipd_mornitor') }}"
-                                class="list-group-item list-group-item-action bg-transparent text-dark py-2"
-                                target="_blank">
-                                <i class="fas fa-procedures me-2" style="color: #1cc88a;"></i> IPD Monitor
-                            </a>
-                            <a href="{{ url('/dashboard/digitalhealth') }}"
-                                class="list-group-item list-group-item-action bg-transparent text-dark py-2"
-                                target="_blank">
-                                <i class="fas fa-hand-holding-medical me-2" style="color: #36b9cc;"></i> นโยบาย 30 บาท
-                            </a>
+                            <div class="collapse sidebar-submenu" id="diagnosisSubmenu"
+                                style="background-color: #f8f9fc !important;">
+                                <a href="{{ route('hosxp.diagnosis.index', ['category' => 'opd']) }}"
+                                    class="list-group-item list-group-item-action bg-transparent text-dark py-2">
+                                    <i class="fas fa-user-nurse me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก OPD
+                                </a>
+                                <a href="{{ route('hosxp.diagnosis.index', ['category' => 'ipd']) }}"
+                                    class="list-group-item list-group-item-action bg-transparent text-dark">
+                                    <i class="fas fa-bed-pulse me-2" style="color: #1cc88a;"></i> ผู้ป่วยใน IPD
+                                </a>
+                                <a href="{{ route('hosxp.diagnosis.index', ['category' => 'refer']) }}"
+                                    class="list-group-item list-group-item-action bg-transparent text-dark">
+                                    <i class="fas fa-ambulance me-2" style="color: #e74a3b;"></i> ผู้ป่วยส่งต่อ Refer
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                @endif
+
+                        <!-- Dashboard Menu -->
+                        <div class="sidebar-dropdown">
+                            <a href="javascript:void(0)"
+                                class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle"
+                                data-bs-toggle="collapse" data-bs-target="#dashboardSubmenu" aria-expanded="false">
+                                <i class="fas fa-chart-line" style="color: #6610f2;"></i> Dashboard
+                            </a>
+                            <div class="collapse sidebar-submenu" id="dashboardSubmenu">
+                                <a href="{{ url('/dashboard/opd_mornitor') }}"
+                                    class="list-group-item list-group-item-action bg-transparent text-dark py-2"
+                                    target="_blank">
+                                    <i class="fas fa-desktop me-2" style="color: #4e73df;"></i> OPD Monitor
+                                </a>
+                                <a href="{{ url('/dashboard/ipd_mornitor') }}"
+                                    class="list-group-item list-group-item-action bg-transparent text-dark py-2"
+                                    target="_blank">
+                                    <i class="fas fa-procedures me-2" style="color: #1cc88a;"></i> IPD Monitor
+                                </a>
+                                <a href="{{ url('/dashboard/digitalhealth') }}"
+                                    class="list-group-item list-group-item-action bg-transparent text-dark py-2"
+                                    target="_blank">
+                                    <i class="fas fa-hand-holding-medical me-2" style="color: #36b9cc;"></i> นโยบาย 30 บาท
+                                </a>
+                            </div>
+                        </div>
+                    @endif
 
                     <!-- HOSxP Setting Menu -->
                     <a href="{{ url('/hosxp_setting') }}"
@@ -412,20 +412,17 @@
                     @if(auth()->user()->hasAccessSkpcard() || auth()->user()->hasAccessAudit() || auth()->user()->hasAccessAssessment())
                         <div class="sidebar-section-header">ระบบ SmartData</div>
                         @if(auth()->user()->hasAccessSkpcard())
-                            <a href="{{ url('/skpcard') }}"
-                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <a href="{{ url('/skpcard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆะประชาร่วมใจ
                             </a>
                         @endif
                         @if(auth()->user()->hasAccessAudit())
-                            <a href="{{ url('/form') }}"
-                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <a href="{{ url('/form') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-check-to-slot me-2" style="color: #6610f2;"></i> ระบบตรวจสอบ
                             </a>
                         @endif
                         @if(auth()->user()->hasAccessAssessment())
-                            <a href="{{ url('/form') }}"
-                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <a href="{{ url('/form') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-clipboard-check me-2" style="color: #20c997;"></i> แบบประเมิน
                             </a>
                         @endif
@@ -434,7 +431,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-03-29 16:00
+                V. 69-03-30 00:15
             </div>
         </div>
         <!-- /#sidebar-wrapper -->
@@ -443,8 +440,7 @@
         <div id="page-content-wrapper">
             <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary-custom navbar-custom">
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-link text-white" id="menu-toggle"
-                        style="z-index: 1001; position: relative;">
+                    <button class="btn btn-link text-white" id="menu-toggle" style="z-index: 1001; position: relative;">
                         <i class="fas fa-bars fa-lg"></i>
                     </button>
                     <div class="ms-3">
@@ -455,9 +451,8 @@
                 <div class="d-flex align-items-center">
                     @auth
                         <div class="dropdown">
-                            <a class="nav-link dropdown-toggle text-white fw-bold d-flex align-items-center"
-                                href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
+                            <a class="nav-link dropdown-toggle text-white fw-bold d-flex align-items-center" href="#"
+                                id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user-circle fa-lg me-2 text-white-50"></i>
                                 {{ Auth::user()->name }}
                             </a>
@@ -547,12 +542,12 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var menuToggle = document.getElementById('menu-toggle');
             var wrapper = document.getElementById('wrapper');
 
             if (menuToggle) {
-                menuToggle.addEventListener('click', function(e) {
+                menuToggle.addEventListener('click', function (e) {
                     e.preventDefault();
                     wrapper.classList.toggle('toggled');
                 });
@@ -579,7 +574,7 @@
             @endif
 
             // Password Change Form Handling
-            document.getElementById('changePasswordForm')?.addEventListener('submit', function(e) {
+            document.getElementById('changePasswordForm')?.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const form = this;
                 const submitBtn = form.querySelector('button[type="submit"]');
@@ -590,14 +585,14 @@
                     '<span class="spinner-border spinner-border-sm me-2"></span>กำลังบันทึก...';
 
                 fetch('{{ route('profile.password.update') }}', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(Object.fromEntries(new FormData(form)))
-                    })
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(Object.fromEntries(new FormData(form)))
+                })
                     .then(response => response.json().then(data => ({
                         status: response.status,
                         data
