@@ -56,9 +56,9 @@
             </div>
         </div>
 
-        <!-- System Variables Card -->
-        <div class="col-md-8">
-            <div class="card border-0 shadow-sm rounded-lg p-4 h-100">
+        <!-- System Variables Card (Full Width) -->
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm rounded-lg p-4 mb-4">
                 <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-cog me-2"></i> ตัวแปรระบบ (System Variables)</h5>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover align-middle border-0">
@@ -70,7 +70,11 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $notifyKeys = ['telegram_token', 'telegram_chat_id_register', 'moph_notify_secret', 'moph_notify_client_id'];
+                            @endphp
                             @foreach($sysVars as $var)
+                            @if(!in_array($var->sys_name, $notifyKeys))
                             <tr>
                                 <td>
                                     <div class="fw-bold small">{{ $var->sys_name_th }}</div>
@@ -88,23 +92,121 @@
                                     </button>
                                 </td>
                             </tr>
+                            @endif
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
 
-        <!-- System Info Card -->
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-lg p-4 bg-light h-100">
-                <h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-primary"></i> System Info</h5>
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-3 text-sm"><span class="text-muted d-block small">Laravel Version:</span> <strong>{{ app()->version() }}</strong></li>
-                    <li class="mb-3 text-sm"><span class="text-muted d-block small">PHP Version:</span> <strong>{{ PHP_VERSION }}</strong></li>
-                    <li class="mb-3 text-sm"><span class="text-muted d-block small">Environment:</span> <span class="badge bg-dark rounded-pill">{{ config('app.env') }}</span></li>
-                    <li class="text-sm"><span class="text-muted d-block small">Server Time:</span> <strong>{{ now()->format('Y-m-d H:i:s') }}</strong></li>
-                </ul>
+            <div class="row">
+                <!-- Moph Notify Settings (Left 50%) -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-lg p-4 mb-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-bell me-2"></i> Moph Notify Settings</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle border-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="border-0 small">ชื่อรายการ</th>
+                                        <th class="border-0 small text-center">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($mophNotifies as $moph)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold small">{{ $moph->name }}</div>
+                                            <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                                                <div class="d-flex align-items-center me-2">
+                                                    <span class="xsmall text-muted me-1">ClientID:</span>
+                                                    <span id="moph_client_id_{{ $moph->id }}" class="small text-truncate" style="max-width: 120px;">********</span>
+                                                    <button class="btn btn-link btn-xs p-0 ms-1 toggle-moph-value" 
+                                                        data-id="{{ $moph->id }}" 
+                                                        data-type="client_id"
+                                                        data-value="{{ $moph->client_id }}">
+                                                        <i class="fas fa-eye small"></i>
+                                                    </button>
+                                                </div>
+                                                <span class="text-muted small">|</span>
+                                                <div class="d-flex align-items-center ms-2">
+                                                    <span class="xsmall text-muted me-1">Secret:</span>
+                                                    <span id="moph_secret_{{ $moph->id }}" class="small text-truncate" style="max-width: 120px;">********</span>
+                                                    <button class="btn btn-link btn-xs p-0 ms-1 toggle-moph-value" 
+                                                        data-id="{{ $moph->id }}" 
+                                                        data-type="secret"
+                                                        data-value="{{ $moph->secret }}">
+                                                        <i class="fas fa-eye small"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-outline-primary btn-xs edit-moph" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editMophModal"
+                                                data-moph="{{ json_encode($moph) }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telegram Notify Settings (Right 50%) -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-lg p-4 mb-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0 text-primary"><i class="fab fa-telegram me-2"></i> Telegram Notify Settings</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle border-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="border-0 small">ชื่อรายการ</th>
+                                        <th class="border-0 small text-center">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($telegramNotifies as $tele)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold small">{{ $tele->name_th }}</div>
+                                            <code class="xsmall text-muted">{{ $tele->name }}</code>
+                                            <div class="mt-1 d-flex align-items-center">
+                                                <span class="xsmall text-muted me-2">Value:</span>
+                                                <span id="tele_val_display_{{ $loop->index }}" class="small text-truncate" style="max-width: 200px;">
+                                                    {{ $tele->name == 'telegram_bot_token' ? '********' : ($tele->value ?: '(ว่าง)') }}
+                                                </span>
+                                                <button class="btn btn-link btn-xs p-0 ms-2 toggle-tele-value" 
+                                                    data-index="{{ $loop->index }}" 
+                                                    data-value="{{ $tele->value }}"
+                                                    data-masked="{{ $tele->name == 'telegram_bot_token' ? 'true' : 'false' }}">
+                                                    <i class="fas fa-eye small"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-outline-primary btn-xs edit-tele" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editTelegramModal"
+                                                data-tele="{{ json_encode($tele) }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -136,7 +238,89 @@
         </div>
     </div>
 </div>
-@endsection
+
+<!-- Edit Moph Notify Modal -->
+<div class="modal fade" id="editMophModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-bell me-2"></i>แก้ไข Moph Notify</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editMophForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">ชื่อรายการ</label>
+                        <input type="text" id="moph_name" class="form-control shadow-sm bg-light" readonly disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Client ID</label>
+                        <div class="input-group">
+                            <input type="password" name="client_id" id="moph_client_id_edit" class="form-control shadow-sm">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="moph_client_id_edit">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Secret Key</label>
+                        <div class="input-group">
+                            <input type="password" name="secret" id="moph_secret_edit" class="form-control shadow-sm">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="moph_secret_edit">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Telegram Notify Modal -->
+<div class="modal fade" id="editTelegramModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fab fa-telegram me-2"></i>แก้ไข Telegram Notify</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editTelegramForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">ชื่อรายการ (Thai)</label>
+                        <input type="text" name="name_th" id="tele_name_th" class="form-control shadow-sm">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Key (Reference Name)</label>
+                        <input type="text" id="tele_name" class="form-control shadow-sm bg-light" readonly disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small" id="tele_value_label">ค่าที่ระบุ</label>
+                        <div class="input-group">
+                            <input type="password" name="value" id="tele_value_edit" class="form-control shadow-sm">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="tele_value_edit">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
 <script>
@@ -164,7 +348,7 @@
             e.preventDefault();
             Swal.fire({
                 title: 'ยืนยันการอัปเกรดฐานข้อมูล?',
-                text: "ระบบจะดำเนินการรัน Migration เพื่ออัปเดตโครงสร้างฐานข้อมูล",
+                text: "ระบบจะดำเนินการรัน Migration และ Sync ข้อมูล Notify",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0d6efd',
@@ -186,5 +370,91 @@
             document.getElementById('edit_sys_value').value = sysVar.sys_value;
         });
     });
+
+    // Edit Moph Modal Population
+    document.querySelectorAll('.edit-moph').forEach(button => {
+        button.addEventListener('click', function() {
+            const moph = JSON.parse(this.dataset.moph);
+            const form = document.getElementById('editMophForm');
+            form.action = `{{ url('/') }}/admin/moph-notify/${moph.id}`;
+            document.getElementById('moph_name').value = moph.name;
+            document.getElementById('moph_client_id_edit').value = moph.client_id;
+            document.getElementById('moph_secret_edit').value = moph.secret;
+        });
+    });
+
+    // Edit Telegram Modal Population
+    document.querySelectorAll('.edit-tele').forEach(button => {
+        button.addEventListener('click', function() {
+            const tele = JSON.parse(this.dataset.tele);
+            const form = document.getElementById('editTelegramForm');
+            form.action = `{{ url('/') }}/admin/telegram-notify/${tele.name}`;
+            document.getElementById('tele_name_th').value = tele.name_th;
+            document.getElementById('tele_name').value = tele.name;
+            document.getElementById('tele_value_edit').value = tele.value || '';
+        });
+    });
+
+    // Modal Password Visibility Toggle
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.dataset.target;
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Toggle Telegram Value Visibility
+    document.querySelectorAll('.toggle-tele-value').forEach(button => {
+        button.addEventListener('click', function() {
+            const index = this.dataset.index;
+            const realValue = this.dataset.value || '(ว่าง)';
+            const isMasked = this.dataset.masked === 'true';
+            const displayEl = document.getElementById(`tele_val_display_${index}`);
+            const icon = this.querySelector('i');
+
+            if (icon.classList.contains('fa-eye')) {
+                displayEl.innerText = realValue;
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                displayEl.innerText = isMasked ? '********' : realValue;
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Toggle Moph Value Visibility
+    document.querySelectorAll('.toggle-moph-value').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const type = this.dataset.type;
+            const realValue = this.dataset.value || '(ว่าง)';
+            const displayEl = document.getElementById(`moph_${type}_${id}`);
+            const icon = this.querySelector('i');
+
+            if (icon.classList.contains('fa-eye')) {
+                displayEl.innerText = realValue;
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                displayEl.innerText = '********';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
 </script>
 @endpush
+@endsection

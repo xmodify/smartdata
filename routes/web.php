@@ -27,6 +27,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/git-pull', [App\Http\Controllers\Admin\StructureController::class, 'gitPull'])->name('admin.git_pull');
     Route::post('/admin/upgrade-structure', [App\Http\Controllers\Admin\StructureController::class, 'upgrade'])->name('admin.upgrade_structure');
     Route::put('/admin/sys-var/{sysVar}', [App\Http\Controllers\Admin\StructureController::class, 'update_sysvar'])->name('admin.sys_var.update');
+    
+    // Moph Notify Routes
+    Route::post('/admin/moph-notify', [App\Http\Controllers\Admin\StructureController::class, 'store_moph_notify'])->name('admin.moph_notify.store');
+    Route::put('/admin/moph-notify/{mophNotify}', [App\Http\Controllers\Admin\StructureController::class, 'update_moph_notify'])->name('admin.moph_notify.update');
+    Route::delete('/admin/moph-notify/{mophNotify}', [App\Http\Controllers\Admin\StructureController::class, 'destroy_moph_notify'])->name('admin.moph_notify.destroy');
+    
+    // Telegram Notify Routes
+    Route::post('/admin/telegram-notify', [App\Http\Controllers\Admin\StructureController::class, 'store_telegram_notify'])->name('admin.telegram_notify.store');
+    Route::put('/admin/telegram-notify/{telegramNotify}', [App\Http\Controllers\Admin\StructureController::class, 'update_telegram_notify'])->name('admin.telegram_notify.update');
+    Route::delete('/admin/telegram-notify/{telegramNotify}', [App\Http\Controllers\Admin\StructureController::class, 'destroy_telegram_notify'])->name('admin.telegram_notify.destroy');
 
     // Profile Routes
     Route::put('/profile/password', [App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
