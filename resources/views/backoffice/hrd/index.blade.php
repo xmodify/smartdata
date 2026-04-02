@@ -104,7 +104,86 @@
             box-shadow: 0 2px 4px rgba(25, 135, 84, 0.2) !important;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        /* Custom Multi-select for Departments */
+        .dropdown-menu-multiselect {
+            min-width: 350px;
+            max-height: 450px;
+            overflow-y: auto;
+            padding: 0;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e3e6f0;
+        }
+
+        .multiselect-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            z-index: 10;
+        }
+
+        .multiselect-search {
+            border-radius: 8px;
+            font-size: 0.85rem;
+            padding: 8px 12px;
+            border: 1px solid #d1d3e2;
+        }
+
+        .multiselect-item-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .multiselect-item {
+            padding: 8px 15px;
+            transition: background 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f8f9fc;
+        }
+
+        .multiselect-item:hover {
+            background-color: #f8f9fc;
+        }
+
+        .multiselect-item input[type="checkbox"] {
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
+            accent-color: #4e73df;
+        }
+
+        .multiselect-item label {
+            flex: 1;
+            cursor: pointer;
+            margin-bottom: 0;
+            font-size: 0.85rem;
+            color: #5a5c69;
+            user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .multiselect-item.selected {
+            background-color: #eaecf4;
+        }
+
+        .dropdown-toggle-dept {
+            background-color: white !important;
+            border-radius: 8px !important;
+            font-size: 0.8rem !important;
+            min-width: 250px;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0.75rem !important;
+        }
             background: #4e73df !important;
             color: white !important;
             border: 1px solid #4e73df !important;
@@ -216,7 +295,7 @@
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small opacity-75 fw-bold mb-1">ข้าราชการ / พนักงานของรัฐ</div>
+                                <div class="small opacity-75 fw-bold mb-1">ข้าราชการ</div>
                                 <div class="h2 mb-0 fw-bold">{{ number_format($total_perm) }} <span class="h6">คน</span>
                                 </div>
                             </div>
@@ -277,10 +356,10 @@
                     <div class="pe-3 py-1">
                         <h6 class="m-0 fw-bold text-primary">
                             <i class="fas fa-stethoscope me-2"></i>
-                            รายชื่อบุคลากร และข้อมูลการลงเวลาปฏิบัติงาน
+                            ข้อมูลการลงเวลาปฏิบัติงาน
                         </h6>
                         <div class="text-primary small fw-bold mt-1" style="font-size: 0.75rem;">
-                            <i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}
+                            <i class="fas fa-calendar-alt me-1"></i> วันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}
                         </div>
                     </div>
                 </div>
@@ -289,14 +368,44 @@
                 <form action="" method="GET" class="m-0 d-md-flex align-items-center gap-2 header-form-controls">
                     <div class="d-flex align-items-center gap-2">
                         <span class="fw-bold text-muted small text-nowrap">หน่วยงาน:</span>
-                        <select name="dept_id" class="form-select form-select-sm shadow-sm" style="border-radius: 8px; font-size: 0.8rem; min-width: 250px;">
-                            <option value="">-- ทั้งหมด --</option>
-                            @foreach($depts as $dept)
-                                <option value="{{ $dept->HR_DEPARTMENT_SUB_SUB_ID }}" {{ $dept_id == $dept->HR_DEPARTMENT_SUB_SUB_ID ? 'selected' : '' }}>
-                                    {{ $dept->HR_DEPARTMENT_SUB_SUB_NAME }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-white dropdown-toggle dropdown-toggle-dept shadow-sm" type="button" 
+                                id="deptDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="dropdown-label text-truncate" style="max-width: 200px;">
+                                    @if(empty($dept_ids))
+                                        -- ทั้งหมด --
+                                    @else
+                                        เลือก ({{ count($dept_ids) }}) หน่วยงาน
+                                    @endif
+                                </span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-multiselect p-0" aria-labelledby="deptDropdown">
+                                <div class="multiselect-header">
+                                    <input type="text" class="form-control form-control-sm multiselect-search mb-2" 
+                                        placeholder="ค้นหาแผนก..." id="deptSearch">
+                                    <div class="form-check ms-1 mt-1">
+                                        <input class="form-check-input" type="checkbox" id="selectAllDept" {{ !empty($dept_ids) && count($dept_ids) == count($depts) ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold text-primary small" for="selectAllDept" style="cursor: pointer;">
+                                            เลือกทั้งหมด
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="multiselect-item-list" id="deptList">
+                                    @foreach($depts as $dept)
+                                        <div class="multiselect-item {{ in_array($dept->HR_DEPARTMENT_SUB_SUB_ID, $dept_ids) ? 'selected' : '' }}">
+                                            <input type="checkbox" name="dept_ids[]" value="{{ $dept->HR_DEPARTMENT_SUB_SUB_ID }}" 
+                                                id="dept_{{ $dept->HR_DEPARTMENT_SUB_SUB_ID }}" 
+                                                class="dept-checkbox"
+                                                {{ in_array($dept->HR_DEPARTMENT_SUB_SUB_ID, $dept_ids) ? 'checked' : '' }}>
+                                            <label for="dept_{{ $dept->HR_DEPARTMENT_SUB_SUB_ID }}">{{ $dept->HR_DEPARTMENT_SUB_SUB_NAME }}</label>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="p-2 border-top bg-light text-center">
+                                    <small class="text-muted">เลือกได้หลายรายการ</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
@@ -497,6 +606,73 @@
                     }
                 } catch (e) { }
             }, 300);
+
+            // Department Multi-select Logic
+            const deptSearch = document.getElementById('deptSearch');
+            const deptList = document.getElementById('deptList');
+            const selectAllDept = document.getElementById('selectAllDept');
+            const deptCheckboxes = document.querySelectorAll('.dept-checkbox');
+            const deptDropdownBtn = document.getElementById('deptDropdown');
+            const deptLabel = deptDropdownBtn ? deptDropdownBtn.querySelector('.dropdown-label') : null;
+
+            // Prevent dropdown from closing when clicking inside
+            $('.dropdown-menu-multiselect').on('click', function (e) {
+                e.stopPropagation();
+            });
+
+            // Search Filter
+            if (deptSearch) {
+                deptSearch.addEventListener('input', function () {
+                    const searchTerm = this.value.toLowerCase();
+                    const items = deptList.querySelectorAll('.multiselect-item');
+                    items.forEach(item => {
+                        const text = item.querySelector('label').textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Select All Toggle
+            if (selectAllDept) {
+                selectAllDept.addEventListener('change', function () {
+                    const isChecked = this.checked;
+                    const items = deptList.querySelectorAll('.multiselect-item');
+                    items.forEach(item => {
+                        if (item.style.display !== 'none') {
+                            const cb = item.querySelector('.dept-checkbox');
+                            cb.checked = isChecked;
+                            item.classList.toggle('selected', isChecked);
+                        }
+                    });
+                    updateDeptDropdownLabel();
+                });
+            }
+
+            // Individual Checkbox Click
+            deptCheckboxes.forEach(cb => {
+                cb.addEventListener('change', function () {
+                    this.closest('.multiselect-item').classList.toggle('selected', this.checked);
+                    updateDeptDropdownLabel();
+                });
+            });
+
+            function updateDeptDropdownLabel() {
+                if (!deptLabel) return;
+                const checkboxes = document.querySelectorAll('.dept-checkbox');
+                const checkedCount = document.querySelectorAll('.dept-checkbox:checked').length;
+                
+                if (checkedCount === 0) {
+                    deptLabel.textContent = '-- ทั้งหมด --';
+                } else if (checkedCount === checkboxes.length) {
+                    deptLabel.textContent = 'ทุกหน่วยงาน (' + checkedCount + ')';
+                } else {
+                    deptLabel.textContent = 'เลือก (' + checkedCount + ') หน่วยงาน';
+                }
+            }
         });
     </script>
 @endpush

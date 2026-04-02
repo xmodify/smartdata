@@ -16,13 +16,13 @@ class HrdController extends Controller
         // Handle Filters
         $start_date = $request->start_date ?: date('Y-m-01');
         $end_date = $request->end_date ?: date('Y-m-t');
-        $dept_id = $request->dept_id;
+        $dept_ids = $request->dept_ids ?: [];
 
         // Store in Session
         Session::put('start_date', $start_date);
         Session::put('end_date', $end_date);
 
-        // Fetch Only Departments that have employees, ordered by Department ID
+        // Fetch Only Departments for Filter
         $depts = DB::connection('backoffice')->select('
             SELECT DISTINCT hrds.HR_DEPARTMENT_SUB_SUB_ID, hrds.HR_DEPARTMENT_SUB_SUB_NAME, hds.HR_DEPARTMENT_ID
             FROM hrd_person hr
@@ -32,14 +32,17 @@ class HrdController extends Controller
             ORDER BY hds.HR_DEPARTMENT_ID, hrds.HR_DEPARTMENT_SUB_SUB_NAME
         ');
 
-        // Build Personnel Query (Filtered by Dept)
-        $params = [$start_date, $end_date];
+        // Build Where Clause for Departments
         $where_dept = "";
-        if ($dept_id) {
-            $where_dept = " AND hrds.HR_DEPARTMENT_SUB_SUB_ID = ? ";
-            $params[] = $dept_id;
+        $dept_params = [];
+        if (!empty($dept_ids)) {
+            $placeholders = implode(',', array_fill(0, count($dept_ids), '?'));
+            $where_dept = " AND hrds.HR_DEPARTMENT_SUB_SUB_ID IN ($placeholders) ";
+            $dept_params = $dept_ids;
         }
 
+        // Build Personnel Query (Filtered by Depts)
+        $params = array_merge([$start_date, $end_date], $dept_params);
         $persons = DB::connection('backoffice')->select('
             SELECT hr.id,hr.FINGLE_ID,hr.HR_CID,hrp.HR_PREFIX_NAME,hr.HR_FNAME,hr.HR_LNAME,hr.HR_EN_NAME,hr.SEX,hr.HR_BIRTHDAY,hr.HR_PHONE,hr.HR_EMAIL,hrt.HR_PERSON_TYPE_ID,hrt.HR_PERSON_TYPE_NAME,hr.POSITION_IN_WORK,
             hr.HR_STATUS_ID,hrs.HR_STATUS_NAME,hr.HR_DEPARTMENT_ID,hrd.HR_DEPARTMENT_NAME,hrds.HR_DEPARTMENT_SUB_SUB_ID,
@@ -101,7 +104,7 @@ class HrdController extends Controller
         $total_other = $total_all - $total_perm;
 
         return view('backoffice.hrd.index', compact(
-            'persons', 'chartData', 'start_date', 'end_date', 'dept_id', 'depts',
+            'persons', 'chartData', 'start_date', 'end_date', 'dept_ids', 'depts',
             'total_all', 'total_perm', 'total_other'
         ));
     }
