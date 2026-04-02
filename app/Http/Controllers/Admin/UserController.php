@@ -25,13 +25,13 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|string|in:admin,user',
-            'active' => 'required|boolean',
+            'active' => 'nullable',
             'allow_asset' => 'nullable|string|in:Y,N',
             'allow_personnel' => 'nullable|string|in:Y,N',
             'allow_incident' => 'nullable|string|in:Y,N',
@@ -39,13 +39,19 @@ class UserController extends Controller
             'allow_audit' => 'nullable|string|in:Y,N',
         ]);
 
-        $validated['allow_asset'] = $request->has('allow_asset') ? 'Y' : 'N';
-        $validated['allow_personnel'] = $request->has('allow_personnel') ? 'Y' : 'N';
-        $validated['allow_incident'] = $request->has('allow_incident') ? 'Y' : 'N';
-        $validated['allow_skpcard'] = $request->has('allow_skpcard') ? 'Y' : 'N';
-        $validated['allow_audit'] = $request->has('allow_audit') ? 'Y' : 'N';
-
-        User::create($validated);
+        User::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'active' => $request->has('active') ? 'Y' : 'N',
+            'allow_asset' => $request->has('allow_asset') ? 'Y' : 'N',
+            'allow_personnel' => $request->has('allow_personnel') ? 'Y' : 'N',
+            'allow_incident' => $request->has('allow_incident') ? 'Y' : 'N',
+            'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
+            'allow_audit' => $request->has('allow_audit') ? 'Y' : 'N',
+        ]);
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
@@ -55,13 +61,13 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
             'role' => 'required|string|in:admin,user',
-            'active' => 'required|boolean',
+            'active' => 'nullable',
             'allow_asset' => 'nullable|string|in:Y,N',
             'allow_personnel' => 'nullable|string|in:Y,N',
             'allow_incident' => 'nullable|string|in:Y,N',
@@ -69,17 +75,24 @@ class UserController extends Controller
             'allow_audit' => 'nullable|string|in:Y,N',
         ]);
 
-        if (empty($validated['password'])) {
-            unset($validated['password']);
+        $updateData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'username' => $request->username,
+            'role' => $request->role,
+            'active' => $request->has('active') ? 'Y' : 'N',
+            'allow_asset' => $request->has('allow_asset') ? 'Y' : 'N',
+            'allow_personnel' => $request->has('allow_personnel') ? 'Y' : 'N',
+            'allow_incident' => $request->has('allow_incident') ? 'Y' : 'N',
+            'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
+            'allow_audit' => $request->has('allow_audit') ? 'Y' : 'N',
+        ];
+
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
         }
 
-        $validated['allow_asset'] = $request->has('allow_asset') ? 'Y' : 'N';
-        $validated['allow_personnel'] = $request->has('allow_personnel') ? 'Y' : 'N';
-        $validated['allow_incident'] = $request->has('allow_incident') ? 'Y' : 'N';
-        $validated['allow_skpcard'] = $request->has('allow_skpcard') ? 'Y' : 'N';
-        $validated['allow_audit'] = $request->has('allow_audit') ? 'Y' : 'N';
-
-        $user->update($validated);
+        $user->update($updateData);
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }

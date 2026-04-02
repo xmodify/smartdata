@@ -11,9 +11,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Styles -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js" integrity="sha256-5+4UA0RwHxrLdxuo+/LioZkIerSs8F/VDnV4Js9ZdwQ=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"
+        integrity="sha256-5+4UA0RwHxrLdxuo+/LioZkIerSs8F/VDnV4Js9ZdwQ=" crossorigin="anonymous"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
@@ -390,7 +394,7 @@
                     @if(auth()->user()->hasAccessPersonnel() || auth()->user()->hasAccessAsset() || auth()->user()->hasAccessIncident())
                         <div class="sidebar-section-header">รายงาน BackOffice</div>
                         @if(auth()->user()->hasAccessPersonnel())
-                            <a href="{{ url('/backoffice_hrd') }}"
+                            <a href="{{ route('backoffice.hrd.index') }}"
                                 class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-id-card me-2" style="color: #1cc88a;"></i> งานบุคลากร
                             </a>
@@ -431,7 +435,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-03-30 00:15
+                V. 69-04-03 00:01
             </div>
         </div>
         <!-- /#sidebar-wrapper -->
@@ -540,7 +544,9 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+        crossorigin="anonymous"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var menuToggle = document.getElementById('menu-toggle');
@@ -558,7 +564,7 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'สำเร็จ',
-                    text: "{{ session('success') }}",
+                    text: @json(session('success')),
                     timer: 2500,
                     showConfirmButton: false
                 });
@@ -568,7 +574,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'ข้อผิดพลาด',
-                    text: "{{ session('error') }}",
+                    text: @json(session('error')),
                     confirmButtonText: 'ตกลง'
                 });
             @endif

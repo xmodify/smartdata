@@ -100,49 +100,68 @@
             /* Reduced padding */
         }
 
-        /* Override DataTables UI */
-        button.dt-button.btn-success {
+        /* Override DataTables UI to match the premium look (skpcard style) */
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+            padding: 0.2rem 0.6rem !important;
+            outline: none !important;
+            font-size: 0.8rem !important;
+        }
+
+        .dt-buttons .btn-success {
             background-color: #198754 !important;
             border-color: #198754 !important;
-            color: #fff !important;
-            border-radius: 0.25rem !important;
+            color: #ffffff !important;
+            border-radius: 0.4rem !important;
+            font-weight: 500 !important;
+            padding: 0.25rem 0.6rem !important;
             font-size: 0.75rem !important;
-            padding: 5px 12px !important;
-            /* Adjusted for better alignment */
-            line-height: 1 !important;
-            margin: 0 !important;
-            height: 31px !important;
-            /* Fixed height for perfect alignment */
-            display: flex !important;
+            display: inline-flex !important;
             align-items: center !important;
+            gap: 0.4rem !important;
+            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.2) !important;
         }
 
-        .dataTables_filter input,
-        .dataTables_length select {
-            border-radius: 0.25rem !important;
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #4e73df !important;
+            color: white !important;
+            border: 1px solid #4e73df !important;
+            border-radius: 0.5rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #f8f9fc !important;
+            color: #4e73df !important;
             border: 1px solid #dee2e6 !important;
-            font-size: 0.75rem !important;
-            padding: 4px 10px !important;
-            height: 31px !important;
-            /* Same as button */
-            outline: none !important;
-            box-shadow: none !important;
+            border-radius: 0.5rem !important;
         }
 
-        .dataTables_filter label,
-        .dataTables_length label {
-            font-size: 0.8rem !important;
-            font-weight: 600 !important;
-            color: #64748b !important;
+        table.dataTable thead th {
+            background-color: #f8f9fc !important;
+            color: #4e73df !important;
+            font-weight: 700 !important;
+            border-bottom: 2px solid #e3e6f0 !important;
+            font-size: 0.85rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 0rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 0;
+            font-size: 0.85rem;
+        }
+
+        .dt-buttons {
             margin-bottom: 0 !important;
             display: flex !important;
             align-items: center !important;
-            gap: 8px !important;
-        }
-
-        button.dt-button.btn-success:hover {
-            background-color: #157347 !important;
-            border-color: #146c43 !important;
         }
 
         .flatpickr-today-button {
@@ -332,11 +351,11 @@
             }
 
             $('#diag_list').DataTable({
-                dom: '<"d-flex justify-content-between align-items-center py-2 px-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-2"fB>>rt<"d-flex justify-content-between align-items-center p-3"ip>',
+                dom: '<"d-flex justify-content-between align-items-center mb-3 py-2 px-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center p-3"ip>',
                 buttons: [{
                     extend: 'excelHtml5',
-                    text: '<i class="bi bi-file-earmark-excel me-1"></i> Excel',
-                    className: 'btn btn-success btn-sm px-3',
+                    text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                    className: 'btn btn-success',
                     title: 'รายชื่อ{{ $category_label }}โรค {{ $config['name'] }} ปีงบประมาณ {{ $budget_year }}'
                 }],
                 language: {
@@ -349,6 +368,7 @@
                     }
                 },
                 pageLength: 10,
+                responsive: true,
                 order: [
                     [0, 'asc']
                 ]

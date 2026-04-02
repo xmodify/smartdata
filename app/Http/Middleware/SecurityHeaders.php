@@ -29,11 +29,11 @@ class SecurityHeaders
         // Content Security Policy (CSP)
         // Note: Includes 'unsafe-inline' and 'unsafe-eval' for existing application logic compatibility.
         $csp = "default-src 'self'; " .
-               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " .
-               "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.bunny.net; " .
+               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://code.jquery.com https://cdn.datatables.net https://cdnjs.cloudflare.com; " .
+               "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.bunny.net https://cdn.datatables.net; " .
                "font-src 'self' https://cdnjs.cloudflare.com https://fonts.bunny.net; " .
                "img-src 'self' data: https:; " .
-               "connect-src 'self'; " .
+               "connect-src 'self' https://cdn.jsdelivr.net; " .
                "frame-ancestors 'self';";
         
         $response->headers->set('Content-Security-Policy', $csp);

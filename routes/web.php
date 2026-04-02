@@ -134,4 +134,9 @@ Route::middleware(['auth'])->group(function () {
         'update' => 'admin.users.update',
         'destroy' => 'admin.users.destroy',
     ]);
+
+    // Backoffice HRD Routes
+    Route::get('/backoffice/hrd', [App\Http\Controllers\Backoffice\HrdController::class, 'index'])->name('backoffice.hrd.index');
+    Route::get('/backoffice/hrd/pdf/summary/{id}', [App\Http\Controllers\Backoffice\HrdController::class, 'checkin_indiv_pdf'])->name('backoffice.hrd.pdf.summary');
+    Route::get('/backoffice/hrd/pdf/detail/{id}', [App\Http\Controllers\Backoffice\HrdController::class, 'checkin_indiv_detail_pdf'])->name('backoffice.hrd.pdf.detail');
 });

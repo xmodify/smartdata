@@ -30,3 +30,16 @@ if (!function_exists('DateThai')) {
         return "$strDay $strMonthThai $strYear $strHour:$strMinute";
     }
 }
+
+if (!function_exists('dateThaifromFull')) {
+    function dateThaifromFull($strDate)
+    {
+        if (!$strDate || $strDate == '0000-00-00') return "-";
+        $strYear = date("Y", strtotime($strDate)) + 543;
+        $strMonth = (int)date("m", strtotime($strDate));
+        $strDay = (int)date("d", strtotime($strDate));
+        $strMonthFull = array("", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม");
+        $strMonthThai = $strMonthFull[$strMonth];
+        return "$strDay $strMonthThai พ.ศ. $strYear";
+    }
+}

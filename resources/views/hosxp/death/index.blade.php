@@ -92,19 +92,68 @@
             width: 100%;
         }
 
-        .btn-excel {
-            background: #198754 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 8px !important;
-            padding: 0.4rem 1rem !important;
-            font-weight: 600 !important;
-            transition: all 0.3s !important;
+        /* Override DataTables UI to match the premium look (skpcard style) */
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+            padding: 0.2rem 0.6rem !important;
+            outline: none !important;
+            font-size: 0.8rem !important;
         }
 
-        .btn-excel:hover {
-            background: #17a673 !important;
-            transform: scale(1.05);
+        .dt-buttons .btn-success {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+            color: #ffffff !important;
+            border-radius: 0.4rem !important;
+            font-weight: 500 !important;
+            padding: 0.25rem 0.6rem !important;
+            font-size: 0.75rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.2) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #e74a3b !important;
+            color: white !important;
+            border: 1px solid #e74a3b !important;
+            border-radius: 0.5rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #fff1f0 !important;
+            color: #e74a3b !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+        }
+
+        table.dataTable thead th {
+            background-color: #f8f9fc !important;
+            color: #e74a3b !important;
+            font-weight: 700 !important;
+            border-bottom: 2px solid #edeff4 !important;
+            font-size: 0.85rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 0rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 0;
+            font-size: 0.85rem;
+        }
+
+        .dt-buttons {
+            margin-bottom: 0 !important;
+            display: flex !important;
+            align-items: center !important;
         }
     </style>
 @endpush
@@ -363,23 +412,25 @@
 
                 // DataTable
                 $('#reportTable').DataTable({
-                    language: {
-                        url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json"
-                    },
-                    pageLength: 10,
-                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"dt-left-info"> <"d-flex gap-2"fB>>rtip',
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
                     buttons: [{
                         extend: 'excelHtml5',
-                        text: '<i class="fas fa-file-excel"></i> Excel',
-                        className: 'btn-excel',
+                        text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                        className: 'btn btn-success',
                         title: '{{ $title }}',
                         messageTop: 'ช่วงวันที่: {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}'
                     }],
-                    initComplete: function() {
-                        $("div.dt-left-info").html(
-                            '<div class="text-primary fw-bold"><i class="fas fa-calendar-alt me-1"></i> ช่วงวันที่: {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}</div>'
-                        );
-                    }
+                    language: {
+                        search: "ค้นหา:",
+                        lengthMenu: "แสดง _MENU_ รายการ",
+                        info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                        paginate: {
+                            previous: "ก่อนหน้า",
+                            next: "ถัดไป"
+                        }
+                    },
+                    pageLength: 10,
+                    responsive: true
                 });
 
                 // Flatpickr

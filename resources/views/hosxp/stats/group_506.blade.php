@@ -77,36 +77,68 @@
             color: #2e59d9;
         }
 
-        /* Override DataTables UI */
-        button.dt-button.btn-excel {
-            background-color: #198754 !important;
-            border-color: #198754 !important;
-            color: #fff !important;
-            border-radius: 8px !important;
+        /* Override DataTables UI to match the premium look (skpcard style) */
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+            padding: 0.2rem 0.6rem !important;
+            outline: none !important;
             font-size: 0.8rem !important;
-            padding: 6px 15px !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.2) !important;
-            transition: all 0.2s !important;
         }
 
-        button.dt-button.btn-excel:hover {
-            background-color: #157347 !important;
-            transform: translateY(-1px) !important;
-            box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3) !important;
+        .dt-buttons .btn-success {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+            color: #ffffff !important;
+            border-radius: 0.4rem !important;
+            font-weight: 500 !important;
+            padding: 0.25rem 0.6rem !important;
+            font-size: 0.75rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.2) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #4e73df !important;
+            color: white !important;
+            border: 1px solid #4e73df !important;
+            border-radius: 0.5rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #f8f9fc !important;
+            color: #4e73df !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+        }
+
+        table.dataTable thead th {
+            background-color: #f8f9fc !important;
+            color: #4e73df !important;
+            font-weight: 700 !important;
+            border-bottom: 2px solid #e3e6f0 !important;
+            font-size: 0.85rem !important;
         }
 
         .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 1rem;
+            margin-bottom: 0rem;
         }
 
-        .dataTables_filter input {
-            border-radius: 8px !important;
-            border: 1px solid #dee2e6 !important;
-            padding: 5px 12px !important;
-            font-size: 0.85rem !important;
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 0;
+            font-size: 0.85rem;
+        }
+
+        .dt-buttons {
+            margin-bottom: 0 !important;
+            display: flex !important;
+            align-items: center !important;
         }
     </style>
 @endpush
@@ -324,27 +356,28 @@
                 }
 
                 $('#reportTable').DataTable({
-                    language: {
-                        url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json",
-                    },
-                    pageLength: 10,
-                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"dt-left-info"> <"d-flex gap-2"fB>>rtip',
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
                     buttons: [{
                         extend: 'excelHtml5',
-                        text: '<i class="fas fa-file-excel"></i> Excel',
-                        className: 'btn-excel',
+                        text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                        className: 'btn btn-success',
                         title: '{{ $title }}',
                         messageTop: 'ช่วงวันที่: {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}'
                     }],
+                    language: {
+                        search: "ค้นหา:",
+                        lengthMenu: "แสดง _MENU_ รายการ",
+                        info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                        paginate: {
+                            previous: "ก่อนหน้า",
+                            next: "ถัดไป"
+                        }
+                    },
+                    pageLength: 10,
                     responsive: true,
                     order: [
                         [4, 'desc']
-                    ],
-                    initComplete: function() {
-                        $("div.dt-left-info").html(
-                            '<div class="text-primary fw-bold"><i class="fas fa-calendar-alt me-1"></i> ช่วงวันที่: {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}</div>'
-                        );
-                    }
+                    ]
                 });
             });
         </script>
