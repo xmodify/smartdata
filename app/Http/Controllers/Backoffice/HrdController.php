@@ -105,7 +105,7 @@ class HrdController extends Controller
 
         return view('backoffice.hrd.index', compact(
             'persons', 'chartData', 'start_date', 'end_date', 'dept_ids', 'depts',
-            'total_all', 'total_perm', 'total_other'
+            'total_all', 'total_perm', 'total_other', 'statsType'
         ));
     }
 

@@ -265,64 +265,124 @@
             border-radius: 8px;
             font-weight: bold;
         }
+
+        /* Modal Styles */
+        .modal-premium .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+        }
+        .modal-premium .modal-header {
+            border-bottom: 1px solid #f0f0f0;
+            padding: 1.5rem;
+        }
+        .modal-premium .modal-body {
+            padding: 1.5rem;
+        }
+        
+        /* Custom DataTables styling for Modal */
+        #modalTable_wrapper .dataTables_filter {
+            float: right;
+            margin-bottom: 15px;
+        }
+        #modalTable_wrapper .dataTables_length {
+            float: left;
+            margin-bottom: 15px;
+        }
+        #modalTable thead th {
+            background-color: #f8f9fc !important;
+            color: #4e73df !important;
+            font-size: 0.8rem !important;
+            text-transform: uppercase;
+            padding: 12px 15px !important;
+        }
+
+        /* Card interactive styles */
+        .stat-card {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .stat-card:active {
+            transform: scale(0.98);
+        }
+        .stat-card .card-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.3;
+            font-size: 3.5rem;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover .card-icon {
+            opacity: 0.5;
+            right: 10px;
+            transform: translateY(-50%) scale(1.1);
+        }
     </style>
 @endpush
 
 @section('content')
     <div class="container-fluid px-2 px-md-4">
-        <!-- Summary Statistics Row -->
-        <div class="row g-4 mb-4 mt-2">
-            <div class="col-md-4">
-                <div class="card hrd-card text-white overflow-hidden h-100"
+        <!-- Summary Statistics Row (Dynamic Cards) -->
+        <div class="row g-3 mb-4 mt-2">
+            <!-- All Personnel Card -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card hrd-card stat-card text-white overflow-hidden h-100"
+                    onclick="showPersonnelModal('all', 'บุคลากรทั้งหมด')"
                     style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="small opacity-75 fw-bold mb-1">จำนวนบุคลากรทั้งหมด</div>
-                                <div class="h2 mb-0 fw-bold">{{ number_format($total_all) }} <span class="h6">คน</span>
-                                </div>
-                            </div>
-                            <div class="bg-white bg-opacity-20 p-3 rounded-circle">
-                                <i class="fas fa-users fa-2x"></i>
-                            </div>
+                    <div class="card-body p-3 d-flex flex-column justify-content-center">
+                        <div class="small opacity-75 fw-bold mb-1">จำนวนบุคลากรทั้งหมด</div>
+                        <div class="h2 mb-0 fw-bold">{{ number_format($total_all) }} <span class="h6">คน</span></div>
+                        <div class="card-icon">
+                            <i class="fas fa-users"></i>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card hrd-card text-white overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="small opacity-75 fw-bold mb-1">ข้าราชการ</div>
-                                <div class="h2 mb-0 fw-bold">{{ number_format($total_perm) }} <span class="h6">คน</span>
-                                </div>
-                            </div>
-                            <div class="bg-white bg-opacity-20 p-3 rounded-circle">
-                                <i class="fas fa-user-tie fa-2x"></i>
+
+            @php
+                $bgGradients = [
+                    'linear-gradient(135deg, #1cc88a 0%, #13855c 100%)', // Green
+                    'linear-gradient(135deg, #36b9cc 0%, #258391 100%)', // Cyan
+                    'linear-gradient(135deg, #f6c23e 0%, #dda20a 100%)', // Yellow
+                    'linear-gradient(135deg, #e74a3b 0%, #be2617 100%)', // Red
+                    'linear-gradient(135deg, #6610f2 0%, #520dc2 100%)', // Indigo
+                    'linear-gradient(135deg, #fd7e14 0%, #ca6510 100%)', // Orange
+                    'linear-gradient(135deg, #20c997 0%, #17a67d 100%)', // Teal
+                    'linear-gradient(135deg, #6f42c1 0%, #59359a 100%)', // Purple
+                ];
+                $iconMap = [
+                    'ข้าราชการ' => 'fa-user-tie',
+                    'พนักงานราชการ' => 'fa-user-shield',
+                    'ลูกจ้างประจำ' => 'fa-user-check',
+                    'พนักงานกระทรวงสาธารณสุข' => 'fa-user-nurse',
+                    'ลูกจ้างชั่วคราว' => 'fa-user-edit',
+                    'Default' => 'fa-user'
+                ];
+            @endphp
+
+            @foreach($statsType as $index => $stat)
+                <div class="col-xl-3 col-md-6">
+                    <div class="card hrd-card stat-card text-white overflow-hidden h-100"
+                        onclick="showPersonnelModal('{{ $stat->HR_PERSON_TYPE_NAME }}', '{{ $stat->HR_PERSON_TYPE_NAME }}')"
+                        style="background: {{ $bgGradients[$index % count($bgGradients)] }};">
+                        <div class="card-body p-3 d-flex flex-column justify-content-center">
+                            <div class="small opacity-75 fw-bold mb-1 text-truncate" style="max-width: 180px;">{{ $stat->HR_PERSON_TYPE_NAME }}</div>
+                            <div class="h2 mb-0 fw-bold">{{ number_format($stat->total) }} <span class="h6">คน</span></div>
+                            <div class="card-icon">
+                                <i class="fas {{ $iconMap[$stat->HR_PERSON_TYPE_NAME] ?? $iconMap['Default'] }}"></i>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card hrd-card text-white overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="small opacity-75 fw-bold mb-1">พนักงานจ้าง / อื่นๆ</div>
-                                <div class="h2 mb-0 fw-bold">{{ number_format($total_other) }} <span class="h6">คน</span>
-                                </div>
-                            </div>
-                            <div class="bg-white bg-opacity-20 p-3 rounded-circle">
-                                <i class="fas fa-user-nurse fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
 
         <!-- Charts Row -->
@@ -485,6 +545,45 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personnel Modal -->
+    <div class="modal fade modal-premium" id="personnelModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white py-3 px-4" style="border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title fw-bold" id="modalTitle">รายชื่อบุคลากร</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+                        <div class="text-muted small fw-bold">
+                            ประเภท: <span id="modalTypeText" class="text-primary"></span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 w-100" id="modalTable">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">ชื่อ-นามสกุล</th>
+                                        <th>ตำแหน่ง</th>
+                                        <th>กลุ่มงาน</th>
+                                        <th class="pe-4">หน่วยงาน</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- DataTables will handle this -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-3">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
                 </div>
             </div>
         </div>
@@ -672,6 +771,68 @@
                 } else {
                     deptLabel.textContent = 'เลือก (' + checkedCount + ') หน่วยงาน';
                 }
+            }
+
+            // Modal Logic
+            const personsData = @json($persons);
+            const modalTitle = document.getElementById('modalTitle');
+            const modalTypeText = document.getElementById('modalTypeText');
+            const personnelModal = new bootstrap.Modal(document.getElementById('personnelModal'));
+            let currentFilterType = 'all';
+            let modalDataTable = null;
+
+            window.showPersonnelModal = function(type, title) {
+                currentFilterType = type;
+                modalTitle.innerText = 'รายชื่อ' + title;
+                modalTypeText.innerText = title;
+                
+                personnelModal.show();
+                
+                // Initialize or Re-draw DataTable
+                setTimeout(() => {
+                    initModalDataTable();
+                }, 200);
+            };
+
+            function initModalDataTable() {
+                let filtered = personsData;
+                if (currentFilterType !== 'all') {
+                    filtered = personsData.filter(p => p.HR_PERSON_TYPE_NAME === currentFilterType);
+                }
+
+                const tableData = filtered.map(p => [
+                    `<div class="fw-bold text-dark">${p.HR_PREFIX_NAME}${p.HR_FNAME} ${p.HR_LNAME}</div>`,
+                    p.POSITION_IN_WORK || '-',
+                    p.HR_DEPARTMENT_NAME || '-',
+                    `<span class="text-muted small">${p.HR_DEPARTMENT_SUB_SUB_NAME || '-'}</span>`
+                ]);
+
+                if (modalDataTable) {
+                    modalDataTable.destroy();
+                }
+
+                modalDataTable = $('#modalTable').DataTable({
+                    data: tableData,
+                    columns: [
+                        { title: "ชื่อ-นามสกุล", className: "ps-4" },
+                        { title: "ตำแหน่ง" },
+                        { title: "กลุ่มงาน" },
+                        { title: "หน่วยงาน", className: "pe-4" }
+                    ],
+                    language: {
+                        search: "ค้นหา:",
+                        lengthMenu: "แสดง _MENU_ รายการ",
+                        info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                        paginate: {
+                            previous: "ก่อนหน้า",
+                            next: "ถัดไป"
+                        },
+                        zeroRecords: "ไม่พบข้อมูล"
+                    },
+                    order: [],
+                    pageLength: 10,
+                    destroy: true
+                });
             }
         });
     </script>
