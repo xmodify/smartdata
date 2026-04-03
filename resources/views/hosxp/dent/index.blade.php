@@ -175,8 +175,25 @@
                             }
                         }
                     };
-                    flatpickr("#start_date", commonConfig);
-                    flatpickr("#end_date", commonConfig);
+                    const startPicker = flatpickr("#start_date", commonConfig);
+                    const endPicker = flatpickr("#end_date", commonConfig);
+
+                    // Update start_date and end_date based on budget_year change
+                    $('select[name="budget_year"]').on('change', function() {
+                        var selectedYear = parseInt($(this).val());
+                        if(!isNaN(selectedYear)) {
+                            // Calculate budget year ranges
+                            var startYear = selectedYear - 544; // Example: 2567 -> 2023
+                            var endYear = selectedYear - 543;   // Example: 2567 -> 2024
+                            var startDateStr = startYear + "-10-01";
+                            var endDateStr = endYear + "-09-30";
+                            
+                            setTimeout(() => {
+                                if (typeof startPicker !== 'undefined' && startPicker) startPicker.setDate(startDateStr, true);
+                                if (typeof endPicker !== 'undefined' && endPicker) endPicker.setDate(endDateStr, true);
+                            }, 50);
+                        }
+                    });
                 }
             });
         </script>
