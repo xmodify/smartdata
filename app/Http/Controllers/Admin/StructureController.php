@@ -56,7 +56,16 @@ class StructureController extends Controller
             Log::info('Git Pull triggered by ' . auth()->user()->name . ' with details: ' . $details);
         }
 
-        $output = shell_exec('git pull 2>&1');
+        $output = shell_exec('git reset --hard && git pull origin main 2>&1');
+        
+        try {
+            $artisanOutput = new BufferedOutput();
+            Artisan::call('optimize:clear', [], $artisanOutput);
+            $output .= "\n\n--- Artisan Optimize Clear ---\n" . $artisanOutput->fetch();
+        } catch (\Exception $e) {
+            $output .= "\n\nError running artisan optimize:clear: " . $e->getMessage();
+        }
+
         return back()->with('git_output', $output)->with('active_tab', 'system');
     }
 

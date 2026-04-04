@@ -23,11 +23,11 @@
                     <!-- Git Update -->
                     <div class="col-md-6 mb-4 mb-md-0 border-md-end">
                         <h6 class="fw-bold mb-3"><i class="fab fa-git-alt me-2 text-danger"></i> Source Code Update</h6>
-                        <p class="small text-muted mb-3">ดึงรหัสต้นฉบับล่าสุดจาก Repository (Git Pull)</p>
+                        <p class="small text-muted mb-3">ดึงรหัสต้นฉบับล่าสุดจาก Repository (Reset --hard & Pull) และเคลียร์แคชระบบ (Optimize Clear)</p>
                         <form id="git-pull-form" action="{{ route('admin.git_pull') }}" method="POST">
                             @csrf
                             <button type="submit" class="btn btn-danger btn-sm shadow-sm px-4">
-                                <i class="fas fa-code-branch me-2"></i> Git Pull (อัปเดตโค้ด)
+                                <i class="fas fa-code-branch me-2"></i> Git Pull & Clear Cache
                             </button>
                         </form>
                     </div>
@@ -375,8 +375,8 @@
         gitForm.addEventListener('submit', function(e) {
             e.preventDefault();
             Swal.fire({
-                title: 'ยืนยันการอัปเดตโค้ด?',
-                text: "ระบบจะดำเนินการ Git Pull เพื่ออัปเดตซอร์สโค้ดจาก Repository",
+                title: 'ยืนยันการเคลียร์โค้ดและดึงล่าสุด?',
+                text: "ระบบจะดำเนินการ git reset --hard และ git pull origin main เพื่อล้างการแก้ไขที่เครื่องและดึงโค้ดล่าสุดจาก Repository",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#198754',
