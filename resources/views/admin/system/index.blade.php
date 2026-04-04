@@ -45,14 +45,7 @@
                     </div>
                 </div>
 
-                @if(session('git_output') || session('migrate_output'))
-                    <div class="mt-4 pt-3 border-top">
-                        <label class="form-label fw-bold text-success small">
-                            <i class="fas fa-terminal me-2"></i> ผลการตรวจสอบล่าสุด:
-                        </label>
-                        <pre class="small bg-dark text-light p-3 rounded" style="max-height: 250px; overflow-y: auto;">{{ session('git_output') ?? session('migrate_output') }}</pre>
-                    </div>
-                @endif
+                {{-- Results will be shown in SweetAlert Modal (Triggered by script below) --}}
             </div>
         </div>
 
@@ -385,6 +378,28 @@
             }).then((result) => { if (result.isConfirmed) { Swal.showLoading(); this.submit(); } });
         });
     }
+
+    // Show Git Output in SweetAlert if exists
+    @if(session('git_output'))
+        Swal.fire({
+            title: '<i class="fas fa-terminal me-2"></i> ผลการดำเนินการ Git Pull',
+            html: `<pre class="text-start bg-dark text-light p-3 rounded xsmall" style="max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; white-space: pre-wrap;">${ {!! json_encode(session('git_output')) !!} }</pre>`,
+            width: '800px',
+            confirmButtonText: '<i class="fas fa-times me-1"></i> ปิดหน้าต่าง',
+            confirmButtonColor: '#dc3545'
+        });
+    @endif
+
+    // Show Migrate Output in SweetAlert if exists
+    @if(session('migrate_output'))
+        Swal.fire({
+            title: '<i class="fas fa-database me-2"></i> ผลการอัปเกรดฐานข้อมูล',
+            html: `<pre class="text-start bg-dark text-light p-3 rounded xsmall" style="max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; white-space: pre-wrap;">${ {!! json_encode(session('migrate_output')) !!} }</pre>`,
+            width: '800px',
+            confirmButtonText: '<i class="fas fa-times me-1"></i> ปิดหน้าต่าง',
+            confirmButtonColor: '#0d6efd'
+        });
+    @endif
 
     // Upgrade Structure logic
     const upgradeForm = document.getElementById('upgrade-structure-form');
