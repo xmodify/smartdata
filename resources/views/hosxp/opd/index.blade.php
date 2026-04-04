@@ -237,8 +237,7 @@
                     </div>
                     <div class="input-group input-group-sm shadow-sm input-group-budget"
                         style="border-radius: 8px; overflow: hidden;">
-                        <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;"
-                            onchange="document.getElementById('start_date').value=''; document.getElementById('end_date').value='';">
+                        <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
                             @foreach ($budget_year_select as $row)
                                 <option value="{{ $row->LEAVE_YEAR_ID }}"
                                     {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>
@@ -626,11 +625,12 @@
     </div>
 
     @push('scripts')
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            $(document).ready(function() {
                 if (typeof flatpickr !== 'undefined') {
                     const yearOffset = 543;
                     const commonConfig = {
