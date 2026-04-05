@@ -15,15 +15,16 @@
                     <div class="row g-3">
                         @php
                             $services = [
-                                ['url' => '/service_opd', 'label' => 'ผู้ป่วยนอก', 'icon' => 'fa-user-nurse', 'color' => '#4e73df'],
-                                ['url' => '/service_ipd', 'label' => 'ผู้ป่วยใน', 'icon' => 'fa-bed-pulse', 'color' => '#1cc88a'],
-                                ['url' => '/service_er', 'label' => 'อุบัติเหตุ-ฉุกเฉิน', 'icon' => 'fa-truck-medical', 'color' => '#e74a3b'],
-                                ['url' => '/service_drug', 'label' => 'เภสัชกรรม', 'icon' => 'fa-pills', 'color' => '#f6c23e'],
-                                ['url' => '/service_physic', 'label' => 'กายภาพบำบัด', 'icon' => 'fa-walking', 'color' => '#6610f2'],
-                                ['url' => '/service_healthmed', 'label' => 'แพทย์แผนไทย', 'icon' => 'fa-leaf', 'color' => '#20c997'],
-                                ['url' => '/service_dent', 'label' => 'ทันตกรรม', 'icon' => 'fa-tooth', 'color' => '#fd7e14'],
-                                ['url' => '/service_ncd', 'label' => 'คลินิกโรคเรื้อรัง', 'icon' => 'fa-clipboard-list', 'color' => '#858796'],
-                                ['url' => '/service_pcu', 'label' => 'งานเชิงรุก', 'icon' => 'fa-hand-holding-heart', 'color' => '#5a5c69'],
+                                ['url' => '/hosxp/opd', 'label' => 'ผู้ป่วยนอก', 'icon' => 'fa-user-nurse', 'color' => '#4e73df'],
+                                ['url' => '/hosxp/ipd', 'label' => 'ผู้ป่วยใน', 'icon' => 'fa-bed-pulse', 'color' => '#1cc88a'],
+                                ['url' => '/hosxp/icu', 'label' => 'ผู้ป่วย ICU', 'icon' => 'fa-hospital-user', 'color' => '#e74a3b'],
+                                ['url' => '/hosxp/er', 'label' => 'อุบัติเหตุ-ฉุกเฉิน', 'icon' => 'fa-truck-medical', 'color' => '#e74a3b'],
+                                ['url' => '/hosxp/phar', 'label' => 'เภสัชกรรม', 'icon' => 'fa-pills', 'color' => '#f6c23e'],
+                                ['url' => '/hosxp/physic', 'label' => 'กายภาพบำบัด', 'icon' => 'fa-walking', 'color' => '#6610f2'],
+                                ['url' => '/hosxp/hmed', 'label' => 'แพทย์แผนไทย', 'icon' => 'fa-leaf', 'color' => '#20c997'],
+                                ['url' => '/hosxp/dent', 'label' => 'ทันตกรรม', 'icon' => 'fa-tooth', 'color' => '#fd7e14'],
+                                ['url' => '/hosxp/ncd', 'label' => 'คลินิกโรคเรื้อรัง', 'icon' => 'fa-clipboard-list', 'color' => '#858796'],
+                                ['url' => '/hosxp/pcu', 'label' => 'งานเชิงรุก', 'icon' => 'fa-hand-holding-heart', 'color' => '#5a5c69'],
                             ];
                         @endphp
 
@@ -56,12 +57,12 @@
                     <div class="row g-3">
                         @php
                             $supportItems = [
-                                ['url' => '/backoffice_asset', 'label' => 'งานทรัพย์สิน', 'icon' => 'fa-boxes-stacked', 'color' => '#4e73df', 'permission' => 'hasAccessAsset'],
-                                ['url' => '/backoffice_hrd', 'label' => 'บุคลากร', 'icon' => 'fa-id-card', 'color' => '#1cc88a', 'permission' => 'hasAccessPersonnel'],
-                                ['url' => '/backoffice_risk', 'label' => 'อุบัติการณ์', 'icon' => 'fa-triangle-exclamation', 'color' => '#e74a3b', 'permission' => 'hasAccessIncident'],
+                                ['url' => '#', 'label' => 'งานทรัพย์สิน', 'icon' => 'fa-boxes-stacked', 'color' => '#4e73df', 'permission' => 'hasAccessAsset'],
+                                ['url' => '/backoffice/hrd', 'label' => 'บุคลากร', 'icon' => 'fa-id-card', 'color' => '#1cc88a', 'permission' => 'hasAccessPersonnel'],
+                                ['url' => '#', 'label' => 'อุบัติการณ์', 'icon' => 'fa-triangle-exclamation', 'color' => '#e74a3b', 'permission' => 'hasAccessIncident'],
                                 ['url' => '/skpcard', 'label' => 'บัตรสังฆะประชาร่วมใจ', 'icon' => 'fa-address-card', 'color' => '#f6c23e', 'permission' => 'hasAccessSkpcard'],
-                                ['url' => '/form', 'label' => 'ระบบตรวจสอบ', 'icon' => 'fa-check-to-slot', 'color' => '#6610f2', 'permission' => 'hasAccessAudit'],
-                                ['url' => '/form', 'label' => 'แบบประเมิน', 'icon' => 'fa-clipboard-check', 'color' => '#20c997', 'permission' => 'hasAccessAssessment'],
+                                ['url' => '#', 'label' => 'ระบบตรวจสอบ', 'icon' => 'fa-check-to-slot', 'color' => '#6610f2', 'permission' => 'hasAccessAudit'],
+                                ['url' => '#', 'label' => 'แบบประเมิน', 'icon' => 'fa-clipboard-check', 'color' => '#20c997', 'permission' => 'hasAccessAssessment'],
                             ];
                         @endphp
 

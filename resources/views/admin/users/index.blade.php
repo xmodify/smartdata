@@ -78,7 +78,7 @@
                             @endif
                         </td>
                         <td>
-                            @if($user->active)
+                            @if($user->active === 'Y')
                                 <span class="badge bg-success-subtle text-success rounded-pill px-3"><i class="fas fa-check-circle me-1"></i>ใช้งานอยู่</span>
                             @else
                                 <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3"><i class="fas fa-times-circle me-1"></i>ปิดใช้งาน</span>
@@ -127,7 +127,7 @@
             document.getElementById('edit_email').value = user.email;
             document.getElementById('edit_username').value = user.username;
             document.getElementById('edit_role').value = user.role;
-            document.getElementById('edit_active').checked = !!user.active;
+            document.getElementById('edit_active').checked = user.active === 'Y';
 
             document.getElementById('edit_allow_hosxp_report').checked = user.allow_hosxp_report === 'Y';
             document.getElementById('edit_allow_asset').checked = user.allow_asset === 'Y';

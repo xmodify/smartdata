@@ -18,6 +18,7 @@
     
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -73,11 +74,6 @@
                             </div>
                         </div>
 
-                        @if(session('success'))
-                            <div class="alert alert-success small py-2 text-center mb-3">
-                                {{ session('success') }}
-                            </div>
-                        @endif
 
                         <div class="row mb-0">
                             <div class="col-md-12 text-center">
@@ -94,5 +90,28 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ',
+                text: "{{ session('success') }}",
+                confirmButtonText: 'ตกลง',
+                timer: 4000
+            });
+        @endif
+
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'เข้าสู่ระบบไม่สำเร็จ',
+                text: "{{ $errors->first() }}",
+                confirmButtonText: 'ลองอีกครั้ง'
+            });
+        @endif
+    });
+</script>
 </body>
 </html>

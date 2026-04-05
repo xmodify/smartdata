@@ -3,7 +3,7 @@
 @section('title', 'SmartData | ' . $title)
 
 @section('topbar_actions')
-    <a href="{{ route('hosxp.stats.index') }}" class="btn btn-light btn-sm fw-bold shadow-sm"
+    <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm fw-bold shadow-sm"
         style="border-radius: 10px; padding: 5px 15px; color: #4e73df; transition: all 0.3s;">
         <i class="fas fa-chevron-left me-1"></i> ย้อนกลับ
     </a>
@@ -136,7 +136,7 @@
                         </div>
                         <h4 class="fw-bold">อยู่ระหว่างการพัฒนา</h4>
                         <p class="text-muted">ระบบรายงานงานอุบัติเหตุ-ฉุกเฉิน (ER) กำลังอยู่ในขั้นตอนการจัดสรรข้อมูล</p>
-                        <a href="{{ route('hosxp.stats.index') }}" class="btn btn-primary mt-3">
+                        <a href="{{ route('dashboard') }}" class="btn btn-primary mt-3">
                             กลับหน้าหลัก
                         </a>
                     </div>

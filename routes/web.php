@@ -65,6 +65,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\IpdController::class, 'index'])->name('hosxp.ipd.index');
     });
 
+    // ICU Routes
+    Route::prefix('hosxp/icu')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\IcuController::class, 'index'])->name('hosxp.icu.index');
+    });
+
     // Physic Routes
     Route::prefix('hosxp/physic')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\PhysicController::class, 'index'])->name('hosxp.physic.index');

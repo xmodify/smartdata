@@ -3,7 +3,7 @@
 @section('title', 'SmartData | ' . $title)
 
 @section('topbar_actions')
-    <a href="{{ route('hosxp.stats.index') }}" class="btn btn-light btn-sm fw-bold shadow-sm"
+    <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm fw-bold shadow-sm"
         style="border-radius: 10px; padding: 5px 15px; color: #4e73df; transition: all 0.3s;">
         <i class="fas fa-chevron-left me-1"></i> ย้อนกลับ
     </a>
