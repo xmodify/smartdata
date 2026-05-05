@@ -88,6 +88,7 @@ Route::middleware(['auth'])->group(function () {
     // Phar Routes
     Route::prefix('hosxp/phar')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\PharController::class, 'index'])->name('hosxp.phar.index');
+        Route::get('/top20-value', [App\Http\Controllers\Hosxp\PharController::class, 'top20_value'])->name('hosxp.phar.top20_value');
     });
 
     // NCD Routes
