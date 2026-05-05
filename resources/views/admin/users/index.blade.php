@@ -44,7 +44,7 @@
                         <td>
                             <div class="d-flex flex-wrap gap-1">
                                 @if($user->hasAccessHosxpReport())
-                                    <span class="badge bg-secondary-subtle text-indigo border border-indigo-subtle rounded-pill">รายงาน HOSxP</span>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">รายงาน HOSxP</span>
                                 @endif
                                 @if($user->hasAccessAsset())
                                     <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">งานทรัพย์สิน</span>
@@ -62,7 +62,7 @@
                                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">ระบบตรวจสอบ</span>
                                 @endif
                                 @if($user->hasAccessAssessment())
-                                    <span class="badge bg-success-subtle text-indigo border border-indigo-subtle rounded-pill">แบบประเมิน</span>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">แบบประเมิน</span>
                                 @endif
                                 
                                 @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessAudit() && !$user->hasAccessAssessment())

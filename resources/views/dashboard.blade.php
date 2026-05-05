@@ -4,6 +4,7 @@
 
 @section('content')
 <div class="container-fluid px-2 px-md-3">
+    @if(auth()->user()->hasAccessHosxpReport())
     <!-- Service Icon Links -->
     <div class="row mb-4">
         <div class="col-md-12">
@@ -45,6 +46,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Support Icon Links -->
     <div class="row mb-4">

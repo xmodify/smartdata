@@ -32,11 +32,13 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
             'role' => 'required|string|in:admin,user',
             'active' => 'nullable',
+            'allow_hosxp_report' => 'nullable|string|in:Y,N',
             'allow_asset' => 'nullable|string|in:Y,N',
             'allow_personnel' => 'nullable|string|in:Y,N',
             'allow_incident' => 'nullable|string|in:Y,N',
             'allow_skpcard' => 'nullable|string|in:Y,N',
             'allow_audit' => 'nullable|string|in:Y,N',
+            'allow_assessment' => 'nullable|string|in:Y,N',
         ]);
 
         User::create([
@@ -46,11 +48,13 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'active' => $request->active == '1' ? 'Y' : 'N',
+            'allow_hosxp_report' => $request->has('allow_hosxp_report') ? 'Y' : 'N',
             'allow_asset' => $request->has('allow_asset') ? 'Y' : 'N',
             'allow_personnel' => $request->has('allow_personnel') ? 'Y' : 'N',
             'allow_incident' => $request->has('allow_incident') ? 'Y' : 'N',
             'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
             'allow_audit' => $request->has('allow_audit') ? 'Y' : 'N',
+            'allow_assessment' => $request->has('allow_assessment') ? 'Y' : 'N',
         ]);
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
@@ -68,11 +72,13 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8',
             'role' => 'required|string|in:admin,user',
             'active' => 'nullable',
+            'allow_hosxp_report' => 'nullable|string|in:Y,N',
             'allow_asset' => 'nullable|string|in:Y,N',
             'allow_personnel' => 'nullable|string|in:Y,N',
             'allow_incident' => 'nullable|string|in:Y,N',
             'allow_skpcard' => 'nullable|string|in:Y,N',
             'allow_audit' => 'nullable|string|in:Y,N',
+            'allow_assessment' => 'nullable|string|in:Y,N',
         ]);
 
         $updateData = [
@@ -81,11 +87,13 @@ class UserController extends Controller
             'username' => $request->username,
             'role' => $request->role,
             'active' => $request->active == '1' ? 'Y' : 'N',
+            'allow_hosxp_report' => $request->has('allow_hosxp_report') ? 'Y' : 'N',
             'allow_asset' => $request->has('allow_asset') ? 'Y' : 'N',
             'allow_personnel' => $request->has('allow_personnel') ? 'Y' : 'N',
             'allow_incident' => $request->has('allow_incident') ? 'Y' : 'N',
             'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
             'allow_audit' => $request->has('allow_audit') ? 'Y' : 'N',
+            'allow_assessment' => $request->has('allow_assessment') ? 'Y' : 'N',
         ];
 
         if ($request->filled('password')) {
