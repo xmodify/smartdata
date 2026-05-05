@@ -61,7 +61,7 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <a href="{{ route('hosxp.phar.prescription_count') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="small">จำนวนใบสั่งยา</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
@@ -73,9 +73,9 @@
                                     <i class="fas fa-chevron-right text-primary" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <a href="{{ route('hosxp.phar.top20_diag') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">มูลค่าการใช้ยา 20 อันดับโรค  (Primary Diagnosis)</span>
+                                    <span class="small">มูลค่าการใช้ยา 20 อันดับโรค (Primary Diagnosis)</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>
