@@ -11,6 +11,8 @@
 
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
     <style>
         .page-header-container {
             background: #fff;
@@ -111,6 +113,17 @@
             background-color: #f8f9fa;
         }
 
+        /* Soft Header Colors (Pastel) */
+        .header-all { background-color: #f8fafc !important; color: #334155 !important; }
+        .header-ucs-in { background-color: #e0f2fe !important; color: #0369a1 !important; }
+        .header-ucs-out { background-color: #fff7ed !important; color: #9a3412 !important; }
+        .header-ofc { background-color: #f1f5f9 !important; color: #475569 !important; }
+        .header-sss { background-color: #fee2e2 !important; color: #b91c1c !important; }
+        .header-lgo { background-color: #f3e8ff !important; color: #7e22ce !important; }
+        .header-fss { background-color: #dcfce7 !important; color: #15803d !important; }
+        .header-stp { background-color: #fef9c3 !important; color: #a16207 !important; }
+        .header-pay { background-color: #f8fafc !important; color: #334155 !important; }
+
         .card-stats {
             border-radius: 15px;
             transition: transform 0.2s ease, shadow 0.2s ease;
@@ -142,16 +155,49 @@
         }
 
         .header-group {
-            border-bottom: 2px solid #cbd5e1 !important;
+            border-bottom: 2px solid rgba(0,0,0,0.05) !important;
             white-space: nowrap;
             padding: 10px 15px !important;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .sticky-col-header {
+            position: sticky;
+            left: 0;
+            background-color: #f8fafc !important;
+            color: #334155 !important;
+            z-index: 11;
+            border-right: 2px solid #e2e8f0 !important;
+            font-weight: 700;
         }
 
         .table-responsive {
-            border-radius: 15px;
+            border-radius: 12px;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            width: 100%;
+            border: 1px solid #e2e8f0;
+        }
+
+        .table-stats {
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .table-stats th {
+            text-align: center;
+            vertical-align: middle;
+            padding: 10px 15px;
+            font-weight: 600;
+        }
+
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            background-color: #f8f9fa !important;
+            z-index: 10;
+            border-right: 2px solid #dee2e6 !important;
         }
 
         .stat-val {
@@ -340,44 +386,37 @@
         <div class="row">
             <div class="col-12">
                 <div class="card border-0 shadow-sm" style="border-radius: 20px;">
-                    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center p-4">
-                        <div>
-                            <h5 class="fw-bold mb-0">ตารางสถิติผู้รับบริการแยกตามกลุ่มสิทธิการรักษาหลัก</h5>
-                            <p class="text-muted small mb-0">แสดงจำนวนการรับบริการ (Visit) และรายได้ (Income)
-                                แบ่งตามกองทุนหลัก</p>
-                        </div>
+                    <div class="card-header bg-pastel-blue py-3 border-0 d-flex justify-content-between align-items-center" style="border-radius: 20px 20px 0 0;">
+                        <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-table me-2"></i>ตารางสถิติแยกตามกลุ่มสิทธิการรักษาหลัก</h6>
                         <div class="d-flex align-items-center gap-2">
-                            <div class="badge bg-info-subtle text-info p-2 rounded-3 border">
-                                <i class="fas fa-info-circle me-1"></i> ข้อมูลกรองตามปีงบประมาณ {{ $budget_year }}
-                            </div>
-                            <button class="btn btn-success btn-sm shadow-sm px-3" onclick="exportToExcel()">
+                            <button type="button" class="btn btn-sm btn-success px-2 shadow-sm btn-export-excel" data-target="#opdStatsTable" style="font-size: 0.75rem; padding: 2px 8px;">
                                 <i class="fas fa-file-excel me-1"></i> Excel
                             </button>
                         </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover table-opd-stats mb-0" id="opdStatsTable">
+                            <table class="table table-bordered table-hover table-stats mb-0" id="opdStatsTable">
                                 <thead>
                                     <tr>
-                                        <th rowspan="2" class="align-middle border-end bg-light">เดือน</th>
-                                        <th colspan="4" class="header-group bg-pastel-blue text-dark border-end">
+                                        <th rowspan="2" class="sticky-col-header">เดือน</th>
+                                        <th colspan="4" class="header-group header-all border-end">
                                             ทั้งหมด</th>
-                                        <th colspan="4" class="header-group bg-pastel-green text-dark border-end">
+                                        <th colspan="4" class="header-group header-ucs-in border-end">
                                             ประกันสุขภาพ ใน CUP</th>
-                                        <th colspan="4" class="header-group bg-pastel-amber text-dark border-end">
+                                        <th colspan="4" class="header-group header-ucs-out border-end">
                                             ประกันสุขภาพ นอก CUP</th>
-                                        <th colspan="4" class="header-group bg-pastel-purple text-dark border-end">
+                                        <th colspan="4" class="header-group header-ofc border-end">
                                             ข้าราชการ</th>
-                                        <th colspan="4" class="header-group bg-pastel-rose text-dark border-end">
+                                        <th colspan="4" class="header-group header-sss border-end">
                                             ประกันสังคม</th>
-                                        <th colspan="4" class="header-group bg-pastel-cyan text-dark border-end">อปท.
+                                        <th colspan="4" class="header-group header-lgo border-end">อปท.
                                         </th>
-                                        <th colspan="4" class="header-group bg-pastel-teal text-dark border-end">
+                                        <th colspan="4" class="header-group header-fss border-end">
                                             ต่างด้าว</th>
-                                        <th colspan="4" class="header-group bg-pastel-orange text-dark border-end">
+                                        <th colspan="4" class="header-group header-stp border-end">
                                             Stateless (STP)</th>
-                                        <th colspan="4" class="header-group bg-pastel-gray text-dark">ชำระเงิน/อื่นๆ
+                                        <th colspan="4" class="header-group header-pay">ชำระเงิน/อื่นๆ
                                         </th>
                                     </tr>
                                     <tr>
@@ -430,7 +469,7 @@
                                 <tbody>
                                     @foreach ($visit_month as $row)
                                         <tr>
-                                            <td class="fw-bold text-center border-end bg-light">{{ $row->month }}</td>
+                                            <td class="sticky-col text-center fw-bold">{{ $row->month }}</td>
                                             <td class="text-num col-visit bg-pastel-blue fw-bold">
                                                 {{ number_format($row->visit) }}</td>
                                             <td class="text-num col-income bg-pastel-blue fw-bold text-success">
@@ -509,7 +548,7 @@
                                 </tbody>
                                 <tfoot class="bg-light fw-bold border-top-2">
                                     <tr>
-                                        <td class="text-center">รวม</td>
+                                        <td class="sticky-col text-center">รวม</td>
                                         <td class="text-num bg-pastel-blue">
                                             {{ number_format(array_sum(array_column($visit_month, 'visit'))) }}</td>
                                         <td class="text-num bg-pastel-blue text-success">
@@ -620,15 +659,44 @@
                         </div>
                     </div>
                 </div>
+        <!-- Cost Charts Section -->
+        <div class="row g-4 mt-2 mb-4">
+            <!-- Monthly Drug Cost Chart -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h5 class="fw-bold mb-0">กราฟสรุปค่ายารวมรายเดือน</h5>
+                        <p class="text-muted small">แสดงมูลค่าการใช้ยา (Drug) แยกตามเดือนในปีงบประมาณ {{ $budget_year }}</p>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="drugCostChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Lab Cost Chart -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h5 class="fw-bold mb-0">กราฟสรุปค่าแล็บรวมรายเดือน</h5>
+                        <p class="text-muted small">แสดงมูลค่าการใช้บริการห้องแล็บ (Lab) แยกตามเดือนในปีงบประมาณ {{ $budget_year }}</p>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="labCostChart" class="chart-container"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
     @push('scripts')
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
         <script>
             $(document).ready(function() {
                 if (typeof flatpickr !== 'undefined') {
@@ -649,8 +717,6 @@
                                     instance.altInput.value = `${day} ${month} ${year}`;
                                 }
                             }
-
-                            // Add Today Button
                             const container = instance.calendarContainer;
                             if (container && !container.querySelector('.flatpickr-today-button')) {
                                 const btn = document.createElement("div");
@@ -658,7 +724,6 @@
                                 btn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> วันนี้';
                                 btn.addEventListener("mousedown", function(e) {
                                     e.preventDefault();
-                                    e.stopPropagation();
                                     instance.setDate(new Date());
                                     instance.close();
                                 });
@@ -681,26 +746,23 @@
                     const startPicker = flatpickr("#start_date", commonConfig);
                     const endPicker = flatpickr("#end_date", commonConfig);
 
-                    // Update start_date and end_date based on budget_year change
                     $('select[name="budget_year"]').on('change', function() {
                         var selectedYear = parseInt($(this).val());
                         if(!isNaN(selectedYear)) {
-                            // Calculate budget year ranges
-                            var startYear = selectedYear - 544; // Example: 2567 -> 2023
-                            var endYear = selectedYear - 543;   // Example: 2567 -> 2024
+                            var startYear = selectedYear - 544;
+                            var endYear = selectedYear - 543;
                             var startDateStr = startYear + "-10-01";
                             var endDateStr = endYear + "-09-30";
-                            
                             setTimeout(() => {
-                                if (typeof startPicker !== 'undefined' && startPicker) startPicker.setDate(startDateStr, true);
-                                if (typeof endPicker !== 'undefined' && endPicker) endPicker.setDate(endDateStr, true);
+                                if (startPicker) startPicker.setDate(startDateStr, true);
+                                if (endPicker) endPicker.setDate(endDateStr, true);
                             }, 50);
                         }
                     });
                 }
 
-                // Monthly Visit & HN Chart Data
-                var monthlyOptions = {
+                // Monthly Visit & HN Chart
+                const monthlyOptions = {
                     series: [{
                         name: 'จำนวนคน (HN)',
                         data: @json($hns)
@@ -712,68 +774,34 @@
                         type: 'bar',
                         height: 350,
                         stacked: true,
-                        toolbar: {
-                            show: false
-                        },
-                        animations: {
-                            enabled: true
-                        }
+                        toolbar: { show: false }
                     },
-                    width: '100%',
+                    colors: ['#6366f1', '#a855f7'],
                     plotOptions: {
                         bar: {
                             columnWidth: '70%',
-                            borderRadius: 4,
-                            dataLabels: {
-                                position: 'center'
-                            }
+                            borderRadius: 4
                         }
                     },
-                    colors: ['#6366f1', '#a855f7'], // Indigo and Purple
                     dataLabels: {
                         enabled: true,
-                        style: {
-                            fontSize: '11px',
-                            fontWeight: 'bold',
-                            colors: ['#fff']
-                        },
-                        formatter: function(val) {
-                            return val > 0 ? val.toLocaleString() : '';
-                        }
+                        style: { fontSize: '11px', fontWeight: 'bold', colors: ['#fff'] },
+                        formatter: val => val > 0 ? val.toLocaleString() : ''
                     },
                     xaxis: {
                         categories: @json($months),
-                        title: {
-                            text: 'เดือน'
-                        }
                     },
                     yaxis: {
-                        title: {
-                            text: 'จำนวนครั้ง/คน'
-                        },
-                        labels: {
-                            formatter: function(val) {
-                                return val.toLocaleString();
-                            }
-                        }
+                        labels: { formatter: val => val.toLocaleString() }
                     },
-                    tooltip: {
-                        y: {
-                            formatter: function(val) {
-                                return val.toLocaleString() + " ราย";
-                            }
-                        }
-                    },
-                    legend: {
-                        position: 'top'
-                    }
+                    legend: { position: 'top' }
                 };
 
-                var monthlyChart = new ApexCharts(document.querySelector("#monthlyChart"), monthlyOptions);
+                const monthlyChart = new ApexCharts(document.querySelector("#monthlyChart"), monthlyOptions);
                 monthlyChart.render();
 
-                // OP vs PP Chart Data
-                var opPpOptions = {
+                // OP vs PP Chart
+                const opPpOptions = {
                     series: [{
                         name: 'ทั่วไป (OP)',
                         data: @json($visit_ops)
@@ -785,80 +813,139 @@
                         type: 'bar',
                         height: 350,
                         stacked: true,
-                        toolbar: {
-                            show: false
-                        }
+                        toolbar: { show: false }
                     },
-                    width: '100%',
+                    colors: ['#f97316', '#06b6d4'],
                     plotOptions: {
                         bar: {
                             columnWidth: '70%',
-                            borderRadius: 4,
-                            dataLabels: {
-                                position: 'center'
-                            }
+                            borderRadius: 4
                         }
                     },
-                    colors: ['#f97316', '#06b6d4'],
                     dataLabels: {
                         enabled: true,
-                        style: {
-                            fontSize: '11px',
-                            fontWeight: 'bold',
-                            colors: ['#fff']
-                        },
-                        formatter: function(val) {
-                            return val > 0 ? val.toLocaleString() : '';
+                        style: { fontSize: '11px', fontWeight: 'bold', colors: ['#fff'] },
+                        formatter: val => val > 0 ? val.toLocaleString() : ''
+                    },
+                    xaxis: {
+                        categories: @json($months),
+                    },
+                    yaxis: {
+                        labels: { formatter: val => val.toLocaleString() }
+                    },
+                    legend: { position: 'top' }
+                };
+
+                const opPpChart = new ApexCharts(document.querySelector("#opPpChart"), opPpOptions);
+                opPpChart.render();
+
+                // Excel Export
+                $('.btn-export-excel').on('click', function() {
+                    const target = $(this).data('target');
+                    const title = $(this).closest('.card-header').find('h6').text().trim();
+                    const dt = $(target).DataTable({
+                        destroy: true,
+                        paging: false,
+                        searching: false,
+                        info: false,
+                        ordering: false,
+                        autoWidth: false,
+                        dom: 'tB',
+                        buttons: [{
+                            extend: 'excelHtml5',
+                            title: title,
+                            messageTop: 'ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}',
+                            filename: title + '_{{ date("Ymd") }}'
+                        }]
+                    });
+                    dt.button(0).trigger();
+                    dt.destroy();
+                });
+
+                // Drug Cost Chart
+                const drugCostOptions = {
+                    series: [{
+                        name: 'ค่ายารวม',
+                        data: @json($inc_drugs)
+                    }],
+                    chart: {
+                        type: 'area',
+                        height: 350,
+                        toolbar: { show: false },
+                        zoom: { enabled: false }
+                    },
+                    colors: ['#ef4444'],
+                    dataLabels: {
+                        enabled: true,
+                        formatter: val => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                    },
+                    stroke: { curve: 'smooth', width: 3 },
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shadeIntensity: 1,
+                            opacityFrom: 0.45,
+                            opacityTo: 0.05,
+                            stops: [20, 100, 100, 100]
                         }
                     },
                     xaxis: {
                         categories: @json($months),
-                        title: {
-                            text: 'เดือน'
-                        }
                     },
                     yaxis: {
-                        title: {
-                            text: 'จำนวนครั้ง'
-                        }
+                        labels: { formatter: val => val.toLocaleString() }
                     },
+                    markers: { size: 4 },
                     tooltip: {
-                        y: {
-                            formatter: function(val) {
-                                return val.toLocaleString() + " ครั้ง";
-                            }
-                        }
-                    },
-                    legend: {
-                        position: 'top'
+                        y: { formatter: val => val.toLocaleString() + ' บาท' }
                     }
                 };
 
-                var opPpChart = new ApexCharts(document.querySelector("#opPpChart"), opPpOptions);
-                opPpChart.render();
-            });
+                const drugCostChart = new ApexCharts(document.querySelector("#drugCostChart"), drugCostOptions);
+                drugCostChart.render();
 
-            function exportToExcel() {
-                const table = document.getElementById("opdStatsTable");
-                let csv = [];
-                for (let i = 0; i < table.rows.length; i++) {
-                    let row = [],
-                        cols = table.rows[i].querySelectorAll("td, th");
-                    for (let j = 0; j < cols.length; j++) {
-                        let text = cols[j].innerText.replace(/,/g, ""); // Remove commas from numbers
-                        row.push('"' + text + '"');
+                // Lab Cost Chart
+                const labCostOptions = {
+                    series: [{
+                        name: 'ค่าแล็บรวม',
+                        data: @json($inc_labs)
+                    }],
+                    chart: {
+                        type: 'area',
+                        height: 350,
+                        toolbar: { show: false },
+                        zoom: { enabled: false }
+                    },
+                    colors: ['#10b981'],
+                    dataLabels: {
+                        enabled: true,
+                        formatter: val => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
+                    },
+                    stroke: { curve: 'smooth', width: 3 },
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shadeIntensity: 1,
+                            opacityFrom: 0.45,
+                            opacityTo: 0.05,
+                            stops: [20, 100, 100, 100]
+                        }
+                    },
+                    xaxis: {
+                        categories: @json($months),
+                    },
+                    yaxis: {
+                        labels: { formatter: val => val.toLocaleString() }
+                    },
+                    markers: { size: 4 },
+                    tooltip: {
+                        y: { formatter: val => val.toLocaleString() + ' บาท' }
                     }
-                    csv.push(row.join(","));
-                }
-                const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + csv.join("\n");
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "opd_stats_{{ $budget_year }}.csv");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+                };
+
+                const labCostChart = new ApexCharts(document.querySelector("#labCostChart"), labCostOptions);
+                labCostChart.render();
+            });
         </script>
     @endpush
 @endsection

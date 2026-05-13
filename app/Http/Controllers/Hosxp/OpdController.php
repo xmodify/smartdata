@@ -89,6 +89,8 @@ class OpdController extends Controller
         $visit_ops = array_map('intval', array_column($visit_month, 'visit_op'));
         $visit_pps = array_map('intval', array_column($visit_month, 'visit_pp'));
         $incomes = array_map('floatval', array_column($visit_month, 'income'));
+        $inc_drugs = array_map('floatval', array_column($visit_month, 'inc_drug'));
+        $inc_labs = array_map('floatval', array_column($visit_month, 'inc_lab'));
 
         return view('hosxp.opd.index', compact(
             'title',
@@ -103,7 +105,9 @@ class OpdController extends Controller
             'repeat_visits',
             'visit_ops',
             'visit_pps',
-            'incomes'
+            'incomes',
+            'inc_drugs',
+            'inc_labs'
         ));
     }
 
