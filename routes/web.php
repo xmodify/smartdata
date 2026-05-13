@@ -86,6 +86,9 @@ Route::middleware(['auth'])->group(function () {
     // Dent Routes
     Route::prefix('hosxp/dent')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\DentController::class, 'index'])->name('hosxp.dent.index');
+        Route::get('/service-stats', [App\Http\Controllers\Hosxp\DentController::class, 'service_stats'])->name('hosxp.dent.service_stats');
+        Route::get('/top20-diag', [App\Http\Controllers\Hosxp\DentController::class, 'top20_diag'])->name('hosxp.dent.top20_diag');
+        Route::get('/service-value', [App\Http\Controllers\Hosxp\DentController::class, 'service_value'])->name('hosxp.dent.service_value');
     });
 
     // Phar Routes

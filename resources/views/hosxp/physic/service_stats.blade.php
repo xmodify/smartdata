@@ -514,20 +514,56 @@
                     { name: 'OFC', data: {!! json_encode(array_column($stats_opd, 'visit_ofc')) !!} },
                     { name: 'SSS', data: {!! json_encode(array_column($stats_opd, 'visit_sss')) !!} },
                     { name: 'LGO', data: {!! json_encode(array_column($stats_opd, 'visit_lgo')) !!} },
-                    { name: 'Pay/PRB', data: {!! json_encode(array_column($stats_opd, 'visit_pay')) !!} }
+                    { name: 'Pay', data: {!! json_encode(array_column($stats_opd, 'visit_pay')) !!} }
                 ];
 
                 const chartOptions = {
                     series: series_opd,
-                    chart: { type: 'line', height: 350, toolbar: { show: true }, zoom: { enabled: false } },
-                    stroke: { curve: 'smooth', width: 3 },
-                    markers: { size: 4 },
-                    dataLabels: { enabled: false },
-                    xaxis: { categories: categories_opd },
-                    yaxis: { title: { text: 'จำนวนครั้ง (Visit)' } },
+                    chart: { 
+                        type: 'bar', 
+                        height: 450, 
+                        toolbar: { show: true }, 
+                        zoom: { enabled: false },
+                        animations: { enabled: true, easing: 'easeinout', speed: 800 }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: '80%',
+                            borderRadius: 4,
+                            dataLabels: { position: 'top' }
+                        }
+                    },
+                    dataLabels: { 
+                        enabled: true,
+                        offsetY: -20,
+                        style: { 
+                            fontSize: '11px', 
+                            fontWeight: 'bold',
+                            colors: ["#444"] 
+                        },
+                        formatter: function(val) {
+                            return val > 0 ? val : '';
+                        }
+                    },
+                    stroke: { show: true, width: 1, colors: ['transparent'] },
+                    xaxis: { 
+                        categories: categories_opd,
+                        labels: { style: { fontSize: '12px', fontWeight: 600 } }
+                    },
+                    yaxis: { 
+                        title: { text: 'จำนวนครั้ง (Visit)', style: { fontWeight: 600 } },
+                        labels: { formatter: (val) => val.toLocaleString() }
+                    },
+                    fill: { opacity: 1 },
+                    legend: {
+                        show: true,
+                        position: 'top',
+                        horizontalAlign: 'center',
+                    },
                     tooltip: { y: { formatter: function (val) { return val + " ครั้ง" } } },
                     colors: ['#0ea5e9', '#eab308', '#22c55e', '#a855f7', '#ef4444'],
-                    grid: { borderColor: '#f1f1f1' }
+                    grid: { borderColor: '#f1f1f1', padding: { top: 10 } }
                 };
 
                 const chartOpd = new ApexCharts(document.querySelector("#chart-opd"), chartOptions);
@@ -540,14 +576,20 @@
                     { name: 'OFC', data: {!! json_encode(array_column($stats_ipd, 'visit_ofc')) !!} },
                     { name: 'SSS', data: {!! json_encode(array_column($stats_ipd, 'visit_sss')) !!} },
                     { name: 'LGO', data: {!! json_encode(array_column($stats_ipd, 'visit_lgo')) !!} },
-                    { name: 'Pay/PRB', data: {!! json_encode(array_column($stats_ipd, 'visit_pay')) !!} }
+                    { name: 'Pay', data: {!! json_encode(array_column($stats_ipd, 'visit_pay')) !!} }
                 ];
                 
                 const ipdOptions = { 
                     ...chartOptions, 
                     series: series_ipd,
-                    xaxis: { categories: categories_ipd },
-                    yaxis: { title: { text: 'จำนวนครั้ง (Admission)' } }
+                    xaxis: { 
+                        ...chartOptions.xaxis,
+                        categories: categories_ipd 
+                    },
+                    yaxis: { 
+                        ...chartOptions.yaxis,
+                        title: { ...chartOptions.yaxis.title, text: 'จำนวนครั้ง (Admission)' } 
+                    }
                 };
                 const chartIpd = new ApexCharts(document.querySelector("#chart-ipd"), ipdOptions);
                 chartIpd.render();

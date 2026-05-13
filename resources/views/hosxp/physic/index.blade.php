@@ -69,7 +69,7 @@
                             </a>  
                             <a href="{{ route('hosxp.physic.top20_diag') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">20 อันดับโรค กายภาพบำบัด</span>
+                                    <span class="small">20 อันดับโรคกายภาพบำบัด</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>

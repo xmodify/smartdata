@@ -4,7 +4,7 @@
 
 @section('topbar_actions')
     <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm fw-bold shadow-sm"
-        style="border-radius: 10px; padding: 5px 15px; color: #4e73df; transition: all 0.3s;">
+        style="border-radius: 10px; padding: 5px 15px; color: #a855f7; transition: all 0.3s;">
         <i class="fas fa-chevron-left me-1"></i> ย้อนกลับ
     </a>
 @endsection
@@ -61,25 +61,19 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <a href="{{ route('hosxp.dent.service_stats') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="small">สถิติผู้รับบริการทันตกรรม</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>                            
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <a href="{{ route('hosxp.dent.top20_diag') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">จำนวนครั้งการให้บริการแยกตามสิทธิการรักษา</span>
+                                    <span class="small">20 อันดับโรคทันตกรรม</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">10 อันดับโรคที่มารับบริการทันตกรรม</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <a href="{{ route('hosxp.dent.service_value') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="small">มูลค่าการให้บริการทันตกรรม</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>

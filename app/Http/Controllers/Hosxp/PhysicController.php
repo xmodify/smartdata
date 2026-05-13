@@ -90,11 +90,11 @@ class PhysicController extends Controller
                 LEFT JOIN (
                     SELECT 
                         ot.vn, ot.pttype, 
-                        SUM(CASE WHEN n.nhso_adp_type_id = "20" THEN ot.sum_price ELSE 0 END) AS sum_price_service,
-                        SUM(CASE WHEN n.nhso_adp_type_id = "02" THEN ot.sum_price ELSE 0 END) AS sum_price_inst
+                        SUM(CASE WHEN n.income = "14" THEN ot.sum_price ELSE 0 END) AS sum_price_service,
+                        SUM(CASE WHEN n.income = "02" THEN ot.sum_price ELSE 0 END) AS sum_price_inst
                     FROM opitemrece ot
                     INNER JOIN nondrugitems n ON n.icode = ot.icode
-                    WHERE n.nhso_adp_type_id IN ("02", "20")
+                    WHERE n.income IN ("02", "14")
                       AND ot.rxdate BETWEEN ? AND ? 
                     GROUP BY ot.vn, ot.pttype 
                 ) o1 ON o1.vn = o.vn AND o1.pttype = COALESCE(vp.pttype, o.pttype)
@@ -170,11 +170,11 @@ class PhysicController extends Controller
                 LEFT JOIN (
                     SELECT 
                         ot.an,
-                        SUM(CASE WHEN n.nhso_adp_type_id = "20" THEN ot.sum_price ELSE 0 END) AS sum_price_service,
-                        SUM(CASE WHEN n.nhso_adp_type_id = "02" THEN ot.sum_price ELSE 0 END) AS sum_price_inst
+                        SUM(CASE WHEN n.income = "14" THEN ot.sum_price ELSE 0 END) AS sum_price_service,
+                        SUM(CASE WHEN n.income = "02" THEN ot.sum_price ELSE 0 END) AS sum_price_inst
                     FROM opitemrece ot
                     INNER JOIN nondrugitems n ON n.icode = ot.icode
-                    WHERE n.nhso_adp_type_id IN ("02", "20")
+                    WHERE n.income IN ("02", "14")
                       AND ot.an IS NOT NULL
                     GROUP BY ot.an
                 ) o1 ON o1.an = i.an
@@ -250,7 +250,7 @@ class PhysicController extends Controller
             WHERE o.vstdate BETWEEN ? AND ?
               AND ot.rxdate BETWEEN ? AND ?
               AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = o.vn)
-              AND n.nhso_adp_type_id IN ("20")
+              AND n.income IN ("14")
             GROUP BY ot.icode
             ORDER BY sum_price DESC
         ', [$start_date, $end_date, $start_date, $end_date]);
@@ -272,7 +272,7 @@ class PhysicController extends Controller
             WHERE o.vstdate BETWEEN ? AND ?
               AND ot.rxdate BETWEEN ? AND ?
               AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = o.vn)
-              AND n.nhso_adp_type_id IN ("02")
+              AND n.income IN ("02")
             GROUP BY ot.icode
             ORDER BY sum_price DESC
         ', [$start_date, $end_date, $start_date, $end_date]);
@@ -294,7 +294,7 @@ class PhysicController extends Controller
             WHERE o.vstdate BETWEEN ? AND ?
               AND ot.rxdate BETWEEN ? AND ?
               AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = o.vn)
-              AND n.nhso_adp_type_id NOT IN ("02", "20")
+              AND n.income NOT IN ("02", "14")
             GROUP BY ot.icode
             ORDER BY sum_price DESC
             LIMIT 100
