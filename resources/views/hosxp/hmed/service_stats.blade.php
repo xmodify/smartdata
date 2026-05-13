@@ -98,11 +98,6 @@
             z-index: 1;
         }
 
-        @media (max-width: 768px) {
-            .page-header-container { flex-direction: column; align-items: flex-start !important; gap: 1rem; }
-            .header-form-controls { width: 100%; flex-wrap: wrap; }
-            .input-group-date, .input-group-budget { width: 100% !important; }
-        }
     </style>
 @endpush
 

@@ -303,6 +303,46 @@
                 justify-content: center;
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             }
+
+            .page-header-container {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                padding: 1rem !important;
+            }
+
+            .header-form-controls {
+                width: 100% !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                margin-top: 1rem !important;
+            }
+
+            .input-group-date,
+            .input-group-budget {
+                width: 100% !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .report-title-box {
+                width: 100%;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 0.5rem;
+            }
+            
+            .content-area {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+
+            .table-stats thead th, 
+            .table-stats tbody td,
+            .table thead th,
+            .table tbody td,
+            .dataTable thead th,
+            .dataTable tbody td {
+                font-size: 0.75rem !important;
+                padding: 8px 4px !important;
+            }
         }
     </style>
     @stack('styles')

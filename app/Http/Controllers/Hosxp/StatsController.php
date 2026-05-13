@@ -100,8 +100,8 @@ class StatsController extends Controller
                 $start_date = $year_data->DATE_BEGIN;
                 $end_date = $year_data->DATE_END;
             } else {
-                $start_date = ($budget_year - 543) . '-10-01';
-                $end_date = ($budget_year - 542) . '-09-30';
+                $start_date = ($budget_year - 544) . '-10-01';
+                $end_date = ($budget_year - 543) . '-09-30';
             }
         }
 
