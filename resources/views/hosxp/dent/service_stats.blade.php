@@ -383,7 +383,7 @@
                     
                     // Create a temporary DataTable to handle export
                     const dt = $(target).DataTable({
-                        retrieve: true,
+                        destroy: true,
                         paging: false,
                         searching: false,
                         info: false,
@@ -398,6 +398,7 @@
                         }]
                     });
                     dt.button(0).trigger();
+                    dt.destroy();
                 });
             });
         </script>

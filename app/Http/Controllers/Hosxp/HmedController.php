@@ -96,11 +96,13 @@ class HmedController extends Controller
                 LEFT JOIN (
                     SELECT 
                         ot.vn, ot.pttype, 
-                        SUM(CASE WHEN n.income = "15" THEN ot.sum_price ELSE 0 END) AS sum_price_service,
-                        SUM(CASE WHEN n.income <> "15" THEN ot.sum_price ELSE 0 END) AS sum_price_other
+                        SUM(ot.sum_price) AS sum_price_service,
+                        0 AS sum_price_other
                     FROM opitemrece ot
                     INNER JOIN nondrugitems n ON n.icode = ot.icode
                     WHERE ot.vstdate BETWEEN ? AND ? 
+                      AND n.income = "15"
+                      AND EXISTS (SELECT 1 FROM health_med_service hms2 WHERE hms2.vn = ot.vn)
                     GROUP BY ot.vn, ot.pttype 
                 ) o1 ON o1.vn = o.vn AND o1.pttype = COALESCE(vp.pttype, o.pttype)
                 WHERE o.vstdate BETWEEN ? AND ?

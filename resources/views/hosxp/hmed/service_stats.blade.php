@@ -178,31 +178,31 @@
                                         <thead>
                                             <tr>
                                                 <th rowspan="2" class="sticky-col">เดือน</th>
-                                                <th colspan="4" class="bg-light">รวมทั้งหมด</th>
-                                                <th colspan="4" style="background-color: #e0f2fe;">ประกันสุขภาพ (UCS)</th>
-                                                <th colspan="4" style="background-color: #fef9c3;">ข้าราชการ (OFC)</th>
-                                                <th colspan="4" style="background-color: #dcfce7;">ประกันสังคม (SSS)</th>
-                                                <th colspan="4" style="background-color: #f3e8ff;">อปท. (LGO)</th>
-                                                <th colspan="4" style="background-color: #fee2e2;">ชำระเงิน/พรบ.</th>
+                                                <th colspan="3" class="bg-light">รวมทั้งหมด</th>
+                                                <th colspan="3" style="background-color: #e0f2fe;">ประกันสุขภาพ (UCS)</th>
+                                                <th colspan="3" style="background-color: #fef9c3;">ข้าราชการ (OFC)</th>
+                                                <th colspan="3" style="background-color: #dcfce7;">ประกันสังคม (SSS)</th>
+                                                <th colspan="3" style="background-color: #f3e8ff;">อปท. (LGO)</th>
+                                                <th colspan="3" style="background-color: #fee2e2;">ชำระเงิน/พรบ.</th>
                                             </tr>
                                             <tr>
-                                                <th class="bg-light">HN</th><th class="bg-light">Visit</th><th class="bg-light">แพทย์แผนไทย</th><th class="bg-light">ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
+                                                <th class="bg-light">HN</th><th class="bg-light">Visit</th><th class="bg-light">แพทย์แผนไทย</th>
+                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th>
+                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th>
+                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th>
+                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th>
+                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @php
                                                 $totals = [
-                                                    'hn' => 0, 'visit' => 0, 'service' => 0, 'other' => 0,
-                                                    'hn_ucs' => 0, 'visit_ucs' => 0, 'service_ucs' => 0, 'other_ucs' => 0,
-                                                    'hn_ofc' => 0, 'visit_ofc' => 0, 'service_ofc' => 0, 'other_ofc' => 0,
-                                                    'hn_sss' => 0, 'visit_sss' => 0, 'service_sss' => 0, 'other_sss' => 0,
-                                                    'hn_lgo' => 0, 'visit_lgo' => 0, 'service_lgo' => 0, 'other_lgo' => 0,
-                                                    'hn_pay' => 0, 'visit_pay' => 0, 'service_pay' => 0, 'other_pay' => 0,
+                                                    'hn' => 0, 'visit' => 0, 'service' => 0,
+                                                    'hn_ucs' => 0, 'visit_ucs' => 0, 'service_ucs' => 0,
+                                                    'hn_ofc' => 0, 'visit_ofc' => 0, 'service_ofc' => 0,
+                                                    'hn_sss' => 0, 'visit_sss' => 0, 'service_sss' => 0,
+                                                    'hn_lgo' => 0, 'visit_lgo' => 0, 'service_lgo' => 0,
+                                                    'hn_pay' => 0, 'visit_pay' => 0, 'service_pay' => 0,
                                                 ];
                                             @endphp
                                             @foreach($stats_opd as $row)
@@ -211,40 +211,34 @@
                                                 <td class="text-center">{{ number_format($row->total_hn) }}</td>
                                                 <td class="text-center text-primary fw-bold">{{ number_format($row->total_visit) }}</td>
                                                 <td class="text-end">{{ number_format($row->total_sum_service, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->total_sum_other, 2) }}</td>
                                                 
                                                 <td class="text-center">{{ number_format($row->hn_ucs) }}</td>
                                                 <td class="text-center fw-bold">{{ number_format($row->visit_ucs) }}</td>
                                                 <td class="text-end">{{ number_format($row->sum_price_service_ucs, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_ucs, 2) }}</td>
 
                                                 <td class="text-center">{{ number_format($row->hn_ofc) }}</td>
                                                 <td class="text-center fw-bold">{{ number_format($row->visit_ofc) }}</td>
                                                 <td class="text-end">{{ number_format($row->sum_price_service_ofc, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_ofc, 2) }}</td>
 
                                                 <td class="text-center">{{ number_format($row->hn_sss) }}</td>
                                                 <td class="text-center fw-bold">{{ number_format($row->visit_sss) }}</td>
                                                 <td class="text-end">{{ number_format($row->sum_price_service_sss, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_sss, 2) }}</td>
 
                                                 <td class="text-center">{{ number_format($row->hn_lgo) }}</td>
                                                 <td class="text-center fw-bold">{{ number_format($row->visit_lgo) }}</td>
                                                 <td class="text-end">{{ number_format($row->sum_price_service_lgo, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_lgo, 2) }}</td>
 
                                                 <td class="text-center">{{ number_format($row->hn_pay) }}</td>
                                                 <td class="text-center fw-bold">{{ number_format($row->visit_pay) }}</td>
                                                 <td class="text-end">{{ number_format($row->sum_price_service_pay, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_pay, 2) }}</td>
                                             </tr>
                                             @php
-                                                $totals['hn'] += $row->total_hn; $totals['visit'] += $row->total_visit; $totals['service'] += $row->total_sum_service; $totals['other'] += $row->total_sum_other;
-                                                $totals['hn_ucs'] += $row->hn_ucs; $totals['visit_ucs'] += $row->visit_ucs; $totals['service_ucs'] += $row->sum_price_service_ucs; $totals['other_ucs'] += $row->sum_price_other_ucs;
-                                                $totals['hn_ofc'] += $row->hn_ofc; $totals['visit_ofc'] += $row->visit_ofc; $totals['service_ofc'] += $row->sum_price_service_ofc; $totals['other_ofc'] += $row->sum_price_other_ofc;
-                                                $totals['hn_sss'] += $row->hn_sss; $totals['visit_sss'] += $row->visit_sss; $totals['service_sss'] += $row->sum_price_service_sss; $totals['other_sss'] += $row->sum_price_other_sss;
-                                                $totals['hn_lgo'] += $row->hn_lgo; $totals['visit_lgo'] += $row->visit_lgo; $totals['service_lgo'] += $row->sum_price_service_lgo; $totals['other_lgo'] += $row->sum_price_other_lgo;
-                                                $totals['hn_pay'] += $row->hn_pay; $totals['visit_pay'] += $row->visit_pay; $totals['service_pay'] += $row->sum_price_service_pay; $totals['other_pay'] += $row->sum_price_other_pay;
+                                                $totals['hn'] += $row->total_hn; $totals['visit'] += $row->total_visit; $totals['service'] += $row->total_sum_service;
+                                                $totals['hn_ucs'] += $row->hn_ucs; $totals['visit_ucs'] += $row->visit_ucs; $totals['service_ucs'] += $row->sum_price_service_ucs;
+                                                $totals['hn_ofc'] += $row->hn_ofc; $totals['visit_ofc'] += $row->visit_ofc; $totals['service_ofc'] += $row->sum_price_service_ofc;
+                                                $totals['hn_sss'] += $row->hn_sss; $totals['visit_sss'] += $row->visit_sss; $totals['service_sss'] += $row->sum_price_service_sss;
+                                                $totals['hn_lgo'] += $row->hn_lgo; $totals['visit_lgo'] += $row->visit_lgo; $totals['service_lgo'] += $row->sum_price_service_lgo;
+                                                $totals['hn_pay'] += $row->hn_pay; $totals['visit_pay'] += $row->visit_pay; $totals['service_pay'] += $row->sum_price_service_pay;
                                             @endphp
                                             @endforeach
                                         </tbody>
@@ -254,32 +248,26 @@
                                                 <td class="text-center">{{ number_format($totals['hn']) }}</td>
                                                 <td class="text-center text-primary">{{ number_format($totals['visit']) }}</td>
                                                 <td class="text-end">{{ number_format($totals['service'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals['other'], 2) }}</td>
 
                                                 <td class="text-center">{{ number_format($totals['hn_ucs']) }}</td>
                                                 <td class="text-center">{{ number_format($totals['visit_ucs']) }}</td>
                                                 <td class="text-end">{{ number_format($totals['service_ucs'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals['other_ucs'], 2) }}</td>
 
                                                 <td class="text-center">{{ number_format($totals['hn_ofc']) }}</td>
                                                 <td class="text-center">{{ number_format($totals['visit_ofc']) }}</td>
                                                 <td class="text-end">{{ number_format($totals['service_ofc'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals['other_ofc'], 2) }}</td>
 
                                                 <td class="text-center">{{ number_format($totals['hn_sss']) }}</td>
                                                 <td class="text-center">{{ number_format($totals['visit_sss']) }}</td>
                                                 <td class="text-end">{{ number_format($totals['service_sss'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals['other_sss'], 2) }}</td>
 
                                                 <td class="text-center">{{ number_format($totals['hn_lgo']) }}</td>
                                                 <td class="text-center">{{ number_format($totals['visit_lgo']) }}</td>
                                                 <td class="text-end">{{ number_format($totals['service_lgo'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals['other_lgo'], 2) }}</td>
 
                                                 <td class="text-center">{{ number_format($totals['hn_pay']) }}</td>
                                                 <td class="text-center">{{ number_format($totals['visit_pay']) }}</td>
                                                 <td class="text-end">{{ number_format($totals['service_pay'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals['other_pay'], 2) }}</td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -415,7 +403,7 @@
                     
                     // Create a temporary DataTable to handle export
                     const dt = $(target).DataTable({
-                        retrieve: true,
+                        destroy: true,
                         paging: false,
                         searching: false,
                         info: false,
@@ -430,6 +418,7 @@
                         }]
                     });
                     dt.button(0).trigger();
+                    dt.destroy();
                 });
             });
         </script>
