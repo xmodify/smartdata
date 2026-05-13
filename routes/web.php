@@ -81,6 +81,9 @@ Route::middleware(['auth'])->group(function () {
     // Hmed Routes
     Route::prefix('hosxp/hmed')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\HmedController::class, 'index'])->name('hosxp.hmed.index');
+        Route::get('/service-stats', [App\Http\Controllers\Hosxp\HmedController::class, 'service_stats'])->name('hosxp.hmed.service_stats');
+        Route::get('/top20-diag', [App\Http\Controllers\Hosxp\HmedController::class, 'top20_diag'])->name('hosxp.hmed.top20_diag');
+        Route::get('/service-value', [App\Http\Controllers\Hosxp\HmedController::class, 'service_value'])->name('hosxp.hmed.service_value');
     });
 
     // Dent Routes
