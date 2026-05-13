@@ -196,58 +196,6 @@
             </div>
         </div>
 
-        <!-- Summary Cards -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm text-white"
-                    style="border-radius: 15px; background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="small opacity-75">จำนวนผู้ป่วยเฝ้าระวังทั้งหมด</div>
-                                <div class="h4 mb-0 fw-bold">{{ number_format(collect($report_data)->sum('sum')) }}</div>
-                            </div>
-                            <div class="bg-white bg-opacity-25 p-2 rounded-circle">
-                                <i class="fas fa-head-side-mask fa-lg"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm text-white"
-                    style="border-radius: 15px; background: linear-gradient(135deg, #36b9cc 0%, #1a8a97 100%);">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="small opacity-75">ชาย</div>
-                                <div class="h4 mb-0 fw-bold">{{ number_format(collect($report_data)->sum('male')) }}</div>
-                            </div>
-                            <div class="bg-white bg-opacity-25 p-2 rounded-circle">
-                                <i class="fas fa-mars fa-lg"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm text-white"
-                    style="border-radius: 15px; background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="small opacity-75">หญิง</div>
-                                <div class="h4 mb-0 fw-bold">{{ number_format(collect($report_data)->sum('female')) }}
-                                </div>
-                            </div>
-                            <div class="bg-white bg-opacity-25 p-2 rounded-circle">
-                                <i class="fas fa-venus fa-lg"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <div class="card border-0 shadow-sm" style="border-radius: 15px;">
             <div class="card-body p-4">
