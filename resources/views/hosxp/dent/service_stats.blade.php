@@ -142,12 +142,15 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                    <div class="card-header bg-pastel-purple py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                    <div class="card-header bg-pastel-purple py-3 border-0 d-flex justify-content-between align-items-center" style="border-radius: 15px 15px 0 0;">
                         <h6 class="fw-bold mb-0 text-purple"><i class="fas fa-table me-2"></i>ตารางข้อมูลรายเดือนแยกตามสิทธิ (OPD)</h6>
+                        <button type="button" class="btn btn-sm btn-success px-2 shadow-sm btn-export-excel" data-target="#table-opd" style="font-size: 0.75rem; padding: 2px 8px;">
+                            <i class="fas fa-file-excel me-1"></i> Excel
+                        </button>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover table-stats mb-0">
+                            <table class="table table-bordered table-hover table-stats mb-0" id="table-opd">
                                 <thead>
                                     <tr>
                                         <th rowspan="2" class="sticky-col">เดือน</th>
@@ -265,6 +268,12 @@
 
     @push('scripts')
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -365,6 +374,30 @@
                 };
 
                 new ApexCharts(document.querySelector("#chart-opd"), chartOptions).render();
+
+                // Excel Export
+                $('.btn-export-excel').on('click', function() {
+                    const target = $(this).data('target');
+                    const title = $(this).prev('h6').text().trim();
+                    
+                    // Create a temporary DataTable to handle export
+                    const dt = $(target).DataTable({
+                        retrieve: true,
+                        paging: false,
+                        searching: false,
+                        info: false,
+                        ordering: false,
+                        autoWidth: false,
+                        dom: 'tB',
+                        buttons: [{
+                            extend: 'excelHtml5',
+                            title: title,
+                            messageTop: 'ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}',
+                            filename: title + '_{{ date("Ymd") }}'
+                        }]
+                    });
+                    dt.button(0).trigger();
+                });
             });
         </script>
     @endpush

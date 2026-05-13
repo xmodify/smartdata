@@ -110,88 +110,9 @@ class HmedController extends Controller
             ORDER BY YEAR(vstdate), MONTH(vstdate)
         ', [$start_date, $end_date, $start_date, $end_date]);
 
-        // IPD Query (Placeholder, usually Hmed is OPD but some hospitals have IPD)
-        $stats_ipd = DB::connection('hosxp')->select('
-            SELECT 
-                CASE 
-                    WHEN MONTH(dchdate)="10" THEN CONCAT("ต.ค. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="11" THEN CONCAT("พ.ย. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="12" THEN CONCAT("ธ.ค. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="1"  THEN CONCAT("ม.ค. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="2"  THEN CONCAT("ก.พ. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="3"  THEN CONCAT("มี.ค. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="4"  THEN CONCAT("เม.ย. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="5"  THEN CONCAT("พ.ค. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="6"  THEN CONCAT("มิ.ย. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="7"  THEN CONCAT("ก.ค. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="8"  THEN CONCAT("ส.ค. ", RIGHT(YEAR(dchdate)+543, 2))
-                    WHEN MONTH(dchdate)="9"  THEN CONCAT("ก.ย. ", RIGHT(YEAR(dchdate)+543, 2))
-                END AS month_name,
-                COUNT(DISTINCT hn) as total_hn, 
-                COUNT(DISTINCT an) as total_visit,
-                SUM(sum_price_service + sum_price_other) AS total_sum_price,
-                SUM(sum_price_service) as total_sum_service,
-                SUM(sum_price_other) as total_sum_other,
-                
-                -- UCS
-                COUNT(DISTINCT CASE WHEN hipdata_code IN ("UCS") AND paidst NOT IN ("01","03") THEN hn END) AS hn_ucs,
-                SUM(CASE WHEN hipdata_code IN ("UCS") AND paidst NOT IN ("01","03") THEN 1 ELSE 0 END) AS visit_ucs,
-                SUM(CASE WHEN hipdata_code IN ("UCS") AND paidst NOT IN ("01","03") THEN sum_price_service ELSE 0 END) AS sum_price_service_ucs,
-                SUM(CASE WHEN hipdata_code IN ("UCS") AND paidst NOT IN ("01","03") THEN sum_price_other ELSE 0 END) AS sum_price_other_ucs,
-
-                -- OFC
-                COUNT(DISTINCT CASE WHEN hipdata_code IN ("OFC") AND paidst NOT IN ("01","03") THEN hn END) AS hn_ofc,
-                SUM(CASE WHEN hipdata_code IN ("OFC") AND paidst NOT IN ("01","03") THEN 1 ELSE 0 END) AS visit_ofc,
-                SUM(CASE WHEN hipdata_code IN ("OFC") AND paidst NOT IN ("01","03") THEN sum_price_service ELSE 0 END) AS sum_price_service_ofc,
-                SUM(CASE WHEN hipdata_code IN ("OFC") AND paidst NOT IN ("01","03") THEN sum_price_other ELSE 0 END) AS sum_price_other_ofc,
-
-                -- SSS
-                COUNT(DISTINCT CASE WHEN hipdata_code IN ("SSS","SSI") AND paidst NOT IN ("01","03") THEN hn END) AS hn_sss,
-                SUM(CASE WHEN hipdata_code IN ("SSS","SSI") AND paidst NOT IN ("01","03") THEN 1 ELSE 0 END) AS visit_sss,
-                SUM(CASE WHEN hipdata_code IN ("SSS","SSI") AND paidst NOT IN ("01","03") THEN sum_price_service ELSE 0 END) AS sum_price_service_sss,
-                SUM(CASE WHEN hipdata_code IN ("SSS","SSI") AND paidst NOT IN ("01","03") THEN sum_price_other ELSE 0 END) AS sum_price_other_sss,
-
-                -- LGO
-                COUNT(DISTINCT CASE WHEN hipdata_code IN ("LGO") AND paidst NOT IN ("01","03") THEN hn END) AS hn_lgo,
-                SUM(CASE WHEN hipdata_code IN ("LGO") AND paidst NOT IN ("01","03") THEN 1 ELSE 0 END) AS visit_lgo,
-                SUM(CASE WHEN hipdata_code IN ("LGO") AND paidst NOT IN ("01","03") THEN sum_price_service ELSE 0 END) AS sum_price_service_lgo,
-                SUM(CASE WHEN hipdata_code IN ("LGO") AND paidst NOT IN ("01","03") THEN sum_price_other ELSE 0 END) AS sum_price_other_lgo,
-
-                -- Pay
-                COUNT(DISTINCT CASE WHEN (paidst IN ("01","03") OR hipdata_code IN ("A1","A9")) THEN hn END) AS hn_pay,
-                SUM(CASE WHEN (paidst IN ("01","03") OR hipdata_code IN ("A1","A9")) THEN 1 ELSE 0 END) AS visit_pay,
-                SUM(CASE WHEN (paidst IN ("01","03") OR hipdata_code IN ("A1","A9")) THEN sum_price_service ELSE 0 END) AS sum_price_service_pay,
-                SUM(CASE WHEN (paidst IN ("01","03") OR hipdata_code IN ("A1","A9")) THEN sum_price_other ELSE 0 END) AS sum_price_other_pay
-
-            FROM (
-                SELECT 
-                    i.an, i.hn, i.dchdate, 
-                    p.hipdata_code, p.paidst,
-                    COALESCE(o1.sum_price_service, 0) AS sum_price_service,
-                    COALESCE(o1.sum_price_other, 0) AS sum_price_other
-                FROM ipt i
-                LEFT JOIN ipt_pttype ip ON ip.an = i.an
-                LEFT JOIN pttype p ON p.pttype = ip.pttype
-                LEFT JOIN (
-                    SELECT 
-                        ot.an,
-                        SUM(CASE WHEN n.income = "15" THEN ot.sum_price ELSE 0 END) AS sum_price_service,
-                        SUM(CASE WHEN n.income <> "15" THEN ot.sum_price ELSE 0 END) AS sum_price_other
-                    FROM opitemrece ot
-                    INNER JOIN nondrugitems n ON n.icode = ot.icode
-                    WHERE ot.an IS NOT NULL
-                    GROUP BY ot.an
-                ) o1 ON o1.an = i.an
-                WHERE i.dchdate BETWEEN ? AND ?
-                  AND EXISTS (SELECT 1 FROM health_med_service hms WHERE hms.an = i.an)
-            ) AS a                        
-            GROUP BY YEAR(dchdate), MONTH(dchdate)
-            ORDER BY YEAR(dchdate), MONTH(dchdate)
-        ', [$start_date, $end_date]);
-
         return view('hosxp.hmed.service_stats', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
-            'stats_opd', 'stats_ipd'
+            'stats_opd'
         ));
     }
 

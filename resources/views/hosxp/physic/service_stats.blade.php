@@ -52,15 +52,17 @@
         .bg-pastel-orange { background-color: #fff7ed; }
 
         .nav-pills .nav-link {
-            border-radius: 10px;
-            padding: 10px 20px;
+            border-radius: 12px;
+            padding: 10px 25px;
             font-weight: 600;
             transition: all 0.2s;
+            color: #64748b;
         }
 
         .nav-pills .nav-link.active {
             background-color: #f97316;
-            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);
+            color: white;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
         }
 
         .table-responsive {
@@ -141,7 +143,7 @@
         </div>
 
         <!-- Tabs -->
-        <ul class="nav nav-pills mb-4 bg-white p-2 shadow-sm d-inline-flex" style="border-radius: 15px;">
+        <ul class="nav nav-pills mb-4 bg-white p-1 shadow-sm d-inline-flex" style="border-radius: 15px; border: 1px solid #f1f5f9;">
             <li class="nav-item">
                 <a class="nav-link active" id="opd-tab" data-bs-toggle="pill" href="#opd-content"><i class="fas fa-user-nurse me-2"></i>ผู้ป่วยนอก (OPD)</a>
             </li>
@@ -169,12 +171,15 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                            <div class="card-header bg-pastel-orange py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                            <div class="card-header bg-pastel-orange py-3 border-0 d-flex justify-content-between align-items-center" style="border-radius: 15px 15px 0 0;">
                                 <h6 class="fw-bold mb-0 text-orange"><i class="fas fa-table me-2"></i>ตารางข้อมูลรายเดือนแยกตามสิทธิ (OPD)</h6>
+                                <button type="button" class="btn btn-sm btn-success px-2 shadow-sm btn-export-excel" data-target="#table-opd" style="font-size: 0.75rem; padding: 2px 8px;">
+                                    <i class="fas fa-file-excel me-1"></i> Excel
+                                </button>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-stats mb-0">
+                                    <table class="table table-bordered table-hover table-stats mb-0" id="table-opd">
                                         <thead>
                                             <tr>
                                                 <th rowspan="2" class="sticky-col">เดือน</th>
@@ -308,12 +313,15 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                            <div class="card-header bg-pastel-orange py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                            <div class="card-header bg-pastel-orange py-3 border-0 d-flex justify-content-between align-items-center" style="border-radius: 15px 15px 0 0;">
                                 <h6 class="fw-bold mb-0 text-orange"><i class="fas fa-table me-2"></i>ตารางข้อมูลรายเดือนแยกตามสิทธิ (IPD)</h6>
+                                <button type="button" class="btn btn-sm btn-success px-2 shadow-sm btn-export-excel" data-target="#table-ipd" style="font-size: 0.75rem; padding: 2px 8px;">
+                                    <i class="fas fa-file-excel me-1"></i> Excel
+                                </button>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-stats mb-0">
+                                    <table class="table table-bordered table-hover table-stats mb-0" id="table-ipd">
                                         <thead>
                                             <tr>
                                                 <th rowspan="2" class="sticky-col">เดือน</th>
@@ -433,6 +441,12 @@
 
     @push('scripts')
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -597,6 +611,30 @@
                 // Fix chart rendering in hidden tabs
                 $('a[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
                     window.dispatchEvent(new Event('resize'));
+                });
+
+                // Excel Export
+                $('.btn-export-excel').on('click', function() {
+                    const target = $(this).data('target');
+                    const title = $(this).prev('h6').text().trim();
+                    
+                    // Create a temporary DataTable to handle export
+                    const dt = $(target).DataTable({
+                        retrieve: true,
+                        paging: false,
+                        searching: false,
+                        info: false,
+                        ordering: false,
+                        autoWidth: false,
+                        dom: 'tB',
+                        buttons: [{
+                            extend: 'excelHtml5',
+                            title: title,
+                            messageTop: 'ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}',
+                            filename: title + '_{{ date("Ymd") }}'
+                        }]
+                    });
+                    dt.button(0).trigger();
                 });
             });
         </script>

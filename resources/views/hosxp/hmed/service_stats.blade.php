@@ -139,20 +139,6 @@
             </div>
         </div>
 
-        <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs border-0" id="reportTabs" role="tablist">
-                <li class="nav-item">
-                    <button class="nav-link active" id="opd-tab" data-bs-toggle="tab" data-bs-target="#opd" type="button" role="tab">
-                        <i class="fas fa-user-friends me-1"></i> ผู้ป่วยนอก (OPD)
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="ipd-tab" data-bs-toggle="tab" data-bs-target="#ipd" type="button" role="tab">
-                        <i class="fas fa-bed me-1"></i> ผู้ป่วยใน (IPD)
-                    </button>
-                </li>
-            </ul>
-        </div>
 
         <div class="tab-content" id="reportTabsContent">
             <!-- OPD Tab -->
@@ -173,12 +159,15 @@
                 <div class="row mb-4">
                     <div class="col-12">
                         <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                            <div class="card-header bg-pastel-green py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                            <div class="card-header bg-pastel-green py-3 border-0 d-flex justify-content-between align-items-center" style="border-radius: 15px 15px 0 0;">
                                 <h6 class="fw-bold mb-0 text-green"><i class="fas fa-table me-2"></i>ตารางข้อมูลรายเดือนแยกตามสิทธิ (OPD)</h6>
+                                <button type="button" class="btn btn-sm btn-success px-2 shadow-sm btn-export-excel" data-target="#table-opd" style="font-size: 0.75rem; padding: 2px 8px;">
+                                    <i class="fas fa-file-excel me-1"></i> Excel
+                                </button>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-stats mb-0">
+                                    <table class="table table-bordered table-hover table-stats mb-0" id="table-opd">
                                         <thead>
                                             <tr>
                                                 <th rowspan="2" class="sticky-col">เดือน</th>
@@ -294,149 +283,18 @@
                 </div>
             </div>
 
-            <!-- IPD Tab -->
-            <div class="tab-pane fade" id="ipd" role="tabpanel">
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                            <div class="card-header bg-pastel-green py-3 border-0" style="border-radius: 15px 15px 0 0;">
-                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-chart-bar me-2"></i>กราฟสรุปจำนวนผู้รับบริการแยกตามสิทธิ (IPD)</h6>
-                            </div>
-                            <div class="card-body">
-                                <div id="chart-ipd"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                            <div class="card-header bg-pastel-green py-3 border-0" style="border-radius: 15px 15px 0 0;">
-                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-table me-2"></i>ตารางข้อมูลรายเดือนแยกตามสิทธิ (IPD)</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-stats mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th rowspan="2" class="sticky-col">เดือน</th>
-                                                <th colspan="4" class="bg-light">รวมทั้งหมด</th>
-                                                <th colspan="4" style="background-color: #e0f2fe;">ประกันสุขภาพ (UCS)</th>
-                                                <th colspan="4" style="background-color: #fef9c3;">ข้าราชการ (OFC)</th>
-                                                <th colspan="4" style="background-color: #dcfce7;">ประกันสังคม (SSS)</th>
-                                                <th colspan="4" style="background-color: #f3e8ff;">อปท. (LGO)</th>
-                                                <th colspan="4" style="background-color: #fee2e2;">ชำระเงิน/พรบ.</th>
-                                            </tr>
-                                            <tr>
-                                                <th class="bg-light">HN</th><th class="bg-light">Visit</th><th class="bg-light">แพทย์แผนไทย</th><th class="bg-light">ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
-                                                <th>HN</th><th>Visit</th><th>แพทย์แผนไทย</th><th>ยา/อื่น ๆ</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @php
-                                                $totals_i = [
-                                                    'hn' => 0, 'visit' => 0, 'service' => 0, 'other' => 0,
-                                                    'hn_ucs' => 0, 'visit_ucs' => 0, 'service_ucs' => 0, 'other_ucs' => 0,
-                                                    'hn_ofc' => 0, 'visit_ofc' => 0, 'service_ofc' => 0, 'other_ofc' => 0,
-                                                    'hn_sss' => 0, 'visit_sss' => 0, 'service_sss' => 0, 'other_sss' => 0,
-                                                    'hn_lgo' => 0, 'visit_lgo' => 0, 'service_lgo' => 0, 'other_lgo' => 0,
-                                                    'hn_pay' => 0, 'visit_pay' => 0, 'service_pay' => 0, 'other_pay' => 0,
-                                                ];
-                                            @endphp
-                                            @foreach($stats_ipd as $row)
-                                            <tr>
-                                                <td class="sticky-col text-center fw-bold">{{ $row->month_name }}</td>
-                                                <td class="text-center">{{ number_format($row->total_hn) }}</td>
-                                                <td class="text-center text-primary fw-bold">{{ number_format($row->total_visit) }}</td>
-                                                <td class="text-end">{{ number_format($row->total_sum_service, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->total_sum_other, 2) }}</td>
-                                                
-                                                <td class="text-center">{{ number_format($row->hn_ucs) }}</td>
-                                                <td class="text-center fw-bold">{{ number_format($row->visit_ucs) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_service_ucs, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_ucs, 2) }}</td>
-
-                                                <td class="text-center">{{ number_format($row->hn_ofc) }}</td>
-                                                <td class="text-center fw-bold">{{ number_format($row->visit_ofc) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_service_ofc, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_ofc, 2) }}</td>
-
-                                                <td class="text-center">{{ number_format($row->hn_sss) }}</td>
-                                                <td class="text-center fw-bold">{{ number_format($row->visit_sss) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_service_sss, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_sss, 2) }}</td>
-
-                                                <td class="text-center">{{ number_format($row->hn_lgo) }}</td>
-                                                <td class="text-center fw-bold">{{ number_format($row->visit_lgo) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_service_lgo, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_lgo, 2) }}</td>
-
-                                                <td class="text-center">{{ number_format($row->hn_pay) }}</td>
-                                                <td class="text-center fw-bold">{{ number_format($row->visit_pay) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_service_pay, 2) }}</td>
-                                                <td class="text-end">{{ number_format($row->sum_price_other_pay, 2) }}</td>
-                                            </tr>
-                                            @php
-                                                $totals_i['hn'] += $row->total_hn; $totals_i['visit'] += $row->total_visit; $totals_i['service'] += $row->total_sum_service; $totals_i['other'] += $row->total_sum_other;
-                                                $totals_i['hn_ucs'] += $row->hn_ucs; $totals_i['visit_ucs'] += $row->visit_ucs; $totals_i['service_ucs'] += $row->sum_price_service_ucs; $totals_i['other_ucs'] += $row->sum_price_other_ucs;
-                                                $totals_i['hn_ofc'] += $row->hn_ofc; $totals_i['visit_ofc'] += $row->visit_ofc; $totals_i['service_ofc'] += $row->sum_price_service_ofc; $totals_i['other_ofc'] += $row->sum_price_other_ofc;
-                                                $totals_i['hn_sss'] += $row->hn_sss; $totals_i['visit_sss'] += $row->visit_sss; $totals_i['service_sss'] += $row->sum_price_service_sss; $totals_i['other_sss'] += $row->sum_price_other_sss;
-                                                $totals_i['hn_lgo'] += $row->hn_lgo; $totals_i['visit_lgo'] += $row->visit_lgo; $totals_i['service_lgo'] += $row->sum_price_service_lgo; $totals_i['other_lgo'] += $row->sum_price_other_lgo;
-                                                $totals_i['hn_pay'] += $row->hn_pay; $totals_i['visit_pay'] += $row->visit_pay; $totals_i['service_pay'] += $row->sum_price_service_pay; $totals_i['other_pay'] += $row->sum_price_other_pay;
-                                            @endphp
-                                            @endforeach
-                                        </tbody>
-                                        <tfoot class="bg-light fw-bold">
-                                            <tr>
-                                                <td class="sticky-col text-center">รวม</td>
-                                                <td class="text-center">{{ number_format($totals_i['hn']) }}</td>
-                                                <td class="text-center text-primary">{{ number_format($totals_i['visit']) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['service'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['other'], 2) }}</td>
-
-                                                <td class="text-center">{{ number_format($totals_i['hn_ucs']) }}</td>
-                                                <td class="text-center">{{ number_format($totals_i['visit_ucs']) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['service_ucs'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['other_ucs'], 2) }}</td>
-
-                                                <td class="text-center">{{ number_format($totals_i['hn_ofc']) }}</td>
-                                                <td class="text-center">{{ number_format($totals_i['visit_ofc']) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['service_ofc'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['other_ofc'], 2) }}</td>
-
-                                                <td class="text-center">{{ number_format($totals_i['hn_sss']) }}</td>
-                                                <td class="text-center">{{ number_format($totals_i['visit_sss']) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['service_sss'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['other_sss'], 2) }}</td>
-
-                                                <td class="text-center">{{ number_format($totals_i['hn_lgo']) }}</td>
-                                                <td class="text-center">{{ number_format($totals_i['visit_lgo']) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['service_lgo'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['other_lgo'], 2) }}</td>
-
-                                                <td class="text-center">{{ number_format($totals_i['hn_pay']) }}</td>
-                                                <td class="text-center">{{ number_format($totals_i['visit_pay']) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['service_pay'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($totals_i['other_pay'], 2) }}</td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
     @push('scripts')
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -540,31 +398,31 @@
                 };
                 new ApexCharts(document.querySelector("#chart-opd"), opdOptions).render();
 
-                // IPD Chart
-                const statsIpd = @json($stats_ipd);
-                const ipdOptions = {
-                    ...chartOptions,
-                    series: [
-                        { name: 'UCS', data: statsIpd.map(d => d.visit_ucs) },
-                        { name: 'OFC', data: statsIpd.map(d => d.visit_ofc) },
-                        { name: 'SSS', data: statsIpd.map(d => d.visit_sss) },
-                        { name: 'LGO', data: statsIpd.map(d => d.visit_lgo) },
-                        { name: 'Pay', data: statsIpd.map(d => d.visit_pay) }
-                    ],
-                    xaxis: { 
-                        categories: statsIpd.map(d => d.month_name),
-                        labels: { style: { fontSize: '11px', fontWeight: 600 } }
-                    },
-                    yaxis: { 
-                        title: { text: 'จำนวนครั้ง (Visit)', style: { fontWeight: 600 } },
-                        labels: { formatter: (val) => val.toLocaleString() }
-                    },
-                };
-                new ApexCharts(document.querySelector("#chart-ipd"), ipdOptions).render();
-
                 // Handle tab switch chart resize
-                $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
-                    window.dispatchEvent(new Event('resize'));
+                window.dispatchEvent(new Event('resize'));
+
+                // Excel Export
+                $('.btn-export-excel').on('click', function() {
+                    const target = $(this).data('target');
+                    const title = $(this).prev('h6').text().trim();
+                    
+                    // Create a temporary DataTable to handle export
+                    const dt = $(target).DataTable({
+                        retrieve: true,
+                        paging: false,
+                        searching: false,
+                        info: false,
+                        ordering: false,
+                        autoWidth: false,
+                        dom: 'tB', // Only table and buttons
+                        buttons: [{
+                            extend: 'excelHtml5',
+                            title: title,
+                            messageTop: 'ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}',
+                            filename: title + '_{{ date("Ymd") }}'
+                        }]
+                    });
+                    dt.button(0).trigger();
                 });
             });
         </script>
