@@ -21,9 +21,9 @@
                                 ['url' => '/hosxp/icu', 'label' => 'ผู้ป่วย ICU', 'icon' => 'fa-hospital-user', 'color' => '#e74a3b'],
                                 ['url' => '/hosxp/er', 'label' => 'อุบัติเหตุ-ฉุกเฉิน', 'icon' => 'fa-truck-medical', 'color' => '#e74a3b'],
                                 ['url' => '/hosxp/phar', 'label' => 'เภสัชกรรม', 'icon' => 'fa-pills', 'color' => '#f6c23e'],
-                                ['url' => '/hosxp/physic', 'label' => 'กายภาพบำบัด', 'icon' => 'fa-walking', 'color' => '#6610f2'],
+                                ['url' => '/hosxp/physic', 'label' => 'กายภาพบำบัด', 'icon' => 'fa-walking', 'color' => '#fd7e14'],
                                 ['url' => '/hosxp/hmed', 'label' => 'แพทย์แผนไทย', 'icon' => 'fa-leaf', 'color' => '#20c997'],
-                                ['url' => '/hosxp/dent', 'label' => 'ทันตกรรม', 'icon' => 'fa-tooth', 'color' => '#fd7e14'],
+                                ['url' => '/hosxp/dent', 'label' => 'ทันตกรรม', 'icon' => 'fa-tooth', 'color' => '#6610f2'],
                                 ['url' => '/hosxp/ncd', 'label' => 'คลินิกโรคเรื้อรัง', 'icon' => 'fa-clipboard-list', 'color' => '#858796'],
                                 ['url' => '/hosxp/pcu', 'label' => 'งานเชิงรุก', 'icon' => 'fa-hand-holding-heart', 'color' => '#5a5c69'],
                             ];

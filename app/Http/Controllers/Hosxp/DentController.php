@@ -11,13 +11,7 @@ class DentController extends Controller
     public function index(Request $request)
     {
         $title = 'งานทันตกรรม';
-        $dates = $this->resolveDateRange($request);
-        $start_date = $dates['start_date'];
-        $end_date = $dates['end_date'];
-        $budget_year = $dates['budget_year'];
-        $budget_year_select = $dates['budget_year_select'];
-
-        return view('hosxp.dent.index', compact('title', 'budget_year_select', 'budget_year', 'start_date', 'end_date'));
+        return view('hosxp.dent.index', compact('title'));
     }
 
     private function resolveDateRange(Request $request)

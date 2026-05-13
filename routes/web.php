@@ -73,6 +73,8 @@ Route::middleware(['auth'])->group(function () {
     // Physic Routes
     Route::prefix('hosxp/physic')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\PhysicController::class, 'index'])->name('hosxp.physic.index');
+        Route::get('/service-stats', [App\Http\Controllers\Hosxp\PhysicController::class, 'service_stats'])->name('hosxp.physic.service_stats');
+        Route::get('/top20-diag', [App\Http\Controllers\Hosxp\PhysicController::class, 'top20_diag'])->name('hosxp.physic.top20_diag');
     });
 
     // Hmed Routes
