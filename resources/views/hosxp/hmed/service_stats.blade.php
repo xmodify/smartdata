@@ -98,6 +98,13 @@
             z-index: 1;
         }
 
+        .table-responsive {
+            border-radius: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid #e2e8f0;
+        }
+
     </style>
 @endpush
 
