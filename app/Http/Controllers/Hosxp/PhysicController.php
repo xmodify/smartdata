@@ -212,10 +212,7 @@ class PhysicController extends Controller
             FROM vn_stat v   
             LEFT OUTER JOIN icd101 i ON i.code=v.pdx 
             WHERE v.vstdate BETWEEN ? AND ?
-            AND (
-                v.vn IN (SELECT vn FROM physic_main WHERE vn IS NOT NULL AND vn <> "")
-                OR v.vn IN (SELECT vn FROM physic_list WHERE vn IS NOT NULL AND vn <> "")
-            )            
+            AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = v.vn)            
             GROUP BY v.pdx, i.name, i.tname  
             ORDER BY sum DESC 
             LIMIT 20
@@ -224,6 +221,88 @@ class PhysicController extends Controller
         return view('hosxp.physic.top20_diag', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
             'diag_top20'
+        ));
+    }
+
+    public function service_value(Request $request)
+    {
+        $title = 'มูลค่าการให้บริการกายภาพบำบัด';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        // 1. กายภาพบำบัด (Type 20)
+        $data_pt = DB::connection('hosxp')->select('
+            SELECT 
+                n.`name`,
+                ot.icode,
+                SUM(ot.qty) AS qty,
+                ot.unitprice,
+                SUM(ot.sum_price) AS sum_price,
+                SUM(CASE WHEN p.sex = "1" THEN 1 ELSE 0 END) as male,
+                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female
+            FROM ovst o
+            INNER JOIN opitemrece ot ON ot.vn = o.vn
+            INNER JOIN nondrugitems n ON n.icode = ot.icode
+            INNER JOIN patient p ON p.hn = o.hn
+            WHERE o.vstdate BETWEEN ? AND ?
+              AND ot.rxdate BETWEEN ? AND ?
+              AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = o.vn)
+              AND n.nhso_adp_type_id IN ("20")
+            GROUP BY ot.icode
+            ORDER BY sum_price DESC
+        ', [$start_date, $end_date, $start_date, $end_date]);
+
+        // 2. Instrument (Type 02)
+        $data_inst = DB::connection('hosxp')->select('
+            SELECT 
+                n.`name`,
+                ot.icode,
+                SUM(ot.qty) AS qty,
+                ot.unitprice,
+                SUM(ot.sum_price) AS sum_price,
+                SUM(CASE WHEN p.sex = "1" THEN 1 ELSE 0 END) as male,
+                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female
+            FROM ovst o
+            INNER JOIN opitemrece ot ON ot.vn = o.vn
+            INNER JOIN nondrugitems n ON n.icode = ot.icode
+            INNER JOIN patient p ON p.hn = o.hn
+            WHERE o.vstdate BETWEEN ? AND ?
+              AND ot.rxdate BETWEEN ? AND ?
+              AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = o.vn)
+              AND n.nhso_adp_type_id IN ("02")
+            GROUP BY ot.icode
+            ORDER BY sum_price DESC
+        ', [$start_date, $end_date, $start_date, $end_date]);
+
+        // 3. อื่น ๆ
+        $data_other = DB::connection('hosxp')->select('
+            SELECT 
+                n.`name`,
+                ot.icode,
+                SUM(ot.qty) AS qty,
+                ot.unitprice,
+                SUM(ot.sum_price) AS sum_price,
+                SUM(CASE WHEN p.sex = "1" THEN 1 ELSE 0 END) as male,
+                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female
+            FROM ovst o
+            INNER JOIN opitemrece ot ON ot.vn = o.vn
+            INNER JOIN nondrugitems n ON n.icode = ot.icode
+            INNER JOIN patient p ON p.hn = o.hn
+            WHERE o.vstdate BETWEEN ? AND ?
+              AND ot.rxdate BETWEEN ? AND ?
+              AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = o.vn)
+              AND n.nhso_adp_type_id NOT IN ("02", "20")
+            GROUP BY ot.icode
+            ORDER BY sum_price DESC
+            LIMIT 100
+        ', [$start_date, $end_date, $start_date, $end_date]);
+
+        return view('hosxp.physic.service_value', compact(
+            'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
+            'data_pt', 'data_inst', 'data_other'
         ));
     }
 

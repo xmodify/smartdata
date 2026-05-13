@@ -59,48 +59,52 @@
             box-shadow: 0 4px 8px rgba(249, 115, 22, 0.2);
         }
 
-        @media (max-width: 768px) {
-            .page-header-container {
-                flex-direction: column;
-                align-items: flex-start !important;
-                gap: 1rem;
-            }
-
-            .header-form-controls {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-
-            .input-group-date,
-            .input-group-budget {
-                width: 100% !important;
-            }
+        /* Override DataTables UI to match standard Small style */
+        .dataTables_wrapper .dataTables_length select {
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.4rem !important;
+            padding: 0.2rem 1.2rem 0.2rem 0.5rem !important;
+            margin: 0 0.3rem !important;
+            outline: none !important;
+            font-size: 0.75rem !important;
         }
-
-        /* Override DataTables UI */
-        .dataTables_wrapper .dataTables_length select,
         .dataTables_wrapper .dataTables_filter input {
             border: 1px solid #dee2e6 !important;
-            border-radius: 0.5rem !important;
+            border-radius: 0.4rem !important;
             padding: 0.2rem 0.6rem !important;
             outline: none !important;
-            font-size: 0.8rem !important;
+            width: 180px !important;
+            font-size: 0.75rem !important;
         }
-
         .dt-buttons .btn-success {
             background-color: #198754 !important;
             border-color: #198754 !important;
             color: #ffffff !important;
             border-radius: 0.4rem !important;
-            font-weight: 500 !important;
-            padding: 0.25rem 0.6rem !important;
+            padding: 0.2rem 0.6rem !important;
             font-size: 0.75rem !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 0.4rem !important;
-            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.2) !important;
+            font-weight: 500 !important;
+            box-shadow: none !important;
         }
-
+        .dt-buttons .btn-success i {
+            color: #ffffff !important;
+        }
+        .table.dataTable thead th {
+            background-color: #f8f9fa !important;
+            color: #495057 !important;
+            font-weight: 600 !important;
+            border-bottom: 2px solid #dee2e6 !important;
+            padding: 8px 6px !important;
+            font-size: 0.75rem !important;
+        }
+        .table.dataTable tbody td {
+            padding: 8px 6px !important;
+            font-size: 0.75rem !important;
+        }
+        .dataTables_info, .dataTables_paginate {
+            font-size: 0.75rem !important;
+            margin-top: 10px !important;
+        }
         .dataTables_wrapper .dataTables_paginate .paginate_button.current {
             background: #f97316 !important;
             color: white !important;
@@ -108,17 +112,9 @@
             border-radius: 0.5rem !important;
         }
 
-        table.dataTable thead th {
-            background-color: #fff7ed !important;
-            color: #f97316 !important;
-            font-weight: 700 !important;
-            border-bottom: 2px solid #fed7aa !important;
-            font-size: 0.85rem !important;
-        }
-
         .chart-container {
             position: relative;
-            height: 600px;
+            height: 500px;
             width: 100%;
         }
     </style>
@@ -199,42 +195,45 @@
                     <div class="card-body p-4">
                         <div class="table-responsive">
                             <table id="tableDiag" class="table table-hover align-middle" style="width:100%">
-                                <thead class="bg-light">
+                                <thead>
                                     <tr>
                                         <th class="text-center">อันดับ</th>
-                                        <th>ICD10</th>
+                                        <th class="text-center">ICD10</th>
                                         <th>ชื่อโรค</th>
                                         <th class="text-center">จำนวน</th>
-                                        <th class="text-center">ชาย</th>
-                                        <th class="text-center">หญิง</th>
+                                        <th class="text-center text-primary">ชาย</th>
+                                        <th class="text-center text-danger">หญิง</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($diag_top20 as $index => $row)
                                         <tr>
-                                            <td class="text-center fw-bold text-muted">
-                                                @if ($index < 3 && $row->sum > 0)
-                                                    <span class="badge rounded-pill bg-warning text-dark px-2">
-                                                        <i class="fas fa-crown"></i> {{ $index + 1 }}
+                                            <td class="text-center">
+                                                @if ($index === 0)
+                                                    <span class="badge rounded-pill bg-warning text-dark py-1 px-2" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;">
+                                                        <i class="fas fa-crown"></i> 1
+                                                    </span>
+                                                @elseif($index === 1)
+                                                    <span class="badge rounded-pill bg-light text-dark py-1 px-2" style="background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;">
+                                                        <i class="fas fa-crown"></i> 2
+                                                    </span>
+                                                @elseif($index === 2)
+                                                    <span class="badge rounded-pill text-dark py-1 px-2" style="background: linear-gradient(135deg, #fed7aa 0%, #f97316 100%) !important;">
+                                                        <i class="fas fa-crown"></i> 3
                                                     </span>
                                                 @else
-                                                    {{ $index + 1 }}
+                                                    <span class="text-muted fw-bold">{{ $index + 1 }}</span>
                                                 @endif
                                             </td>
-                                            <td><span
-                                                    class="badge bg-orange bg-opacity-10 text-orange px-2">{{ $row->code }}</span>
+                                            <td class="text-center">
+                                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1" style="font-size: 0.75rem;">
+                                                    {{ $row->code }}
+                                                </span>
                                             </td>
-                                            <td>
-                                                <div class="fw-bold text-dark text-truncate" style="max-width: 300px;" title="{{ $row->name }}">
-                                                    {{ $row->name }}
-                                                </div>
-                                            </td>
-                                            <td class="text-center fw-bold text-orange">
-                                                {{ number_format($row->sum) }}</td>
-                                            <td class="text-center text-primary">{{ number_format($row->male) }}
-                                            </td>
-                                            <td class="text-center text-danger">{{ number_format($row->female) }}
-                                            </td>
+                                            <td class="fw-bold text-dark">{{ $row->name }}</td>
+                                            <td class="text-center fw-bold text-orange">{{ number_format($row->sum) }}</td>
+                                            <td class="text-center text-primary" style="opacity: 0.8;">{{ number_format($row->male) }}</td>
+                                            <td class="text-center text-danger" style="opacity: 0.8;">{{ number_format($row->female) }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -270,7 +269,7 @@
                         data: {
                             labels: diagData.map(d => {
                                 let text = d.name; // Use i.name for chart
-                                return text.length > 35 ? text.substring(0, 35) + '...' : text;
+                                return text.length > 25 ? text.substring(0, 25) + '...' : text;
                             }),
                             datasets: [{
                                 label: 'จำนวน (ครั้ง)',
@@ -295,7 +294,7 @@
                                     anchor: 'end',
                                     align: 'right',
                                     color: '#ea580c',
-                                    font: { weight: 'bold', size: 11 },
+                                    font: { weight: 'bold', size: 10 },
                                     formatter: Math.round
                                 }
                             },
@@ -307,7 +306,7 @@
                                 },
                                 y: {
                                     grid: { display: false },
-                                    ticks: { font: { size: 11 } }
+                                    ticks: { font: { size: 10 } }
                                 }
                             },
                             layout: { padding: { right: 40 } }
@@ -317,13 +316,12 @@
 
                 // DataTable Initialization
                 $('#tableDiag').DataTable({
-                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-2"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
                     buttons: [{
                         extend: 'excelHtml5',
                         text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
                         className: 'btn btn-success',
                         title: '{{ $title }}',
-                        messageTop: 'ช่วงวันที่: {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}'
                     }],
                     language: {
                         search: "ค้นหา:",
