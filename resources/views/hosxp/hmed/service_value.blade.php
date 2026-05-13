@@ -129,12 +129,23 @@
             font-size: 0.75rem !important;
         }
         .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: var(--primary-green) !important;
-            color: white !important;
             border: 1px solid var(--primary-green) !important;
             border-radius: 0.5rem !important;
         }
 
+        /* Flatpickr Today Button Style */
+        .flatpickr-today-button {
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #e6e6e6;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary-green);
+            background: #f8f9fa;
+        }
+        .flatpickr-today-button:hover {
+            background: var(--light-green);
+        }
     </style>
 @endpush
 
@@ -389,6 +400,21 @@
                     const commonConfig = {
                         locale: "th", dateFormat: "Y-m-d", altInput: true, altFormat: "j M Y",
                         onReady: function(selectedDates, dateStr, instance) {
+                            // Add Today Button
+                            const container = instance.calendarContainer;
+                            if (container && !container.querySelector('.flatpickr-today-button')) {
+                                const btn = document.createElement("div");
+                                btn.className = "flatpickr-today-button";
+                                btn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> วันนี้';
+                                btn.addEventListener("mousedown", function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    instance.setDate(new Date());
+                                    instance.close();
+                                });
+                                container.appendChild(btn);
+                            }
+
                             if (instance.altInput && instance.input.value) {
                                 const date = new Date(instance.input.value);
                                 const day = date.getDate();
