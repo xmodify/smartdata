@@ -100,6 +100,7 @@
 
             <div class="d-flex align-items-center">
                 <form action="" method="GET" class="m-0 header-form-controls">
+                    <input type="hidden" name="tab" value="{{ $tab }}">
                     <div class="input-group input-group-sm shadow-sm input-group-date">
                         <span class="input-group-text bg-white border-end-0 text-success"><i class="fas fa-calendar-alt"></i></span>
                         <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0" value="{{ $start_date }}">
@@ -168,12 +169,39 @@
             </div>
         </div>
 
+        <!-- Ward Tabs -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card card-ipd shadow-sm overflow-hidden" style="border-top: 4px solid #4e73df !important; border-radius: 12px;">
+                    <div class="card-body p-0">
+                        <div class="nav nav-tabs nav-fill border-0" id="wardTabs" role="tablist" style="background-color: #f8f9fc;">
+                            <a href="{{ url()->current() }}?tab=total&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
+                               class="nav-link py-3 border-0 rounded-0 {{ $tab == 'total' ? 'active fw-bold text-danger' : 'text-muted' }}"
+                               style="{{ $tab == 'total' ? 'background-color: #fff5f5 !important; border-bottom: 4px solid #e74a3b !important;' : 'background-color: #fffcfc;' }}">
+                                <i class="fas fa-hospital me-2"></i> ผู้ป่วยในรวม
+                            </a>
+                            <a href="{{ url()->current() }}?tab=general&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
+                               class="nav-link py-3 border-0 rounded-0 {{ $tab == 'general' ? 'active fw-bold text-primary' : 'text-muted' }}"
+                               style="{{ $tab == 'general' ? 'background-color: #f0f7ff !important; border-bottom: 4px solid #4e73df !important;' : 'background-color: #fafdff;' }}">
+                                <i class="fas fa-procedures me-2"></i> ผู้ป่วยในสามัญ
+                            </a>
+                            <a href="{{ url()->current() }}?tab=vip&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
+                               class="nav-link py-3 border-0 rounded-0 {{ $tab == 'vip' ? 'active fw-bold text-success' : 'text-muted' }}"
+                               style="{{ $tab == 'vip' ? 'background-color: #f0fff4 !important; border-bottom: 4px solid #1cc88a !important;' : 'background-color: #fafffb;' }}">
+                                <i class="fas fa-star me-2 text-warning"></i> ผู้ป่วยใน VIP
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Charts Row 1: Admissions & Occupancy -->
         <div class="row mb-4 g-4">
             <div class="col-md-6">
                 <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #4e73df !important;">
                     <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-user-injured me-2 text-primary"></i> จำนวนผู้ป่วย IPD (Admit AN)</h6>
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-user-injured me-2 text-primary"></i> จำนวน ({{ $tab_name }}) </h6>
                     </div>
                     <div class="card-body px-4 pb-4">
                         <div id="admissionChart" class="chart-container"></div>
@@ -183,7 +211,7 @@
             <div class="col-md-6">
                 <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #1cc88a !important;">
                     <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-bed me-2 text-success"></i> อัตราครองเตียง (%)</h6>
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-bed me-2 text-success"></i> อัตราครองเตียง % ({{ $tab_name }})</h6>
                     </div>
                     <div class="card-body px-4 pb-4">
                         <div id="occupancyChart" class="chart-container"></div>
@@ -197,7 +225,7 @@
             <div class="col-md-4">
                 <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #f6c23e !important;">
                     <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> Sum AdjRW</h6>
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> Sum AdjRW ({{ $tab_name }})</h6>
                     </div>
                     <div class="card-body px-4 pb-4">
                         <div id="adjrwChart" class="chart-container"></div>
@@ -207,7 +235,7 @@
             <div class="col-md-4">
                 <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #36b9cc !important;">
                     <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-stethoscope me-2 text-info"></i> CMI</h6>
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-stethoscope me-2 text-info"></i> CMI ({{ $tab_name }})</h6>
                     </div>
                     <div class="card-body px-4 pb-4">
                         <div id="cmiChart" class="chart-container"></div>
@@ -217,7 +245,7 @@
             <div class="col-md-4">
                 <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #e74a3b !important;">
                     <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-clock me-2 text-danger"></i> สัดส่วนการรับใหม่ตามเวร</h6>
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-clock me-2 text-danger"></i> การรับใหม่ตามเวร ({{ $tab_name }})</h6>
                     </div>
                     <div class="card-body px-4 pb-4">
                         <div id="shiftChart" class="chart-container"></div>
@@ -232,7 +260,7 @@
                 <div class="card card-ipd shadow-sm" style="border-top: 4px solid #1cc88a !important;">
                     <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-success"></i> สรุปสถิติงานบริการผู้ป่วยในรายเดือน</h6>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-success"></i> สรุปสถิติ{{ $tab_name }} รายเดือน</h6>
                             <p class="text-muted small mb-0 mt-1">ข้อมูลสรุปตามเดือนที่จำหน่าย (Discharge Date)</p>
                         </div>
                     </div>

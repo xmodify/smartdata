@@ -17,7 +17,28 @@ class IpdController extends Controller
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        // 1. Monthly IPD Statistics (User's Query)
+        // Tab Handling
+        $tab = $request->get('tab', 'total');
+        $ward_filter = "";
+        $bed_capacity = 60; // Default for total
+
+        $time_field = "i.regtime";
+
+        $tab_name = "ผู้ป่วยในรวม";
+
+        if ($tab == 'general') {
+            $ward_filter = " AND i.an IN (SELECT DISTINCT an FROM iptbedmove WHERE nward = '01') ";
+            $bed_capacity = 40; 
+            $time_field = "(SELECT MIN(movetime) FROM iptbedmove WHERE an = i.an AND nward = '01')";
+            $tab_name = "ผู้ป่วยในสามัญ";
+        } elseif ($tab == 'vip') {
+            $ward_filter = " AND i.an IN (SELECT DISTINCT an FROM iptbedmove WHERE nward = '03') ";
+            $bed_capacity = 20;
+            $time_field = "(SELECT MIN(movetime) FROM iptbedmove WHERE an = i.an AND nward = '03')";
+            $tab_name = "ผู้ป่วยใน VIP";
+        }
+
+        // 1. Monthly IPD Statistics
         $monthly_stats = DB::connection('hosxp')->select("
             SELECT 
                 CASE 
@@ -36,8 +57,8 @@ class IpdController extends Controller
                 END AS 'month_year',
                 COUNT(DISTINCT a.an) AS 'total_admission',
                 SUM(a.admdate) AS 'total_bed_days',
-                -- อัตราครองเตียง (Bed Occupancy Rate) อิงจาก 60 เตียง
-                ROUND((SUM(a.admdate) * 100) / (60 * CASE 
+                -- อัตราครองเตียง (Bed Occupancy Rate)
+                ROUND((SUM(a.admdate) * 100) / ({$bed_capacity} * CASE 
                     WHEN YEAR(a.dchdate) = YEAR(CURDATE()) AND MONTH(a.dchdate) = MONTH(CURDATE()) 
                     THEN DAY(CURDATE()) 
                     ELSE DAY(LAST_DAY(a.dchdate)) 
@@ -61,7 +82,7 @@ class IpdController extends Controller
                 SELECT 
                     i.an, 
                     i.dchdate, 
-                    i.regtime, 
+                    {$time_field} as 'regtime', 
                     i.adjrw, 
                     a.admdate, 
                     a.income, 
@@ -70,13 +91,14 @@ class IpdController extends Controller
                 INNER JOIN an_stat a ON a.an = i.an
                 WHERE i.dchdate BETWEEN ? AND ?
                 AND a.pdx NOT IN ('Z290', 'Z208')
+                {$ward_filter}
                 GROUP BY i.an
             ) AS a
             GROUP BY YEAR(a.dchdate), MONTH(a.dchdate)
             ORDER BY YEAR(a.dchdate), MONTH(a.dchdate)
         ", [$start_date, $end_date]);
 
-        // 2. Currently Admitted by Ward (User's Query)
+        // 2. Currently Admitted by Ward
         $current_admit = DB::connection('hosxp')->select("
             SELECT COUNT(DISTINCT an) AS total,
                 IFNULL(SUM(CASE WHEN ward = '01' THEN 1 ELSE 0 END),0) AS 'ipd',
@@ -90,39 +112,35 @@ class IpdController extends Controller
             ) AS a
         ")[0];
 
-        // 3. Summary IPD Statistics (Aggregated for the whole period)
+        // 3. Summary IPD Statistics
         $summary_stats = DB::connection('hosxp')->select("
             SELECT 
                 'รวมทั้งหมด' AS 'month_year',
                 COUNT(DISTINCT a.an) AS 'total_admission',
                 SUM(a.admdate) AS 'total_bed_days',
-                -- อัตราครองเตียงเฉลี่ยสำหรับช่วงเวลาที่เลือก
-                ROUND((SUM(a.admdate) * 100) / (60 * (DATEDIFF(LEAST(?, CURDATE()), ?) + 1)), 2) AS 'bed_occupancy_rate',
-                -- จำนวนเตียงที่ใช้งานเฉลี่ยต่อวัน
+                ROUND((SUM(a.admdate) * 100) / ({$bed_capacity} * (DATEDIFF(LEAST(?, CURDATE()), ?) + 1)), 2) AS 'bed_occupancy_rate',
                 ROUND(SUM(a.admdate) / (DATEDIFF(LEAST(?, CURDATE()), ?) + 1), 2) AS 'active_bed',
                 SUM(a.adjrw) AS 'total_adjrw',
-                -- รายได้เรียกเก็บสุทธิต่อหน่วยน้ำหนักสัมพัทธ์
                 ROUND(SUM(a.income - a.rcpt_money) / SUM(a.adjrw), 2) AS 'net_income_per_rw',
-                -- ค่าดัชนีกลุ่มวินิจฉัยโรคร่วมเฉลี่ย (CMI)
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
-                -- สถิติการรับใหม่แยกตามเวร
                 SUM(CASE WHEN a.regtime BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
                 SUM(CASE WHEN a.regtime BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
                 SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
             FROM (
                 SELECT 
-                    i.an, i.regtime, i.adjrw, a.admdate, a.income, a.rcpt_money
+                    i.an, {$time_field} as 'regtime', i.adjrw, a.admdate, a.income, a.rcpt_money
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
                 WHERE i.dchdate BETWEEN ? AND ?
                 AND a.pdx NOT IN ('Z290', 'Z208')
+                {$ward_filter}
                 GROUP BY i.an
             ) AS a
         ", [$end_date, $start_date, $end_date, $start_date, $start_date, $end_date])[0];
 
         return view('hosxp.ipd.index', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
-            'monthly_stats', 'current_admit', 'summary_stats'
+            'monthly_stats', 'current_admit', 'summary_stats', 'tab', 'tab_name'
         ));
     }
 

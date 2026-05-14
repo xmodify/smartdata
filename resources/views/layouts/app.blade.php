@@ -475,7 +475,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-05-13 12:30
+                V. 69-05-14 10:30
             </div>
         </div>
         <!-- /#sidebar-wrapper -->
