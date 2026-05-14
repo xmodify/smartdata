@@ -17,7 +17,113 @@ class IpdController extends Controller
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        return view('hosxp.ipd.index', compact('title', 'budget_year_select', 'budget_year', 'start_date', 'end_date'));
+        // 1. Monthly IPD Statistics (User's Query)
+        $monthly_stats = DB::connection('hosxp')->select("
+            SELECT 
+                CASE 
+                    WHEN MONTH(a.dchdate) = 10 THEN CONCAT('ต.ค. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 11 THEN CONCAT('พ.ย. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 12 THEN CONCAT('ธ.ค. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 1 THEN CONCAT('ม.ค. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 2 THEN CONCAT('ก.พ. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 3 THEN CONCAT('มี.ค. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 4 THEN CONCAT('เม.ย. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 5 THEN CONCAT('พ.ค. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 6 THEN CONCAT('มิ.ย. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 7 THEN CONCAT('ก.ค. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 8 THEN CONCAT('ส.ค. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                    WHEN MONTH(a.dchdate) = 9 THEN CONCAT('ก.ย. ', RIGHT(YEAR(a.dchdate) + 543, 2))
+                END AS 'month_year',
+                COUNT(DISTINCT a.an) AS 'total_admission',
+                SUM(a.admdate) AS 'total_bed_days',
+                -- อัตราครองเตียง (Bed Occupancy Rate) อิงจาก 60 เตียง
+                ROUND((SUM(a.admdate) * 100) / (60 * CASE 
+                    WHEN YEAR(a.dchdate) = YEAR(CURDATE()) AND MONTH(a.dchdate) = MONTH(CURDATE()) 
+                    THEN DAY(CURDATE()) 
+                    ELSE DAY(LAST_DAY(a.dchdate)) 
+                END), 2) AS 'bed_occupancy_rate',
+                -- จำนวนเตียงที่ใช้งานเฉลี่ยต่อวัน (Active Bed)
+                ROUND((SUM(a.admdate) / CASE 
+                    WHEN YEAR(a.dchdate) = YEAR(CURDATE()) AND MONTH(a.dchdate) = MONTH(CURDATE()) 
+                    THEN DAY(CURDATE()) 
+                    ELSE DAY(LAST_DAY(a.dchdate)) 
+                END), 2) AS 'active_bed',
+                ROUND(SUM(a.adjrw), 4) AS 'total_adjrw',
+                -- รายได้เรียกเก็บสุทธิต่อหน่วยน้ำหนักสัมพัทธ์
+                ROUND(SUM(a.income - a.rcpt_money) / SUM(a.adjrw), 2) AS 'net_income_per_rw',
+                -- ค่าดัชนีกลุ่มวินิจฉัยโรคร่วมเฉลี่ย
+                ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
+                -- สถิติการรับใหม่แยกตามเวร
+                SUM(CASE WHEN a.regtime BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
+                SUM(CASE WHEN a.regtime BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
+                SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+            FROM (
+                SELECT 
+                    i.an, 
+                    i.dchdate, 
+                    i.regtime, 
+                    i.adjrw, 
+                    a.admdate, 
+                    a.income, 
+                    a.rcpt_money
+                FROM ipt i
+                INNER JOIN an_stat a ON a.an = i.an
+                WHERE i.dchdate BETWEEN ? AND ?
+                AND a.pdx NOT IN ('Z290', 'Z208')
+                GROUP BY i.an
+            ) AS a
+            GROUP BY YEAR(a.dchdate), MONTH(a.dchdate)
+            ORDER BY YEAR(a.dchdate), MONTH(a.dchdate)
+        ", [$start_date, $end_date]);
+
+        // 2. Currently Admitted by Ward (User's Query)
+        $current_admit = DB::connection('hosxp')->select("
+            SELECT COUNT(DISTINCT an) AS total,
+                IFNULL(SUM(CASE WHEN ward = '01' THEN 1 ELSE 0 END),0) AS 'ipd',
+                IFNULL(SUM(CASE WHEN ward = '03' THEN 1 ELSE 0 END),0) AS 'vip',
+                IFNULL(SUM(CASE WHEN ward = '02' THEN 1 ELSE 0 END),0) AS 'lr',
+                IFNULL(SUM(CASE WHEN ward = '06' THEN 1 ELSE 0 END),0) AS 'homeward'
+            FROM (
+                SELECT i.an, i.ward 
+                FROM ipt i 
+                WHERE confirm_discharge = 'N'
+            ) AS a
+        ")[0];
+
+        // 3. Summary IPD Statistics (Aggregated for the whole period)
+        $summary_stats = DB::connection('hosxp')->select("
+            SELECT 
+                'รวมทั้งหมด' AS 'month_year',
+                COUNT(DISTINCT a.an) AS 'total_admission',
+                SUM(a.admdate) AS 'total_bed_days',
+                -- อัตราครองเตียงเฉลี่ยสำหรับช่วงเวลาที่เลือก
+                ROUND((SUM(a.admdate) * 100) / (60 * (DATEDIFF(LEAST(?, CURDATE()), ?) + 1)), 2) AS 'bed_occupancy_rate',
+                -- จำนวนเตียงที่ใช้งานเฉลี่ยต่อวัน
+                ROUND(SUM(a.admdate) / (DATEDIFF(LEAST(?, CURDATE()), ?) + 1), 2) AS 'active_bed',
+                SUM(a.adjrw) AS 'total_adjrw',
+                -- รายได้เรียกเก็บสุทธิต่อหน่วยน้ำหนักสัมพัทธ์
+                ROUND(SUM(a.income - a.rcpt_money) / SUM(a.adjrw), 2) AS 'net_income_per_rw',
+                -- ค่าดัชนีกลุ่มวินิจฉัยโรคร่วมเฉลี่ย (CMI)
+                ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
+                -- สถิติการรับใหม่แยกตามเวร
+                SUM(CASE WHEN a.regtime BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
+                SUM(CASE WHEN a.regtime BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
+                SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+            FROM (
+                SELECT 
+                    i.an, i.regtime, i.adjrw, a.admdate, a.income, a.rcpt_money
+                FROM ipt i
+                INNER JOIN an_stat a ON a.an = i.an
+                WHERE i.dchdate BETWEEN ? AND ?
+                AND a.pdx NOT IN ('Z290', 'Z208')
+                GROUP BY i.an
+            ) AS a
+        ", [$end_date, $start_date, $end_date, $start_date, $start_date, $end_date])[0];
+
+        return view('hosxp.ipd.index', compact(
+            'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
+            'monthly_stats', 'current_admit', 'summary_stats'
+        ));
     }
 
     private function resolveDateRange(Request $request)

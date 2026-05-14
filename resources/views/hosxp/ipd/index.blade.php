@@ -11,113 +11,112 @@
 
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
     <style>
         .page-header-container {
-            background: #fff;
+            background: #f8fbfd;
             border-radius: 12px;
             padding: 1rem 1.25rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             margin-bottom: 1.5rem;
-            border: 1px solid #f0f0f0;
+            border: 1px solid #e3eef5;
         }
+
+        body { background-color: #f4f7fa !important; }
 
         .header-form-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            display: flex; align-items: center; gap: 0.5rem;
         }
 
-        .input-group-date {
-            width: 160px !important;
-        }
+        .input-group-date { width: 160px !important; }
+        .input-group-budget { width: 250px !important; }
 
-        .input-group-budget {
-            width: 250px !important;
+        .card-ipd { 
+            border-radius: 16px; 
+            border: 1px solid #e3eef5 !important; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); 
+            background: #fff;
+            overflow: hidden;
+        }
+        .chart-container { min-height: 350px; }
+        
+        .table-ipd { font-size: 0.85rem; }
+        .table-ipd thead th { background-color: #f8f9fa; color: #334155; font-weight: 700; border-bottom: 2px solid #e2e8f0; }
+
+        .stat-card {
+            transition: transform 0.3s ease;
+            border-top: 4px solid #4e73df;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
 
         @media (max-width: 768px) {
-            .page-header-container {
-                flex-direction: column;
-                align-items: flex-start !important;
-                gap: 1rem;
-            }
-
-            .header-form-controls {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-
-            .input-group-date,
-            .input-group-budget {
-                width: 100% !important;
-            }
+            .page-header-container { flex-direction: column; align-items: flex-start !important; gap: 1rem; }
+            .header-form-controls { width: 100%; flex-wrap: wrap; }
+            .input-group-date, .input-group-budget { width: 100% !important; }
         }
 
-        .flatpickr-today-button {
-            border-top: 1px solid #e6e6e6;
-            padding: 8px;
-            text-align: center;
-            cursor: pointer;
-            color: #28a745;
-            font-weight: bold;
-            font-size: 0.9rem;
-            transition: background 0.2s;
-            border-radius: 0 0 12px 12px;
+        /* Custom DataTables Styling */
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+            padding: 0.2rem 0.6rem !important;
+            font-size: 0.8rem !important;
         }
-
-        .flatpickr-today-button:hover {
-            background: #f8f9fa;
-            color: #1e7e34;
+        .dt-buttons .btn-success {
+            background-color: #1d6f42 !important;
+            border-color: #1d6f42 !important;
+            color: #ffffff !important;
+            border-radius: 8px !important;
+            font-size: 0.8rem !important;
+            padding: 0.4rem 1rem !important;
+            margin-right: 5px;
+            font-weight: 600 !important;
+            box-shadow: 0 4px 6px rgba(29, 111, 66, 0.1) !important;
+        }
+        table.dataTable thead th {
+            background-color: #f8f9fc !important;
+            color: #4e73df !important;
+            border-bottom: 2px solid #e3e6f0 !important;
         }
     </style>
 @endpush
 
 @section('content')
     <div class="container-fluid px-2 px-md-3">
-        <!-- Header Box -->
+        <!-- Header -->
         <div class="page-header-container d-flex justify-content-between align-items-center mt-3">
-            <div class="d-flex align-items-center report-title-box">
+            <div class="d-flex align-items-center">
                 <div class="ps-3 py-1">
                     <h5 class="text-dark mb-0 fw-bold">
-                        <i class="fas fa-bed text-success me-2"></i>
-                        {{ $title }}
+                        <i class="fas fa-bed text-success me-2"></i> {{ $title }}
                     </h5>
-                    <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
-                    <div class="text-success small fw-bold mt-1">
-                        <i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง
-                        {{ DateThai($end_date) }}
-                    </div>
+                    <div class="text-muted small mt-1">ปีงบประมาณ {{ $budget_year }} | ระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}</div>
                 </div>
             </div>
 
             <div class="d-flex align-items-center">
                 <form action="" method="GET" class="m-0 header-form-controls">
-                    <span class="me-1 fw-bold text-muted small">ช่วงวันที่:</span>
-                    <div class="input-group input-group-sm shadow-sm input-group-date"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-success"><i
-                                class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0"
-                            value="{{ $start_date }}" placeholder="วันที่เริ่ม" style="font-size: 0.8rem;">
+                    <div class="input-group input-group-sm shadow-sm input-group-date">
+                        <span class="input-group-text bg-white border-end-0 text-success"><i class="fas fa-calendar-alt"></i></span>
+                        <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0" value="{{ $start_date }}">
                     </div>
-                    <div class="input-group input-group-sm shadow-sm input-group-date"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-success"><i
-                                class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0"
-                            value="{{ $end_date }}" placeholder="วันที่สิ้นสุด" style="font-size: 0.8rem;">
+                    <div class="input-group input-group-sm shadow-sm input-group-date">
+                        <span class="input-group-text bg-white border-end-0 text-success"><i class="fas fa-calendar-alt"></i></span>
+                        <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0" value="{{ $end_date }}">
                     </div>
-                    <div class="input-group input-group-sm shadow-sm input-group-budget"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
+                    <div class="input-group input-group-sm shadow-sm input-group-budget">
+                        <select class="form-select border-end-0" name="budget_year">
                             @foreach ($budget_year_select as $row)
-                                <option value="{{ $row->LEAVE_YEAR_ID }}"
-                                    {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>
+                                <option value="{{ $row->LEAVE_YEAR_ID }}" {{ (int)$budget_year === (int)$row->LEAVE_YEAR_ID ? 'selected' : '' }}>
                                     {{ $row->LEAVE_YEAR_NAME }}
                                 </option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-success px-3" style="font-size: 0.8rem;">
+                        <button type="submit" class="btn btn-success px-3">
                             <i class="fas fa-search"></i> ค้นหา
                         </button>
                     </div>
@@ -125,24 +124,181 @@
             </div>
         </div>
 
-        <!-- Placeholder Content -->
-        <div class="row">
+        <!-- Currently Admitted Cards -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-3">
+                <div class="card card-ipd stat-card shadow-sm h-100" style="border-top-color: #4e73df;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2"><i class="fas fa-procedures fa-2x text-primary opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-primary">{{ number_format($current_admit->ipd) }}</h2>
+                        <div class="small fw-bold text-primary mb-1">กำลัง Admit</div>
+                        <div class="text-muted small fw-bold text-uppercase">หอผู้ป่วยสามัญ (IPD)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-ipd stat-card shadow-sm h-100" style="border-top-color: #f6c23e;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2"><i class="fas fa-star fa-2x text-warning opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-warning">{{ number_format($current_admit->vip) }}</h2>
+                        <div class="small fw-bold text-warning mb-1">กำลัง Admit</div>
+                        <div class="text-muted small fw-bold text-uppercase">หอผู้ป่วยพิเศษ (VIP)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-ipd stat-card shadow-sm h-100" style="border-top-color: #e74a3b;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2"><i class="fas fa-baby fa-2x text-danger opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-danger">{{ number_format($current_admit->lr) }}</h2>
+                        <div class="small fw-bold text-danger mb-1">กำลัง Admit</div>
+                        <div class="text-muted small fw-bold text-uppercase">ห้องคลอด (LR)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-ipd stat-card shadow-sm h-100" style="border-top-color: #1cc88a;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2"><i class="fas fa-home fa-2x text-success opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-success">{{ number_format($current_admit->homeward) }}</h2>
+                        <div class="small fw-bold text-success mb-1">กำลัง Admit</div>
+                        <div class="text-muted small fw-bold text-uppercase">Home Ward</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1: Admissions & Occupancy -->
+        <div class="row mb-4 g-4">
+            <div class="col-md-6">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #4e73df !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-user-injured me-2 text-primary"></i> จำนวนผู้ป่วย IPD (Admit AN)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="admissionChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #1cc88a !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-bed me-2 text-success"></i> อัตราครองเตียง (%)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="occupancyChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2: AdjRW, CMI & Shifts -->
+        <div class="row mb-4 g-4">
+            <div class="col-md-4">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #f6c23e !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> Sum AdjRW</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="adjrwChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #36b9cc !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-stethoscope me-2 text-info"></i> CMI</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="cmiChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #e74a3b !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-clock me-2 text-danger"></i> สัดส่วนการรับใหม่ตามเวร</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="shiftChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="row pb-5">
             <div class="col-12">
-                <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                    <div class="card-body p-5 text-center">
-                        <div class="mb-4">
-                            <i class="fas fa-hospital-alt fa-4x text-muted opacity-25"></i>
+                <div class="card card-ipd shadow-sm" style="border-top: 4px solid #1cc88a !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-success"></i> สรุปสถิติงานบริการผู้ป่วยในรายเดือน</h6>
+                            <p class="text-muted small mb-0 mt-1">ข้อมูลสรุปตามเดือนที่จำหน่าย (Discharge Date)</p>
                         </div>
-                        <h4 class="fw-bold">อยู่ระหว่างการพัฒนา</h4>
-                        <p class="text-muted">ระบบรายงานงานบริการผู้ป่วยใน (IPD)
-                            กำลังอยู่ในขั้นตอนการจัดสรรข้อมูลและออกแบบรายงานเพื่อเพิ่มประสิทธิภาพในการวิเคราะห์</p>
-                        <div class="mt-4">
-                            <a href="{{ route('hosxp.stats.top20_ipd') }}" class="btn btn-success me-2">
-                                <i class="fas fa-chart-line me-1"></i> ดูรายงาน 20 อันดับโรค IPD
-                            </a>
-                            <a href="{{ route('hosxp.stats.index') }}" class="btn btn-outline-secondary">
-                                กลับหน้าหลัก
-                            </a>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-ipd mb-0" id="ipdTable">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">เดือน/ปี</th>
+                                        <th class="text-center">Admit (AN)</th>
+                                        <th class="text-center">วันนอนรวม</th>
+                                        <th class="text-center">อัตราครองเตียง (%)</th>
+                                        <th class="text-center">Active Bed</th>
+                                        <th class="text-center">Sum AdjRW</th>
+                                        <th class="text-center">CMI</th>
+                                        <th class="text-center">รายได้/RW</th>
+                                        <th class="text-center">รับใหม่เวรเช้า</th>
+                                        <th class="text-center">รับใหม่เวรบ่าย</th>
+                                        <th class="text-center">รับใหม่เวรดึก</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($monthly_stats as $row)
+                                    <tr>
+                                        <td class="ps-4 fw-bold text-dark">{{ $row->month_year }}</td>
+                                        <td class="text-center fw-bold text-primary">{{ number_format($row->total_admission) }}</td>
+                                        <td class="text-center">{{ number_format($row->total_bed_days) }}</td>
+                                        <td class="text-center">
+                                            <div class="progress" style="height: 10px; border-radius: 5px;">
+                                                <div class="progress-bar {{ $row->bed_occupancy_rate > 80 ? 'bg-danger' : ($row->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                                    role="progressbar" style="width: {{ $row->bed_occupancy_rate }}%"></div>
+                                            </div>
+                                            <small class="fw-bold">{{ $row->bed_occupancy_rate }}%</small>
+                                        </td>
+                                        <td class="text-center">{{ $row->active_bed }}</td>
+                                        <td class="text-center">{{ number_format($row->total_adjrw, 2) }}</td>
+                                        <td class="text-center fw-bold text-info">{{ number_format($row->cmi, 2) }}</td>
+                                        <td class="text-center">{{ number_format($row->net_income_per_rw, 2) }}</td>
+                                        <td class="text-center">{{ number_format($row->admit_morning_shift) }}</td>
+                                        <td class="text-center">{{ number_format($row->admit_evening_shift) }}</td>
+                                        <td class="text-center">{{ number_format($row->admit_night_shift) }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-light fw-bold" style="border-top: 2px solid #dee2e6;">
+                                        <td class="ps-4">{{ $summary_stats->month_year }}</td>
+                                        <td class="text-center text-primary">{{ number_format($summary_stats->total_admission) }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->total_bed_days) }}</td>
+                                        <td class="text-center">
+                                            <div class="progress" style="height: 10px; border-radius: 5px; background-color: #e9ecef;">
+                                                <div class="progress-bar {{ $summary_stats->bed_occupancy_rate > 80 ? 'bg-danger' : ($summary_stats->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                                    role="progressbar" style="width: {{ $summary_stats->bed_occupancy_rate }}%"></div>
+                                            </div>
+                                            <small>{{ $summary_stats->bed_occupancy_rate }}%</small>
+                                        </td>
+                                        <td class="text-center">{{ $summary_stats->active_bed }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->total_adjrw, 2) }}</td>
+                                        <td class="text-center text-info">{{ number_format($summary_stats->cmi, 2) }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->net_income_per_rw, 2) }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->admit_morning_shift) }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->admit_evening_shift) }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->admit_night_shift) }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -151,74 +307,189 @@
     </div>
 
     @push('scripts')
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+        
         <script>
             $(document).ready(function() {
-                if (typeof flatpickr !== 'undefined') {
-                    const yearOffset = 543;
-                    const commonConfig = {
-                        locale: "th",
-                        dateFormat: "Y-m-d",
-                        altInput: true,
-                        altFormat: "j M Y",
-                        allowInput: false,
-                        onReady: function(selectedDates, dateStr, instance) {
-                            if (instance.altInput) {
-                                const date = instance.selectedDates[0] || new Date(instance.input.value);
+                // Initialize DataTable
+                $('#ipdTable').DataTable({
+                    dom: '<"d-flex justify-content-end mb-3"B>rt',
+                    buttons: [{
+                        extend: 'excelHtml5',
+                        text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                        className: 'btn btn-success',
+                        title: 'รายงานสถิติ IPD ({{ DateThai($start_date) }} - {{ DateThai($end_date) }})'
+                    }],
+                    paging: false,
+                    info: false,
+                    searching: false,
+                    ordering: true,
+                    order: [],
+                    responsive: true
+                });
+
+                const yearOffset = 543;
+                const commonConfig = {
+                    locale: "th", dateFormat: "Y-m-d", altInput: true, altFormat: "j M Y", allowInput: false,
+                    onReady: function(selectedDates, dateStr, instance) {
+                        if (instance.altInput) {
+                            const date = instance.selectedDates[0] || new Date(instance.input.value);
+                            if (date && !isNaN(date.getTime())) {
                                 const day = date.getDate();
                                 const month = instance.l10n.months.shorthand[date.getMonth()];
                                 const year = date.getFullYear() + yearOffset;
                                 instance.altInput.value = `${day} ${month} ${year}`;
                             }
-
-                            // Add Today Button
-                            const container = instance.calendarContainer;
-                            if (container && !container.querySelector('.flatpickr-today-button')) {
-                                const btn = document.createElement("div");
-                                btn.className = "flatpickr-today-button";
-                                btn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> วันนี้';
-                                btn.addEventListener("mousedown", function(e) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    instance.setDate(new Date());
-                                    instance.close();
-                                });
-                                container.appendChild(btn);
-                            }
-                        },
-                        onChange: function(selectedDates, dateStr, instance) {
-                            if (instance.altInput && selectedDates.length > 0) {
-                                const date = selectedDates[0];
-                                setTimeout(() => {
-                                    const day = date.getDate();
-                                    const month = instance.l10n.months.shorthand[date.getMonth()];
-                                    const year = date.getFullYear() + yearOffset;
-                                    instance.altInput.value = `${day} ${month} ${year}`;
-                                }, 10);
-                            }
                         }
-                    };
-                    const startPicker = flatpickr("#start_date", commonConfig);
-                    const endPicker = flatpickr("#end_date", commonConfig);
 
-                    // Update start_date and end_date based on budget_year change
-                    $('select[name="budget_year"]').on('change', function() {
-                        var selectedYear = parseInt($(this).val());
-                        if(!isNaN(selectedYear)) {
-                            // Calculate budget year ranges
-                            var startYear = selectedYear - 544; // Example: 2567 -> 2023
-                            var endYear = selectedYear - 543;   // Example: 2567 -> 2024
-                            var startDateStr = startYear + "-10-01";
-                            var endDateStr = endYear + "-09-30";
-                            
+                        // Add Today Button
+                        const container = instance.calendarContainer;
+                        if (container && !container.querySelector('.flatpickr-today-button')) {
+                            const btn = document.createElement("div");
+                            btn.className = "flatpickr-today-button";
+                            btn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> วันนี้';
+                            btn.addEventListener("mousedown", function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                instance.setDate(new Date());
+                                instance.close();
+                            });
+                            container.appendChild(btn);
+                        }
+                    },
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (instance.altInput && selectedDates.length > 0) {
+                            const date = selectedDates[0];
                             setTimeout(() => {
-                                if (typeof startPicker !== 'undefined' && startPicker) startPicker.setDate(startDateStr, true);
-                                if (typeof endPicker !== 'undefined' && endPicker) endPicker.setDate(endDateStr, true);
-                            }, 50);
+                                const day = date.getDate();
+                                const month = instance.l10n.months.shorthand[date.getMonth()];
+                                const year = date.getFullYear() + yearOffset;
+                                instance.altInput.value = `${day} ${month} ${year}`;
+                            }, 10);
                         }
-                    });
-                }
+                    }
+                };
+                const startPicker = flatpickr("#start_date", commonConfig);
+                const endPicker = flatpickr("#end_date", commonConfig);
+
+                $('select[name="budget_year"]').on('change', function() {
+                    var selectedYear = parseInt($(this).val());
+                    if(!isNaN(selectedYear)) {
+                        var startYear = selectedYear - 544; 
+                        var endYear = selectedYear - 543;   
+                        var startDateStr = startYear + "-10-01";
+                        var endDateStr = endYear + "-09-30";
+                        
+                        setTimeout(() => {
+                            if (typeof startPicker !== 'undefined' && startPicker) startPicker.setDate(startDateStr, true);
+                            if (typeof endPicker !== 'undefined' && endPicker) endPicker.setDate(endDateStr, true);
+                        }, 50);
+                    }
+                });
+
+                // Chart Configurations
+                const labels = @json(array_column($monthly_stats, 'month_year'));
+
+                // 1. Admission Chart
+                var admissionOptions = {
+                    series: [{ name: 'Admit (AN)', data: @json(array_column($monthly_stats, 'total_admission')) }],
+                    chart: { height: 300, type: 'bar', toolbar: { show: false } },
+                    colors: ['#4e73df'],
+                    plotOptions: { bar: { borderRadius: 4, columnWidth: '60%', dataLabels: { position: 'top' } } },
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -20, 
+                        style: { fontSize: '12px', colors: ['#4e73df'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 }
+                };
+                new ApexCharts(document.querySelector("#admissionChart"), admissionOptions).render();
+
+                // 2. Occupancy Chart
+                var occupancyOptions = {
+                    series: [{ name: 'อัตราครองเตียง (%)', data: @json(array_column($monthly_stats, 'bed_occupancy_rate')) }],
+                    chart: { height: 300, type: 'area', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    colors: ['#1cc88a'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 } },
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -10,
+                        style: { fontSize: '12px', colors: ['#1cc88a'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 }
+                };
+                new ApexCharts(document.querySelector("#occupancyChart"), occupancyOptions).render();
+
+                // 3. AdjRW Chart
+                var adjrwOptions = {
+                    series: [{ name: 'Sum AdjRW', data: @json(array_column($monthly_stats, 'total_adjrw')) }],
+                    chart: { height: 300, type: 'bar', toolbar: { show: false } },
+                    colors: ['#f6c23e'],
+                    plotOptions: { bar: { borderRadius: 4, columnWidth: '60%', dataLabels: { position: 'top' } } },
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -20, 
+                        style: { fontSize: '12px', colors: ['#f6c23e'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 }
+                };
+                new ApexCharts(document.querySelector("#adjrwChart"), adjrwOptions).render();
+
+                // 4. CMI Chart
+                var cmiOptions = {
+                    series: [{ name: 'CMI', data: @json(array_column($monthly_stats, 'cmi')) }],
+                    chart: { height: 300, type: 'line', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 4 },
+                    markers: { size: 4 },
+                    colors: ['#36b9cc'],
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -15,
+                        style: { fontSize: '12px', colors: ['#36b9cc'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 }
+                };
+                new ApexCharts(document.querySelector("#cmiChart"), cmiOptions).render();
+
+                var shiftOptions = {
+                    series: [
+                        @json(array_sum(array_column($monthly_stats, 'admit_morning_shift'))),
+                        @json(array_sum(array_column($monthly_stats, 'admit_evening_shift'))),
+                        @json(array_sum(array_column($monthly_stats, 'admit_night_shift')))
+                    ],
+                    chart: { type: 'donut', height: 350 },
+                    labels: ['เวรเช้า (08:00-16:00)', 'เวรบ่าย (16:00-24:00)', 'เวรดึก (00:00-08:00)'],
+                    colors: ['#4e73df', '#f6c23e', '#e74a3b'],
+                    legend: { position: 'bottom', fontSize: '12px' },
+                    stroke: { width: 0 },
+                    dataLabels: { enabled: true, formatter: function (val) { return val.toFixed(1) + "%" } }
+                };
+                new ApexCharts(document.querySelector("#shiftChart"), shiftOptions).render();
             });
         </script>
     @endpush
