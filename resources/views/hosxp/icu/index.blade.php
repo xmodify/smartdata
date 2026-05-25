@@ -133,43 +133,48 @@
 
         <!-- Summary Cards -->
         <div class="row mb-4 g-3">
-            <div class="col-md-3">
+            <div class="col-md">
                 <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="transition: transform 0.3s ease; border-top: 4px solid #e74a3b !important;">
                     <div class="card-body text-center p-4">
                         <div class="mb-2"><i class="fas fa-procedures fa-2x text-danger opacity-50"></i></div>
                         <h2 class="fw-bold mb-0 text-danger">{{ number_format($admit_count) }}</h2>
                         <div class="small fw-bold text-danger mb-1">กำลัง Admit (ICU)</div>
-                        <div class="text-muted small fw-bold text-uppercase">เตียงทั้งหมด {{ $bed_capacity }} เตียง</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md">
                 <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="transition: transform 0.3s ease; border-top: 4px solid #4e73df !important;">
                     <div class="card-body text-center p-4">
                         <div class="mb-2"><i class="fas fa-user-injured fa-2x text-primary opacity-50"></i></div>
                         <h2 class="fw-bold mb-0 text-primary">{{ number_format($summary_stats->total_admission) }}</h2>
                         <div class="small fw-bold text-primary mb-1">ผู้ป่วยเข้าเกณฑ์สะสม</div>
-                        <div class="text-muted small fw-bold text-uppercase">ยอดจำหน่ายสะสม</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md">
                 <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="transition: transform 0.3s ease; border-top: 4px solid #1cc88a !important;">
                     <div class="card-body text-center p-4">
-                        <div class="mb-2"><i class="fas fa-bed fa-2x text-success opacity-50"></i></div>
-                        <h2 class="fw-bold mb-0 text-success">{{ number_format($summary_stats->bed_occupancy_rate, 2) }}%</h2>
-                        <div class="small fw-bold text-success mb-1">อัตราครองเตียงเฉลี่ย</div>
-                        <div class="text-muted small fw-bold text-uppercase">วันนอนสะสม: {{ number_format($summary_stats->total_bed_days) }} วัน</div>
+                        <div class="mb-2"><i class="fas fa-file-invoice-dollar fa-2x text-success opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-success">{{ number_format($summary_stats->total_adjrw, 2) }}</h2>
+                        <div class="small fw-bold text-success mb-1">Sum AdjRW</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md">
                 <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="transition: transform 0.3s ease; border-top: 4px solid #36b9cc !important;">
                     <div class="card-body text-center p-4">
                         <div class="mb-2"><i class="fas fa-stethoscope fa-2x text-info opacity-50"></i></div>
                         <h2 class="fw-bold mb-0 text-info">{{ number_format($summary_stats->cmi, 2) }}</h2>
                         <div class="small fw-bold text-info mb-1">ค่าเฉลี่ย CMI</div>
-                        <div class="text-muted small fw-bold text-uppercase">ดัชนีโรคร่วมเฉลี่ย</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="transition: transform 0.3s ease; border-top: 4px solid #f6c23e !important;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2"><i class="fas fa-hourglass-half fa-2x text-warning opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-warning">{{ number_format($pending_chart_count) }}</h2>
+                        <div class="small fw-bold text-warning mb-1">รอสรุป Chart</div>
                     </div>
                 </div>
             </div>
@@ -346,9 +351,9 @@
                             <table class="table table-hover table-icu mb-0" id="icuTable">
                                 <thead>
                                     <tr>
-                                        <th class="ps-4">Ward</th>
                                         <th>AN / HN</th>
                                         <th style="min-width: 150px;">ชื่อ-นามสกุล</th>
+                                        <th>สิทธิการรักษา</th>
                                         <th>วันที่เข้าเตียง ICU</th>
                                         <th class="text-center">เวรที่รับเข้า</th>
                                         <th>วันที่จำหน่าย</th>
@@ -361,14 +366,18 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($patients as $row)
+                                    @foreach($patients as $row)
                                     <tr>
-                                        <td class="ps-4"><span class="badge bg-light text-dark border">{{ $row->ward_name }}</span></td>
-                                        <td>
+                                        <td style="white-space: nowrap;">
                                             <div class="fw-bold text-primary">{{ $row->an }}</div>
                                             <div class="small text-muted">HN: {{ $row->hn }}</div>
                                         </td>
                                         <td>{{ $row->ptname }}</td>
+                                        <td style="max-width: 150px; white-space: normal;">
+                                            <div class="small text-dark" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;" title="{{ $row->pttype_name }}">
+                                                {{ $row->pttype_name ?? '-' }}
+                                            </div>
+                                        </td>
                                         <td>
                                             {{-- วันที่/เวลาเข้า ICU จาก iptbedmove --}}
                                             <div class="small">{{ $row->icu_movedate ? date('d/m/Y', strtotime($row->icu_movedate)) : '-' }}</div>
@@ -416,14 +425,7 @@
                                         </td>
                                         <td class="text-center fw-bold text-warning">{{ $row->adjrw ? number_format($row->adjrw, 4) : '-' }}</td>
                                     </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="9" class="text-center py-5">
-                                            <i class="fas fa-folder-open fa-3x text-muted opacity-25 mb-3"></i>
-                                            <p class="text-muted">ไม่พบข้อมูลผู้ป่วย ICU ในช่วงเวลาที่เลือก</p>
-                                        </td>
-                                    </tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>

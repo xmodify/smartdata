@@ -50,7 +50,8 @@ class IcuController extends Controller
                 d.name AS 'dch_doctor',
                 a.pdx,
                 a.diag_text_list,
-                i.adjrw
+                i.adjrw,
+                pt.name AS pttype_name
             FROM ipt i
             -- JOIN กับ iptbedmove เพื่อดึงวันที่/เวลาที่ย้ายเข้าเตียง ICU (เร็วที่สุด)
             INNER JOIN (
@@ -66,6 +67,7 @@ class IcuController extends Controller
             LEFT JOIN dchstts ds ON ds.dchstts = i.dchstts
             LEFT JOIN dchtype dt ON dt.dchtype = i.dchtype
             LEFT JOIN doctor d ON d.code = i.dch_doctor
+            LEFT JOIN pttype pt ON pt.pttype = i.pttype
             WHERE i.dchdate BETWEEN ? AND ?
               AND i.dchdate IS NOT NULL
             ORDER BY i.dchdate ASC, i.ward ASC
@@ -177,6 +179,19 @@ class IcuController extends Controller
             ->where('ward', 10)
             ->count();
 
+        // 6. รอสรุป Chart: นับผู้ป่วย ICU ที่จำหน่ายแล้วแต่ adjrw = 0 หรือ NULL (ยังไม่สรุป Chart)
+        $pending_chart_count = DB::connection('hosxp')->select("
+            SELECT COUNT(DISTINCT i.an) AS cnt
+            FROM ipt i
+            INNER JOIN (
+                SELECT DISTINCT an FROM iptbedmove WHERE nbedno LIKE 'ICU%'
+            ) icu ON icu.an = i.an
+            WHERE i.dchdate BETWEEN ? AND ?
+              AND i.dchdate IS NOT NULL
+              AND (i.adjrw IS NULL OR i.adjrw = 0)
+        ", [$start_date, $end_date]);
+        $pending_chart_count = $pending_chart_count[0]->cnt ?? 0;
+
         // 6. Summary Stats
         $summary_stats = DB::connection('hosxp')->select("
             SELECT 
@@ -203,7 +218,8 @@ class IcuController extends Controller
 
         return view('hosxp.icu.index', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
-            'patients', 'monthly_stats', 'dch_types', 'top_pdx', 'admit_count', 'summary_stats', 'bed_capacity'
+            'patients', 'monthly_stats', 'dch_types', 'top_pdx', 'admit_count',
+            'summary_stats', 'bed_capacity', 'pending_chart_count'
         ));
     }
 
