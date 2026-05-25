@@ -353,6 +353,7 @@
                                         <th class="text-center">เวรที่รับเข้า</th>
                                         <th>วันที่จำหน่าย</th>
                                         <th class="text-center">วันนอน ICU</th>
+                                        <th class="text-center">วันนอนรวม</th>
                                         <th>สถานะ/ประเภทจำหน่าย</th>
                                         <th>แพทย์</th>
                                         <th style="min-width: 200px;">การวินิจฉัย (PDX / Diag Text)</th>
@@ -397,6 +398,10 @@
                                             {{-- วันนอน ICU: จาก movedate ถึง dchdate --}}
                                             <div class="fw-bold">{{ $row->icu_los_days ?? '-' }} วัน</div>
                                             <div class="small text-muted" style="font-size: 0.7rem;">({{ $row->icu_los_exact ?? '-' }} วันจริง)</div>
+                                        </td>
+                                        <td class="text-center">
+                                            {{-- วันนอนรวม: จาก regdate ถึง dchdate --}}
+                                            <div class="fw-bold text-secondary">{{ $row->total_los_days ?? '-' }} วัน</div>
                                         </td>
                                         <td>
                                             <div class="small fw-bold">{{ $row->dch_status }}</div>

@@ -43,6 +43,8 @@ class IcuController extends Controller
                     CONCAT(icu.movedate, ' ', icu.movetime),
                     CONCAT(i.dchdate, ' ', i.dchtime)
                 ) / 24, 1) AS 'icu_los_exact',
+                -- วันนอนรวมทั้งหมด (admit โรงพยาบาล ถึงจำหน่าย)
+                DATEDIFF(i.dchdate, i.regdate) AS 'total_los_days',
                 ds.name AS 'dch_status',
                 dt.name AS 'dch_type',
                 d.name AS 'dch_doctor',
