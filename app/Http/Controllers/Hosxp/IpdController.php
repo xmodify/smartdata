@@ -22,6 +22,7 @@ class IpdController extends Controller
         $ward_filter = "";
         $bed_capacity = 60; // Default for total
         $time_field = "i.regtime"; // เวลา admit โรงพยาบาล (default)
+        $los_field = "a.admdate"; // วันนอน (default คือวันนอนของ admission)
         $tab_name = "ผู้ป่วยในรวม";
 
         if ($tab == 'general') {
@@ -30,6 +31,8 @@ class IpdController extends Controller
             $bed_capacity = 40;
             // ใช้เวลาที่ย้ายเข้าวอร์ดสามัญครั้งแรก (จาก iptbedmove)
             $time_field = "IFNULL((SELECT MIN(movetime) FROM iptbedmove WHERE an = i.an AND nward = '01'), i.regtime)";
+            // คำนวณวันนอนจริงเฉพาะวอร์ดสามัญ
+            $los_field = "DATEDIFF(i.dchdate, IFNULL((SELECT MIN(movedate) FROM iptbedmove WHERE an = i.an AND nward = '01'), i.regdate))";
             $tab_name = "ผู้ป่วยในสามัญ";
         } elseif ($tab == 'vip') {
             // กรองเฉพาะผู้ที่จำหน่ายจากวอร์ด VIP (i.ward = '03')
@@ -37,6 +40,8 @@ class IpdController extends Controller
             $bed_capacity = 20;
             // ใช้เวลาที่ย้ายเข้าวอร์ด VIP ครั้งแรก (จาก iptbedmove)
             $time_field = "IFNULL((SELECT MIN(movetime) FROM iptbedmove WHERE an = i.an AND nward = '03'), i.regtime)";
+            // คำนวณวันนอนจริงเฉพาะวอร์ด VIP
+            $los_field = "DATEDIFF(i.dchdate, IFNULL((SELECT MIN(movedate) FROM iptbedmove WHERE an = i.an AND nward = '03'), i.regdate))";
             $tab_name = "ผู้ป่วยใน VIP";
         }
 
@@ -87,7 +92,7 @@ class IpdController extends Controller
                     i.dchdate, 
                     {$time_field} AS regtime, 
                     i.adjrw, 
-                    a.admdate, 
+                    {$los_field} AS admdate, 
                     a.income, 
                     a.rcpt_money
                 FROM ipt i
@@ -135,7 +140,7 @@ class IpdController extends Controller
                     i.an,
                     {$time_field} AS regtime,
                     i.adjrw,
-                    a.admdate,
+                    {$los_field} AS admdate,
                     a.income,
                     a.rcpt_money
                 FROM ipt i

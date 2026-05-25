@@ -271,7 +271,15 @@
                                     <tr>
                                         <th class="ps-4">เดือน/ปี</th>
                                         <th class="text-center">Admit (AN)</th>
-                                        <th class="text-center">วันนอนรวม</th>
+                                        <th class="text-center">
+                                            @if($tab == 'vip')
+                                                วันนอน VIP
+                                            @elseif($tab == 'general')
+                                                วันนอนสามัญ
+                                            @else
+                                                วันนอนรวม
+                                            @endif
+                                        </th>
                                         <th class="text-center">อัตราครองเตียง (%)</th>
                                         <th class="text-center">Active Bed</th>
                                         <th class="text-center">Sum AdjRW</th>
