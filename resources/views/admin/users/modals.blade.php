@@ -31,7 +31,7 @@
                         </div>
                         <div class="col-md-12">
                             <label class="form-label fw-bold small">รหัสผ่าน</label>
-                            <input type="password" name="password" class="form-control" required>
+                            <input type="password" name="password" class="form-control" required autocomplete="new-password">
                         </div>
                         <div class="col-md-12">
                             <div class="form-check form-switch mt-2">
@@ -133,7 +133,7 @@
                         </div>
                         <div class="col-md-12">
                             <label class="form-label fw-bold small">รหัสผ่าน (เว้นว่างไว้หากไม่ต้องการเปลี่ยน)</label>
-                            <input type="password" name="password" class="form-control">
+                            <input type="password" name="password" class="form-control" autocomplete="new-password">
                         </div>
                         <div class="col-md-12">
                             <div class="form-check form-switch mt-2">

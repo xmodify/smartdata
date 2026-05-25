@@ -131,39 +131,109 @@
             </div>
         </div>
 
-        <!-- Charts Top -->
-        <div class="row mb-4 g-4">
+        <!-- Summary Cards -->
+        <div class="row mb-4 g-3">
             <div class="col-md-3">
-                <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="min-height: 200px; transition: transform 0.3s ease; border-top: 4px solid #e74a3b !important;">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center text-center p-4">
-                        <div class="mb-3">
-                            <span class="p-3 rounded-circle bg-light d-inline-block text-danger border border-danger border-opacity-10">
-                                <i class="fas fa-user-check fa-2x"></i>
-                            </span>
-                        </div>
-                        <h1 class="display-4 fw-bold mb-1 text-danger animate__animated animate__pulse animate__infinite" style="letter-spacing: -2px;">{{ number_format($admit_count) }}</h1>
-                        <div class="text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">กำลัง Admit</div>
-                        <div class="mt-4 w-100">
-                            <div class="badge bg-light text-muted w-100 py-2 border" style="border-radius: 10px;">
-                                <i class="fas fa-clock me-1 text-primary"></i> ข้อมูล ณ ปัจจุบัน
-                            </div>
-                        </div>
+                <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="transition: transform 0.3s ease; border-top: 4px solid #e74a3b !important;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2"><i class="fas fa-procedures fa-2x text-danger opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-danger">{{ number_format($admit_count) }}</h2>
+                        <div class="small fw-bold text-danger mb-1">กำลัง Admit (ICU)</div>
+                        <div class="text-muted small fw-bold text-uppercase">เตียงทั้งหมด {{ $bed_capacity }} เตียง</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-9">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #4e73df !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-chart-bar me-2 text-primary"></i> สถิติผู้ป่วย ICU รายเดือน</h6>
+            <div class="col-md-3">
+                <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="transition: transform 0.3s ease; border-top: 4px solid #4e73df !important;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2"><i class="fas fa-user-injured fa-2x text-primary opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-primary">{{ number_format($summary_stats->total_admission) }}</h2>
+                        <div class="small fw-bold text-primary mb-1">ผู้ป่วยเข้าเกณฑ์สะสม</div>
+                        <div class="text-muted small fw-bold text-uppercase">ยอดจำหน่ายสะสม</div>
                     </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="monthlyChart" class="chart-container"></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="transition: transform 0.3s ease; border-top: 4px solid #1cc88a !important;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2"><i class="fas fa-bed fa-2x text-success opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-success">{{ number_format($summary_stats->bed_occupancy_rate, 2) }}%</h2>
+                        <div class="small fw-bold text-success mb-1">อัตราครองเตียงเฉลี่ย</div>
+                        <div class="text-muted small fw-bold text-uppercase">วันนอนสะสม: {{ number_format($summary_stats->total_bed_days) }} วัน</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-icu shadow-sm border-0 h-100 bg-white" style="transition: transform 0.3s ease; border-top: 4px solid #36b9cc !important;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2"><i class="fas fa-stethoscope fa-2x text-info opacity-50"></i></div>
+                        <h2 class="fw-bold mb-0 text-info">{{ number_format($summary_stats->cmi, 2) }}</h2>
+                        <div class="small fw-bold text-info mb-1">ค่าเฉลี่ย CMI</div>
+                        <div class="text-muted small fw-bold text-uppercase">ดัชนีโรคร่วมเฉลี่ย</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Bottom -->
+        <!-- Charts Row 1: Admissions & Occupancy -->
+        <div class="row mb-4 g-4">
+            <div class="col-md-6">
+                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #4e73df !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-user-injured me-2 text-primary"></i> จำนวน (ผู้ป่วย ICU) </h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="admissionChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #1cc88a !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-bed me-2 text-success"></i> อัตราครองเตียง % (ผู้ป่วย ICU)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="occupancyChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2: AdjRW, CMI & Shifts -->
+        <div class="row mb-4 g-4">
+            <div class="col-md-4">
+                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #f6c23e !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> Sum AdjRW (ผู้ป่วย ICU)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="adjrwChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #36b9cc !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-stethoscope me-2 text-info"></i> CMI (ผู้ป่วย ICU)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="cmiChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #e74a3b !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-clock me-2 text-danger"></i> การรับใหม่ตามเวร (ผู้ป่วย ICU)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="shiftChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 3: Discharge Type & PDX -->
         <div class="row mb-4 g-4">
             <div class="col-md-6">
                 <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #1cc88a !important;">
@@ -187,6 +257,82 @@
             </div>
         </div>
 
+        <!-- Monthly Summary Stats Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card card-icu shadow-sm" style="border-top: 4px solid #1cc88a !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-success"></i> สรุปสถิติ ICU รายเดือน</h6>
+                            <p class="text-muted small mb-0 mt-1">ข้อมูลสรุปตามเดือนที่จำหน่าย (Discharge Date)</p>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-icu mb-0" id="icuSummaryTable">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">เดือน/ปี</th>
+                                        <th class="text-center">Admit (AN)</th>
+                                        <th class="text-center">วันนอนรวม</th>
+                                        <th class="text-center">อัตราครองเตียง (%)</th>
+                                        <th class="text-center">Active Bed</th>
+                                        <th class="text-center">Sum AdjRW</th>
+                                        <th class="text-center">CMI</th>
+                                        <th class="text-center">รับใหม่เวรเช้า</th>
+                                        <th class="text-center">รับใหม่เวรบ่าย</th>
+                                        <th class="text-center">รับใหม่เวรดึก</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($monthly_stats as $row)
+                                    <tr>
+                                        <td class="ps-4 fw-bold text-dark">{{ $row->month }}</td>
+                                        <td class="text-center fw-bold text-primary">{{ number_format($row->total_admission) }}</td>
+                                        <td class="text-center">{{ number_format($row->total_bed_days) }}</td>
+                                        <td class="text-center">
+                                            <div class="progress" style="height: 10px; border-radius: 5px;">
+                                                <div class="progress-bar {{ $row->bed_occupancy_rate > 80 ? 'bg-danger' : ($row->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                                     role="progressbar" style="width: {{ $row->bed_occupancy_rate }}%"></div>
+                                            </div>
+                                            <small class="fw-bold">{{ $row->bed_occupancy_rate }}%</small>
+                                        </td>
+                                        <td class="text-center">{{ $row->active_bed }}</td>
+                                        <td class="text-center">{{ number_format($row->total_adjrw, 2) }}</td>
+                                        <td class="text-center fw-bold text-info">{{ number_format($row->cmi, 2) }}</td>
+                                        <td class="text-center">{{ number_format($row->admit_morning_shift) }}</td>
+                                        <td class="text-center">{{ number_format($row->admit_evening_shift) }}</td>
+                                        <td class="text-center">{{ number_format($row->admit_night_shift) }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-light fw-bold" style="border-top: 2px solid #dee2e6;">
+                                        <td class="ps-4">{{ $summary_stats->month_year }}</td>
+                                        <td class="text-center text-primary">{{ number_format($summary_stats->total_admission) }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->total_bed_days) }}</td>
+                                        <td class="text-center">
+                                            <div class="progress" style="height: 10px; border-radius: 5px; background-color: #e9ecef;">
+                                                <div class="progress-bar {{ $summary_stats->bed_occupancy_rate > 80 ? 'bg-danger' : ($summary_stats->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                                     role="progressbar" style="width: {{ $summary_stats->bed_occupancy_rate }}%"></div>
+                                            </div>
+                                            <small>{{ $summary_stats->bed_occupancy_rate }}%</small>
+                                        </td>
+                                        <td class="text-center">{{ $summary_stats->active_bed }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->total_adjrw, 2) }}</td>
+                                        <td class="text-center text-info">{{ number_format($summary_stats->cmi, 2) }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->admit_morning_shift) }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->admit_evening_shift) }}</td>
+                                        <td class="text-center">{{ number_format($summary_stats->admit_night_shift) }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Detailed Table -->
         <div class="row pb-5">
             <div class="col-12">
@@ -203,12 +349,14 @@
                                         <th class="ps-4">Ward</th>
                                         <th>AN / HN</th>
                                         <th style="min-width: 150px;">ชื่อ-นามสกุล</th>
-                                        <th>วันที่รับเข้า</th>
+                                        <th>วันที่เข้าเตียง ICU</th>
+                                        <th class="text-center">เวรที่รับเข้า</th>
                                         <th>วันที่จำหน่าย</th>
-                                        <th class="text-center">วันนอน (LOS)</th>
+                                        <th class="text-center">วันนอน ICU</th>
                                         <th>สถานะ/ประเภทจำหน่าย</th>
                                         <th>แพทย์</th>
                                         <th style="min-width: 200px;">การวินิจฉัย (PDX / Diag Text)</th>
+                                        <th class="text-center">AdjRW</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -221,8 +369,21 @@
                                         </td>
                                         <td>{{ $row->ptname }}</td>
                                         <td>
-                                            <div class="small">{{ date('d/m/Y', strtotime($row->regdate)) }}</div>
-                                            <div class="text-muted" style="font-size: 0.75rem;">{{ $row->regtime }} น.</div>
+                                            {{-- วันที่/เวลาเข้า ICU จาก iptbedmove --}}
+                                            <div class="small">{{ $row->icu_movedate ? date('d/m/Y', strtotime($row->icu_movedate)) : '-' }}</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">{{ $row->icu_movetime }} น.</div>
+                                        </td>
+                                        <td class="text-center">
+                                            {{-- เวรที่รับเข้า ICU --}}
+                                            @php
+                                                $shiftClass = match($row->admit_shift ?? '') {
+                                                    'เวรเช้า' => 'bg-warning text-dark',
+                                                    'เวรบ่าย' => 'bg-info text-white',
+                                                    'เวรดึก' => 'bg-dark text-white',
+                                                    default => 'bg-secondary text-white',
+                                                };
+                                            @endphp
+                                            <span class="badge {{ $shiftClass }}">{{ $row->admit_shift ?? '-' }}</span>
                                         </td>
                                         <td>
                                             @if($row->dchdate)
@@ -232,7 +393,11 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
-                                        <td class="text-center fw-bold">{{ $row->admdate }}</td>
+                                        <td class="text-center">
+                                            {{-- วันนอน ICU: จาก movedate ถึง dchdate --}}
+                                            <div class="fw-bold">{{ $row->icu_los_days ?? '-' }} วัน</div>
+                                            <div class="small text-muted" style="font-size: 0.7rem;">({{ $row->icu_los_exact ?? '-' }} วันจริง)</div>
+                                        </td>
                                         <td>
                                             <div class="small fw-bold">{{ $row->dch_status }}</div>
                                             <div class="small text-muted">{{ $row->dch_type }}</div>
@@ -244,6 +409,7 @@
                                             @endif
                                             <div class="small" style="font-size: 0.75rem;">{{ $row->diag_text_list }}</div>
                                         </td>
+                                        <td class="text-center fw-bold text-warning">{{ $row->adjrw ? number_format($row->adjrw, 4) : '-' }}</td>
                                     </tr>
                                     @empty
                                     <tr>
@@ -355,19 +521,121 @@
                     }
                 });
 
-                // 1. Monthly Chart
-                var monthlyOptions = {
-                    series: [{ name: 'จำนวนผู้ป่วย (คน)', data: @json(array_column($monthly_stats, 'count')) }],
-                    chart: { type: 'bar', height: 350, toolbar: { show: false }, zoom: { enabled: false } },
-                    colors: ['#4e73df'],
-                    plotOptions: { bar: { borderRadius: 6, columnWidth: '50%', dataLabels: { position: 'top' } } },
-                    xaxis: { categories: @json(array_column($monthly_stats, 'month')), axisBorder: { show: false } },
-                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
-                    dataLabels: { enabled: true, offsetBox: -20, style: { fontSize: '12px', colors: ['#4e73df'] }, offsetY: -20 }
-                };
-                new ApexCharts(document.querySelector("#monthlyChart"), monthlyOptions).render();
+                // Initialize Summary Table
+                $('#icuSummaryTable').DataTable({
+                    dom: '<"d-flex justify-content-end mb-3"B>rt',
+                    buttons: [{
+                        extend: 'excelHtml5',
+                        text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                        className: 'btn btn-success',
+                        title: 'รายงานสถิติ ICU ({{ DateThai($start_date) }} - {{ DateThai($end_date) }})'
+                    }],
+                    paging: false,
+                    info: false,
+                    searching: false,
+                    ordering: true,
+                    order: [],
+                    responsive: true
+                });
 
-                // 2. Discharge Type Chart
+                const labels = @json(array_column($monthly_stats, 'month'));
+
+                // 1. Admission Chart
+                var admissionOptions = {
+                    series: [{ name: 'Admit (AN)', data: @json(array_column($monthly_stats, 'total_admission')) }],
+                    chart: { height: 300, type: 'bar', toolbar: { show: false } },
+                    colors: ['#4e73df'],
+                    plotOptions: { bar: { borderRadius: 4, columnWidth: '60%', dataLabels: { position: 'top' } } },
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -20, 
+                        style: { fontSize: '12px', colors: ['#4e73df'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 }
+                };
+                new ApexCharts(document.querySelector("#admissionChart"), admissionOptions).render();
+
+                // 2. Occupancy Chart
+                var occupancyOptions = {
+                    series: [{ name: 'อัตราครองเตียง (%)', data: @json(array_column($monthly_stats, 'bed_occupancy_rate')) }],
+                    chart: { height: 300, type: 'area', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    colors: ['#1cc88a'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 } },
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -10,
+                        style: { fontSize: '12px', colors: ['#1cc88a'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 }
+                };
+                new ApexCharts(document.querySelector("#occupancyChart"), occupancyOptions).render();
+
+                // 3. AdjRW Chart
+                var adjrwOptions = {
+                    series: [{ name: 'Sum AdjRW', data: @json(array_column($monthly_stats, 'total_adjrw')) }],
+                    chart: { height: 300, type: 'bar', toolbar: { show: false } },
+                    colors: ['#f6c23e'],
+                    plotOptions: { bar: { borderRadius: 4, columnWidth: '60%', dataLabels: { position: 'top' } } },
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -20, 
+                        style: { fontSize: '12px', colors: ['#f6c23e'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 }
+                };
+                new ApexCharts(document.querySelector("#adjrwChart"), adjrwOptions).render();
+
+                // 4. CMI Chart
+                var cmiOptions = {
+                    series: [{ name: 'CMI', data: @json(array_column($monthly_stats, 'cmi')) }],
+                    chart: { height: 300, type: 'line', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 4 },
+                    markers: { size: 4 },
+                    colors: ['#36b9cc'],
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -15,
+                        style: { fontSize: '12px', colors: ['#36b9cc'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 }
+                };
+                new ApexCharts(document.querySelector("#cmiChart"), cmiOptions).render();
+
+                // 5. Shift Chart
+                var shiftOptions = {
+                    series: [
+                        @json(array_sum(array_column($monthly_stats, 'admit_morning_shift'))),
+                        @json(array_sum(array_column($monthly_stats, 'admit_evening_shift'))),
+                        @json(array_sum(array_column($monthly_stats, 'admit_night_shift')))
+                    ],
+                    chart: { type: 'donut', height: 350 },
+                    labels: ['เวรเช้า (08:00-16:00)', 'เวรบ่าย (16:00-24:00)', 'เวรดึก (00:00-08:00)'],
+                    colors: ['#4e73df', '#f6c23e', '#e74a3b'],
+                    legend: { position: 'bottom', fontSize: '12px' },
+                    stroke: { width: 0 },
+                    dataLabels: { enabled: true, formatter: function (val) { return val.toFixed(1) + "%" } }
+                };
+                new ApexCharts(document.querySelector("#shiftChart"), shiftOptions).render();
+
+                // 6. Discharge Type Chart
                 var dchTypeOptions = {
                     series: @json(array_column($dch_types, 'count')),
                     chart: { type: 'donut', height: 350 },
@@ -380,7 +648,7 @@
                 };
                 new ApexCharts(document.querySelector("#dchTypeChart"), dchTypeOptions).render();
 
-                // 3. Top 10 PDX Chart
+                // 7. Top 10 PDX Chart
                 var pdxOptions = {
                     series: [{ name: 'จำนวนคน', data: @json(array_column($top_pdx, 'count')) }],
                     chart: { type: 'bar', height: 350, toolbar: { show: false } },

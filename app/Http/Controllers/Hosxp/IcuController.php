@@ -17,61 +17,126 @@ class IcuController extends Controller
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        // 1. Detailed Patient List (User's Query)
+        // 1. Detailed Patient List
         $patients = DB::connection('hosxp')->select("
             SELECT
                 w.name AS 'ward_name',
-                i.an ,
+                i.an,
                 i.hn,
                 CONCAT(p.pname, p.fname, ' ', p.lname) AS 'ptname',
-                i.regdate ,
-                i.regtime ,
-                i.dchdate ,
-                i.dchtime ,
-                DATEDIFF(i.dchdate, i.regdate) AS 'admdate',     
+                -- วันที่/เวลาที่ย้ายเข้าเตียง ICU (จาก iptbedmove)
+                icu.movedate AS 'icu_movedate',
+                icu.movetime AS 'icu_movetime',
+                -- เวรที่รับเข้า ICU
+                CASE
+                    WHEN TIME(icu.movetime) BETWEEN '08:00:00' AND '15:59:59' THEN 'เวรเช้า'
+                    WHEN TIME(icu.movetime) BETWEEN '16:00:00' AND '23:59:59' THEN 'เวรบ่าย'
+                    WHEN TIME(icu.movetime) BETWEEN '00:00:00' AND '07:59:59' THEN 'เวรดึก'
+                    ELSE '-'
+                END AS 'admit_shift',
+                i.dchdate,
+                i.dchtime,
+                -- วันนอนรวมที่ ICU: จากวันที่เข้าเตียง ICU ถึงวันจำหน่าย
+                DATEDIFF(i.dchdate, icu.movedate) AS 'icu_los_days',
+                -- คำนวณชั่วโมงอย่างละเอียด
+                ROUND(TIMESTAMPDIFF(HOUR,
+                    CONCAT(icu.movedate, ' ', icu.movetime),
+                    CONCAT(i.dchdate, ' ', i.dchtime)
+                ) / 24, 1) AS 'icu_los_exact',
                 ds.name AS 'dch_status',
                 dt.name AS 'dch_type',
                 d.name AS 'dch_doctor',
                 a.pdx,
-                a.diag_text_list
+                a.diag_text_list,
+                i.adjrw
             FROM ipt i
-            LEFT JOIN an_stat a ON a.an=i.an
+            -- JOIN กับ iptbedmove เพื่อดึงวันที่/เวลาที่ย้ายเข้าเตียง ICU (เร็วที่สุด)
+            INNER JOIN (
+                SELECT an, MIN(movedate) AS movedate,
+                       SUBSTRING_INDEX(GROUP_CONCAT(movetime ORDER BY movedate ASC, movetime ASC), ',', 1) AS movetime
+                FROM iptbedmove
+                WHERE nbedno LIKE 'ICU%'
+                GROUP BY an
+            ) icu ON icu.an = i.an
+            LEFT JOIN an_stat a ON a.an = i.an
             LEFT JOIN patient p ON p.hn = i.hn
             LEFT JOIN ward w ON w.ward = i.ward
             LEFT JOIN dchstts ds ON ds.dchstts = i.dchstts
             LEFT JOIN dchtype dt ON dt.dchtype = i.dchtype
             LEFT JOIN doctor d ON d.code = i.dch_doctor
             WHERE i.dchdate BETWEEN ? AND ?
-              AND i.dchdate IS NOT NULL 
-            AND i.an IN (SELECT DISTINCT an FROM iptbedmove WHERE nbedno LIKE 'ICU%')
+              AND i.dchdate IS NOT NULL
             ORDER BY i.dchdate ASC, i.ward ASC
         ", [$start_date, $end_date]);
 
-        // 2. Monthly Stats (Top Chart)
+        $bed_capacity = 4;
+
+        // 2. Monthly Stats with Detailed Metrics (Admissions, Occupancy, AdjRW, CMI, Shifts)
         $monthly_stats = DB::connection('hosxp')->select("
             SELECT 
                 CASE 
-                    WHEN MONTH(i.dchdate)='10' THEN CONCAT('ต.ค. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='11' THEN CONCAT('พ.ย. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='12' THEN CONCAT('ธ.ค. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='1' THEN CONCAT('ม.ค. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='2' THEN CONCAT('ก.พ. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='3' THEN CONCAT('มี.ค. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='4' THEN CONCAT('เม.ย. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='5' THEN CONCAT('พ.ค. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='6' THEN CONCAT('มิ.ย. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='7' THEN CONCAT('ก.ค. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='8' THEN CONCAT('ส.ค. ',RIGHT(YEAR(i.dchdate)+543,2))
-                    WHEN MONTH(i.dchdate)='9' THEN CONCAT('ก.ย. ',RIGHT(YEAR(i.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='10' THEN CONCAT('ต.ค. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='11' THEN CONCAT('พ.ย. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='12' THEN CONCAT('ธ.ค. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='1' THEN CONCAT('ม.ค. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='2' THEN CONCAT('ก.พ. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='3' THEN CONCAT('มี.ค. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='4' THEN CONCAT('เม.ย. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='5' THEN CONCAT('พ.ค. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='6' THEN CONCAT('มิ.ย. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='7' THEN CONCAT('ก.ค. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='8' THEN CONCAT('ส.ค. ',RIGHT(YEAR(a.dchdate)+543,2))
+                    WHEN MONTH(a.dchdate)='9' THEN CONCAT('ก.ย. ',RIGHT(YEAR(a.dchdate)+543,2))
                 END AS 'month',
-                COUNT(DISTINCT i.an) AS 'count'
-            FROM ipt i
-            WHERE i.dchdate BETWEEN ? AND ?
-              AND i.dchdate IS NOT NULL
-            AND i.an IN (SELECT DISTINCT an FROM iptbedmove WHERE nbedno LIKE 'ICU%')
-            GROUP BY YEAR(i.dchdate), MONTH(i.dchdate)
-            ORDER BY YEAR(i.dchdate), MONTH(i.dchdate)
+                -- อัตราครองเตียง (Bed Occupancy Rate)
+                -- สูตร: (วันนอน ICU รวม × 100) / (จำนวนเตียง × จำนวนวันในเดือน)
+                COUNT(DISTINCT a.an) AS 'total_admission',
+                SUM(a.icu_los_days) AS 'total_bed_days',
+                ROUND((SUM(a.icu_los_days) * 100) / ({$bed_capacity} * CASE 
+                    WHEN YEAR(a.dchdate) = YEAR(CURDATE()) AND MONTH(a.dchdate) = MONTH(CURDATE()) 
+                    THEN DAY(CURDATE()) 
+                    ELSE DAY(LAST_DAY(a.dchdate)) 
+                END), 2) AS 'bed_occupancy_rate',
+                -- จำนวนเตียงที่ใช้งานเฉลี่ยต่อวัน (Active Bed)
+                ROUND((SUM(a.icu_los_days) / CASE 
+                    WHEN YEAR(a.dchdate) = YEAR(CURDATE()) AND MONTH(a.dchdate) = MONTH(CURDATE()) 
+                    THEN DAY(CURDATE()) 
+                    ELSE DAY(LAST_DAY(a.dchdate)) 
+                END), 2) AS 'active_bed',
+                ROUND(SUM(a.adjrw), 4) AS 'total_adjrw',
+                -- ค่าดัชนีกลุ่มวินิจฉัยโรคร่วมเฉลี่ย (CMI)
+                ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
+                -- สถิติการรับใหม่แยกตามเวร (ใช้เวลาที่ย้ายเข้าเตียง ICU จาก iptbedmove)
+                SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
+                SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
+                SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+            FROM (
+                SELECT 
+                    i.an, 
+                    i.dchdate,
+                    i.adjrw,
+                    -- วันนอน ICU จริง: ตั้งแต่เข้าเตียง ICU (iptbedmove) ถึงจำหน่าย
+                    DATEDIFF(i.dchdate, icu.movedate) AS icu_los_days,
+                    -- ดึงเวลาเข้าเตียง ICU ครั้งแรกสุดจาก iptbedmove
+                    icu.movetime AS icu_movetime
+                FROM ipt i
+                INNER JOIN an_stat a ON a.an = i.an
+                INNER JOIN (
+                    SELECT an,
+                           MIN(movedate) AS movedate,
+                           SUBSTRING_INDEX(GROUP_CONCAT(movetime ORDER BY movedate ASC, movetime ASC), ',', 1) AS movetime
+                    FROM iptbedmove
+                    WHERE nbedno LIKE 'ICU%'
+                    GROUP BY an
+                ) icu ON icu.an = i.an
+                WHERE i.dchdate BETWEEN ? AND ?
+                  AND i.dchdate IS NOT NULL
+                GROUP BY i.an
+            ) AS a
+            GROUP BY YEAR(a.dchdate), MONTH(a.dchdate)
+            ORDER BY YEAR(a.dchdate), MONTH(a.dchdate)
         ", [$start_date, $end_date]);
+
 
         // 3. Discharge Type Distribution (Bottom Left Chart)
         $dch_types = DB::connection('hosxp')->select("
@@ -110,9 +175,33 @@ class IcuController extends Controller
             ->where('ward', 10)
             ->count();
 
+        // 6. Summary Stats
+        $summary_stats = DB::connection('hosxp')->select("
+            SELECT 
+                'รวมทั้งหมด' AS 'month_year',
+                COUNT(DISTINCT a.an) AS 'total_admission',
+                SUM(a.admdate) AS 'total_bed_days',
+                ROUND((SUM(a.admdate) * 100) / ({$bed_capacity} * (DATEDIFF(LEAST(?, CURDATE()), ?) + 1)), 2) AS 'bed_occupancy_rate',
+                ROUND(SUM(a.admdate) / (DATEDIFF(LEAST(?, CURDATE()), ?) + 1), 2) AS 'active_bed',
+                SUM(a.adjrw) AS 'total_adjrw',
+                ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
+                SUM(CASE WHEN a.regtime BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
+                SUM(CASE WHEN a.regtime BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
+                SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+            FROM (
+                SELECT 
+                    i.an, i.regtime, i.adjrw, a.admdate
+                FROM ipt i
+                INNER JOIN an_stat a ON a.an = i.an
+                WHERE i.dchdate BETWEEN ? AND ?
+                AND i.an IN (SELECT DISTINCT an FROM iptbedmove WHERE nbedno LIKE 'ICU%')
+                GROUP BY i.an
+            ) AS a
+        ", [$end_date, $start_date, $end_date, $start_date, $start_date, $end_date])[0];
+
         return view('hosxp.icu.index', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
-            'patients', 'monthly_stats', 'dch_types', 'top_pdx', 'admit_count'
+            'patients', 'monthly_stats', 'dch_types', 'top_pdx', 'admit_count', 'summary_stats', 'bed_capacity'
         ));
     }
 

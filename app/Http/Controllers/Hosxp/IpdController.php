@@ -21,20 +21,22 @@ class IpdController extends Controller
         $tab = $request->get('tab', 'total');
         $ward_filter = "";
         $bed_capacity = 60; // Default for total
-
-        $time_field = "i.regtime";
-
+        $time_field = "i.regtime"; // เวลา admit โรงพยาบาล (default)
         $tab_name = "ผู้ป่วยในรวม";
 
         if ($tab == 'general') {
-            $ward_filter = " AND i.an IN (SELECT DISTINCT an FROM iptbedmove WHERE nward = '01') ";
-            $bed_capacity = 40; 
-            $time_field = "(SELECT MIN(movetime) FROM iptbedmove WHERE an = i.an AND nward = '01')";
+            // กรองเฉพาะผู้ที่จำหน่ายจากวอร์ดสามัญ (i.ward = '01')
+            $ward_filter = " AND i.ward = '01' ";
+            $bed_capacity = 40;
+            // ใช้เวลาที่ย้ายเข้าวอร์ดสามัญครั้งแรก (จาก iptbedmove)
+            $time_field = "IFNULL((SELECT MIN(movetime) FROM iptbedmove WHERE an = i.an AND nward = '01'), i.regtime)";
             $tab_name = "ผู้ป่วยในสามัญ";
         } elseif ($tab == 'vip') {
-            $ward_filter = " AND i.an IN (SELECT DISTINCT an FROM iptbedmove WHERE nward = '03') ";
+            // กรองเฉพาะผู้ที่จำหน่ายจากวอร์ด VIP (i.ward = '03')
+            $ward_filter = " AND i.ward = '03' ";
             $bed_capacity = 20;
-            $time_field = "(SELECT MIN(movetime) FROM iptbedmove WHERE an = i.an AND nward = '03')";
+            // ใช้เวลาที่ย้ายเข้าวอร์ด VIP ครั้งแรก (จาก iptbedmove)
+            $time_field = "IFNULL((SELECT MIN(movetime) FROM iptbedmove WHERE an = i.an AND nward = '03'), i.regtime)";
             $tab_name = "ผู้ป่วยใน VIP";
         }
 
@@ -58,6 +60,7 @@ class IpdController extends Controller
                 COUNT(DISTINCT a.an) AS 'total_admission',
                 SUM(a.admdate) AS 'total_bed_days',
                 -- อัตราครองเตียง (Bed Occupancy Rate)
+                -- สูตร: (วันนอนรวม × 100) / (จำนวนเตียง × จำนวนวันในเดือน)
                 ROUND((SUM(a.admdate) * 100) / ({$bed_capacity} * CASE 
                     WHEN YEAR(a.dchdate) = YEAR(CURDATE()) AND MONTH(a.dchdate) = MONTH(CURDATE()) 
                     THEN DAY(CURDATE()) 
@@ -71,18 +74,18 @@ class IpdController extends Controller
                 END), 2) AS 'active_bed',
                 ROUND(SUM(a.adjrw), 4) AS 'total_adjrw',
                 -- รายได้เรียกเก็บสุทธิต่อหน่วยน้ำหนักสัมพัทธ์
-                ROUND(SUM(a.income - a.rcpt_money) / SUM(a.adjrw), 2) AS 'net_income_per_rw',
+                ROUND(SUM(a.income - a.rcpt_money) / NULLIF(SUM(a.adjrw), 0), 2) AS 'net_income_per_rw',
                 -- ค่าดัชนีกลุ่มวินิจฉัยโรคร่วมเฉลี่ย
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
-                -- สถิติการรับใหม่แยกตามเวร
-                SUM(CASE WHEN a.regtime BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
-                SUM(CASE WHEN a.regtime BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
-                SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+                -- สถิติการรับใหม่แยกตามเวร (ใช้เวลาย้ายเข้าวอร์ดนั้นๆ)
+                SUM(CASE WHEN TIME(a.regtime) BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
+                SUM(CASE WHEN TIME(a.regtime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
+                SUM(CASE WHEN TIME(a.regtime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
             FROM (
                 SELECT 
                     i.an, 
                     i.dchdate, 
-                    {$time_field} as 'regtime', 
+                    {$time_field} AS regtime, 
                     i.adjrw, 
                     a.admdate, 
                     a.income, 
@@ -90,7 +93,8 @@ class IpdController extends Controller
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
                 WHERE i.dchdate BETWEEN ? AND ?
-                AND a.pdx NOT IN ('Z290', 'Z208')
+                  AND i.dchdate IS NOT NULL
+                  AND a.pdx NOT IN ('Z290', 'Z208')
                 {$ward_filter}
                 GROUP BY i.an
             ) AS a
@@ -112,7 +116,7 @@ class IpdController extends Controller
             ) AS a
         ")[0];
 
-        // 3. Summary IPD Statistics
+        // 3. Summary IPD Statistics (รวมทั้งปีงบประมาณ)
         $summary_stats = DB::connection('hosxp')->select("
             SELECT 
                 'รวมทั้งหมด' AS 'month_year',
@@ -121,18 +125,24 @@ class IpdController extends Controller
                 ROUND((SUM(a.admdate) * 100) / ({$bed_capacity} * (DATEDIFF(LEAST(?, CURDATE()), ?) + 1)), 2) AS 'bed_occupancy_rate',
                 ROUND(SUM(a.admdate) / (DATEDIFF(LEAST(?, CURDATE()), ?) + 1), 2) AS 'active_bed',
                 SUM(a.adjrw) AS 'total_adjrw',
-                ROUND(SUM(a.income - a.rcpt_money) / SUM(a.adjrw), 2) AS 'net_income_per_rw',
+                ROUND(SUM(a.income - a.rcpt_money) / NULLIF(SUM(a.adjrw), 0), 2) AS 'net_income_per_rw',
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
-                SUM(CASE WHEN a.regtime BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
-                SUM(CASE WHEN a.regtime BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
-                SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+                SUM(CASE WHEN TIME(a.regtime) BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
+                SUM(CASE WHEN TIME(a.regtime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
+                SUM(CASE WHEN TIME(a.regtime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
             FROM (
                 SELECT 
-                    i.an, {$time_field} as 'regtime', i.adjrw, a.admdate, a.income, a.rcpt_money
+                    i.an,
+                    {$time_field} AS regtime,
+                    i.adjrw,
+                    a.admdate,
+                    a.income,
+                    a.rcpt_money
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
                 WHERE i.dchdate BETWEEN ? AND ?
-                AND a.pdx NOT IN ('Z290', 'Z208')
+                  AND i.dchdate IS NOT NULL
+                  AND a.pdx NOT IN ('Z290', 'Z208')
                 {$ward_filter}
                 GROUP BY i.an
             ) AS a
