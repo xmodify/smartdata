@@ -54,7 +54,7 @@
                         </div>
                         <h6 class="fw-bold mb-0">รายงานรับ-ส่ง Refer</h6>
                     </div>
-                    <div class="list-group list-group-flush mt-2">
+                    <div class="list-group list-group-flush mt-2">                        
                         <a href="{{ route('hosxp.refer.index') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานผู้ป่วยส่งต่อ Refer Out</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
@@ -69,6 +69,10 @@
                         </a>
                         <a href="{{ route('hosxp.refer.refer_out_top20') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานผู้ป่วยส่งต่อ Refer Out 20 อันดับโรค (Primary Diagnosis)</span>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
+                        </a>
+                        <a href="{{ route('hosxp.refer.refer_in') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="small">รายงานผู้ป่วยรับเข้า Refer In</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>

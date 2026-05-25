@@ -335,4 +335,121 @@ class ReferController extends Controller
             order by year_be
         ", array_merge([$hours], $years));
     }
+
+    public function refer_in(Request $request)
+    {
+        $title = 'รายงานผู้ป่วยรับเข้า Refer In';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        $refer_list_opd = $this->fetch_refer_in_opd($start_date, $end_date);
+        $refer_list_ipd = $this->fetch_refer_in_ipd($start_date, $end_date);
+
+        // Fetch Trend Data for Charts
+        $monthly_trend_raw = $this->fetch_refer_in_trend_monthly($start_date, $end_date);
+        $monthly_trend = collect($monthly_trend_raw)->map(function ($item) {
+            $months_th = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            $item->label = $months_th[(int) $item->month_num] . " " . ($item->year_be);
+            return $item;
+        });
+
+        $yearly_trend = $this->fetch_refer_in_trend_yearly($budget_year);
+
+        return view('hosxp.refer.refer_in', compact(
+            'title',
+            'budget_year_select',
+            'budget_year',
+            'refer_list_opd',
+            'refer_list_ipd',
+            'monthly_trend',
+            'yearly_trend',
+            'start_date',
+            'end_date'
+        ));
+    }
+
+    private function fetch_refer_in_opd($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select('
+            select
+                o.hn, CONCAT(p.pname,p.fname,SPACE(1),p.lname) AS ptname, pmh.cc_persist_disease AS pmh,
+                GROUP_CONCAT(DISTINCT c1.`name`) AS "clinic", r.refer_point, o.vstdate, o.vsttime, v.pdx, r.refer_date,
+                r.refer_time, r.pre_diagnosis, r.icd10 AS pdx_refer, h.`name` AS refer_hos
+            FROM referin r 
+            LEFT JOIN ovst o ON o.vn=r.vn
+            LEFT JOIN vn_stat v ON v.vn=r.vn 
+            LEFT JOIN clinicmember c ON c.hn=r.hn
+            LEFT JOIN clinic c1 ON c1.clinic=c.clinic
+            LEFT JOIN opd_ill_history pmh ON pmh.hn=r.hn
+            LEFT JOIN patient p ON p.hn=r.hn 
+            LEFT JOIN hospcode h ON h.hospcode=r.refer_hospcode
+            WHERE r.refer_date BETWEEN ? AND ?
+            AND (r.vn NOT IN (select vn from ipt where vn is not null) OR r.vn IS NULL)
+            GROUP BY r.vn
+            ORDER BY r.refer_point, r.refer_date
+        ', [$start_date, $end_date]);
+    }
+
+    private function fetch_refer_in_ipd($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select('
+            select
+                i.hn, CONCAT(p.pname,p.fname,SPACE(1),p.lname) AS ptname, pmh.cc_persist_disease AS pmh,
+                GROUP_CONCAT(DISTINCT c1.`name`) AS "clinic", r.refer_point, i.regdate, i.regtime, a.pdx, r.refer_date,
+                r.refer_time, r.pre_diagnosis, r.icd10 AS pdx_refer, h.`name` AS refer_hos
+            FROM referin r 
+            LEFT JOIN ipt i ON i.vn=r.vn
+            LEFT JOIN an_stat a ON a.an=i.an
+            LEFT JOIN patient p ON p.hn=r.hn
+            LEFT JOIN hospcode h ON h.hospcode=r.refer_hospcode
+            LEFT JOIN clinicmember c ON c.hn=r.hn
+            LEFT JOIN clinic c1 ON c1.clinic=c.clinic
+            LEFT JOIN opd_ill_history pmh ON pmh.hn=r.hn 
+            WHERE r.refer_date BETWEEN ? AND ?
+            AND r.vn IN (select vn from ipt where vn is not null)
+            GROUP BY r.vn
+            ORDER BY r.refer_point, r.refer_date
+        ', [$start_date, $end_date]);
+    }
+
+    private function fetch_refer_in_trend_monthly($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select("
+            select 
+                DATE_FORMAT(r.refer_date, '%m') as month_num,
+                (YEAR(r.refer_date) + 543) as year_be,
+                sum(case when i.vn is null then 1 else 0 end) as opd_count,
+                sum(case when i.vn is not null then 1 else 0 end) as ipd_count
+            from referin r
+            left join ipt i on i.vn = r.vn
+            where r.refer_date between ? and ?
+            group by year_be, month_num
+            order by year_be, month_num
+        ", [$start_date, $end_date]);
+    }
+
+    private function fetch_refer_in_trend_yearly($budget_year)
+    {
+        $years = [];
+        for ($i = 4; $i >= 0; $i--) {
+            $years[] = $budget_year - $i;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($years), '?'));
+
+        return DB::connection('hosxp')->select("
+            select 
+                (YEAR(r.refer_date) + 543) as year_be,
+                sum(case when i.vn is null then 1 else 0 end) as opd_count,
+                sum(case when i.vn is not null then 1 else 0 end) as ipd_count
+            from referin r
+            left join ipt i on i.vn = r.vn
+            where (YEAR(r.refer_date) + 543) in ($placeholders)
+            group by year_be
+            order by year_be
+        ", $years);
+    }
 }

@@ -120,6 +120,7 @@ Route::middleware(['auth'])->group(function () {
     // Refer Routes
     Route::prefix('hosxp/refer')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\ReferController::class, 'index'])->name('hosxp.refer.index');
+        Route::get('/refer-in', [App\Http\Controllers\Hosxp\ReferController::class, 'refer_in'])->name('hosxp.refer.refer_in');
         Route::get('/refer-out-4h', [App\Http\Controllers\Hosxp\ReferController::class, 'refer_out_4h'])->name('hosxp.refer.refer_out_4h');
         Route::get('/refer-out-24h', [App\Http\Controllers\Hosxp\ReferController::class, 'refer_out_24h'])->name('hosxp.refer.refer_out_24h');
         Route::get('/refer-out-top20', [App\Http\Controllers\Hosxp\ReferController::class, 'refer_out_top20'])->name('hosxp.refer.refer_out_top20');
