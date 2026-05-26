@@ -113,7 +113,9 @@ class IcuController extends Controller
                 -- สถิติการรับใหม่แยกตามเวร (ใช้เวลาที่ย้ายเข้าเตียง ICU จาก iptbedmove)
                 SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
                 SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
-                SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+                SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift',
+                SUM(a.is_refer_in) AS 'total_refer_in',
+                SUM(a.is_refer_out) AS 'total_refer_out'
             FROM (
                 SELECT 
                     i.an, 
@@ -122,7 +124,9 @@ class IcuController extends Controller
                     -- วันนอน ICU จริง: ตั้งแต่เข้าเตียง ICU (iptbedmove) ถึงจำหน่าย
                     DATEDIFF(i.dchdate, icu.movedate) AS icu_los_days,
                     -- ดึงเวลาเข้าเตียง ICU ครั้งแรกสุดจาก iptbedmove
-                    icu.movetime AS icu_movetime
+                    icu.movetime AS icu_movetime,
+                    IF(ri.vn IS NOT NULL, 1, 0) AS is_refer_in,
+                    IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
                 INNER JOIN (
@@ -133,6 +137,8 @@ class IcuController extends Controller
                     WHERE nbedno LIKE 'ICU%'
                     GROUP BY an
                 ) icu ON icu.an = i.an
+                LEFT JOIN referin ri ON ri.vn = i.vn
+                LEFT JOIN referout ro ON ro.vn = i.an
                 WHERE i.dchdate BETWEEN ? AND ?
                   AND i.dchdate IS NOT NULL
                 GROUP BY i.an
@@ -204,12 +210,18 @@ class IcuController extends Controller
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
                 SUM(CASE WHEN a.regtime BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
                 SUM(CASE WHEN a.regtime BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
-                SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+                SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift',
+                SUM(a.is_refer_in) AS 'total_refer_in',
+                SUM(a.is_refer_out) AS 'total_refer_out'
             FROM (
                 SELECT 
-                    i.an, i.regtime, i.adjrw, a.admdate
+                    i.an, i.regtime, i.adjrw, a.admdate,
+                    IF(ri.vn IS NOT NULL, 1, 0) AS is_refer_in,
+                    IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
+                LEFT JOIN referin ri ON ri.vn = i.vn
+                LEFT JOIN referout ro ON ro.vn = i.an
                 WHERE i.dchdate BETWEEN ? AND ?
                 AND i.an IN (SELECT DISTINCT an FROM iptbedmove WHERE nbedno LIKE 'ICU%')
                 GROUP BY i.an

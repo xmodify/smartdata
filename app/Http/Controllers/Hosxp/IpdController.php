@@ -85,7 +85,9 @@ class IpdController extends Controller
                 -- สถิติการรับใหม่แยกตามเวร (ใช้เวลาย้ายเข้าวอร์ดนั้นๆ)
                 SUM(CASE WHEN TIME(a.regtime) BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
                 SUM(CASE WHEN TIME(a.regtime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
-                SUM(CASE WHEN TIME(a.regtime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+                SUM(CASE WHEN TIME(a.regtime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift',
+                SUM(a.is_refer_in) AS 'total_refer_in',
+                SUM(a.is_refer_out) AS 'total_refer_out'
             FROM (
                 SELECT 
                     i.an, 
@@ -94,9 +96,13 @@ class IpdController extends Controller
                     i.adjrw, 
                     {$los_field} AS admdate, 
                     a.income, 
-                    a.rcpt_money
+                    a.rcpt_money,
+                    IF(ri.vn IS NOT NULL, 1, 0) AS is_refer_in,
+                    IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
+                LEFT JOIN referin ri ON ri.vn = i.vn
+                LEFT JOIN referout ro ON ro.vn = i.an
                 WHERE i.dchdate BETWEEN ? AND ?
                   AND i.dchdate IS NOT NULL
                   AND a.pdx NOT IN ('Z290', 'Z208')
@@ -134,7 +140,9 @@ class IpdController extends Controller
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
                 SUM(CASE WHEN TIME(a.regtime) BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
                 SUM(CASE WHEN TIME(a.regtime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
-                SUM(CASE WHEN TIME(a.regtime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift'
+                SUM(CASE WHEN TIME(a.regtime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift',
+                SUM(a.is_refer_in) AS 'total_refer_in',
+                SUM(a.is_refer_out) AS 'total_refer_out'
             FROM (
                 SELECT 
                     i.an,
@@ -142,9 +150,13 @@ class IpdController extends Controller
                     i.adjrw,
                     {$los_field} AS admdate,
                     a.income,
-                    a.rcpt_money
+                    a.rcpt_money,
+                    IF(ri.vn IS NOT NULL, 1, 0) AS is_refer_in,
+                    IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
+                LEFT JOIN referin ri ON ri.vn = i.vn
+                LEFT JOIN referout ro ON ro.vn = i.an
                 WHERE i.dchdate BETWEEN ? AND ?
                   AND i.dchdate IS NOT NULL
                   AND a.pdx NOT IN ('Z290', 'Z208')
@@ -153,9 +165,44 @@ class IpdController extends Controller
             ) AS a
         ", [$end_date, $start_date, $end_date, $start_date, $start_date, $end_date])[0];
 
+        // 4. Discharge Type Distribution (Bottom Left Chart)
+        $dch_types = DB::connection('hosxp')->select("
+            SELECT 
+                dt.name AS dch_type_name,
+                COUNT(*) AS count
+            FROM ipt i
+            LEFT JOIN dchtype dt ON dt.dchtype = i.dchtype
+            INNER JOIN an_stat a ON a.an = i.an
+            WHERE i.dchdate BETWEEN ? AND ?
+              AND i.dchdate IS NOT NULL
+              AND a.pdx NOT IN ('Z290', 'Z208')
+              {$ward_filter}
+            GROUP BY i.dchtype, dt.name
+            ORDER BY count DESC
+        ", [$start_date, $end_date]);
+
+        // 5. Top 10 Diagnoses (Bottom Right Chart)
+        $top_pdx = DB::connection('hosxp')->select("
+            SELECT 
+                IFNULL(a.pdx, 'ยังไม่สรุป Chart') AS pdx,
+                IFNULL(i10.name, 'ยังไม่สรุป Chart') AS diag_name,
+                COUNT(DISTINCT a.an) AS count
+            FROM an_stat a
+            INNER JOIN ipt i ON i.an = a.an
+            LEFT JOIN icd101 i10 ON i10.code = a.pdx
+            WHERE a.dchdate BETWEEN ? AND ?
+              AND a.dchdate IS NOT NULL
+              AND a.pdx NOT IN ('Z290', 'Z208')
+              {$ward_filter}
+            GROUP BY a.pdx, i10.name
+            ORDER BY count DESC
+            LIMIT 10
+        ", [$start_date, $end_date]);
+
         return view('hosxp.ipd.index', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
-            'monthly_stats', 'current_admit', 'summary_stats', 'tab', 'tab_name'
+            'monthly_stats', 'current_admit', 'summary_stats', 'tab', 'tab_name',
+            'dch_types', 'top_pdx'
         ));
     }
 

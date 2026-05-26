@@ -253,6 +253,54 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Charts Row 3: Discharge Type & PDX -->
+        <div class="row mb-4 g-4">
+            <div class="col-md-6">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #1cc88a !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-chart-pie me-2 text-success"></i> แยกตามประเภทการจำหน่าย (Discharge Type)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="dchTypeChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #f6c23e !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-list-ol me-2 text-warning"></i> 10 อันดับรายโรค (PDX)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="pdxChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 4: Refer Trends -->
+        <div class="row mb-4 g-4">
+            <div class="col-md-6">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #0dcaf0 !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sign-in-alt me-2 text-info"></i> แนวโน้มการรับเข้า Refer In ({{ $tab_name }})</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="referInChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #e74a3b !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sign-out-alt me-2 text-danger"></i> แนวโน้มการส่งต่อ Refer Out ({{ $tab_name }})</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="referOutChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Detailed Table -->
         <div class="row pb-5">
@@ -526,6 +574,73 @@
                     dataLabels: { enabled: true, formatter: function (val) { return val.toFixed(1) + "%" } }
                 };
                 new ApexCharts(document.querySelector("#shiftChart"), shiftOptions).render();
+
+                // 6. Discharge Type Chart
+                var dchTypeOptions = {
+                    series: @json(array_column($dch_types, 'count')),
+                    chart: { type: 'donut', height: 350 },
+                    labels: @json(array_column($dch_types, 'dch_type_name')),
+                    colors: ['#1cc88a', '#4e73df', '#f6c23e', '#e74a3b', '#858796', '#5a5c69', '#36b9cc'],
+                    legend: { position: 'bottom', fontSize: '11px' },
+                    stroke: { width: 0 },
+                    dataLabels: { enabled: true, dropShadow: { enabled: false } },
+                    responsive: [{ breakpoint: 480, options: { chart: { width: 200 } } }]
+                };
+                new ApexCharts(document.querySelector("#dchTypeChart"), dchTypeOptions).render();
+
+                // 7. Top 10 PDX Chart
+                var pdxOptions = {
+                    series: [{ name: 'จำนวนคน', data: @json(array_column($top_pdx, 'count')) }],
+                    chart: { type: 'bar', height: 350, toolbar: { show: false } },
+                    plotOptions: { bar: { horizontal: true, borderRadius: 6, barHeight: '60%' } },
+                    colors: ['#f6c23e'],
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
+                    xaxis: { categories: @json(array_column($top_pdx, 'diag_name')), axisBorder: { show: false } },
+                    dataLabels: { enabled: true, style: { fontSize: '11px', colors: ['#444'] }, offsetX: 5, dropShadow: { enabled: false } }
+                };
+                new ApexCharts(document.querySelector("#pdxChart"), pdxOptions).render();
+
+                // 8. Refer In Monthly Trend Chart
+                var referInOptions = {
+                    series: [{ name: 'Refer In (รับเข้า)', data: @json(array_column($monthly_stats, 'total_refer_in')) }],
+                    chart: { height: 300, type: 'area', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    colors: ['#0dcaf0'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 } },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
+                    dataLabels: {
+                        enabled: true,
+                        offsetY: -10,
+                        style: { fontSize: '11px', colors: ['#0dcaf0'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    }
+                };
+                new ApexCharts(document.querySelector("#referInChart"), referInOptions).render();
+
+                // 9. Refer Out Monthly Trend Chart
+                var referOutOptions = {
+                    series: [{ name: 'Refer Out (ส่งต่อ)', data: @json(array_column($monthly_stats, 'total_refer_out')) }],
+                    chart: { height: 300, type: 'area', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    colors: ['#e74a3b'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 } },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
+                    dataLabels: {
+                        enabled: true,
+                        offsetY: -10,
+                        style: { fontSize: '11px', colors: ['#e74a3b'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    }
+                };
+                new ApexCharts(document.querySelector("#referOutChart"), referOutOptions).render();
             });
         </script>
     @endpush

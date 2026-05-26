@@ -262,6 +262,30 @@
             </div>
         </div>
 
+        <!-- Charts Row 4: Refer Trends -->
+        <div class="row mb-4 g-4">
+            <div class="col-md-6">
+                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #0dcaf0 !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sign-in-alt me-2 text-info"></i> แนวโน้มการรับเข้า Refer In (ผู้ป่วย ICU)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="referInChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #e74a3b !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sign-out-alt me-2 text-danger"></i> แนวโน้มการส่งต่อ Refer Out (ผู้ป่วย ICU)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="referOutChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Monthly Summary Stats Table -->
         <div class="row mb-4">
             <div class="col-12">
@@ -666,6 +690,48 @@
                     dataLabels: { enabled: true, style: { fontSize: '11px', colors: ['#444'] }, offsetX: 5, dropShadow: { enabled: false } }
                 };
                 new ApexCharts(document.querySelector("#pdxChart"), pdxOptions).render();
+
+                // 8. Refer In Monthly Trend Chart
+                var referInOptions = {
+                    series: [{ name: 'Refer In (รับเข้า)', data: @json(array_column($monthly_stats, 'total_refer_in')) }],
+                    chart: { height: 300, type: 'area', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    colors: ['#0dcaf0'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 } },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
+                    dataLabels: {
+                        enabled: true,
+                        offsetY: -10,
+                        style: { fontSize: '11px', colors: ['#0dcaf0'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    }
+                };
+                new ApexCharts(document.querySelector("#referInChart"), referInOptions).render();
+
+                // 9. Refer Out Monthly Trend Chart
+                var referOutOptions = {
+                    series: [{ name: 'Refer Out (ส่งต่อ)', data: @json(array_column($monthly_stats, 'total_refer_out')) }],
+                    chart: { height: 300, type: 'area', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    colors: ['#e74a3b'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 } },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: '' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
+                    dataLabels: {
+                        enabled: true,
+                        offsetY: -10,
+                        style: { fontSize: '11px', colors: ['#e74a3b'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false }
+                    }
+                };
+                new ApexCharts(document.querySelector("#referOutChart"), referOutOptions).render();
             });
         </script>
     @endpush
