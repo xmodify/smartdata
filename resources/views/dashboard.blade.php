@@ -26,6 +26,7 @@
                                 ['url' => '/hosxp/dent', 'label' => 'ทันตกรรม', 'icon' => 'fa-tooth', 'color' => '#6610f2'],
                                 ['url' => '/hosxp/ncd', 'label' => 'คลินิกโรคเรื้อรัง', 'icon' => 'fa-clipboard-list', 'color' => '#858796'],
                                 ['url' => '/hosxp/pcu', 'label' => 'งานเชิงรุก', 'icon' => 'fa-hand-holding-heart', 'color' => '#5a5c69'],
+                                ['url' => '/hosxp/ct_scan', 'label' => 'CT Scan', 'icon' => 'fa-x-ray', 'color' => '#17a2b8'],
                             ];
                         @endphp
 

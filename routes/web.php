@@ -112,6 +112,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\PcuController::class, 'index'])->name('hosxp.pcu.index');
     });
 
+    // CT Scan Routes
+    Route::prefix('hosxp/ct_scan')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\CtScanController::class, 'index'])->name('hosxp.ct_scan.index');
+        Route::get('/print', [App\Http\Controllers\Hosxp\CtScanController::class, 'print'])->name('hosxp.ct_scan.print');
+    });
+
     // ER Routes
     Route::prefix('hosxp/er')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\ErController::class, 'index'])->name('hosxp.er.index');
