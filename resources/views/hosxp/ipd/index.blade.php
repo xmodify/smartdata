@@ -301,6 +301,30 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Charts Row 5: Drug & Lab Cost Trends -->
+        <div class="row mb-4 g-4">
+            <div class="col-md-6">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #198754 !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-pills me-2 text-success"></i> แนวโน้มค่ายา ({{ $tab_name }})</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="drugCostChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-ipd shadow-sm h-100" style="border-top: 4px solid #ffc107 !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-flask me-2 text-warning"></i> แนวโน้มค่า LAB ({{ $tab_name }})</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="labCostChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Detailed Table -->
         <div class="row pb-5">
@@ -333,6 +357,8 @@
                                         <th class="text-center">Sum AdjRW</th>
                                         <th class="text-center">CMI</th>
                                         <th class="text-center">รายได้/RW</th>
+                                        <th class="text-center text-success">ค่ายา</th>
+                                        <th class="text-center text-warning">ค่า LAB</th>
                                         <th class="text-center">รับใหม่เวรเช้า</th>
                                         <th class="text-center">รับใหม่เวรบ่าย</th>
                                         <th class="text-center">รับใหม่เวรดึก</th>
@@ -355,6 +381,8 @@
                                         <td class="text-center">{{ number_format($row->total_adjrw, 2) }}</td>
                                         <td class="text-center fw-bold text-info">{{ number_format($row->cmi, 2) }}</td>
                                         <td class="text-center">{{ number_format($row->net_income_per_rw, 2) }}</td>
+                                        <td class="text-center text-success fw-bold">{{ number_format($row->total_inc12, 2) }}</td>
+                                        <td class="text-center text-warning fw-bold">{{ number_format($row->total_inc03, 2) }}</td>
                                         <td class="text-center">{{ number_format($row->admit_morning_shift) }}</td>
                                         <td class="text-center">{{ number_format($row->admit_evening_shift) }}</td>
                                         <td class="text-center">{{ number_format($row->admit_night_shift) }}</td>
@@ -377,6 +405,8 @@
                                         <td class="text-center">{{ number_format($summary_stats->total_adjrw, 2) }}</td>
                                         <td class="text-center text-info">{{ number_format($summary_stats->cmi, 2) }}</td>
                                         <td class="text-center">{{ number_format($summary_stats->net_income_per_rw, 2) }}</td>
+                                        <td class="text-center text-success fw-bold">{{ number_format($summary_stats->total_inc12, 2) }}</td>
+                                        <td class="text-center text-warning fw-bold">{{ number_format($summary_stats->total_inc03, 2) }}</td>
                                         <td class="text-center">{{ number_format($summary_stats->admit_morning_shift) }}</td>
                                         <td class="text-center">{{ number_format($summary_stats->admit_evening_shift) }}</td>
                                         <td class="text-center">{{ number_format($summary_stats->admit_night_shift) }}</td>
@@ -641,6 +671,82 @@
                     }
                 };
                 new ApexCharts(document.querySelector("#referOutChart"), referOutOptions).render();
+
+                // 10. Drug Cost Chart
+                var drugCostOptions = {
+                    series: [{ name: 'ค่ายา (inc12)', data: @json(array_column($monthly_stats, 'total_inc12')) }],
+                    chart: { height: 300, type: 'area', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    colors: ['#198754'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 } },
+                    xaxis: { categories: labels },
+                    yaxis: { 
+                        min: 0, 
+                        labels: {
+                            formatter: function (value) {
+                                return new Intl.NumberFormat('th-TH').format(value);
+                            }
+                        }
+                    },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
+                    dataLabels: {
+                        enabled: true,
+                        offsetY: -10,
+                        style: { fontSize: '11px', colors: ['#198754'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false },
+                        formatter: function (val) {
+                            return new Intl.NumberFormat('th-TH').format(val);
+                        }
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: function (val) {
+                                return new Intl.NumberFormat('th-TH').format(val) + " บาท";
+                            }
+                        }
+                    }
+                };
+                new ApexCharts(document.querySelector("#drugCostChart"), drugCostOptions).render();
+
+                // 11. Lab Cost Chart
+                var labCostOptions = {
+                    series: [{ name: 'ค่า LAB (inc03)', data: @json(array_column($monthly_stats, 'total_inc03')) }],
+                    chart: { height: 300, type: 'area', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    markers: { size: 4 },
+                    colors: ['#ffc107'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 } },
+                    xaxis: { categories: labels },
+                    yaxis: { 
+                        min: 0, 
+                        labels: {
+                            formatter: function (value) {
+                                return new Intl.NumberFormat('th-TH').format(value);
+                            }
+                        }
+                    },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
+                    dataLabels: {
+                        enabled: true,
+                        offsetY: -10,
+                        style: { fontSize: '11px', colors: ['#ffc107'] },
+                        background: { enabled: false },
+                        dropShadow: { enabled: false },
+                        formatter: function (val) {
+                            return new Intl.NumberFormat('th-TH').format(val);
+                        }
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: function (val) {
+                                return new Intl.NumberFormat('th-TH').format(val) + " บาท";
+                            }
+                        }
+                    }
+                };
+                new ApexCharts(document.querySelector("#labCostChart"), labCostOptions).render();
             });
         </script>
     @endpush

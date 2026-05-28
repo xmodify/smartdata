@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class OpdController extends Controller
 {
     public function index(Request $request)
-    {
+    { 
         $title = 'งานบริการผู้ป่วยนอก (OPD)';
         $dates = $this->resolveDateRange($request);
         $start_date = $dates['start_date'];

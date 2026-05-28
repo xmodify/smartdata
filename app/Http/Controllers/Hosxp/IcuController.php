@@ -110,6 +110,9 @@ class IcuController extends Controller
                 ROUND(SUM(a.adjrw), 4) AS 'total_adjrw',
                 -- ค่าดัชนีกลุ่มวินิจฉัยโรคร่วมเฉลี่ย (CMI)
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
+                -- ค่ายา (inc12) และ ค่า LAB (inc03)
+                SUM(a.inc12) AS 'total_inc12',
+                SUM(a.inc03) AS 'total_inc03',
                 -- สถิติการรับใหม่แยกตามเวร (ใช้เวลาที่ย้ายเข้าเตียง ICU จาก iptbedmove)
                 SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
                 SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
@@ -125,6 +128,8 @@ class IcuController extends Controller
                     DATEDIFF(i.dchdate, icu.movedate) AS icu_los_days,
                     -- ดึงเวลาเข้าเตียง ICU ครั้งแรกสุดจาก iptbedmove
                     icu.movetime AS icu_movetime,
+                    a.inc12,
+                    a.inc03,
                     IF(ri.vn IS NOT NULL, 1, 0) AS is_refer_in,
                     IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out
                 FROM ipt i
@@ -208,6 +213,8 @@ class IcuController extends Controller
                 ROUND(SUM(a.admdate) / (DATEDIFF(LEAST(?, CURDATE()), ?) + 1), 2) AS 'active_bed',
                 SUM(a.adjrw) AS 'total_adjrw',
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
+                SUM(a.inc12) AS 'total_inc12',
+                SUM(a.inc03) AS 'total_inc03',
                 SUM(CASE WHEN a.regtime BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
                 SUM(CASE WHEN a.regtime BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
                 SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift',
@@ -216,6 +223,7 @@ class IcuController extends Controller
             FROM (
                 SELECT 
                     i.an, i.regtime, i.adjrw, a.admdate,
+                    a.inc12, a.inc03,
                     IF(ri.vn IS NOT NULL, 1, 0) AS is_refer_in,
                     IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out
                 FROM ipt i
