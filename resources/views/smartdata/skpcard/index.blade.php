@@ -221,6 +221,12 @@
                         </div>
                     </div>
                     <div class="col-md-3">
+                        <div class="card border-0 bg-warning-subtle rounded-lg p-3 text-center" style="background-color: #fff3cd !important;">
+                            <div class="small text-warning fw-bold" style="color: #664d03 !important;">จำนวนบัตรราคา 2,000 ฿</div>
+                            <div class="h3 fw-bold text-warning mb-0 mt-1" style="color: #664d03 !important;">{{ number_format(array_sum($chartData['count_2000'])) }} ใบ</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="card border-0 bg-success-subtle rounded-lg p-3 text-center">
                             <div class="small text-success fw-bold">จำนวนบัตรราคา 1,500 ฿</div>
                             <div class="h3 fw-bold text-success mb-0 mt-1">{{ number_format(array_sum($chartData['count_1500'])) }} ใบ</div>
@@ -230,12 +236,6 @@
                         <div class="card border-0 bg-info-subtle rounded-lg p-3 text-center">
                             <div class="small text-info fw-bold">จำนวนบัตรราคา 1,000 ฿</div>
                             <div class="h3 fw-bold text-info mb-0 mt-1">{{ number_format(array_sum($chartData['count_1000'])) }} ใบ</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-warning-subtle rounded-lg p-3 text-center" style="background-color: #fff3cd !important;">
-                            <div class="small text-warning fw-bold" style="color: #664d03 !important;">จำนวนบัตรราคา 2,000 ฿</div>
-                            <div class="h3 fw-bold text-warning mb-0 mt-1" style="color: #664d03 !important;">{{ number_format(array_sum($chartData['count_2000'])) }} ใบ</div>
                         </div>
                     </div>
                 </div>
@@ -275,10 +275,10 @@
                         <div class="col-md-4">
                             <label class="form-label fw-bold small">ราคาบัตร</label>
                             <select name="price" id="add_price" class="form-select" required>
-                                <option value="0.00">0.00</option>
-                                <option value="1000.00" selected>1000</option>
-                                <option value="1500.00">1500</option>
                                 <option value="2000.00">2000</option>
+                                <option value="1500.00">1500</option>
+                                <option value="1000.00" selected>1000</option>
+                                <option value="0.00">0.00</option>
                             </select>
                         </div>
                         <div class="col-md-12">
@@ -336,10 +336,10 @@
                         <div class="col-md-4">
                             <label class="form-label fw-bold small">ราคาบัตร</label>
                             <select name="price" id="edit_price" class="form-select" required>
-                                <option value="0.00">0.00</option>
-                                <option value="1000.00">1000</option>
-                                <option value="1500.00">1500</option>
                                 <option value="2000.00">2000</option>
+                                <option value="1500.00">1500</option>
+                                <option value="1000.00">1000</option>
+                                <option value="0.00">0.00</option>
                             </select>
                         </div>
                         <div class="col-md-12">
@@ -391,6 +391,11 @@
         const chartOptions = {
             series: [
                 {
+                    name: 'บัตร 2,000 ฿ (ใบ)',
+                    type: 'column',
+                    data: @json($chartData['count_2000'])
+                },
+                {
                     name: 'บัตร 1,500 ฿ (ใบ)',
                     type: 'column',
                     data: @json($chartData['count_1500'])
@@ -399,11 +404,6 @@
                     name: 'บัตร 1,000 ฿ (ใบ)',
                     type: 'column',
                     data: @json($chartData['count_1000'])
-                },
-                {
-                    name: 'บัตร 2,000 ฿ (ใบ)',
-                    type: 'column',
-                    data: @json($chartData['count_2000'])
                 },
                 {
                     name: 'รายได้รวม (บาท)',
@@ -455,14 +455,14 @@
                     colors: ["#ffffff", "#ffffff", "#ffffff", "#304758"] // White for bars, Dark for line
                 }
             },
-            colors: ['#198754', '#0dcaf0', '#fd7e14', '#f1c40f'], // Green, Cyan, Orange, Yellow
+            colors: ['#fd7e14', '#198754', '#0dcaf0', '#f1c40f'], // Orange, Green, Cyan, Yellow
             labels: @json($chartData['labels']),
             xaxis: {
                 type: 'category'
             },
             yaxis: [
                 {
-                    seriesName: 'บัตร 1,500 ฿ (ใบ)',
+                    seriesName: 'บัตร 2,000 ฿ (ใบ)',
                     title: {
                         text: 'จำนวนบัตร (ใบ)',
                     },
@@ -471,11 +471,11 @@
                     }
                 },
                 {
-                    seriesName: 'บัตร 1,500 ฿ (ใบ)',
+                    seriesName: 'บัตร 2,000 ฿ (ใบ)',
                     show: false
                 },
                 {
-                    seriesName: 'บัตร 1,500 ฿ (ใบ)',
+                    seriesName: 'บัตร 2,000 ฿ (ใบ)',
                     show: false
                 },
                 {
