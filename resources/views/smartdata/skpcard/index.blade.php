@@ -510,7 +510,7 @@
             buttons: [
                 {
                     extend: 'excelHtml5',
-                    text: '<i class="bi bi-file-earmark-excel me-1"></i> Excel',
+                    text: '<i class="fas fa-file-excel me-1"></i> Excel',
                     className: 'btn btn-success',
                     title: 'ข้อมูลการซื้อบัตรสังฆะประชาร่วมใจ',
                     exportOptions: {
