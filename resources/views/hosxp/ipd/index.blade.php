@@ -326,6 +326,20 @@
             </div>
         </div>
 
+        <!-- Charts Row 1.5: Average Length of Stay (ALOS) -->
+        <div class="row mb-4 g-4">
+            <div class="col-12">
+                <div class="card card-ipd shadow-sm" style="border-top: 4px solid #e74a3b !important;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-history me-2 text-danger"></i> วันนอนเฉลี่ยรายเดือน (Average Length of Stay - ALOS)</h6>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="alosChart" class="chart-container" style="min-height: 350px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Detailed Table -->
         <div class="row pb-5">
             <div class="col-12">
@@ -352,6 +366,18 @@
                                                 วันนอนรวม
                                             @endif
                                         </th>
+                                        <th class="text-center text-danger">
+                                            @if($tab == 'vip')
+                                                วันนอน VIP เฉลี่ย (วัน)
+                                            @elseif($tab == 'general')
+                                                วันนอนสามัญเฉลี่ย (วัน)
+                                            @else
+                                                วันนอนเฉลี่ย (วัน)
+                                            @endif
+                                        </th>
+                                        @if($tab != 'total')
+                                            <th class="text-center text-warning">วันนอน รพ. เฉลี่ย (วัน)</th>
+                                        @endif
                                         <th class="text-center">อัตราครองเตียง (%)</th>
                                         <th class="text-center">Active Bed</th>
                                         <th class="text-center">Sum AdjRW</th>
@@ -370,6 +396,10 @@
                                         <td class="ps-4 fw-bold text-dark">{{ $row->month_year }}</td>
                                         <td class="text-center fw-bold text-primary">{{ number_format($row->total_admission) }}</td>
                                         <td class="text-center">{{ number_format($row->total_bed_days) }}</td>
+                                        <td class="text-center fw-bold text-danger">{{ number_format($row->avg_los_days, 2) }}</td>
+                                        @if($tab != 'total')
+                                            <td class="text-center fw-bold text-warning">{{ number_format($row->avg_hospital_los_days, 2) }}</td>
+                                        @endif
                                         <td class="text-center">
                                             <div class="progress" style="height: 10px; border-radius: 5px;">
                                                 <div class="progress-bar {{ $row->bed_occupancy_rate > 80 ? 'bg-danger' : ($row->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
@@ -394,10 +424,14 @@
                                         <td class="ps-4">{{ $summary_stats->month_year }}</td>
                                         <td class="text-center text-primary">{{ number_format($summary_stats->total_admission) }}</td>
                                         <td class="text-center">{{ number_format($summary_stats->total_bed_days) }}</td>
+                                        <td class="text-center text-danger">{{ number_format($summary_stats->avg_los_days, 2) }}</td>
+                                        @if($tab != 'total')
+                                            <td class="text-center text-warning">{{ number_format($summary_stats->avg_hospital_los_days, 2) }}</td>
+                                        @endif
                                         <td class="text-center">
                                             <div class="progress" style="height: 10px; border-radius: 5px; background-color: #e9ecef;">
                                                 <div class="progress-bar {{ $summary_stats->bed_occupancy_rate > 80 ? 'bg-danger' : ($summary_stats->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
-                                                    role="progressbar" style="width: {{ $summary_stats->bed_occupancy_rate }}%"></div>
+                                                     role="progressbar" style="width: {{ $summary_stats->bed_occupancy_rate }}%"></div>
                                             </div>
                                             <small>{{ $summary_stats->bed_occupancy_rate }}%</small>
                                         </td>
@@ -510,6 +544,44 @@
 
                 // Chart Configurations
                 const labels = @json(array_column($monthly_stats, 'month_year'));
+
+                // 1.5 ALOS Chart (Average Length of Stay)
+                var alosOptions = {
+                    series: [
+                        { 
+                            name: '@if($tab == "vip")วันนอน VIP เฉลี่ย (วัน)@elseif($tab == "general")วันนอนสามัญเฉลี่ย (วัน)@elseวันนอนเฉลี่ย (วัน)@endif', 
+                            data: @json(array_column($monthly_stats, 'avg_los_days')) 
+                        }
+                        @if($tab != 'total')
+                        ,
+                        { 
+                            name: 'วันนอน รพ. เฉลี่ย (วัน)', 
+                            data: @json(array_column($monthly_stats, 'avg_hospital_los_days')) 
+                        }
+                        @endif
+                    ],
+                    chart: { height: 350, type: 'line', toolbar: { show: false } },
+                    stroke: { curve: 'smooth', width: @if($tab != 'total')[3, 3]@else 3 @endif },
+                    markers: { size: 4 },
+                    colors: @if($tab != 'total')['#e74a3b', '#f6c23e']@else['#e74a3b']@endif,
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -10,
+                        style: { fontSize: '11px', colors: @if($tab != 'total')['#e74a3b', '#f6c23e']@else['#e74a3b']@endif },
+                        background: { enabled: true, padding: 3, borderRadius: 2, borderWidth: 0 }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: 'วันนอนเฉลี่ย (วัน)' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
+                    tooltip: {
+                        y: {
+                            formatter: function (val) {
+                                return val + " วัน";
+                            }
+                        }
+                    }
+                };
+                new ApexCharts(document.querySelector("#alosChart"), alosOptions).render();
 
                 // 1. Admission Chart
                 var admissionOptions = {

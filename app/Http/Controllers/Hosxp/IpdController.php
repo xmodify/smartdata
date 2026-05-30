@@ -77,6 +77,8 @@ class IpdController extends Controller
                     THEN DAY(CURDATE()) 
                     ELSE DAY(LAST_DAY(a.dchdate)) 
                 END), 2) AS 'active_bed',
+                ROUND(SUM(a.admdate) / COUNT(DISTINCT a.an), 2) AS 'avg_los_days',
+                ROUND(SUM(a.hospital_admdate) / COUNT(DISTINCT a.an), 2) AS 'avg_hospital_los_days',
                 ROUND(SUM(a.adjrw), 4) AS 'total_adjrw',
                 -- รายได้เรียกเก็บสุทธิต่อหน่วยน้ำหนักสัมพัทธ์
                 ROUND(SUM(a.income - a.rcpt_money) / NULLIF(SUM(a.adjrw), 0), 2) AS 'net_income_per_rw',
@@ -98,6 +100,7 @@ class IpdController extends Controller
                     {$time_field} AS regtime, 
                     i.adjrw, 
                     {$los_field} AS admdate, 
+                    a.admdate AS hospital_admdate,
                     a.income, 
                     a.rcpt_money,
                     a.inc12,
@@ -140,6 +143,8 @@ class IpdController extends Controller
                 SUM(a.admdate) AS 'total_bed_days',
                 ROUND((SUM(a.admdate) * 100) / ({$bed_capacity} * (DATEDIFF(LEAST(?, CURDATE()), ?) + 1)), 2) AS 'bed_occupancy_rate',
                 ROUND(SUM(a.admdate) / (DATEDIFF(LEAST(?, CURDATE()), ?) + 1), 2) AS 'active_bed',
+                ROUND(SUM(a.admdate) / COUNT(DISTINCT a.an), 2) AS 'avg_los_days',
+                ROUND(SUM(a.hospital_admdate) / COUNT(DISTINCT a.an), 2) AS 'avg_hospital_los_days',
                 SUM(a.adjrw) AS 'total_adjrw',
                 ROUND(SUM(a.income - a.rcpt_money) / NULLIF(SUM(a.adjrw), 0), 2) AS 'net_income_per_rw',
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
@@ -156,6 +161,7 @@ class IpdController extends Controller
                     {$time_field} AS regtime,
                     i.adjrw,
                     {$los_field} AS admdate,
+                    a.admdate AS hospital_admdate,
                     a.income,
                     a.rcpt_money,
                     a.inc12,

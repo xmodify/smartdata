@@ -96,6 +96,7 @@ class IcuController extends Controller
                 -- สูตร: (วันนอน ICU รวม × 100) / (จำนวนเตียง × จำนวนวันในเดือน)
                 COUNT(DISTINCT a.an) AS 'total_admission',
                 SUM(a.icu_los_days) AS 'total_bed_days',
+                SUM(a.total_los_days) AS 'total_hospital_bed_days',
                 ROUND((SUM(a.icu_los_days) * 100) / ({$bed_capacity} * CASE 
                     WHEN YEAR(a.dchdate) = YEAR(CURDATE()) AND MONTH(a.dchdate) = MONTH(CURDATE()) 
                     THEN DAY(CURDATE()) 
@@ -107,6 +108,9 @@ class IcuController extends Controller
                     THEN DAY(CURDATE()) 
                     ELSE DAY(LAST_DAY(a.dchdate)) 
                 END), 2) AS 'active_bed',
+                -- วันนอนเฉลี่ย ICU และ รพ.
+                ROUND(SUM(a.icu_los_days) / COUNT(DISTINCT a.an), 2) AS 'avg_icu_los_days',
+                ROUND(SUM(a.total_los_days) / COUNT(DISTINCT a.an), 2) AS 'avg_total_los_days',
                 ROUND(SUM(a.adjrw), 4) AS 'total_adjrw',
                 -- ค่าดัชนีกลุ่มวินิจฉัยโรคร่วมเฉลี่ย (CMI)
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
@@ -126,6 +130,8 @@ class IcuController extends Controller
                     i.adjrw,
                     -- วันนอน ICU จริง: ตั้งแต่เข้าเตียง ICU (iptbedmove) ถึงจำหน่าย
                     DATEDIFF(i.dchdate, icu.movedate) AS icu_los_days,
+                    -- วันนอนโรงพยาบาลทั้งหมด
+                    DATEDIFF(i.dchdate, i.regdate) AS total_los_days,
                     -- ดึงเวลาเข้าเตียง ICU ครั้งแรกสุดจาก iptbedmove
                     icu.movetime AS icu_movetime,
                     a.inc12,
@@ -208,30 +214,42 @@ class IcuController extends Controller
             SELECT 
                 'รวมทั้งหมด' AS 'month_year',
                 COUNT(DISTINCT a.an) AS 'total_admission',
-                SUM(a.admdate) AS 'total_bed_days',
-                ROUND((SUM(a.admdate) * 100) / ({$bed_capacity} * (DATEDIFF(LEAST(?, CURDATE()), ?) + 1)), 2) AS 'bed_occupancy_rate',
-                ROUND(SUM(a.admdate) / (DATEDIFF(LEAST(?, CURDATE()), ?) + 1), 2) AS 'active_bed',
+                SUM(a.icu_los_days) AS 'total_bed_days',
+                SUM(a.total_los_days) AS 'total_hospital_bed_days',
+                ROUND((SUM(a.icu_los_days) * 100) / ({$bed_capacity} * (DATEDIFF(LEAST(?, CURDATE()), ?) + 1)), 2) AS 'bed_occupancy_rate',
+                ROUND(SUM(a.icu_los_days) / (DATEDIFF(LEAST(?, CURDATE()), ?) + 1), 2) AS 'active_bed',
+                ROUND(SUM(a.icu_los_days) / COUNT(DISTINCT a.an), 2) AS 'avg_icu_los_days',
+                ROUND(SUM(a.total_los_days) / COUNT(DISTINCT a.an), 2) AS 'avg_total_los_days',
                 SUM(a.adjrw) AS 'total_adjrw',
                 ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2) AS 'cmi',
                 SUM(a.inc12) AS 'total_inc12',
                 SUM(a.inc03) AS 'total_inc03',
-                SUM(CASE WHEN a.regtime BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
-                SUM(CASE WHEN a.regtime BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
-                SUM(CASE WHEN a.regtime BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift',
+                SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '08:00:00' AND '15:59:59' THEN 1 ELSE 0 END) AS 'admit_morning_shift',
+                SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
+                SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift',
                 SUM(a.is_refer_in) AS 'total_refer_in',
                 SUM(a.is_refer_out) AS 'total_refer_out'
             FROM (
                 SELECT 
-                    i.an, i.regtime, i.adjrw, a.admdate,
+                    i.an, i.regtime, i.adjrw, 
+                    DATEDIFF(i.dchdate, icu.movedate) AS icu_los_days,
+                    DATEDIFF(i.dchdate, i.regdate) AS total_los_days,
+                    icu.movetime AS icu_movetime,
                     a.inc12, a.inc03,
                     IF(ri.vn IS NOT NULL, 1, 0) AS is_refer_in,
                     IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
+                INNER JOIN (
+                    SELECT an, MIN(movedate) AS movedate,
+                           SUBSTRING_INDEX(GROUP_CONCAT(movetime ORDER BY movedate ASC, movetime ASC), ',', 1) AS movetime
+                    FROM iptbedmove
+                    WHERE nbedno LIKE 'ICU%'
+                    GROUP BY an
+                ) icu ON icu.an = i.an
                 LEFT JOIN referin ri ON ri.vn = i.vn
                 LEFT JOIN referout ro ON ro.vn = i.an
                 WHERE i.dchdate BETWEEN ? AND ?
-                AND i.an IN (SELECT DISTINCT an FROM iptbedmove WHERE nbedno LIKE 'ICU%')
                 GROUP BY i.an
             ) AS a
         ", [$end_date, $start_date, $end_date, $start_date, $start_date, $end_date])[0];
