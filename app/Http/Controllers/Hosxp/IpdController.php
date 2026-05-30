@@ -260,4 +260,152 @@ class IpdController extends Controller
             'budget_year_select' => $budget_year_select
         ];
     }
+
+    public function severity(Request $request)
+    {
+        $title = 'รายงานจำนวนผู้ป่วยในแยกระดับความรุนแรง';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        $tab = $request->get('tab', 'total');
+        $ward_filter = "";
+        $tab_title = "ผู้ป่วยในรวม";
+        if ($tab == 'general') {
+            $ward_filter = " AND i.ward = '01' ";
+            $tab_title = "ผู้ป่วยในสามัญ";
+        } elseif ($tab == 'vip') {
+            $ward_filter = " AND i.ward = '03' ";
+            $tab_title = "ผู้ป่วยใน VIP";
+        }
+
+        $results = DB::connection('hosxp')->select("
+            SELECT 
+                CASE 
+                    WHEN MONTH(i.dchdate) = 10 THEN CONCAT('ต.ค. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 11 THEN CONCAT('พ.ย. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 12 THEN CONCAT('ธ.ค. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 1 THEN CONCAT('ม.ค. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 2 THEN CONCAT('ก.พ. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 3 THEN CONCAT('มี.ค. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 4 THEN CONCAT('เม.ย. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 5 THEN CONCAT('พ.ค. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 6 THEN CONCAT('มิ.ย. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 7 THEN CONCAT('ก.ค. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 8 THEN CONCAT('ส.ค. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                    WHEN MONTH(i.dchdate) = 9 THEN CONCAT('ก.ย. ', RIGHT(YEAR(i.dchdate) + 543, 2))
+                END AS month_year,
+                SUM(CASE WHEN i.ipt_severe_type_id = 1 THEN 1 ELSE 0 END) AS admit_1,
+                SUM(CASE WHEN i.ipt_severe_type_id = 2 THEN 1 ELSE 0 END) AS admit_2,
+                SUM(CASE WHEN i.ipt_severe_type_id = 3 THEN 1 ELSE 0 END) AS admit_3,
+                SUM(CASE WHEN i.ipt_severe_type_id = 4 THEN 1 ELSE 0 END) AS admit_4,
+                SUM(CASE WHEN i.ipt_severe_type_id IS NULL THEN 1 ELSE 0 END) AS admit_null,
+                SUM(CASE WHEN i.dch_severe_type_id = 1 THEN 1 ELSE 0 END) AS dch_1,
+                SUM(CASE WHEN i.dch_severe_type_id = 2 THEN 1 ELSE 0 END) AS dch_2,
+                SUM(CASE WHEN i.dch_severe_type_id = 3 THEN 1 ELSE 0 END) AS dch_3,
+                SUM(CASE WHEN i.dch_severe_type_id = 4 THEN 1 ELSE 0 END) AS dch_4,
+                SUM(CASE WHEN i.dch_severe_type_id IS NULL THEN 1 ELSE 0 END) AS dch_null,
+                COUNT(i.an) AS total_patients
+            FROM ipt i
+            WHERE i.dchdate BETWEEN ? AND ?
+              AND i.dchdate IS NOT NULL
+              $ward_filter
+            GROUP BY YEAR(i.dchdate), MONTH(i.dchdate)
+            ORDER BY YEAR(i.dchdate), MONTH(i.dchdate)
+        ", [$start_date, $end_date]);
+
+        return view('hosxp.ipd.severity', compact(
+            'title', 'tab', 'tab_title', 'budget_year_select', 'budget_year', 'start_date', 'end_date', 'results'
+        ));
+    }
+
+    public function readmit(Request $request)
+    {
+        $title = 'รายงาน Re-Admit ภายใน 28 วันด้วยโรคเดิม';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        // 1. Patient List Query (Optimized)
+        $patients = DB::connection('hosxp')->select("
+            SELECT 
+                p.hn,
+                CONCAT(p.pname, p.fname, ' ', p.lname) AS ptname,
+                ipt_new.an AS AN_new,
+                ipt_new.regdate AS regdate_AN_New,
+                ipt_new.dchdate AS dcdate_AN_New,
+                ipt_old.an AS AN_old,
+                ipt_old.regdate AS regdate_AN_Old,
+                ipt_old.dchdate AS dcdate_AN_Old,
+                diag_new.icd10 AS icd10_1,
+                c.name AS icd_name,
+                TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) AS ReAdmitDate
+            FROM ipt ipt_new
+            INNER JOIN iptdiag diag_new ON diag_new.an = ipt_new.an AND diag_new.diagtype = '1'
+            INNER JOIN icd101 c ON c.code = diag_new.icd10
+            INNER JOIN ipt ipt_old ON ipt_old.hn = ipt_new.hn AND ipt_old.an <> ipt_new.an
+            INNER JOIN iptdiag diag_old ON diag_old.an = ipt_old.an AND diag_old.diagtype = '1' AND diag_old.icd10 = diag_new.icd10
+            INNER JOIN patient p ON p.hn = ipt_new.hn
+            WHERE ipt_new.regdate BETWEEN ? AND ?
+              AND TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) > 0
+              AND TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) <= 28
+            ORDER BY ipt_new.an
+        ", [$start_date, $end_date]);
+
+        // 2. Monthly Re-admissions count (Optimized)
+        $monthly_stats = DB::connection('hosxp')->select("
+            SELECT 
+                CASE 
+                    WHEN MONTH(ipt_new.regdate) = 10 THEN CONCAT('ต.ค. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 11 THEN CONCAT('พ.ย. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 12 THEN CONCAT('ธ.ค. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 1 THEN CONCAT('ม.ค. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 2 THEN CONCAT('ก.พ. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 3 THEN CONCAT('มี.ค. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 4 THEN CONCAT('เม.ย. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 5 THEN CONCAT('พ.ค. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 6 THEN CONCAT('มิ.ย. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 7 THEN CONCAT('ก.ค. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 8 THEN CONCAT('ส.ค. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                    WHEN MONTH(ipt_new.regdate) = 9 THEN CONCAT('ก.ย. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
+                END AS month_year,
+                COUNT(DISTINCT ipt_new.an) AS total_readmit
+            FROM ipt ipt_new
+            INNER JOIN iptdiag diag_new ON diag_new.an = ipt_new.an AND diag_new.diagtype = '1'
+            INNER JOIN ipt ipt_old ON ipt_old.hn = ipt_new.hn AND ipt_old.an <> ipt_new.an
+            INNER JOIN iptdiag diag_old ON diag_old.an = ipt_old.an AND diag_old.diagtype = '1' AND diag_old.icd10 = diag_new.icd10
+            WHERE ipt_new.regdate BETWEEN ? AND ?
+              AND TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) > 0
+              AND TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) <= 28
+            GROUP BY YEAR(ipt_new.regdate), MONTH(ipt_new.regdate)
+            ORDER BY YEAR(ipt_new.regdate), MONTH(ipt_new.regdate)
+        ", [$start_date, $end_date]);
+
+        // 3. Top 10 Re-admit Diagnoses (Optimized)
+        $top_diagnoses = DB::connection('hosxp')->select("
+            SELECT 
+                diag_new.icd10 AS icd10,
+                c.name AS icd_name,
+                COUNT(DISTINCT ipt_new.an) AS total_readmit
+            FROM ipt ipt_new
+            INNER JOIN iptdiag diag_new ON diag_new.an = ipt_new.an AND diag_new.diagtype = '1'
+            INNER JOIN icd101 c ON c.code = diag_new.icd10
+            INNER JOIN ipt ipt_old ON ipt_old.hn = ipt_new.hn AND ipt_old.an <> ipt_new.an
+            INNER JOIN iptdiag diag_old ON diag_old.an = ipt_old.an AND diag_old.diagtype = '1' AND diag_old.icd10 = diag_new.icd10
+            WHERE ipt_new.regdate BETWEEN ? AND ?
+              AND TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) > 0
+              AND TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) <= 28
+            GROUP BY diag_new.icd10, c.name
+            ORDER BY total_readmit DESC
+            LIMIT 10
+        ", [$start_date, $end_date]);
+
+        return view('hosxp.ipd.readmit', compact(
+            'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date', 'patients', 'monthly_stats', 'top_diagnoses'
+        ));
+    }
 }

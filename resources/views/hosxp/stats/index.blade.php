@@ -121,13 +121,13 @@
                             <span class="small">รายงานข้อมูลบริการผู้ป่วยนอก</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
+                        <a href="{{ route('hosxp.opd.telehealth') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานการให้บริการแพทย์ทางไกล Telehealth</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
+                        <a href="{{ route('hosxp.opd.wait_time') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานระยะเวลารอคอยผู้ป่วยนอก</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>
                 </div>
@@ -149,13 +149,13 @@
                             <span class="small">รายงานข้อมูลบริการผู้ป่วยใน</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
+                        <a href="{{ route('hosxp.ipd.severity') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงานจำนวนผู้ป่วยในแยกระดับความรุนแรง</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
+                        <a href="{{ route('hosxp.ipd.readmit') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงาน Re-Admit ภายใน 28 วันด้วยโรคเดิม</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                     </div>
                 </div>

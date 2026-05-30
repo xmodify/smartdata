@@ -175,21 +175,22 @@
                 <div class="card card-ipd shadow-sm overflow-hidden" style="border-top: 4px solid #4e73df !important; border-radius: 12px;">
                     <div class="card-body p-0">
                         <div class="nav nav-tabs nav-fill border-0" id="wardTabs" role="tablist" style="background-color: #f8f9fc;">
-                            <a href="{{ url()->current() }}?tab=total&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
+                            <a href="{{ route('hosxp.ipd.index') }}?tab=total&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
                                class="nav-link py-3 border-0 rounded-0 {{ $tab == 'total' ? 'active fw-bold text-danger' : 'text-muted' }}"
                                style="{{ $tab == 'total' ? 'background-color: #fff5f5 !important; border-bottom: 4px solid #e74a3b !important;' : 'background-color: #fffcfc;' }}">
                                 <i class="fas fa-hospital me-2"></i> ผู้ป่วยในรวม
                             </a>
-                            <a href="{{ url()->current() }}?tab=general&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
+                            <a href="{{ route('hosxp.ipd.index') }}?tab=general&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
                                class="nav-link py-3 border-0 rounded-0 {{ $tab == 'general' ? 'active fw-bold text-primary' : 'text-muted' }}"
                                style="{{ $tab == 'general' ? 'background-color: #f0f7ff !important; border-bottom: 4px solid #4e73df !important;' : 'background-color: #fafdff;' }}">
                                 <i class="fas fa-procedures me-2"></i> ผู้ป่วยในสามัญ
                             </a>
-                            <a href="{{ url()->current() }}?tab=vip&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
+                            <a href="{{ route('hosxp.ipd.index') }}?tab=vip&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
                                class="nav-link py-3 border-0 rounded-0 {{ $tab == 'vip' ? 'active fw-bold text-success' : 'text-muted' }}"
                                style="{{ $tab == 'vip' ? 'background-color: #f0fff4 !important; border-bottom: 4px solid #1cc88a !important;' : 'background-color: #fafffb;' }}">
                                 <i class="fas fa-star me-2 text-warning"></i> ผู้ป่วยใน VIP
                             </a>
+
                         </div>
                     </div>
                 </div>

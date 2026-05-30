@@ -58,11 +58,15 @@ Route::middleware(['auth'])->group(function () {
     // OPD Routes
     Route::prefix('hosxp/opd')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\OpdController::class, 'index'])->name('hosxp.opd.index');
+        Route::get('/wait-time', [App\Http\Controllers\Hosxp\OpdController::class, 'waitTime'])->name('hosxp.opd.wait_time');
+        Route::get('/telehealth', [App\Http\Controllers\Hosxp\OpdController::class, 'telehealth'])->name('hosxp.opd.telehealth');
     });
 
     // IPD Routes
     Route::prefix('hosxp/ipd')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\IpdController::class, 'index'])->name('hosxp.ipd.index');
+        Route::get('/severity', [App\Http\Controllers\Hosxp\IpdController::class, 'severity'])->name('hosxp.ipd.severity');
+        Route::get('/readmit', [App\Http\Controllers\Hosxp\IpdController::class, 'readmit'])->name('hosxp.ipd.readmit');
     });
 
     // ICU Routes
