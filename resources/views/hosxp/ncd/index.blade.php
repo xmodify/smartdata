@@ -10,7 +10,6 @@
 @endsection
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         .page-header-container {
             background: #fff;
@@ -21,53 +20,29 @@
             border: 1px solid #f0f0f0;
         }
 
-        .header-form-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .report-title-box h5 {
+            font-size: 1.1rem;
+            letter-spacing: -0.01em;
         }
 
-        .input-group-date {
-            width: 160px !important;
-        }
+        .bg-pastel-orange  { background-color: #fff3e0; }
+        .bg-pastel-red     { background-color: #fce4ec; }
+        .bg-pastel-teal    { background-color: #e0f2f1; }
+        .bg-pastel-indigo  { background-color: #e8eaf6; }
+        .bg-pastel-cyan    { background-color: #e0f7fa; }
+        .bg-pastel-green   { background-color: #e8f5e9; }
 
-        .input-group-budget {
-            width: 250px !important;
-        }
+        .text-orange  { color: #f57c00; }
+        .text-red     { color: #e53935; }
+        .text-teal    { color: #00796b; }
+        .text-indigo  { color: #3949ab; }
+        .text-cyan    { color: #0097a7; }
+        .text-green2  { color: #388e3c; }
 
-        @media (max-width: 768px) {
-            .page-header-container {
-                flex-direction: column;
-                align-items: flex-start !important;
-                gap: 1rem;
-            }
-
-            .header-form-controls {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-
-            .input-group-date,
-            .input-group-budget {
-                width: 100% !important;
-            }
-        }
-
-        .flatpickr-today-button {
-            border-top: 1px solid #e6e6e6;
-            padding: 8px;
-            text-align: center;
-            cursor: pointer;
-            color: #f6c23e;
-            font-weight: bold;
-            font-size: 0.9rem;
-            transition: background 0.2s;
-            border-radius: 0 0 12px 12px;
-        }
-
-        .flatpickr-today-button:hover {
-            background: #fffdf5;
-            color: #dda20a;
+        .list-group-item-action:hover {
+            background-color: #f8fafc;
+            transform: translateX(5px);
+            transition: all 0.2s ease;
         }
     </style>
 @endpush
@@ -77,126 +52,242 @@
         <div class="page-header-container d-flex justify-content-between align-items-center mt-3">
             <div class="d-flex align-items-center report-title-box">
                 <div class="ps-3 py-1">
-                    <h5 class="text-dark mb-0 fw-bold"><i class="fas fa-heartbeat text-warning me-2"></i>
-                        {{ $title }}</h5>
-                    <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
-                </div>
-            </div>
-            <div class="d-flex align-items-center">
-                <form action="" method="GET" class="m-0 header-form-controls">
-                    <span class="me-1 fw-bold text-muted small">ช่วงวันที่:</span>
-                    <div class="input-group input-group-sm shadow-sm input-group-date"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-warning"><i
-                                class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0"
-                            value="{{ $start_date }}" placeholder="วันที่เริ่ม" style="font-size: 0.8rem;">
-                    </div>
-                    <div class="input-group input-group-sm shadow-sm input-group-date"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-warning"><i
-                                class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0"
-                            value="{{ $end_date }}" placeholder="วันที่สิ้นสุด" style="font-size: 0.8rem;">
-                    </div>
-                    <div class="input-group input-group-sm shadow-sm input-group-budget"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
-                            @foreach ($budget_year_select as $row)
-                                <option value="{{ $row->LEAVE_YEAR_ID }}"
-                                    {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>
-                                    {{ $row->LEAVE_YEAR_NAME }}</option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="btn btn-warning text-white px-3" style="font-size: 0.8rem;"><i
-                                class="fas fa-search"></i> ค้นหา</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                    <div class="card-body p-5 text-center">
-                        <div class="mb-4"><i class="fas fa-heartbeat fa-4x text-muted opacity-25"></i></div>
-                        <h4 class="fw-bold">อยู่ระหว่างการพัฒนา</h4>
-                        <p class="text-muted">ระบบรายงานคลินิกโรคเรื้อรัง (NCD)
-                            กำลังอยู่ในขั้นตอนการจัดสรรข้อมูลและออกแบบรายงานเพื่อเพิ่มประสิทธิภาพในการวิเคราะห์</p>
-                        <div class="mt-4"><a href="{{ route('dashboard') }}"
-                                class="btn btn-outline-secondary">กลับหน้าหลัก</a></div>
-                    </div>
+                    <h5 class="text-dark mb-0 fw-bold"><i class="fas fa-heartbeat text-warning me-2"></i> {{ $title }}</h5>
+                    <div class="text-muted small mt-1">เลือกรายงานที่ต้องการดูข้อมูล</div>
                 </div>
             </div>
         </div>
+
+        {{-- Row 1 --}}
+        <div class="row g-4 mb-4">
+            {{-- คลินิกความดัน --}}
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="card-header bg-pastel-orange py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                        <h6 class="fw-bold mb-0 text-orange"><i class="fas fa-tachometer-alt me-2"></i>คลินิกความดัน</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ทะเบียนผู้ป่วยคลินิกโรคความดัน</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">จำนวนผู้ป่วยคลินิกโรคความดัน</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ประเมินผลภาวะความดัน ผู้ป่วย-ห้องตรวจ/ผลการรักษา</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">รายชื่อผู้ป่วยโรคความดัน ที่มีโรคอื่นร่วม Chronic</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">รายชื่อผู้ป่วยโรคความดันที่รักษาต่อเนื่องครั้งล่าสุด</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ตรวจสอบความถูกต้องสิทธิ์การรักษาโรคความดันในโรงพยาบาล</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ตรวจสอบอาการแทรกซ้อนสิทธิ์การรักษา ความดัน รายบุคคล</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- คลินิกเบาหวาน --}}
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="card-header bg-pastel-red py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                        <h6 class="fw-bold mb-0 text-red"><i class="fas fa-syringe me-2"></i>คลินิกเบาหวาน</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="{{ route('hosxp.ncd.dm_register') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-danger fw-bold">ทะเบียนผู้ป่วยคลินิกเบาหวาน</span>
+                                    <i class="fas fa-chevron-right text-danger" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">จำนวนผู้ป่วยคลินิกโรคเบาหวาน</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ประเมินผล ผู้ป่วย-ห้องตรวจ/ผลการรักษา</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">รายชื่อผู้ป่วยโรคเบาหวาน ที่มีโรคอื่นร่วม Chronic</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">รายชื่อผู้ป่วยโรคเบาหวานที่รักษาต่อเนื่องครั้งล่าสุดที่ Admit</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ตรวจสอบความถูกต้องสิทธิ์การรักษา เบาหวาน รายบุคคล</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Row 2 --}}
+        <div class="row g-4 mb-4">
+            {{-- คลินิก ARV --}}
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="card-header bg-pastel-indigo py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                        <h6 class="fw-bold mb-0 text-indigo"><i class="fas fa-pills me-2"></i>คลินิก ARV</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ทะเบียนผู้ป่วยคลินิก ARV</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- คลินิกผู้ป่วย HD --}}
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="card-header bg-pastel-teal py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                        <h6 class="fw-bold mb-0 text-teal"><i class="fas fa-procedures me-2"></i>คลินิกผู้ป่วย HD</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ทะเบียนผู้ป่วยคลินิกผู้ป่วย Hd (รพ.หลัก)</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">จำนวนผู้ป่วยที่รับบริการ HD แยกเดือน (&lt;5 คน)</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">จำนวนครั้งผู้ป่วยที่รับบริการ HD แยกเดือน (&lt;5 ครั้ง)</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ดัชนี GFR น้อยกว่า 30</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Row 3 --}}
+        <div class="row g-4 mb-4">
+            {{-- คลินิกผู้ป่วย CAPD --}}
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="card-header bg-pastel-cyan py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                        <h6 class="fw-bold mb-0 text-cyan"><i class="fas fa-water me-2"></i>คลินิกผู้ป่วย CAPD</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ทะเบียนผู้ป่วยคลินิกผู้ป่วย CAPD</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">จำนวนผู้ป่วยที่รับบริการ CAPD แยกเดือน</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ตรวจสอบความถูกต้องสิทธิ์การรักษาโรค CAPD</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ดัชนี Stem eGFR 4.5 ที่ยังไม่เริ่มเยียวยา</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- คลินิก Asthma --}}
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="card-header bg-pastel-green py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                        <h6 class="fw-bold mb-0 text-green2"><i class="fas fa-lungs me-2"></i>คลินิก Asthma</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">ทะเบียนผู้ป่วยคลินิก Asthma</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">จำนวนผู้ป่วยโรค Asthma</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-    @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
-        <script>
-            $(document).ready(function() {
-                if (typeof flatpickr !== 'undefined') {
-                    const yearOffset = 543;
-                    const commonConfig = {
-                        locale: "th",
-                        dateFormat: "Y-m-d",
-                        altInput: true,
-                        altFormat: "j M Y",
-                        allowInput: false,
-                        onReady: function(selectedDates, dateStr, instance) {
-                            if (instance.altInput) {
-                                const date = instance.selectedDates[0] || new Date(instance.input.value);
-                                if (date && !isNaN(date.getTime())) {
-                                    instance.altInput.value =
-                                        `${date.getDate()} ${instance.l10n.months.shorthand[date.getMonth()]} ${date.getFullYear() + yearOffset}`;
-                                }
-                            }
-
-                            // Add Today Button
-                            const container = instance.calendarContainer;
-                            if (container && !container.querySelector('.flatpickr-today-button')) {
-                                const btn = document.createElement("div");
-                                btn.className = "flatpickr-today-button";
-                                btn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> วันนี้';
-                                btn.addEventListener("mousedown", function(e) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    instance.setDate(new Date());
-                                    instance.close();
-                                });
-                                container.appendChild(btn);
-                            }
-                        },
-                        onChange: function(selectedDates, dateStr, instance) {
-                            if (instance.altInput && selectedDates.length > 0) {
-                                const date = selectedDates[0];
-                                setTimeout(() => {
-                                    instance.altInput.value =
-                                        `${date.getDate()} ${instance.l10n.months.shorthand[date.getMonth()]} ${date.getFullYear() + yearOffset}`;
-                                }, 10);
-                            }
-                        }
-                    };
-                    const startPicker = flatpickr("#start_date", commonConfig);
-                    const endPicker = flatpickr("#end_date", commonConfig);
-
-                    // Update start_date and end_date based on budget_year change
-                    $('select[name="budget_year"]').on('change', function() {
-                        var selectedYear = parseInt($(this).val());
-                        if(!isNaN(selectedYear)) {
-                            // Calculate budget year ranges
-                            var startYear = selectedYear - 544; // Example: 2567 -> 2023
-                            var endYear = selectedYear - 543;   // Example: 2567 -> 2024
-                            var startDateStr = startYear + "-10-01";
-                            var endDateStr = endYear + "-09-30";
-                            
-                            setTimeout(() => {
-                                if (typeof startPicker !== 'undefined' && startPicker) startPicker.setDate(startDateStr, true);
-                                if (typeof endPicker !== 'undefined' && endPicker) endPicker.setDate(endDateStr, true);
-                            }, 50);
-                        }
-                    });
-                }
-            });
-        </script>
-    @endpush
 @endsection

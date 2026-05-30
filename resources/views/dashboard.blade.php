@@ -24,8 +24,8 @@
                                 ['url' => '/hosxp/physic', 'label' => 'กายภาพบำบัด', 'icon' => 'fa-walking', 'color' => '#fd7e14'],
                                 ['url' => '/hosxp/hmed', 'label' => 'แพทย์แผนไทย', 'icon' => 'fa-leaf', 'color' => '#20c997'],
                                 ['url' => '/hosxp/dent', 'label' => 'ทันตกรรม', 'icon' => 'fa-tooth', 'color' => '#6610f2'],
-                                ['url' => '/hosxp/ncd', 'label' => 'คลินิกโรคเรื้อรัง', 'icon' => 'fa-clipboard-list', 'color' => '#858796'],
-                                ['url' => '/hosxp/pcu', 'label' => 'งานเชิงรุก', 'icon' => 'fa-hand-holding-heart', 'color' => '#5a5c69'],
+                                ['url' => '/hosxp/ncd', 'label' => 'คลินิกโรคเรื้อรัง', 'icon' => 'fa-clipboard-list', 'color' => '#f6c23e'],
+                                ['url' => '/hosxp/pcu', 'label' => 'งานเชิงรุก', 'icon' => 'fa-hand-holding-heart', 'color' => '#20c997'],
                                 ['url' => '/hosxp/ct_scan', 'label' => 'CT Scan', 'icon' => 'fa-x-ray', 'color' => '#17a2b8'],
                             ];
                         @endphp

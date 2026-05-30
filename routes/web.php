@@ -109,6 +109,7 @@ Route::middleware(['auth'])->group(function () {
     // NCD Routes
     Route::prefix('hosxp/ncd')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\NcdController::class, 'index'])->name('hosxp.ncd.index');
+        Route::get('/dm-register', [App\Http\Controllers\Hosxp\NcdController::class, 'dm_register'])->name('hosxp.ncd.dm_register');
     });
 
     // PCU Routes
@@ -167,4 +168,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/backoffice/hrd', [App\Http\Controllers\Backoffice\HrdController::class, 'index'])->name('backoffice.hrd.index');
     Route::get('/backoffice/hrd/pdf/summary/{id}', [App\Http\Controllers\Backoffice\HrdController::class, 'checkin_indiv_pdf'])->name('backoffice.hrd.pdf.summary');
     Route::get('/backoffice/hrd/pdf/detail/{id}', [App\Http\Controllers\Backoffice\HrdController::class, 'checkin_indiv_detail_pdf'])->name('backoffice.hrd.pdf.detail');
+
+    // Backoffice Incident Routes
+    Route::prefix('backoffice/incident')->group(function () {
+        Route::get('/', [App\Http\Controllers\Backoffice\IncidentController::class, 'index'])->name('backoffice.incident.index');
+        Route::get('/med_error', [App\Http\Controllers\Backoffice\IncidentController::class, 'med_error'])->name('backoffice.incident.med_error');
+        Route::get('/nrls_dataset', [App\Http\Controllers\Backoffice\IncidentController::class, 'nrls_dataset'])->name('backoffice.incident.nrls_dataset');
+        Route::get('/nrls_dataset_export', [App\Http\Controllers\Backoffice\IncidentController::class, 'nrls_dataset_export'])->name('backoffice.incident.nrls_dataset_export');
+        Route::get('/nrls', [App\Http\Controllers\Backoffice\IncidentController::class, 'nrls'])->name('backoffice.incident.nrls');
+        Route::get('/nrls_export', [App\Http\Controllers\Backoffice\IncidentController::class, 'nrls_export'])->name('backoffice.incident.nrls_export');
+        Route::get('/nrls_edit', [App\Http\Controllers\Backoffice\IncidentController::class, 'nrls_edit'])->name('backoffice.incident.nrls_edit');
+        Route::get('/nrls_editexport', [App\Http\Controllers\Backoffice\IncidentController::class, 'nrls_editexport'])->name('backoffice.incident.nrls_editexport');
+        Route::get('/program_detail/{id}', [App\Http\Controllers\Backoffice\IncidentController::class, 'program_detail'])->name('backoffice.incident.program_detail');
+        Route::get('/matrix_detail/{type}_{consequence}_{likelihood}', [App\Http\Controllers\Backoffice\IncidentController::class, 'matrix_detail'])->name('backoffice.incident.matrix_detail');
+        Route::get('/table_detail', [App\Http\Controllers\Backoffice\IncidentController::class, 'table_detail'])->name('backoffice.incident.table_detail');
+    });
 });
+

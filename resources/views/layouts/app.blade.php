@@ -442,7 +442,7 @@
                             </a>
                         @endif
                         @if(auth()->user()->hasAccessIncident())
-                            <a href="{{ url('/backoffice_risk') }}"
+                            <a href="{{ route('backoffice.incident.index') }}"
                                 class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-triangle-exclamation me-2" style="color: #e74a3b;"></i> รายงานอุบัติการณ์
                             </a>
@@ -471,7 +471,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-05-26 17:00
+                V. 69-05-30 23:00
             </div>
         </div>
         <!-- /#sidebar-wrapper -->
