@@ -113,16 +113,16 @@
                                 <th rowspan="2" class="align-middle text-center fw-bold text-dark" style="border-bottom: 2px solid #dee2e6;">ผู้ป่วยทั้งหมด</th>
                             </tr>
                             <tr class="bg-light">
-                                <th class="text-center text-primary" style="font-size: 0.8rem; background-color: #f0f4ff !important;">ระดับ 1</th>
-                                <th class="text-center text-primary" style="font-size: 0.8rem; background-color: #f0f4ff !important;">ระดับ 2</th>
-                                <th class="text-center text-primary" style="font-size: 0.8rem; background-color: #f0f4ff !important;">ระดับ 3</th>
-                                <th class="text-center text-primary" style="font-size: 0.8rem; background-color: #f0f4ff !important;">ระดับ 4</th>
+                                <th class="text-center text-primary" style="font-size: 0.8rem; background-color: #f0f4ff !important;">Convalescent</th>
+                                <th class="text-center text-primary" style="font-size: 0.8rem; background-color: #f0f4ff !important;">Moderate</th>
+                                <th class="text-center text-primary" style="font-size: 0.8rem; background-color: #f0f4ff !important;">Semi-critical</th>
+                                <th class="text-center text-primary" style="font-size: 0.8rem; background-color: #f0f4ff !important;">Critical</th>
                                 <th class="text-center text-muted" style="font-size: 0.8rem; background-color: #f0f4ff !important;">ไม่ระบุ</th>
                                 
-                                <th class="text-center text-success" style="font-size: 0.8rem; background-color: #eafaf1 !important;">ระดับ 1</th>
-                                <th class="text-center text-success" style="font-size: 0.8rem; background-color: #eafaf1 !important;">ระดับ 2</th>
-                                <th class="text-center text-success" style="font-size: 0.8rem; background-color: #eafaf1 !important;">ระดับ 3</th>
-                                <th class="text-center text-success" style="font-size: 0.8rem; background-color: #eafaf1 !important;">ระดับ 4</th>
+                                <th class="text-center text-success" style="font-size: 0.8rem; background-color: #eafaf1 !important;">Convalescent</th>
+                                <th class="text-center text-success" style="font-size: 0.8rem; background-color: #eafaf1 !important;">Moderate</th>
+                                <th class="text-center text-success" style="font-size: 0.8rem; background-color: #eafaf1 !important;">Semi-critical</th>
+                                <th class="text-center text-success" style="font-size: 0.8rem; background-color: #eafaf1 !important;">Critical</th>
                                 <th class="text-center text-muted" style="font-size: 0.8rem; background-color: #eafaf1 !important;">ไม่ระบุ</th>
                             </tr>
                         </thead>
@@ -378,10 +378,10 @@
             // 1. Admit Chart Options
             var admitChartOptions = {
                 series: [
-                    { name: 'ระดับ 1', data: @json(array_column($results, 'admit_1')) },
-                    { name: 'ระดับ 2', data: @json(array_column($results, 'admit_2')) },
-                    { name: 'ระดับ 3', data: @json(array_column($results, 'admit_3')) },
-                    { name: 'ระดับ 4', data: @json(array_column($results, 'admit_4')) },
+                    { name: 'Convalescent', data: @json(array_column($results, 'admit_1')) },
+                    { name: 'Moderate', data: @json(array_column($results, 'admit_2')) },
+                    { name: 'Semi-critical', data: @json(array_column($results, 'admit_3')) },
+                    { name: 'Critical', data: @json(array_column($results, 'admit_4')) },
                     { name: 'ไม่ระบุ', data: @json(array_column($results, 'admit_null')) }
                 ],
                 chart: {
@@ -418,10 +418,10 @@
             // 2. Discharge Chart Options
             var dchChartOptions = {
                 series: [
-                    { name: 'ระดับ 1', data: @json(array_column($results, 'dch_1')) },
-                    { name: 'ระดับ 2', data: @json(array_column($results, 'dch_2')) },
-                    { name: 'ระดับ 3', data: @json(array_column($results, 'dch_3')) },
-                    { name: 'ระดับ 4', data: @json(array_column($results, 'dch_4')) },
+                    { name: 'Convalescent', data: @json(array_column($results, 'dch_1')) },
+                    { name: 'Moderate', data: @json(array_column($results, 'dch_2')) },
+                    { name: 'Semi-critical', data: @json(array_column($results, 'dch_3')) },
+                    { name: 'Critical', data: @json(array_column($results, 'dch_4')) },
                     { name: 'ไม่ระบุ', data: @json(array_column($results, 'dch_null')) }
                 ],
                 chart: {

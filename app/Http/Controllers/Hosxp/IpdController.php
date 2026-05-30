@@ -297,24 +297,50 @@ class IpdController extends Controller
                     WHEN MONTH(i.dchdate) = 8 THEN CONCAT('ส.ค. ', RIGHT(YEAR(i.dchdate) + 543, 2))
                     WHEN MONTH(i.dchdate) = 9 THEN CONCAT('ก.ย. ', RIGHT(YEAR(i.dchdate) + 543, 2))
                 END AS month_year,
-                SUM(CASE WHEN i.ipt_severe_type_id = 1 THEN 1 ELSE 0 END) AS admit_1,
-                SUM(CASE WHEN i.ipt_severe_type_id = 2 THEN 1 ELSE 0 END) AS admit_2,
-                SUM(CASE WHEN i.ipt_severe_type_id = 3 THEN 1 ELSE 0 END) AS admit_3,
-                SUM(CASE WHEN i.ipt_severe_type_id = 4 THEN 1 ELSE 0 END) AS admit_4,
-                SUM(CASE WHEN i.ipt_severe_type_id IS NULL THEN 1 ELSE 0 END) AS admit_null,
-                SUM(CASE WHEN i.dch_severe_type_id = 1 THEN 1 ELSE 0 END) AS dch_1,
-                SUM(CASE WHEN i.dch_severe_type_id = 2 THEN 1 ELSE 0 END) AS dch_2,
-                SUM(CASE WHEN i.dch_severe_type_id = 3 THEN 1 ELSE 0 END) AS dch_3,
-                SUM(CASE WHEN i.dch_severe_type_id = 4 THEN 1 ELSE 0 END) AS dch_4,
-                SUM(CASE WHEN i.dch_severe_type_id IS NULL THEN 1 ELSE 0 END) AS dch_null,
+                SUM(CASE WHEN first_note.eval_code LIKE '1%' THEN 1 ELSE 0 END) AS admit_1,
+                SUM(CASE WHEN first_note.eval_code LIKE '2%' THEN 1 ELSE 0 END) AS admit_2,
+                SUM(CASE WHEN first_note.eval_code LIKE '3%' THEN 1 ELSE 0 END) AS admit_3,
+                SUM(CASE WHEN first_note.eval_code LIKE '4%' THEN 1 ELSE 0 END) AS admit_4,
+                SUM(CASE WHEN first_note.eval_code IS NULL OR first_note.eval_code = '' THEN 1 ELSE 0 END) AS admit_null,
+                SUM(CASE WHEN last_note.eval_code LIKE '1%' THEN 1 ELSE 0 END) AS dch_1,
+                SUM(CASE WHEN last_note.eval_code LIKE '2%' THEN 1 ELSE 0 END) AS dch_2,
+                SUM(CASE WHEN last_note.eval_code LIKE '3%' THEN 1 ELSE 0 END) AS dch_3,
+                SUM(CASE WHEN last_note.eval_code LIKE '4%' THEN 1 ELSE 0 END) AS dch_4,
+                SUM(CASE WHEN last_note.eval_code IS NULL OR last_note.eval_code = '' THEN 1 ELSE 0 END) AS dch_null,
                 COUNT(i.an) AS total_patients
             FROM ipt i
+            LEFT JOIN (
+                SELECT n.an, n.ipd_nurse_eval_range_code AS eval_code
+                FROM ipd_nurse_note n
+                INNER JOIN (
+                    SELECT n2.an, MIN(CONCAT(n2.note_date, ' ', n2.note_time)) AS first_datetime
+                    FROM ipd_nurse_note n2
+                    INNER JOIN ipt i2 ON i2.an = n2.an
+                    WHERE i2.dchdate BETWEEN ? AND ?
+                      AND n2.ipd_nurse_eval_range_code IS NOT NULL 
+                      AND n2.ipd_nurse_eval_range_code <> ''
+                    GROUP BY n2.an
+                ) min_n ON min_n.an = n.an AND CONCAT(n.note_date, ' ', n.note_time) = min_n.first_datetime
+            ) first_note ON first_note.an = i.an
+            LEFT JOIN (
+                SELECT n.an, n.ipd_nurse_eval_range_code AS eval_code
+                FROM ipd_nurse_note n
+                INNER JOIN (
+                    SELECT n2.an, MAX(CONCAT(n2.note_date, ' ', n2.note_time)) AS last_datetime
+                    FROM ipd_nurse_note n2
+                    INNER JOIN ipt i2 ON i2.an = n2.an
+                    WHERE i2.dchdate BETWEEN ? AND ?
+                      AND n2.ipd_nurse_eval_range_code IS NOT NULL 
+                      AND n2.ipd_nurse_eval_range_code <> ''
+                    GROUP BY n2.an
+                ) max_n ON max_n.an = n.an AND CONCAT(n.note_date, ' ', n.note_time) = max_n.last_datetime
+            ) last_note ON last_note.an = i.an
             WHERE i.dchdate BETWEEN ? AND ?
               AND i.dchdate IS NOT NULL
               $ward_filter
             GROUP BY YEAR(i.dchdate), MONTH(i.dchdate)
             ORDER BY YEAR(i.dchdate), MONTH(i.dchdate)
-        ", [$start_date, $end_date]);
+        ", [$start_date, $end_date, $start_date, $end_date, $start_date, $end_date]);
 
         return view('hosxp.ipd.severity', compact(
             'title', 'tab', 'tab_title', 'budget_year_select', 'budget_year', 'start_date', 'end_date', 'results'
