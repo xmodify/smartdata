@@ -28,6 +28,7 @@ class SkpcardController extends Controller
                 YEAR(buy_date) as y,
                 SUM(CASE WHEN price = 1000 THEN 1 ELSE 0 END) as count_1000,
                 SUM(CASE WHEN price = 1500 THEN 1 ELSE 0 END) as count_1500,
+                SUM(CASE WHEN price = 2000 THEN 1 ELSE 0 END) as count_2000,
                 SUM(CAST(price AS DECIMAL(10,2))) as total_income
             ")
             ->whereBetween('buy_date', [$start_date, $end_date])
@@ -47,6 +48,7 @@ class SkpcardController extends Controller
             'labels' => [],
             'count_1000' => [],
             'count_1500' => [],
+            'count_2000' => [],
             'total_income' => []
         ];
 
@@ -63,6 +65,7 @@ class SkpcardController extends Controller
             
             $chartData['count_1000'][] = $match ? (int)$match->count_1000 : 0;
             $chartData['count_1500'][] = $match ? (int)$match->count_1500 : 0;
+            $chartData['count_2000'][] = $match ? (int)$match->count_2000 : 0;
             $chartData['total_income'][] = $match ? (float)$match->total_income : 0;
             
             $currentDate->addMonth();

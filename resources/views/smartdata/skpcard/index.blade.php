@@ -214,22 +214,28 @@
             <div class="modal-body p-4">
                 <div id="skp_chart" style="min-height: 400px;"></div>
                 <div class="row mt-4 g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card border-0 bg-primary-subtle rounded-lg p-3 text-center">
                             <div class="small text-primary fw-bold">ยอดจำหน่ายรวมทั้งสิ้น</div>
                             <div class="h3 fw-bold text-primary mb-0 mt-1">{{ number_format(array_sum($chartData['total_income'])) }} ฿</div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card border-0 bg-success-subtle rounded-lg p-3 text-center">
                             <div class="small text-success fw-bold">จำนวนบัตรราคา 1,500 ฿</div>
                             <div class="h3 fw-bold text-success mb-0 mt-1">{{ number_format(array_sum($chartData['count_1500'])) }} ใบ</div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card border-0 bg-info-subtle rounded-lg p-3 text-center">
                             <div class="small text-info fw-bold">จำนวนบัตรราคา 1,000 ฿</div>
                             <div class="h3 fw-bold text-info mb-0 mt-1">{{ number_format(array_sum($chartData['count_1000'])) }} ใบ</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-warning-subtle rounded-lg p-3 text-center" style="background-color: #fff3cd !important;">
+                            <div class="small text-warning fw-bold" style="color: #664d03 !important;">จำนวนบัตรราคา 2,000 ฿</div>
+                            <div class="h3 fw-bold text-warning mb-0 mt-1" style="color: #664d03 !important;">{{ number_format(array_sum($chartData['count_2000'])) }} ใบ</div>
                         </div>
                     </div>
                 </div>
@@ -395,6 +401,11 @@
                     data: @json($chartData['count_1000'])
                 },
                 {
+                    name: 'บัตร 2,000 ฿ (ใบ)',
+                    type: 'column',
+                    data: @json($chartData['count_2000'])
+                },
+                {
                     name: 'รายได้รวม (บาท)',
                     type: 'line',
                     data: @json($chartData['total_income'])
@@ -417,7 +428,7 @@
                 }
             },
             stroke: {
-                width: [0, 0, 4], 
+                width: [0, 0, 0, 4], 
                 curve: 'smooth'
             },
             plotOptions: {
@@ -432,7 +443,7 @@
             },
             dataLabels: {
                 enabled: true,
-                enabledOnSeries: [0, 1, 2], // Show on all
+                enabledOnSeries: [0, 1, 2, 3], // Show on all
                 formatter: function (val) {
                     return val.toLocaleString();
                 },
@@ -441,10 +452,10 @@
                 },
                 style: {
                     fontSize: '11px',
-                    colors: ["#ffffff", "#ffffff", "#304758"] // White for bars, Dark for line
+                    colors: ["#ffffff", "#ffffff", "#ffffff", "#304758"] // White for bars, Dark for line
                 }
             },
-            colors: ['#198754', '#0dcaf0', '#f1c40f'], // Green, Cyan, Yellow
+            colors: ['#198754', '#0dcaf0', '#fd7e14', '#f1c40f'], // Green, Cyan, Orange, Yellow
             labels: @json($chartData['labels']),
             xaxis: {
                 type: 'category'
@@ -458,6 +469,10 @@
                     labels: {
                         formatter: function(val) { return val.toFixed(0); }
                     }
+                },
+                {
+                    seriesName: 'บัตร 1,500 ฿ (ใบ)',
+                    show: false
                 },
                 {
                     seriesName: 'บัตร 1,500 ฿ (ใบ)',
