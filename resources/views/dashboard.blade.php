@@ -62,7 +62,7 @@
                             $supportItems = [
                                 ['url' => '#', 'label' => 'งานทรัพย์สิน', 'icon' => 'fa-boxes-stacked', 'color' => '#4e73df', 'permission' => 'hasAccessAsset'],
                                 ['url' => '/backoffice/hrd', 'label' => 'บุคลากร', 'icon' => 'fa-id-card', 'color' => '#1cc88a', 'permission' => 'hasAccessPersonnel'],
-                                ['url' => '#', 'label' => 'อุบัติการณ์', 'icon' => 'fa-triangle-exclamation', 'color' => '#e74a3b', 'permission' => 'hasAccessIncident'],
+                                ['url' => '/backoffice/incident', 'label' => 'รายงานอุบัติการณ์', 'icon' => 'fa-triangle-exclamation', 'color' => '#e74a3b', 'permission' => 'hasAccessIncident'],
                                 ['url' => '/skpcard', 'label' => 'บัตรสังฆะประชาร่วมใจ', 'icon' => 'fa-address-card', 'color' => '#f6c23e', 'permission' => 'hasAccessSkpcard'],
                                 ['url' => '#', 'label' => 'ระบบตรวจสอบ', 'icon' => 'fa-check-to-slot', 'color' => '#6610f2', 'permission' => 'hasAccessAudit'],
                                 ['url' => '#', 'label' => 'แบบประเมิน', 'icon' => 'fa-clipboard-check', 'color' => '#20c997', 'permission' => 'hasAccessAssessment'],
