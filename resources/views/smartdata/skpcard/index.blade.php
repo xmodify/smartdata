@@ -2,6 +2,13 @@
 
 @section('title', 'จัดการบัตรสังฆะประชาร่วมใจ - SmartData')
 
+@section('topbar_actions')
+    <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm fw-bold shadow-sm"
+        style="border-radius: 10px; padding: 5px 15px; color: #4e73df;">
+        <i class="fas fa-chevron-left me-1"></i> ย้อนกลับ
+    </a>
+@endsection
+
 @push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
@@ -79,9 +86,6 @@
 <div class="container-fluid">
     <div class="mb-4 d-flex justify-content-between align-items-md-center flex-column flex-md-row gap-3">
         <div class="d-flex align-items-center">
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill me-3 shadow-sm transition-all hover-translate-x">
-                <i class="fas fa-arrow-left"></i> ย้อนกลับ
-            </a>
             <div>
                 <h2 class="fw-bold mb-0 text-dark"><i class="fas fa-address-card me-2 text-warning"></i>บัตรสังฆะประชาร่วมใจ</h2>
                 <div class="d-flex align-items-center gap-2">
@@ -268,6 +272,7 @@
                                 <option value="0.00">0.00</option>
                                 <option value="1000.00" selected>1000</option>
                                 <option value="1500.00">1500</option>
+                                <option value="2000.00">2000</option>
                             </select>
                         </div>
                         <div class="col-md-12">
@@ -328,6 +333,7 @@
                                 <option value="0.00">0.00</option>
                                 <option value="1000.00">1000</option>
                                 <option value="1500.00">1500</option>
+                                <option value="2000.00">2000</option>
                             </select>
                         </div>
                         <div class="col-md-12">
