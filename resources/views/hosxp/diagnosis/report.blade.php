@@ -275,6 +275,7 @@
 
             <div class="d-flex align-items-center">
                 <form action="" method="GET" class="m-0 d-md-flex align-items-center gap-2 header-form-controls">
+                    <input type="hidden" name="category" value="{{ $category }}">
                     <span class="me-1 fw-bold text-muted small">ช่วงวันที่:</span>
                     <div class="input-group input-group-sm mb-2 mb-md-0 shadow-sm input-group-date"
                         style="border-radius: 8px; overflow: hidden;">
@@ -315,20 +316,26 @@
             <ul class="nav nav-tabs border-0" id="icCategoryTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <a class="nav-link tab-opd {{ $category === 'opd' ? 'active fw-bold' : '' }}" 
-                       href="{{ request()->fullUrlWithQuery(['category' => 'opd']) }}">
+                       href="{{ route('hosxp.diagnosis.report', array_merge(request()->query(), ['type' => $type, 'category' => 'opd'])) }}">
                         <i class="fas fa-user-nurse me-1 {{ $category === 'opd' ? 'text-primary' : 'text-muted' }}"></i> ผู้ป่วยนอก OPD
                     </a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a class="nav-link tab-ipd {{ $category === 'ipd' ? 'active fw-bold' : '' }}" 
-                       href="{{ request()->fullUrlWithQuery(['category' => 'ipd']) }}">
+                       href="{{ route('hosxp.diagnosis.report', array_merge(request()->query(), ['type' => $type, 'category' => 'ipd'])) }}">
                         <i class="fas fa-procedures me-1 {{ $category === 'ipd' ? 'text-success' : 'text-muted' }}"></i> ผู้ป่วยใน IPD
                     </a>
                 </li>
                 <li class="nav-item" role="presentation">
+                    @php
+                        $isIc = in_array('ic', $config['categories'] ?? []);
+                        $targetTabCategory = $isIc ? 'ic' : 'refer';
+                        $tabIcon = $isIc ? 'fas fa-shield-virus' : 'fas fa-ambulance';
+                        $tabLabel = $isIc ? 'โรคทาง IC' : 'ผู้ป่วยส่งต่อ Refer';
+                    @endphp
                     <a class="nav-link tab-refer {{ $category === 'refer' || $category === 'ic' ? 'active fw-bold' : '' }}" 
-                       href="{{ request()->fullUrlWithQuery(['category' => 'refer']) }}">
-                        <i class="fas fa-ambulance me-1 {{ $category === 'refer' || $category === 'ic' ? 'text-danger' : 'text-muted' }}"></i> ผู้ป่วยส่งต่อ Refer
+                       href="{{ route('hosxp.diagnosis.report', array_merge(request()->query(), ['type' => $type, 'category' => $targetTabCategory])) }}">
+                        <i class="{{ $tabIcon }} me-1 {{ $category === 'refer' || $category === 'ic' ? 'text-danger' : 'text-muted' }}"></i> {{ $tabLabel }}
                     </a>
                 </li>
             </ul>
