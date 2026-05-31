@@ -93,69 +93,156 @@
         background: #f8f9fc;
         color: #2e59d9;
     }
+
+    /* Page Header styling consistent with other reports */
+    .page-header-container {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        margin-bottom: 1.5rem;
+        border: 1px solid #f0f0f0;
+    }
+    .header-form-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    @media (max-width: 768px) {
+        .page-header-container {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 1rem;
+        }
+        .header-form-controls {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+    }
 </style>
 <link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}">
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <div class="mb-4 d-flex justify-content-between align-items-md-center flex-column flex-md-row gap-3">
+<div class="container-fluid px-2 px-md-3">
+    <!-- Header -->
+    <div class="page-header-container d-flex justify-content-between align-items-center mt-3">
         <div class="d-flex align-items-center">
-            <div>
-                <h2 class="fw-bold mb-0 text-dark"><i class="fas fa-address-card me-2 text-warning"></i>บัตรสังฆะประชาร่วมใจ</h2>
-                <div class="d-flex align-items-center gap-2">
-                    <p class="text-muted small mb-0">ระบบจัดการและเพิ่มข้อมูลการซื้อบัตร</p>
-                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2" style="font-size: 0.7rem;">ปีงบประมาณ {{ $budget_year }}</span>
+            <div class="ps-3 py-1">
+                <h5 class="text-dark mb-0 fw-bold">
+                    <i class="fas fa-address-card text-warning me-2"></i> บัตรสังฆะประชาร่วมใจ
+                </h5>
+                <div class="text-muted small mt-1">ระบบจัดการและเพิ่มข้อมูลการซื้อบัตร | ปีงบประมาณ {{ $budget_year }}</div>
+                <div class="text-primary small fw-bold mt-1">
+                    <i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}
                 </div>
             </div>
         </div>
-        
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            <!-- Budget Year Selector -->
-            <form action="{{ route('skpcard.index') }}" method="GET" class="d-flex align-items-center gap-2">
-                <div class="input-group input-group-sm shadow-sm" style="width: 200px;">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-calendar-alt"></i></span>
-                    <select name="budget_year" class="form-select border-start-0 ps-0" onchange="this.form.submit()">
+
+        <div class="d-flex align-items-center gap-2">
+            <form action="" method="GET" class="m-0 header-form-controls d-flex align-items-center gap-2">
+                <span class="me-1 fw-bold text-muted small">ช่วงวันที่:</span>
+                <div class="input-group input-group-sm shadow-sm input-group-date" style="width: 160px !important; border-radius: 8px; overflow: hidden;">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-alt"></i></span>
+                    <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0" value="{{ $start_date }}" placeholder="วันที่เริ่ม" style="font-size: 0.8rem;">
+                </div>
+                <div class="input-group input-group-sm shadow-sm input-group-date" style="width: 160px !important; border-radius: 8px; overflow: hidden;">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-alt"></i></span>
+                    <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0" value="{{ $end_date }}" placeholder="วันที่สิ้นสุด" style="font-size: 0.8rem;">
+                </div>
+                <div class="input-group input-group-sm shadow-sm input-group-budget" style="width: 250px !important; border-radius: 8px; overflow: hidden;">
+                    <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
                         @foreach($budget_year_select as $year)
                             <option value="{{ $year->LEAVE_YEAR_ID }}" {{ $budget_year == $year->LEAVE_YEAR_ID ? 'selected' : '' }}>
                                 {{ $year->LEAVE_YEAR_NAME }}
                             </option>
                         @endforeach
                     </select>
+                    <button type="submit" class="btn btn-warning text-dark px-3 fw-bold" style="font-size: 0.8rem;">
+                        <i class="fas fa-search text-dark"></i> ค้นหา
+                    </button>
                 </div>
             </form>
-
-            <button class="btn btn-info shadow-sm rounded-pill px-3 text-white fw-bold btn-sm" data-bs-toggle="modal" data-bs-target="#statsModal">
-                <i class="fas fa-chart-line me-2"></i>ดูสถิติ
-            </button>
-
-            <button class="btn btn-warning shadow-sm rounded-pill px-4 text-dark fw-bold btn-sm" data-bs-toggle="modal" data-bs-target="#addCardModal">
-                <i class="fas fa-plus-circle me-2"></i>เพิ่มข้อมูล
-            </button>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-lg overflow-hidden">
-        <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-0">
-            <div class="d-flex justify-content-between align-items-center">
-                <ul class="nav nav-pills" id="statusTabs" role="tablist">
-                    <li class="nav-item me-2" role="presentation">
-                        <button class="nav-link active" data-status="all" type="button">
-                            <i class="fas fa-list me-2"></i>ทั้งหมด
-                        </button>
-                    </li>
-                    <li class="nav-item me-2" role="presentation">
-                        <button class="nav-link" data-status="active" type="button">
-                            <i class="fas fa-check-circle me-2 text-success"></i>ปกติ
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-status="expired" type="button">
-                            <i class="fas fa-exclamation-circle me-2 text-danger"></i>หมดอายุ
-                        </button>
-                    </li>
-                </ul>
+    <!-- Summary Cards -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary-subtle rounded-lg p-3 text-center" style="border-radius: 12px;">
+                <div class="small text-primary fw-bold">ยอดจำหน่ายรวมทั้งสิ้น</div>
+                <div class="h3 fw-bold text-primary mb-0 mt-1">{{ number_format(array_sum($chartData['total_income'])) }} บาท</div>
             </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-lg p-3 text-center" style="border-radius: 12px; background: linear-gradient(135deg, #FFF9E6 0%, #F3D078 100%) !important; border: 1px solid #E8BE55 !important;">
+                <div class="small fw-bold" style="color: #785900 !important;">จำนวนบัตรราคา 2,000 บาท</div>
+                <div class="h3 fw-bold mb-0 mt-1" style="color: #94710B !important;">{{ number_format(array_sum($chartData['count_2000'])) }} ใบ <span style="font-size: 1rem; font-weight: normal; opacity: 0.85;">({{ number_format(array_sum($chartData['count_2000']) * 2000) }} บาท)</span></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success-subtle rounded-lg p-3 text-center" style="border-radius: 12px;">
+                <div class="small text-success fw-bold">จำนวนบัตรราคา 1,500 บาท</div>
+                <div class="h3 fw-bold text-success mb-0 mt-1">{{ number_format(array_sum($chartData['count_1500'])) }} ใบ <span style="font-size: 1rem; font-weight: normal; opacity: 0.85;">({{ number_format(array_sum($chartData['count_1500']) * 1500) }} บาท)</span></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-info-subtle rounded-lg p-3 text-center" style="border-radius: 12px;">
+                <div class="small text-info fw-bold">จำนวนบัตรราคา 1,000 บาท</div>
+                <div class="h3 fw-bold text-info mb-0 mt-1">{{ number_format(array_sum($chartData['count_1000'])) }} ใบ <span style="font-size: 1rem; font-weight: normal; opacity: 0.85;">({{ number_format(array_sum($chartData['count_1000']) * 1000) }} บาท)</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Card -->
+    <div class="card border-0 shadow-sm rounded-lg mb-4" style="border-top: 4px solid #fd7e14 !important;">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-0">
+            <h6 class="m-0 fw-bold text-dark"><i class="fas fa-chart-line me-2 text-warning"></i>สถิติการซื้อบัตร ปีงบประมาณ {{ $budget_year }}</h6>
+        </div>
+        <div class="card-body px-4 pb-4">
+            <div id="skp_chart" style="min-height: 400px;"></div>
+        </div>
+    </div>
+
+    <!-- Patient List Card -->
+    @php
+        $total_count = $cards->count();
+        $expired_count = $cards->filter(function($card) {
+            return $card->ex_date && $card->ex_date->isPast();
+        })->count();
+        $expiring_count = $cards->filter(function($card) {
+            $isExpired = $card->ex_date && $card->ex_date->isPast();
+            return !$isExpired && $card->ex_date && $card->ex_date->isBetween(now(), now()->addDays(30));
+        })->count();
+        $active_count = $total_count - $expired_count - $expiring_count;
+    @endphp
+    <div class="card border-0 shadow-sm rounded-lg overflow-hidden" style="border-top: 4px solid #4e73df !important;">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <div class="text-muted small mb-2">
+                    <i class="fas fa-calendar-day me-1 text-primary"></i> ข้อมูลตามวันที่ซื้อบัตร: <strong>{{ DateThai($start_date) }}</strong> ถึง <strong>{{ DateThai($end_date) }}</strong>
+                </div>
+                <ul class="nav nav-pills" id="statusTabs" role="tablist">
+                <li class="nav-item me-2" role="presentation">
+                    <button class="nav-link active" data-status="active" type="button">
+                        <i class="fas fa-check-circle me-2 text-success"></i>ปกติ <span class="badge bg-success ms-1">{{ $active_count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item me-2" role="presentation">
+                    <button class="nav-link" data-status="expiring" type="button">
+                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>ใกล้หมดอายุ <span class="badge bg-warning text-dark ms-1">{{ $expiring_count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-status="expired" type="button">
+                        <i class="fas fa-exclamation-circle me-2 text-danger"></i>หมดอายุ <span class="badge bg-danger ms-1">{{ $expired_count }}</span>
+                    </button>
+                </li>
+            </ul>
+            </div>
+            <button class="btn btn-warning shadow-sm rounded-pill px-4 text-dark fw-bold btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#addCardModal">
+                <i class="fas fa-plus-circle me-2"></i>เพิ่มข้อมูล
+            </button>
         </div>
         <div class="table-responsive p-3">
             <table id="skpcard_table" class="table table-hover align-middle mb-0 w-100">
@@ -174,7 +261,8 @@
                     @foreach($cards as $index => $card)
                     @php
                         $isExpired = $card->ex_date && $card->ex_date->isPast();
-                        $status = $isExpired ? 'expired' : 'active';
+                        $isExpiring = !$isExpired && $card->ex_date && $card->ex_date->isBetween(now(), now()->addDays(30));
+                        $status = $isExpired ? 'expired' : ($isExpiring ? 'expiring' : 'active');
                         $th_months = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
                     @endphp
                     <tr data-status="{{ $status }}">
@@ -186,10 +274,19 @@
                         </td>
                         <td>{{ $card->buy_date ? $card->buy_date->format('j') . ' ' . $th_months[(int)$card->buy_date->format('m')] . ' ' . ($card->buy_date->format('Y') + 543) : '-' }}</td>
                         <td>
-                            <span class="badge {{ $isExpired ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success' }} rounded-pill px-3">
-                                {{ $card->ex_date ? $card->ex_date->format('j') . ' ' . $th_months[(int)$card->ex_date->format('m')] . ' ' . ($card->ex_date->format('Y') + 543) : '-' }}
-                                @if($isExpired) (หมดอายุ) @endif
-                            </span>
+                            @if($isExpired)
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
+                                    {{ $card->ex_date ? $card->ex_date->format('j') . ' ' . $th_months[(int)$card->ex_date->format('m')] . ' ' . ($card->ex_date->format('Y') + 543) : '-' }} (หมดอายุ)
+                                </span>
+                            @elseif($isExpiring)
+                                <span class="badge bg-warning-subtle text-warning rounded-pill px-3" style="background-color: #fff3cd !important; color: #856404 !important;">
+                                    {{ $card->ex_date ? $card->ex_date->format('j') . ' ' . $th_months[(int)$card->ex_date->format('m')] . ' ' . ($card->ex_date->format('Y') + 543) : '-' }} (ใกล้หมดอายุ)
+                                </span>
+                            @else
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3">
+                                    {{ $card->ex_date ? $card->ex_date->format('j') . ' ' . $th_months[(int)$card->ex_date->format('m')] . ' ' . ($card->ex_date->format('Y') + 543) : '-' }}
+                                </span>
+                            @endif
                         </td>
                         <td><span class="fw-bold {{ (float)$card->price >= 1500 ? 'text-success' : 'text-info' }}">{{ number_format((float)$card->price, 2) }}</span> ฿</td>
                         <td><code>{{ $card->rcpt ?: '-' }}</code></td>
@@ -214,47 +311,6 @@
                     @endforeach
                 </tbody>
             </table>
-        </div>
-    </div>
-</div>
-
-<!-- Stats Modal -->
-<div class="modal fade" id="statsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-info text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-chart-bar me-2"></i>สถิติการซื้อบัตร ปีงบประมาณ {{ $budget_year }}</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div id="skp_chart" style="min-height: 400px;"></div>
-                <div class="row mt-4 g-3">
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-primary-subtle rounded-lg p-3 text-center">
-                            <div class="small text-primary fw-bold">ยอดจำหน่ายรวมทั้งสิ้น</div>
-                            <div class="h3 fw-bold text-primary mb-0 mt-1">{{ number_format(array_sum($chartData['total_income'])) }} ฿</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-warning-subtle rounded-lg p-3 text-center" style="background-color: #fff3cd !important;">
-                            <div class="small text-warning fw-bold" style="color: #664d03 !important;">จำนวนบัตรราคา 2,000 ฿</div>
-                            <div class="h3 fw-bold text-warning mb-0 mt-1" style="color: #664d03 !important;">{{ number_format(array_sum($chartData['count_2000'])) }} ใบ</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-success-subtle rounded-lg p-3 text-center">
-                            <div class="small text-success fw-bold">จำนวนบัตรราคา 1,500 ฿</div>
-                            <div class="h3 fw-bold text-success mb-0 mt-1">{{ number_format(array_sum($chartData['count_1500'])) }} ใบ</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-info-subtle rounded-lg p-3 text-center">
-                            <div class="small text-info fw-bold">จำนวนบัตรราคา 1,000 ฿</div>
-                            <div class="h3 fw-bold text-info mb-0 mt-1">{{ number_format(array_sum($chartData['count_1000'])) }} ใบ</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -445,6 +501,25 @@
         const addBuyDatePicker = flatpickr("#add_buy_date", commonConfig);
         const editBirthdayPicker = flatpickr("#edit_birthday", commonConfig);
         const editBuyDatePicker = flatpickr("#edit_buy_date", commonConfig);
+        const startPicker = flatpickr("#start_date", commonConfig);
+        const endPicker = flatpickr("#end_date", commonConfig);
+
+        // Update start_date and end_date based on budget_year change
+        $('select[name="budget_year"]').on('change', function() {
+            var selectedYear = parseInt($(this).val());
+            if(!isNaN(selectedYear)) {
+                // Calculate budget year ranges
+                var startYear = selectedYear - 544; // Example: 2567 -> 2023
+                var endYear = selectedYear - 543;   // Example: 2567 -> 2024
+                var startDateStr = startYear + "-10-01";
+                var endDateStr = endYear + "-09-30";
+                
+                setTimeout(() => {
+                    if (typeof startPicker !== 'undefined' && startPicker) startPicker.setDate(startDateStr, true);
+                    if (typeof endPicker !== 'undefined' && endPicker) endPicker.setDate(endDateStr, true);
+                }, 50);
+            }
+        });
 
         // Chart Initialization
         const chartOptions = {
@@ -567,13 +642,8 @@
             }
         };
 
-        let chart;
-        $('#statsModal').on('shown.bs.modal', function () {
-            if (!chart) {
-                chart = new ApexCharts(document.querySelector("#skp_chart"), chartOptions);
-                chart.render();
-            }
-        });
+        const chart = new ApexCharts(document.querySelector("#skp_chart"), chartOptions);
+        chart.render();
         // Custom DataTables filter for status
         $.fn.dataTable.ext.search.push(
             function(settings, data, dataIndex) {

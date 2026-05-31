@@ -96,16 +96,31 @@ class SkpcardController extends Controller
 
         $budget_year = $request->budget_year ?: $budget_year_now;
 
-        $year_data = DB::table('budget_year')
-            ->where('LEAVE_YEAR_ID', $budget_year)
-            ->first();
+        if ($request->start_date && $request->end_date) {
+            $start_date = $request->start_date;
+            $end_date = $request->end_date;
 
-        if ($year_data) {
-            $start_date = $year_data->DATE_BEGIN;
-            $end_date = $year_data->DATE_END;
+            // Sync budget_year to the start_date provided
+            $matched_year = DB::table('budget_year')
+                ->where('DATE_BEGIN', '<=', $start_date)
+                ->where('DATE_END', '>=', $start_date)
+                ->value('LEAVE_YEAR_ID');
+
+            if ($matched_year) {
+                $budget_year = $matched_year;
+            }
         } else {
-            $start_date = ($budget_year - 543) . '-10-01';
-            $end_date = ($budget_year - 542) . '-09-30';
+            $year_data = DB::table('budget_year')
+                ->where('LEAVE_YEAR_ID', $budget_year)
+                ->first();
+
+            if ($year_data) {
+                $start_date = $year_data->DATE_BEGIN;
+                $end_date = $year_data->DATE_END;
+            } else {
+                $start_date = ($budget_year - 543) . '-10-01';
+                $end_date = ($budget_year - 542) . '-09-30';
+            }
         }
 
         return [
