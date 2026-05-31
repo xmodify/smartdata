@@ -74,12 +74,27 @@
         box-shadow: 0 4px 6px rgba(78, 115, 223, 0.2);
     }
     
-    /* Thai Datepicker fixes */
-    .datepicker {
-        z-index: 1600 !important; /* Ensure it appears above modals */
+    /* Flatpickr Modal Z-Index Fix */
+    .flatpickr-calendar {
+        z-index: 99999 !important;
+    }
+    .flatpickr-today-button {
+        border-top: 1px solid #e6e6e6;
+        padding: 8px;
+        text-align: center;
+        cursor: pointer;
+        color: #4e73df;
+        font-weight: bold;
+        font-size: 0.9rem;
+        transition: background 0.2s;
+        border-radius: 0 0 12px 12px;
+    }
+    .flatpickr-today-button:hover {
+        background: #f8f9fc;
+        color: #2e59d9;
     }
 </style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+<link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}">
 @endpush
 
 @section('content')
@@ -266,7 +281,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold small">วันเกิด</label>
-                            <input type="text" name="birthday" class="form-control datepicker" data-provide="datepicker" data-date-language="th" data-date-format="yyyy-mm-dd" placeholder="วศ/ดด/ปปปป">
+                            <input type="text" name="birthday" id="add_birthday" class="form-control" placeholder="เลือกวันเกิด">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold small">เบอร์โทรศัพท์</label>
@@ -287,7 +302,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small">วันที่ซื้อบัตร</label>
-                            <input type="text" name="buy_date" class="form-control datepicker" data-provide="datepicker" data-date-language="th" data-date-format="yyyy-mm-dd" value="{{ date('Y-m-d') }}" required>
+                            <input type="text" name="buy_date" id="add_buy_date" class="form-control" value="{{ date('Y-m-d') }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small">เลขที่ใบเสร็จ</label>
@@ -327,7 +342,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold small">วันเกิด</label>
-                            <input type="text" name="birthday" id="edit_birthday" class="form-control datepicker" data-provide="datepicker" data-date-language="th" data-date-format="yyyy-mm-dd">
+                            <input type="text" name="birthday" id="edit_birthday" class="form-control">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold small">เบอร์โทรศัพท์</label>
@@ -348,7 +363,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small">วันที่ซื้อบัตร</label>
-                            <input type="text" name="buy_date" id="edit_buy_date" class="form-control datepicker" data-provide="datepicker" data-date-language="th" data-date-format="yyyy-mm-dd" required>
+                            <input type="text" name="buy_date" id="edit_buy_date" class="form-control" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small">เลขที่ใบเสร็จ</label>
@@ -373,20 +388,64 @@
 <script src="{{ asset('vendor/datatables/dataTables.buttons.min.js') }}"></script>
 <script src="{{ asset('vendor/jszip/jszip.min.js') }}"></script>
 <script src="{{ asset('vendor/datatables/buttons.html5.min.js') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.th.min.js"></script>
+<script src="{{ asset('vendor/flatpickr/flatpickr.min.js') }}"></script>
+<script src="{{ asset('vendor/flatpickr/th.js') }}"></script>
 <script src="{{ asset('vendor/apexcharts/apexcharts.min.js') }}"></script>
 
 <script>
     $(document).ready(function() {
-        // Initialize Thai Datepicker
-        $('.datepicker').datepicker({
-            language: 'th',
-            format: 'yyyy-mm-dd',
-            autoclose: true,
-            todayHighlight: true,
-            thaiyear: true // This is specific to some th-aware forks but we'll see
-        });
+        // Initialize Flatpickr instances with Thai B.E. offset display
+        const yearOffset = 543;
+        const commonConfig = {
+            locale: "th",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "j M Y",
+            allowInput: false,
+            onReady: function(selectedDates, dateStr, instance) {
+                if (instance.altInput) {
+                    const date = instance.selectedDates[0] || (instance.input.value ? new Date(instance.input.value) : null);
+                    if (date && !isNaN(date.getTime())) {
+                        const day = date.getDate();
+                        const month = instance.l10n.months.shorthand[date.getMonth()];
+                        const year = date.getFullYear() + yearOffset;
+                        instance.altInput.value = `${day} ${month} ${year}`;
+                    }
+                }
+                
+                // Add Today Button
+                const container = instance.calendarContainer;
+                if (container && !container.querySelector('.flatpickr-today-button')) {
+                    const btn = document.createElement("div");
+                    btn.className = "flatpickr-today-button";
+                    btn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> วันนี้';
+                    btn.addEventListener("mousedown", function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        instance.setDate(new Date());
+                        instance.close();
+                    });
+                    container.appendChild(btn);
+                }
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                if (instance.altInput && selectedDates.length > 0) {
+                    const date = selectedDates[0];
+                    setTimeout(() => {
+                        const day = date.getDate();
+                        const month = instance.l10n.months.shorthand[date.getMonth()];
+                        const year = date.getFullYear() + yearOffset;
+                        instance.altInput.value = `${day} ${month} ${year}`;
+                    }, 10);
+                }
+            }
+        };
+
+        const addBirthdayPicker = flatpickr("#add_birthday", commonConfig);
+        const addBuyDatePicker = flatpickr("#add_buy_date", commonConfig);
+        const editBirthdayPicker = flatpickr("#edit_birthday", commonConfig);
+        const editBuyDatePicker = flatpickr("#edit_buy_date", commonConfig);
+
         // Chart Initialization
         const chartOptions = {
             series: [
@@ -573,7 +632,11 @@
             document.getElementById('edit_name').value = card.name;
             
             // Update datepicker values
-            $('#edit_birthday').datepicker('update', card.birthday ? card.birthday.substring(0, 10) : '');
+            if (card.birthday) {
+                editBirthdayPicker.setDate(card.birthday.substring(0, 10), true);
+            } else {
+                editBirthdayPicker.clear();
+            }
             
             document.getElementById('edit_phone').value = card.phone;
             
@@ -584,7 +647,11 @@
             document.getElementById('edit_address').value = card.address;
             
             // Update datepicker values
-            $('#edit_buy_date').datepicker('update', card.buy_date ? card.buy_date.substring(0, 10) : '');
+            if (card.buy_date) {
+                editBuyDatePicker.setDate(card.buy_date.substring(0, 10), true);
+            } else {
+                editBuyDatePicker.clear();
+            }
             
             document.getElementById('edit_rcpt').value = card.rcpt;
         });
