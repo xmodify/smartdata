@@ -262,10 +262,45 @@ class IcuController extends Controller
             ) AS a
         ", [$end_date, $start_date, $end_date, $start_date, $start_date, $end_date])[0];
 
+        // 4.5 Patients with Important Procedures (9671, 9672)
+        $vent_patients = DB::connection('hosxp')->select("
+            SELECT
+                i.an,
+                i.hn,
+                CONCAT(p.pname, p.fname, ' ', p.lname) AS 'ptname',
+                icu.movedate AS 'icu_movedate',
+                icu.movetime AS 'icu_movetime',
+                i.dchdate,
+                i.dchtime,
+                DATEDIFF(i.dchdate, icu.movedate) AS 'icu_los_days',
+                op.icd9,
+                io.name AS 'proc_name',
+                op.opdate,
+                op.optime,
+                a.pdx,
+                a.diag_text_list
+            FROM ipt i
+            INNER JOIN (
+                SELECT an, MIN(movedate) AS movedate,
+                       SUBSTRING_INDEX(GROUP_CONCAT(movetime ORDER BY movedate ASC, movetime ASC), ',', 1) AS movetime
+                FROM iptbedmove
+                WHERE nbedno LIKE 'ICU%'
+                GROUP BY an
+            ) icu ON icu.an = i.an
+            INNER JOIN iptoprt op ON op.an = i.an
+            LEFT JOIN icd9cm1 io ON io.code = op.icd9
+            LEFT JOIN an_stat a ON a.an = i.an
+            LEFT JOIN patient p ON p.hn = i.hn
+            WHERE i.dchdate BETWEEN ? AND ?
+              AND i.dchdate IS NOT NULL
+              AND op.icd9 IN ('9671', '9672')
+            ORDER BY op.opdate ASC, op.optime ASC
+        ", [$start_date, $end_date]);
+
         return view('hosxp.icu.index', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
             'patients', 'monthly_stats', 'dch_types', 'top_pdx', 'admit_count',
-            'summary_stats', 'bed_capacity', 'pending_chart_count'
+            'summary_stats', 'bed_capacity', 'pending_chart_count', 'vent_patients'
         ));
     }
 

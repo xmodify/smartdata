@@ -478,7 +478,7 @@
                     <div class="col-md-6">
                         <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #4e73df !important;">
                             <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-lungs me-2 text-primary"></i> สถิติการทำหัตถการช่วยหายใจรายเดือน (ICD-9: 9671, 9672)</h6>
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-lungs me-2 text-primary"></i> สถิติการทำหัตถการใช้เครื่องช่วยหายใจรายเดือน (ICD-9: 9671, 9672)</h6>
                             </div>
                             <div class="card-body px-4 pb-4">
                                 <div id="ventilatorChart" class="chart-container" style="min-height: 350px;"></div>
@@ -494,6 +494,79 @@
                             </div>
                             <div class="card-body px-4 pb-4">
                                 <div id="pdxChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patients with Important Procedures Table -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card card-icu shadow-sm" style="border-top: 4px solid #4e73df !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-user-injured me-2 text-primary"></i> รายชื่อผู้ป่วยที่ทำหัตถการสำคัญ (ใช้เครื่องช่วยหายใจ 9671, 9672)</h6>
+                                <p class="text-muted small mb-0 mt-1">แสดงรายชื่อผู้ป่วยหนักที่ได้รับการทำหัตถการใช้เครื่องช่วยหายใจในช่วงเวลาที่จำหน่าย</p>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-icu mb-0" id="ventTable" style="width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th>AN / HN</th>
+                                                <th style="min-width: 150px;">ชื่อ-นามสกุล</th>
+                                                <th class="text-center">รหัสหัตถการ</th>
+                                                <th>หัตถการ</th>
+                                                <th>วันที่/เวลาทำหัตถการ</th>
+                                                <th>วันที่เข้าเตียง ICU</th>
+                                                <th class="text-center">วันนอน ICU</th>
+                                                <th>วันที่จำหน่าย</th>
+                                                <th style="min-width: 200px;">การวินิจฉัย (PDX / Diag Text)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($vent_patients as $row)
+                                            <tr>
+                                                <td style="white-space: nowrap;">
+                                                    <div class="fw-bold text-primary">{{ $row->an }}</div>
+                                                    <div class="small text-muted">HN: {{ $row->hn }}</div>
+                                                </td>
+                                                <td>{{ $row->ptname }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge {{ $row->icd9 == '9671' ? 'bg-primary' : 'bg-danger' }}">{{ $row->icd9 }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="small text-dark">{{ $row->proc_name ?? ($row->icd9 == '9671' ? 'Continuous mechanical ventilation for less than 96 consecutive hours' : 'Continuous mechanical ventilation for 96 consecutive hours or more') }}</div>
+                                                </td>
+                                                <td>
+                                                    <div class="small">{{ $row->opdate ? date('d/m/Y', strtotime($row->opdate)) : '-' }}</div>
+                                                    <div class="text-muted" style="font-size: 0.75rem;">{{ $row->optime ? date('H:i', strtotime($row->optime)) . ' น.' : '-' }}</div>
+                                                </td>
+                                                <td>
+                                                    <div class="small">{{ $row->icu_movedate ? date('d/m/Y', strtotime($row->icu_movedate)) : '-' }}</div>
+                                                    <div class="text-muted" style="font-size: 0.75rem;">{{ $row->icu_movetime }} น.</div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="fw-bold">{{ $row->icu_los_days ?? '-' }} วัน</div>
+                                                </td>
+                                                <td>
+                                                    @if($row->dchdate)
+                                                        <div class="small">{{ date('d/m/Y', strtotime($row->dchdate)) }}</div>
+                                                        <div class="text-muted" style="font-size: 0.75rem;">{{ $row->dchtime }} น.</div>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($row->pdx)
+                                                        <span class="badge bg-danger mb-1">{{ $row->pdx }}</span>
+                                                    @endif
+                                                    <div class="small" style="font-size: 0.75rem;">{{ $row->diag_text_list }}</div>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -662,6 +735,25 @@
                     responsive: true
                 });
 
+                $('#ventTable').DataTable({
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+                    buttons: [{
+                        extend: 'excelHtml5',
+                        text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                        className: 'btn btn-success',
+                        title: 'รายชื่อผู้ป่วยทำหัตถการใช้เครื่องช่วยหายใจ ICU ({{ DateThai($start_date) }} - {{ DateThai($end_date) }})'
+                    }],
+                    language: {
+                        search: "ค้นหา:",
+                        lengthMenu: "แสดง _MENU_ รายการ",
+                        info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                        paginate: { previous: "ก่อนหน้า", next: "ถัดไป" }
+                    },
+                    pageLength: 10,
+                    ordering: true,
+                    responsive: true
+                });
+
                 const yearOffset = 543;
                 const commonConfig = {
                     locale: "th", dateFormat: "Y-m-d", altInput: true, altFormat: "j M Y", allowInput: false,
@@ -774,8 +866,8 @@
                 // 1.6 Ventilator Procedures Chart (9671 & 9672)
                 var ventOptions = {
                     series: [
-                        { name: 'ช่วยหายใจ < 96 ชม. (9671)', data: @json(array_column($monthly_stats, 'vent_less_96')) },
-                        { name: 'ช่วยหายใจ >= 96 ชม. (9672)', data: @json(array_column($monthly_stats, 'vent_more_96')) }
+                        { name: 'ใช้เครื่องช่วยหายใจ < 96 ชม. (9671)', data: @json(array_column($monthly_stats, 'vent_less_96')) },
+                        { name: 'ใช้เครื่องช่วยหายใจ >= 96 ชม. (9672)', data: @json(array_column($monthly_stats, 'vent_more_96')) }
                     ],
                     chart: { height: 350, type: 'bar', toolbar: { show: false } },
                     plotOptions: { bar: { borderRadius: 4, columnWidth: '55%', dataLabels: { position: 'top' } } },
