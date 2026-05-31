@@ -10,9 +10,9 @@
 @endsection
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/jquery.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/buttons.dataTables.min.css') }}">
     <style>
         .page-header-container {
             background: #f8fbfd;
@@ -81,6 +81,58 @@
             background-color: #f8f9fc !important;
             color: #4e73df !important;
             border-bottom: 2px solid #e3e6f0 !important;
+        }
+
+        /* Custom Tabs Layout similar to report.blade.php */
+        .nav-tabs-custom {
+            background: #fff;
+            border-radius: 12px;
+            padding: 0.5rem 0.5rem 0 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f0f0f0;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Ward Tabs Custom Styles */
+        #wardTabs .nav-link {
+            border: none;
+            color: #6e707e;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+        }
+        
+        /* Total Tab (Red) */
+        #wardTabs .nav-link.tab-total:hover {
+            color: #e74a3b !important;
+            background-color: #f8f9fc;
+        }
+        #wardTabs .nav-link.tab-total.active {
+            color: #e74a3b !important;
+            background-color: #f8f9fc !important;
+            border-bottom: 3px solid #e74a3b !important;
+        }
+
+        /* General Tab (Blue) */
+        #wardTabs .nav-link.tab-general:hover {
+            color: #4e73df !important;
+            background-color: #f8f9fc;
+        }
+        #wardTabs .nav-link.tab-general.active {
+            color: #4e73df !important;
+            background-color: #f8f9fc !important;
+            border-bottom: 3px solid #4e73df !important;
+        }
+
+        /* VIP Tab (Green) */
+        #wardTabs .nav-link.tab-vip:hover {
+            color: #1cc88a !important;
+            background-color: #f8f9fc;
+        }
+        #wardTabs .nav-link.tab-vip.active {
+            color: #1cc88a !important;
+            background-color: #f8f9fc !important;
+            border-bottom: 3px solid #1cc88a !important;
         }
     </style>
 @endpush
@@ -170,31 +222,27 @@
         </div>
 
         <!-- Ward Tabs -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card card-ipd shadow-sm overflow-hidden" style="border-top: 4px solid #4e73df !important; border-radius: 12px;">
-                    <div class="card-body p-0">
-                        <div class="nav nav-tabs nav-fill border-0" id="wardTabs" role="tablist" style="background-color: #f8f9fc;">
-                            <a href="{{ route('hosxp.ipd.index') }}?tab=total&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
-                               class="nav-link py-3 border-0 rounded-0 {{ $tab == 'total' ? 'active fw-bold text-danger' : 'text-muted' }}"
-                               style="{{ $tab == 'total' ? 'background-color: #fff5f5 !important; border-bottom: 4px solid #e74a3b !important;' : 'background-color: #fffcfc;' }}">
-                                <i class="fas fa-hospital me-2"></i> ผู้ป่วยในรวม
-                            </a>
-                            <a href="{{ route('hosxp.ipd.index') }}?tab=general&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
-                               class="nav-link py-3 border-0 rounded-0 {{ $tab == 'general' ? 'active fw-bold text-primary' : 'text-muted' }}"
-                               style="{{ $tab == 'general' ? 'background-color: #f0f7ff !important; border-bottom: 4px solid #4e73df !important;' : 'background-color: #fafdff;' }}">
-                                <i class="fas fa-procedures me-2"></i> ผู้ป่วยในสามัญ
-                            </a>
-                            <a href="{{ route('hosxp.ipd.index') }}?tab=vip&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
-                               class="nav-link py-3 border-0 rounded-0 {{ $tab == 'vip' ? 'active fw-bold text-success' : 'text-muted' }}"
-                               style="{{ $tab == 'vip' ? 'background-color: #f0fff4 !important; border-bottom: 4px solid #1cc88a !important;' : 'background-color: #fafffb;' }}">
-                                <i class="fas fa-star me-2 text-warning"></i> ผู้ป่วยใน VIP
-                            </a>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="nav-tabs-custom mt-3">
+            <ul class="nav nav-tabs border-0" id="wardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a href="{{ route('hosxp.ipd.index') }}?tab=total&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
+                       class="nav-link tab-total {{ $tab == 'total' ? 'active fw-bold' : '' }}">
+                        <i class="fas fa-hospital me-1"></i> ผู้ป่วยในรวม
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a href="{{ route('hosxp.ipd.index') }}?tab=general&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
+                       class="nav-link tab-general {{ $tab == 'general' ? 'active fw-bold' : '' }}">
+                        <i class="fas fa-procedures me-1"></i> ผู้ป่วยในสามัญ
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a href="{{ route('hosxp.ipd.index') }}?tab=vip&start_date={{ $start_date }}&end_date={{ $end_date }}&budget_year={{ $budget_year }}" 
+                       class="nav-link tab-vip {{ $tab == 'vip' ? 'active fw-bold' : '' }}">
+                        <i class="fas fa-star me-1 text-warning"></i> ผู้ป่วยใน VIP
+                    </a>
+                </li>
+            </ul>
         </div>
 
         <!-- Charts Row 1: Admissions & Occupancy -->
@@ -456,14 +504,14 @@
     </div>
 
     @push('scripts')
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+        <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
+        <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+        <script src="{{ asset('vendor/datatables/dataTables.buttons.min.js') }}"></script>
+        <script src="{{ asset('vendor/jszip/jszip.min.js') }}"></script>
+        <script src="{{ asset('vendor/datatables/buttons.html5.min.js') }}"></script>
+        <script src="{{ asset('vendor/apexcharts/apexcharts.min.js') }}"></script>
+        <script src="{{ asset('vendor/flatpickr/flatpickr.min.js') }}"></script>
+        <script src="{{ asset('vendor/flatpickr/th.js') }}"></script>
         
         <script>
             $(document).ready(function() {

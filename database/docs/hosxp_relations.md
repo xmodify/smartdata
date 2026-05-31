@@ -47,6 +47,8 @@
   * `an_stat.dx_doctor` -> `doctor.code` (แพทย์ผู้รักษาสรุปโรคหลัก)
   * `an_stat.an` -> `iptdiag.an` (รหัสโรคผู้ป่วยในราย AN)
   * `an_stat.an` -> `opitemrece.an` (รายการค่าใช้จ่าย/ยาผู้ป่วยใน)
+  * `an_stat.an` -> `iptoprt.an` (รหัสหัตถการผู้ป่วยในราย AN / เก็บรหัส ICD-9)
+
 
 ---
 

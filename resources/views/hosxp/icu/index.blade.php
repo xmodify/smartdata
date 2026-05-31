@@ -10,9 +10,9 @@
 @endsection
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/jquery.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/buttons.dataTables.min.css') }}">
     <style>
         .page-header-container {
             background: #f8fbfd; /* Slightly darker background to make white cards pop */
@@ -88,6 +88,69 @@
             color: white !important;
             border: 1px solid #4e73df !important;
             border-radius: 0.5rem !important;
+        }
+
+        /* Custom Tabs Layout */
+        .nav-tabs-custom {
+            background: #fff;
+            border-radius: 12px;
+            padding: 0.5rem 0.5rem 0 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f0f0f0;
+            margin-bottom: 1.5rem;
+        }
+
+        #icuTabs .nav-link {
+            border: none;
+            color: #6e707e;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+            background: transparent;
+        }
+        
+        /* Total Tab (Red) */
+        #icuTabs .nav-link.tab-total:hover {
+            color: #e74a3b !important;
+            background-color: #f8f9fc;
+        }
+        #icuTabs .nav-link.tab-total.active {
+            color: #e74a3b !important;
+            background-color: #f8f9fc !important;
+            border-bottom: 3px solid #e74a3b !important;
+        }
+
+        /* General Tab (Blue) */
+        #icuTabs .nav-link.tab-general:hover {
+            color: #4e73df !important;
+            background-color: #f8f9fc;
+        }
+        #icuTabs .nav-link.tab-general.active {
+            color: #4e73df !important;
+            background-color: #f8f9fc !important;
+            border-bottom: 3px solid #4e73df !important;
+        }
+
+        /* VIP Tab (Orange/Yellow) */
+        #icuTabs .nav-link.tab-vip:hover {
+            color: #f6c23e !important;
+            background-color: #f8f9fc;
+        }
+        #icuTabs .nav-link.tab-vip.active {
+            color: #f6c23e !important;
+            background-color: #f8f9fc !important;
+            border-bottom: 3px solid #f6c23e !important;
+        }
+
+        /* Patient Tab (Green) */
+        #icuTabs .nav-link.tab-patient:hover {
+            color: #1cc88a !important;
+            background-color: #f8f9fc;
+        }
+        #icuTabs .nav-link.tab-patient.active {
+            color: #1cc88a !important;
+            background-color: #f8f9fc !important;
+            border-bottom: 3px solid #1cc88a !important;
         }
     </style>
 @endpush
@@ -180,340 +243,402 @@
             </div>
         </div>
 
-        <!-- Charts Row 1: Admissions & Occupancy -->
-        <div class="row mb-4 g-4">
-            <div class="col-md-6">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #4e73df !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-user-injured me-2 text-primary"></i> จำนวน (ผู้ป่วย ICU) </h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="admissionChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #1cc88a !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-bed me-2 text-success"></i> อัตราครองเตียง % (ผู้ป่วย ICU)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="occupancyChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
+        <!-- Ward Tabs -->
+        <div class="nav-tabs-custom mt-3">
+            <ul class="nav nav-tabs border-0" id="icuTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link tab-total active fw-bold" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane" type="button" role="tab" aria-controls="overview-pane" aria-selected="true">
+                        <i class="fas fa-hospital me-1"></i> ภาพรวม
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link tab-general fw-bold" id="clinical-tab" data-bs-toggle="tab" data-bs-target="#clinical-pane" type="button" role="tab" aria-controls="clinical-pane" aria-selected="false">
+                        <i class="fas fa-stethoscope me-1"></i> โรคและหัตถการสำคัญ
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link tab-vip fw-bold" id="finance-tab" data-bs-toggle="tab" data-bs-target="#finance-pane" type="button" role="tab" aria-controls="finance-pane" aria-selected="false">
+                        <i class="fas fa-wallet me-1"></i> ค่าใช้จ่าย
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link tab-patient fw-bold" id="patients-tab" data-bs-toggle="tab" data-bs-target="#patients-pane" type="button" role="tab" aria-controls="patients-pane" aria-selected="false">
+                        <i class="fas fa-user-injured me-1"></i> รายชื่อผู้ป่วย ICU
+                    </button>
+                </li>
+            </ul>
         </div>
 
-        <!-- Charts Row 2: AdjRW, CMI & Shifts -->
-        <div class="row mb-4 g-4">
-            <div class="col-md-4">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #f6c23e !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> Sum AdjRW (ผู้ป่วย ICU)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="adjrwChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #36b9cc !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-stethoscope me-2 text-info"></i> CMI (ผู้ป่วย ICU)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="cmiChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #e74a3b !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-clock me-2 text-danger"></i> การรับใหม่ตามเวร (ผู้ป่วย ICU)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="shiftChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Row 3: Discharge Type & PDX -->
-        <div class="row mb-4 g-4">
-            <div class="col-md-6">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #1cc88a !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-chart-pie me-2 text-success"></i> แยกตามประเภทการจำหน่าย (Discharge Type)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="dchTypeChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #f6c23e !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-list-ol me-2 text-warning"></i> 10 อันดับรายโรค (PDX)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="pdxChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Row 4: Refer Trends -->
-        <div class="row mb-4 g-4">
-            <div class="col-md-6">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #0dcaf0 !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sign-in-alt me-2 text-info"></i> แนวโน้มการรับเข้า Refer In (ผู้ป่วย ICU)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="referInChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #e74a3b !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sign-out-alt me-2 text-danger"></i> แนวโน้มการส่งต่อ Refer Out (ผู้ป่วย ICU)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="referOutChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-        <!-- Charts Row 5: Drug & Lab Cost Trends -->
-        <div class="row mb-4 g-4">
-            <div class="col-md-6">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #198754 !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-pills me-2 text-success"></i> แนวโน้มค่ายา (ผู้ป่วย ICU)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="drugCostChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #ffc107 !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-flask me-2 text-warning"></i> แนวโน้มค่า LAB (ผู้ป่วย ICU)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="labCostChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-        <!-- Charts Row 1.5: Average Length of Stay (ALOS) -->
-        <div class="row mb-4 g-4">
-            <div class="col-12">
-                <div class="card card-icu shadow-sm" style="border-top: 4px solid #e74a3b !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-history me-2 text-danger"></i> วันนอนเฉลี่ยรายเดือน (Average Length of Stay - ALOS)</h6>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="alosChart" class="chart-container" style="min-height: 350px;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Monthly Summary Stats Table -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card card-icu shadow-sm" style="border-top: 4px solid #1cc88a !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-success"></i> สรุปสถิติ ICU รายเดือน</h6>
-                            <p class="text-muted small mb-0 mt-1">ข้อมูลสรุปตามเดือนที่จำหน่าย (Discharge Date)</p>
+        <div class="tab-content mt-4" id="icuTabsContent">
+            <!-- Tab 1: ภาพรวม -->
+            <div class="tab-pane fade show active" id="overview-pane" role="tabpanel" aria-labelledby="overview-tab">
+                <!-- Charts Row 1: Admissions & Occupancy -->
+                <div class="row mb-4 g-4">
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #4e73df !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-user-injured me-2 text-primary"></i> จำนวน (ผู้ป่วย ICU) </h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="admissionChart" class="chart-container"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body p-4">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-icu mb-0" id="icuSummaryTable">
-                                <thead>
-                                    <tr>
-                                        <th class="ps-4">เดือน/ปี</th>
-                                        <th class="text-center">Admit (AN)</th>
-                                        <th class="text-center">วันนอนรวม (ICU)</th>
-                                        <th class="text-center text-danger">วันนอน ICU เฉลี่ย (วัน)</th>
-                                        <th class="text-center text-warning">วันนอน รพ. เฉลี่ย (วัน)</th>
-                                        <th class="text-center">อัตราครองเตียง (%)</th>
-                                        <th class="text-center">Active Bed</th>
-                                        <th class="text-center">Sum AdjRW</th>
-                                        <th class="text-center">CMI</th>
-                                        <th class="text-center text-success">ค่ายา</th>
-                                        <th class="text-center text-warning">ค่า LAB</th>
-                                        <th class="text-center">รับใหม่เวรเช้า</th>
-                                        <th class="text-center">รับใหม่เวรบ่าย</th>
-                                        <th class="text-center">รับใหม่เวรดึก</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($monthly_stats as $row)
-                                    <tr>
-                                        <td class="ps-4 fw-bold text-dark">{{ $row->month }}</td>
-                                        <td class="text-center fw-bold text-primary">{{ number_format($row->total_admission) }}</td>
-                                        <td class="text-center">{{ number_format($row->total_bed_days) }}</td>
-                                        <td class="text-center fw-bold text-danger">{{ number_format($row->avg_icu_los_days, 2) }}</td>
-                                        <td class="text-center fw-bold text-warning">{{ number_format($row->avg_total_los_days, 2) }}</td>
-                                        <td class="text-center">
-                                            <div class="progress" style="height: 10px; border-radius: 5px;">
-                                                <div class="progress-bar {{ $row->bed_occupancy_rate > 80 ? 'bg-danger' : ($row->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
-                                                     role="progressbar" style="width: {{ $row->bed_occupancy_rate }}%"></div>
-                                            </div>
-                                            <small class="fw-bold">{{ $row->bed_occupancy_rate }}%</small>
-                                        </td>
-                                        <td class="text-center">{{ $row->active_bed }}</td>
-                                        <td class="text-center">{{ number_format($row->total_adjrw, 2) }}</td>
-                                        <td class="text-center fw-bold text-info">{{ number_format($row->cmi, 2) }}</td>
-                                        <td class="text-center text-success fw-bold">{{ number_format($row->total_inc12, 2) }}</td>
-                                        <td class="text-center text-warning fw-bold">{{ number_format($row->total_inc03, 2) }}</td>
-                                        <td class="text-center">{{ number_format($row->admit_morning_shift) }}</td>
-                                        <td class="text-center">{{ number_format($row->admit_evening_shift) }}</td>
-                                        <td class="text-center">{{ number_format($row->admit_night_shift) }}</td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                                <tfoot>
-                                    <tr class="bg-light fw-bold" style="border-top: 2px solid #dee2e6;">
-                                        <td class="ps-4">{{ $summary_stats->month_year }}</td>
-                                        <td class="text-center text-primary">{{ number_format($summary_stats->total_admission) }}</td>
-                                        <td class="text-center">{{ number_format($summary_stats->total_bed_days) }}</td>
-                                        <td class="text-center text-danger">{{ number_format($summary_stats->avg_icu_los_days, 2) }}</td>
-                                        <td class="text-center text-warning">{{ number_format($summary_stats->avg_total_los_days, 2) }}</td>
-                                        <td class="text-center">
-                                            <div class="progress" style="height: 10px; border-radius: 5px; background-color: #e9ecef;">
-                                                <div class="progress-bar {{ $summary_stats->bed_occupancy_rate > 80 ? 'bg-danger' : ($summary_stats->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
-                                                     role="progressbar" style="width: {{ $summary_stats->bed_occupancy_rate }}%"></div>
-                                            </div>
-                                            <small>{{ $summary_stats->bed_occupancy_rate }}%</small>
-                                        </td>
-                                        <td class="text-center">{{ $summary_stats->active_bed }}</td>
-                                        <td class="text-center">{{ number_format($summary_stats->total_adjrw, 2) }}</td>
-                                        <td class="text-center text-info">{{ number_format($summary_stats->cmi, 2) }}</td>
-                                        <td class="text-center text-success fw-bold">{{ number_format($summary_stats->total_inc12, 2) }}</td>
-                                        <td class="text-center text-warning fw-bold">{{ number_format($summary_stats->total_inc03, 2) }}</td>
-                                        <td class="text-center">{{ number_format($summary_stats->admit_morning_shift) }}</td>
-                                        <td class="text-center">{{ number_format($summary_stats->admit_evening_shift) }}</td>
-                                        <td class="text-center">{{ number_format($summary_stats->admit_night_shift) }}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #1cc88a !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-bed me-2 text-success"></i> อัตราครองเตียง % (ผู้ป่วย ICU)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="occupancyChart" class="chart-container"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Detailed Table -->
-        <div class="row pb-5">
-            <div class="col-12">
-                <div class="card card-icu shadow-sm" style="border-top: 4px solid #36b9cc !important;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-info"></i> รายละเอียดผู้ป่วย ICU</h6>
-                        <p class="text-muted small mb-0 mt-1">แสดงข้อมูลผู้ป่วยที่มีการเคลื่อนย้ายลงเตียง ICU (iptbedmove LIKE 'ICU%')</p>
+                <!-- Charts Row 2: Shift & Discharge Type -->
+                <div class="row mb-4 g-4">
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #e74a3b !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-clock me-2 text-danger"></i> การรับใหม่ตามเวร (ผู้ป่วย ICU)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="shiftChart" class="chart-container"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body p-4">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-icu mb-0" id="icuTable">
-                                <thead>
-                                    <tr>
-                                        <th>AN / HN</th>
-                                        <th style="min-width: 150px;">ชื่อ-นามสกุล</th>
-                                        <th>สิทธิการรักษา</th>
-                                        <th>วันที่เข้าเตียง ICU</th>
-                                        <th class="text-center">เวรที่รับเข้า</th>
-                                        <th>วันที่จำหน่าย</th>
-                                        <th class="text-center">วันนอน ICU</th>
-                                        <th class="text-center">วันนอนรวม</th>
-                                        <th>สถานะ/ประเภทจำหน่าย</th>
-                                        <th>แพทย์</th>
-                                        <th style="min-width: 200px;">การวินิจฉัย (PDX / Diag Text)</th>
-                                        <th class="text-center">AdjRW</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($patients as $row)
-                                    <tr>
-                                        <td style="white-space: nowrap;">
-                                            <div class="fw-bold text-primary">{{ $row->an }}</div>
-                                            <div class="small text-muted">HN: {{ $row->hn }}</div>
-                                        </td>
-                                        <td>{{ $row->ptname }}</td>
-                                        <td style="max-width: 150px; white-space: normal;">
-                                            <div class="small text-dark" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;" title="{{ $row->pttype_name }}">
-                                                {{ $row->pttype_name ?? '-' }}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {{-- วันที่/เวลาเข้า ICU จาก iptbedmove --}}
-                                            <div class="small">{{ $row->icu_movedate ? date('d/m/Y', strtotime($row->icu_movedate)) : '-' }}</div>
-                                            <div class="text-muted" style="font-size: 0.75rem;">{{ $row->icu_movetime }} น.</div>
-                                        </td>
-                                        <td class="text-center">
-                                            {{-- เวรที่รับเข้า ICU --}}
-                                            @php
-                                                $shiftClass = match($row->admit_shift ?? '') {
-                                                    'เวรเช้า' => 'bg-warning text-dark',
-                                                    'เวรบ่าย' => 'bg-info text-white',
-                                                    'เวรดึก' => 'bg-dark text-white',
-                                                    default => 'bg-secondary text-white',
-                                                };
-                                            @endphp
-                                            <span class="badge {{ $shiftClass }}">{{ $row->admit_shift ?? '-' }}</span>
-                                        </td>
-                                        <td>
-                                            @if($row->dchdate)
-                                                <div class="small">{{ date('d/m/Y', strtotime($row->dchdate)) }}</div>
-                                                <div class="text-muted" style="font-size: 0.75rem;">{{ $row->dchtime }} น.</div>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            {{-- วันนอน ICU: จาก movedate ถึง dchdate --}}
-                                            <div class="fw-bold">{{ $row->icu_los_days ?? '-' }} วัน</div>
-                                            <div class="small text-muted" style="font-size: 0.7rem;">({{ $row->icu_los_exact ?? '-' }} วันจริง)</div>
-                                        </td>
-                                        <td class="text-center">
-                                            {{-- วันนอนรวม: จาก regdate ถึง dchdate --}}
-                                            <div class="fw-bold text-secondary">{{ $row->total_los_days ?? '-' }} วัน</div>
-                                        </td>
-                                        <td>
-                                            <div class="small fw-bold">{{ $row->dch_status }}</div>
-                                            <div class="small text-muted">{{ $row->dch_type }}</div>
-                                        </td>
-                                        <td><div class="small">{{ $row->dch_doctor }}</div></td>
-                                        <td>
-                                            @if($row->pdx)
-                                                <span class="badge bg-danger mb-1">{{ $row->pdx }}</span>
-                                            @endif
-                                            <div class="small" style="font-size: 0.75rem;">{{ $row->diag_text_list }}</div>
-                                        </td>
-                                        <td class="text-center fw-bold text-warning">{{ $row->adjrw ? number_format($row->adjrw, 4) : '-' }}</td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #1cc88a !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-chart-pie me-2 text-success"></i> แยกตามประเภทการจำหน่าย (Discharge Type)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="dchTypeChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row 3: AdjRW & CMI -->
+                <div class="row mb-4 g-4">
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #f6c23e !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> Sum AdjRW (ผู้ป่วย ICU)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="adjrwChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #36b9cc !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-stethoscope me-2 text-info"></i> CMI (ผู้ป่วย ICU)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="cmiChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row 4: Average Length of Stay (ALOS) -->
+                <div class="row mb-4 g-4">
+                    <div class="col-12">
+                        <div class="card card-icu shadow-sm" style="border-top: 4px solid #e74a3b !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-history me-2 text-danger"></i> วันนอนเฉลี่ยรายเดือน (Average Length of Stay - ALOS)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="alosChart" class="chart-container" style="min-height: 350px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row 5: Refer Trends -->
+                <div class="row mb-4 g-4">
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #0dcaf0 !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sign-in-alt me-2 text-info"></i> แนวโน้มการรับเข้า Refer In (ผู้ป่วย ICU)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="referInChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #e74a3b !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sign-out-alt me-2 text-danger"></i> แนวโน้มการส่งต่อ Refer Out (ผู้ป่วย ICU)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="referOutChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Summary Stats Table -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card card-icu shadow-sm" style="border-top: 4px solid #1cc88a !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-success"></i> สรุปสถิติ ICU รายเดือน</h6>
+                                    <p class="text-muted small mb-0 mt-1">ข้อมูลสรุปตามเดือนที่จำหน่าย (Discharge Date)</p>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-icu mb-0" id="icuSummaryTable">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-4">เดือน/ปี</th>
+                                                <th class="text-center">Admit (AN)</th>
+                                                <th class="text-center">วันนอนรวม (ICU)</th>
+                                                <th class="text-center text-danger">วันนอน ICU เฉลี่ย (วัน)</th>
+                                                <th class="text-center text-warning">วันนอน รพ. เฉลี่ย (วัน)</th>
+                                                <th class="text-center">อัตราครองเตียง (%)</th>
+                                                <th class="text-center">Active Bed</th>
+                                                <th class="text-center">Sum AdjRW</th>
+                                                <th class="text-center">CMI</th>
+                                                <th class="text-center text-success">ค่ายา</th>
+                                                <th class="text-center text-warning">ค่า LAB</th>
+                                                <th class="text-center">รับใหม่เวรเช้า</th>
+                                                <th class="text-center">รับใหม่เวรบ่าย</th>
+                                                <th class="text-center">รับใหม่เวรดึก</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($monthly_stats as $row)
+                                            <tr>
+                                                <td class="ps-4 fw-bold text-dark">{{ $row->month }}</td>
+                                                <td class="text-center fw-bold text-primary">{{ number_format($row->total_admission) }}</td>
+                                                <td class="text-center">{{ number_format($row->total_bed_days) }}</td>
+                                                <td class="text-center fw-bold text-danger">{{ number_format($row->avg_icu_los_days, 2) }}</td>
+                                                <td class="text-center fw-bold text-warning">{{ number_format($row->avg_total_los_days, 2) }}</td>
+                                                <td class="text-center">
+                                                    <div class="progress" style="height: 10px; border-radius: 5px;">
+                                                        <div class="progress-bar {{ $row->bed_occupancy_rate > 80 ? 'bg-danger' : ($row->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                                             role="progressbar" style="width: {{ $row->bed_occupancy_rate }}%"></div>
+                                                    </div>
+                                                    <small class="fw-bold">{{ $row->bed_occupancy_rate }}%</small>
+                                                </td>
+                                                <td class="text-center">{{ $row->active_bed }}</td>
+                                                <td class="text-center">{{ number_format($row->total_adjrw, 2) }}</td>
+                                                <td class="text-center fw-bold text-info">{{ number_format($row->cmi, 2) }}</td>
+                                                <td class="text-center text-success fw-bold">{{ number_format($row->total_inc12, 2) }}</td>
+                                                <td class="text-center text-warning fw-bold">{{ number_format($row->total_inc03, 2) }}</td>
+                                                <td class="text-center">{{ number_format($row->admit_morning_shift) }}</td>
+                                                <td class="text-center">{{ number_format($row->admit_evening_shift) }}</td>
+                                                <td class="text-center">{{ number_format($row->admit_night_shift) }}</td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="bg-light fw-bold" style="border-top: 2px solid #dee2e6;">
+                                                <td class="ps-4">{{ $summary_stats->month_year }}</td>
+                                                <td class="text-center text-primary">{{ number_format($summary_stats->total_admission) }}</td>
+                                                <td class="text-center">{{ number_format($summary_stats->total_bed_days) }}</td>
+                                                <td class="text-center text-danger">{{ number_format($summary_stats->avg_icu_los_days, 2) }}</td>
+                                                <td class="text-center text-warning">{{ number_format($summary_stats->avg_total_los_days, 2) }}</td>
+                                                <td class="text-center">
+                                                    <div class="progress" style="height: 10px; border-radius: 5px; background-color: #e9ecef;">
+                                                        <div class="progress-bar {{ $summary_stats->bed_occupancy_rate > 80 ? 'bg-danger' : ($summary_stats->bed_occupancy_rate > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                                             role="progressbar" style="width: {{ $summary_stats->bed_occupancy_rate }}%"></div>
+                                                    </div>
+                                                    <small>{{ $summary_stats->bed_occupancy_rate }}%</small>
+                                                </td>
+                                                <td class="text-center">{{ $summary_stats->active_bed }}</td>
+                                                <td class="text-center">{{ number_format($summary_stats->total_adjrw, 2) }}</td>
+                                                <td class="text-center text-info">{{ number_format($summary_stats->cmi, 2) }}</td>
+                                                <td class="text-center text-success fw-bold">{{ number_format($summary_stats->total_inc12, 2) }}</td>
+                                                <td class="text-center text-warning fw-bold">{{ number_format($summary_stats->total_inc03, 2) }}</td>
+                                                <td class="text-center">{{ number_format($summary_stats->admit_morning_shift) }}</td>
+                                                <td class="text-center">{{ number_format($summary_stats->admit_evening_shift) }}</td>
+                                                <td class="text-center">{{ number_format($summary_stats->admit_night_shift) }}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Tab 2: โรคและหัตถการสำคัญ -->
+            <div class="tab-pane fade" id="clinical-pane" role="tabpanel" aria-labelledby="clinical-tab">
+                <div class="row mb-4 g-4">
+                    <!-- Ventilator Procedures Chart -->
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #4e73df !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-lungs me-2 text-primary"></i> สถิติการทำหัตถการช่วยหายใจรายเดือน (ICD-9: 9671, 9672)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="ventilatorChart" class="chart-container" style="min-height: 350px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top 10 PDX Chart -->
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #f6c23e !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-list-ol me-2 text-warning"></i> 10 อันดับรายโรค (PDX)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="pdxChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: ค่าใช้จ่าย -->
+            <div class="tab-pane fade" id="finance-pane" role="tabpanel" aria-labelledby="finance-tab">
+                <!-- Charts Row 5: Drug & Lab Cost Trends -->
+                <div class="row mb-4 g-4">
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #198754 !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-pills me-2 text-success"></i> แนวโน้มค่ายา (ผู้ป่วย ICU)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="drugCostChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card card-icu shadow-sm h-100" style="border-top: 4px solid #ffc107 !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-flask me-2 text-warning"></i> แนวโน้มค่า LAB (ผู้ป่วย ICU)</h6>
+                            </div>
+                            <div class="card-body px-4 pb-4">
+                                <div id="labCostChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Tab 4: รายชื่อผู้ป่วย ICU -->
+            <div class="tab-pane fade" id="patients-pane" role="tabpanel" aria-labelledby="patients-tab">
+                <!-- Detailed Table -->
+                <div class="row pb-5">
+                    <div class="col-12">
+                        <div class="card card-icu shadow-sm" style="border-top: 4px solid #36b9cc !important;">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-info"></i> รายละเอียดผู้ป่วย ICU</h6>
+                                <p class="text-muted small mb-0 mt-1">แสดงข้อมูลผู้ป่วยที่มีการเคลื่อนย้ายลงเตียง ICU (iptbedmove LIKE 'ICU%')</p>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-icu mb-0" id="icuTable">
+                                        <thead>
+                                            <tr>
+                                                <th>AN / HN</th>
+                                                <th style="min-width: 150px;">ชื่อ-นามสกุล</th>
+                                                <th>สิทธิการรักษา</th>
+                                                <th>วันที่เข้าเตียง ICU</th>
+                                                <th class="text-center">เวรที่รับเข้า</th>
+                                                <th>วันที่จำหน่าย</th>
+                                                <th class="text-center">วันนอน ICU</th>
+                                                <th class="text-center">วันนอนรวม</th>
+                                                <th>สถานะ/ประเภทจำหน่าย</th>
+                                                <th>แพทย์</th>
+                                                <th style="min-width: 200px;">การวินิจฉัย (PDX / Diag Text)</th>
+                                                <th class="text-center">AdjRW</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($patients as $row)
+                                            <tr>
+                                                <td style="white-space: nowrap;">
+                                                    <div class="fw-bold text-primary">{{ $row->an }}</div>
+                                                    <div class="small text-muted">HN: {{ $row->hn }}</div>
+                                                </td>
+                                                <td>{{ $row->ptname }}</td>
+                                                <td style="max-width: 150px; white-space: normal;">
+                                                    <div class="small text-dark" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;" title="{{ $row->pttype_name }}">
+                                                        {{ $row->pttype_name ?? '-' }}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {{-- วันที่/เวลาเข้า ICU จาก iptbedmove --}}
+                                                    <div class="small">{{ $row->icu_movedate ? date('d/m/Y', strtotime($row->icu_movedate)) : '-' }}</div>
+                                                    <div class="text-muted" style="font-size: 0.75rem;">{{ $row->icu_movetime }} น.</div>
+                                                </td>
+                                                <td class="text-center">
+                                                    {{-- เวรที่รับเข้า ICU --}}
+                                                    @php
+                                                        $shiftClass = match($row->admit_shift ?? '') {
+                                                            'เวรเช้า' => 'bg-warning text-dark',
+                                                            'เวรบ่าย' => 'bg-info text-white',
+                                                            'เวรดึก' => 'bg-dark text-white',
+                                                            default => 'bg-secondary text-white',
+                                                        };
+                                                    @endphp
+                                                    <span class="badge {{ $shiftClass }}">{{ $row->admit_shift ?? '-' }}</span>
+                                                </td>
+                                                <td>
+                                                    @if($row->dchdate)
+                                                        <div class="small">{{ date('d/m/Y', strtotime($row->dchdate)) }}</div>
+                                                        <div class="text-muted" style="font-size: 0.75rem;">{{ $row->dchtime }} น.</div>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">
+                                                    {{-- วันนอน ICU: จาก movedate ถึง dchdate --}}
+                                                    <div class="fw-bold">{{ $row->icu_los_days ?? '-' }} วัน</div>
+                                                    <div class="small text-muted" style="font-size: 0.7rem;">({{ $row->icu_los_exact ?? '-' }} วันจริง)</div>
+                                                </td>
+                                                <td class="text-center">
+                                                    {{-- วันนอนรวม: จาก regdate ถึง dchdate --}}
+                                                    <div class="fw-bold text-secondary">{{ $row->total_los_days ?? '-' }} วัน</div>
+                                                </td>
+                                                <td>
+                                                    <div class="small fw-bold">{{ $row->dch_status }}</div>
+                                                    <div class="small text-muted">{{ $row->dch_type }}</div>
+                                                </td>
+                                                <td><div class="small">{{ $row->dch_doctor }}</div></td>
+                                                <td>
+                                                    @if($row->pdx)
+                                                        <span class="badge bg-danger mb-1">{{ $row->pdx }}</span>
+                                                    @endif
+                                                    <div class="small" style="font-size: 0.75rem;">{{ $row->diag_text_list }}</div>
+                                                </td>
+                                                <td class="text-center fw-bold text-warning">{{ $row->adjrw ? number_format($row->adjrw, 4) : '-' }}</td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div>
     </div>
 
     @push('scripts')
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+        <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
+        <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+        <script src="{{ asset('vendor/datatables/dataTables.buttons.min.js') }}"></script>
+        <script src="{{ asset('vendor/jszip/jszip.min.js') }}"></script>
+        <script src="{{ asset('vendor/datatables/buttons.html5.min.js') }}"></script>
+        <script src="{{ asset('vendor/apexcharts/apexcharts.min.js') }}"></script>
+        <script src="{{ asset('vendor/flatpickr/flatpickr.min.js') }}"></script>
+        <script src="{{ asset('vendor/flatpickr/th.js') }}"></script>
         
         <script>
             $(document).ready(function() {
@@ -645,6 +770,34 @@
                     }
                 };
                 new ApexCharts(document.querySelector("#alosChart"), alosOptions).render();
+
+                // 1.6 Ventilator Procedures Chart (9671 & 9672)
+                var ventOptions = {
+                    series: [
+                        { name: 'ช่วยหายใจ < 96 ชม. (9671)', data: @json(array_column($monthly_stats, 'vent_less_96')) },
+                        { name: 'ช่วยหายใจ >= 96 ชม. (9672)', data: @json(array_column($monthly_stats, 'vent_more_96')) }
+                    ],
+                    chart: { height: 350, type: 'bar', toolbar: { show: false } },
+                    plotOptions: { bar: { borderRadius: 4, columnWidth: '55%', dataLabels: { position: 'top' } } },
+                    stroke: { show: true, width: 2, colors: ['transparent'] },
+                    colors: ['#3b82f6', '#ef4444'],
+                    dataLabels: { 
+                        enabled: true, 
+                        offsetY: -20,
+                        style: { fontSize: '11px', colors: ['#333'] }
+                    },
+                    xaxis: { categories: labels },
+                    yaxis: { min: 0, title: { text: 'จำนวนครั้ง (ราย)' } },
+                    grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
+                    tooltip: {
+                        y: {
+                            formatter: function (val) {
+                                return val + " ราย";
+                            }
+                        }
+                    }
+                };
+                new ApexCharts(document.querySelector("#ventilatorChart"), ventOptions).render();
 
                 // 1. Admission Chart
                 var admissionOptions = {
@@ -883,6 +1036,13 @@
                     }
                 };
                 new ApexCharts(document.querySelector("#labCostChart"), labCostOptions).render();
+
+                // Fix ApexCharts rendering inside hidden tabs on tab switch
+                document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function(tabEl) {
+                    tabEl.addEventListener('shown.bs.tab', function () {
+                        window.dispatchEvent(new Event('resize'));
+                    });
+                });
             });
         </script>
     @endpush

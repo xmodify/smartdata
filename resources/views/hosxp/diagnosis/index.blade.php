@@ -15,6 +15,7 @@
                     'opd' => 'ผู้ป่วยนอก OPD',
                     'ipd' => 'ผู้ป่วยใน IPD',
                     'refer' => 'ผู้ป่วยส่งต่อ Refer',
+                    'ic' => 'โรคทาง IC',
                     'all' => ''
                 ];
                 $category_label = $category_names[(string)$category] ?? '';
@@ -40,7 +41,7 @@
             }
             
             // Reorder groups to match original design if possible
-            $orderedGroupNames = ['Cardiovascular & Neurology', 'Respiratory & Sepsis', 'Trauma & Injury', 'Others'];
+            $orderedGroupNames = ['Infection Control', 'Cardiovascular & Neurology', 'Respiratory & Sepsis', 'Trauma & Injury', 'Others'];
             $orderedGroups = [];
             foreach ($orderedGroupNames as $name) {
                 if (isset($groups[$name])) {
@@ -52,7 +53,7 @@
         @endphp
 
         @foreach ($orderedGroups as $groupName => $group)
-        <div class="col-md-4 mb-4">
+        <div class="{{ count($orderedGroups) === 1 ? 'col-12' : 'col-md-4' }} mb-4">
             <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
                 <div class="card-body p-3"> <!-- Reduced from p-4 -->
                     <div class="d-flex align-items-center mb-3">
@@ -60,6 +61,7 @@
                             @php
                                 // Map technical group names to Thai display names
                                 $displayNames = [
+                                    'Infection Control' => 'การป้องกันและเฝ้าระวังการติดเชื้อในโรงพยาบาล (IC)',
                                     'Cardiovascular & Neurology' => 'หัวใจและหลอดเลือด/สมอง',
                                     'Respiratory & Sepsis' => 'ทางเดินหายใจและติดเชื้อ',
                                     'Trauma & Injury' => 'อุบัติเหตุและพร่องประสาท',
@@ -72,7 +74,10 @@
                     </div>
                     <div class="list-group list-group-flush mt-3">
                         @foreach ($group['diseases'] as $type => $config)
-                        <a href="{{ route('hosxp.diagnosis.report', ['type' => $type, 'category' => $category]) }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                        @php
+                            $targetCategory = ($category === 'ic') ? 'opd' : $category;
+                        @endphp
+                        <a href="{{ route('hosxp.diagnosis.report', ['type' => $type, 'category' => $targetCategory]) }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">{{ $config['name'] }}</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>

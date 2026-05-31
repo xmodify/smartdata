@@ -391,34 +391,14 @@
                                     class="list-group-item list-group-item-action bg-transparent text-dark">
                                     <i class="fas fa-ambulance me-2" style="color: #e74a3b;"></i> ผู้ป่วยส่งต่อ Refer
                                 </a>
+                                <a href="{{ route('hosxp.diagnosis.index', ['category' => 'ic']) }}"
+                                    class="list-group-item list-group-item-action bg-transparent text-dark">
+                                    <i class="fas fa-shield-virus me-2" style="color: #6610f2;"></i> โรคทาง IC
+                                </a>
                             </div>
                         </div>
 
-                        <!-- Dashboard Menu -->
-                        <div class="sidebar-dropdown">
-                            <a href="javascript:void(0)"
-                                class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle"
-                                data-bs-toggle="collapse" data-bs-target="#dashboardSubmenu" aria-expanded="false">
-                                <i class="fas fa-chart-line" style="color: #6610f2;"></i> Dashboard
-                            </a>
-                            <div class="collapse sidebar-submenu" id="dashboardSubmenu">
-                                <a href="{{ url('/dashboard/opd_mornitor') }}"
-                                    class="list-group-item list-group-item-action bg-transparent text-dark py-2"
-                                    target="_blank">
-                                    <i class="fas fa-desktop me-2" style="color: #4e73df;"></i> OPD Monitor
-                                </a>
-                                <a href="{{ url('/dashboard/ipd_mornitor') }}"
-                                    class="list-group-item list-group-item-action bg-transparent text-dark py-2"
-                                    target="_blank">
-                                    <i class="fas fa-procedures me-2" style="color: #1cc88a;"></i> IPD Monitor
-                                </a>
-                                <a href="{{ url('/dashboard/digitalhealth') }}"
-                                    class="list-group-item list-group-item-action bg-transparent text-dark py-2"
-                                    target="_blank">
-                                    <i class="fas fa-hand-holding-medical me-2" style="color: #36b9cc;"></i> นโยบาย 30 บาท
-                                </a>
-                            </div>
-                        </div>
+
                     @endif
 
                     <!-- HOSxP Setting Menu -->
@@ -471,7 +451,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-05-30 23:00
+                V. 69-05-31 11:00
             </div>
         </div>
         <!-- /#sidebar-wrapper -->

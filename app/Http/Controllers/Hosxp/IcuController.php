@@ -122,7 +122,9 @@ class IcuController extends Controller
                 SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
                 SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift',
                 SUM(a.is_refer_in) AS 'total_refer_in',
-                SUM(a.is_refer_out) AS 'total_refer_out'
+                SUM(a.is_refer_out) AS 'total_refer_out',
+                SUM(a.vent_less_96) AS 'vent_less_96',
+                SUM(a.vent_more_96) AS 'vent_more_96'
             FROM (
                 SELECT 
                     i.an, 
@@ -137,7 +139,9 @@ class IcuController extends Controller
                     a.inc12,
                     a.inc03,
                     IF(ri.vn IS NOT NULL, 1, 0) AS is_refer_in,
-                    IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out
+                    IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out,
+                    IFNULL((SELECT COUNT(*) FROM iptoprt WHERE an = i.an AND icd9 = '9671'), 0) AS vent_less_96,
+                    IFNULL((SELECT COUNT(*) FROM iptoprt WHERE an = i.an AND icd9 = '9672'), 0) AS vent_more_96
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
                 INNER JOIN (
@@ -228,7 +232,9 @@ class IcuController extends Controller
                 SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '16:00:00' AND '23:59:59' THEN 1 ELSE 0 END) AS 'admit_evening_shift',
                 SUM(CASE WHEN TIME(a.icu_movetime) BETWEEN '00:00:00' AND '07:59:59' THEN 1 ELSE 0 END) AS 'admit_night_shift',
                 SUM(a.is_refer_in) AS 'total_refer_in',
-                SUM(a.is_refer_out) AS 'total_refer_out'
+                SUM(a.is_refer_out) AS 'total_refer_out',
+                SUM(a.vent_less_96) AS 'vent_less_96',
+                SUM(a.vent_more_96) AS 'vent_more_96'
             FROM (
                 SELECT 
                     i.an, i.regtime, i.adjrw, 
@@ -237,7 +243,9 @@ class IcuController extends Controller
                     icu.movetime AS icu_movetime,
                     a.inc12, a.inc03,
                     IF(ri.vn IS NOT NULL, 1, 0) AS is_refer_in,
-                    IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out
+                    IF(ro.vn IS NOT NULL, 1, 0) AS is_refer_out,
+                    IFNULL((SELECT COUNT(*) FROM iptoprt WHERE an = i.an AND icd9 = '9671'), 0) AS vent_less_96,
+                    IFNULL((SELECT COUNT(*) FROM iptoprt WHERE an = i.an AND icd9 = '9672'), 0) AS vent_more_96
                 FROM ipt i
                 INNER JOIN an_stat a ON a.an = i.an
                 INNER JOIN (

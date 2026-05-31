@@ -4,17 +4,18 @@
         'opd' => 'ผู้ป่วยนอก OPD',
         'ipd' => 'ผู้ป่วยใน IPD',
         'refer' => 'ผู้ป่วยส่งต่อ Refer',
+        'ic' => 'โรคทาง IC',
     ];
     $category_label = $category_names[(string) $category] ?? 'ผู้ป่วยนอก OPD';
 @endphp
 
-@section('title', 'รายชื่อ' . $category_label . 'โรค ' . $config['name'])
+@section('title', 'รายชื่อ' . $category_label . ' โรค' . $config['name'])
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/jquery.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/buttons.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}">
     <style>
         .page-header-container {
             background: #fff;
@@ -180,11 +181,75 @@
             background: #f8f9fc;
             color: #2e59d9;
         }
+
+        .nav-tabs-custom {
+            background: #fff;
+            border-radius: 12px;
+            padding: 0.5rem 0.5rem 0 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f0f0f0;
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-tabs-custom .nav-link {
+            border: none;
+            color: #6e707e;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+        }
+
+        .nav-tabs-custom .nav-link:hover {
+            color: #4e73df;
+            background: #f8f9fc;
+        }
+
+        .nav-tabs-custom .nav-link.active {
+            color: #4e73df;
+            background: #f8f9fc;
+            border-bottom: 3px solid #4e73df;
+        }
+
+        /* OPD Tab Custom Style */
+        .nav-tabs-custom .nav-link.tab-opd:hover {
+            color: #4e73df !important;
+            background: #f8f9fc;
+        }
+        .nav-tabs-custom .nav-link.tab-opd.active {
+            color: #4e73df !important;
+            background: #f8f9fc !important;
+            border-bottom: 3px solid #4e73df !important;
+        }
+
+        /* IPD Tab Custom Style */
+        .nav-tabs-custom .nav-link.tab-ipd:hover {
+            color: #1cc88a !important;
+            background: #f8f9fc;
+        }
+        .nav-tabs-custom .nav-link.tab-ipd.active {
+            color: #1cc88a !important;
+            background: #f8f9fc !important;
+            border-bottom: 3px solid #1cc88a !important;
+        }
+
+        /* Refer Tab Custom Style */
+        .nav-tabs-custom .nav-link.tab-refer:hover {
+            color: #e74a3b !important;
+            background: #f8f9fc;
+        }
+        .nav-tabs-custom .nav-link.tab-refer.active {
+            color: #e74a3b !important;
+            background: #f8f9fc !important;
+            border-bottom: 3px solid #e74a3b !important;
+        }
     </style>
 @endpush
 
 @section('topbar_actions')
-    <a href="{{ route('hosxp.diagnosis.index', ['category' => $category]) }}"
+    @php
+        $back_category = in_array('ic', $config['categories'] ?? []) ? 'ic' : $category;
+    @endphp
+    <a href="{{ route('hosxp.diagnosis.index', ['category' => $back_category]) }}"
         class="btn btn-light btn-sm shadow-sm text-primary fw-bold">
         <i class="fas fa-chevron-left me-1"></i> ย้อนกลับ
     </a>
@@ -198,7 +263,7 @@
                 <div class="ps-3 py-1">
                     <h5 class="text-dark mb-0 fw-bold">
                         <i class="{{ $config['icon'] }} {{ $config['color'] }} me-2"></i>
-                        รายชื่อ{{ $category_label }}โรค {{ $config['name'] }}
+                        รายชื่อ{{ $category_label }} โรค{{ $config['name'] }}
                     </h5>
                     <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
                     <div class="text-primary small fw-bold mt-1">
@@ -244,6 +309,33 @@
         </div>
 
 
+        @if(in_array('ic', $config['categories'] ?? []))
+        <!-- Tabs for IC disease to switch between OPD, IPD, and Refer -->
+        <div class="nav-tabs-custom mt-3">
+            <ul class="nav nav-tabs border-0" id="icCategoryTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link tab-opd {{ $category === 'opd' ? 'active fw-bold' : '' }}" 
+                       href="{{ request()->fullUrlWithQuery(['category' => 'opd']) }}">
+                        <i class="fas fa-user-nurse me-1 {{ $category === 'opd' ? 'text-primary' : 'text-muted' }}"></i> ผู้ป่วยนอก OPD
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link tab-ipd {{ $category === 'ipd' ? 'active fw-bold' : '' }}" 
+                       href="{{ request()->fullUrlWithQuery(['category' => 'ipd']) }}">
+                        <i class="fas fa-procedures me-1 {{ $category === 'ipd' ? 'text-success' : 'text-muted' }}"></i> ผู้ป่วยใน IPD
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link tab-refer {{ $category === 'refer' || $category === 'ic' ? 'active fw-bold' : '' }}" 
+                       href="{{ request()->fullUrlWithQuery(['category' => 'refer']) }}">
+                        <i class="fas fa-ambulance me-1 {{ $category === 'refer' || $category === 'ic' ? 'text-danger' : 'text-muted' }}"></i> ผู้ป่วยส่งต่อ Refer
+                    </a>
+                </li>
+            </ul>
+        </div>
+        @endif
+
+
         <!-- Chart Row -->
         <div class="row g-4 mb-4">
             <div class="col-lg-7">
@@ -279,13 +371,13 @@
             <div class="card-header card-header-premium">
                 <h6 class="fw-bold text-dark mb-0">
                     <i class="bi bi-people-fill text-primary me-2"></i>
-                    รายชื่อ{{ $category_label }}โรค {{ $config['name'] }} ปีงบประมาณ {{ $budget_year }}
+                    รายชื่อ{{ $category_label }} โรค{{ $config['name'] }} ปีงบประมาณ {{ $budget_year }}
                 </h6>
             </div>
             <div class="card-body p-0">
                 @if ($category === 'ipd')
                     @include('hosxp.diagnosis.partials._table_ipd')
-                @elseif($category === 'refer')
+                @elseif($category === 'refer' || $category === 'ic')
                     @include('hosxp.diagnosis.partials._table_refer')
                 @else
                     @include('hosxp.diagnosis.partials._table_opd')
@@ -298,16 +390,16 @@
 @endsection
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+    <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ asset('vendor/jszip/jszip.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables/buttons.html5.min.js') }}"></script>
+    <script src="{{ asset('vendor/apexcharts/apexcharts.min.js') }}"></script>
+    <script src="{{ asset('vendor/chartjs/chart.umd.js') }}"></script>
+    <script src="{{ asset('vendor/chartjs/chartjs-plugin-datalabels.min.js') }}"></script>
+    <script src="{{ asset('vendor/flatpickr/flatpickr.min.js') }}"></script>
+    <script src="{{ asset('vendor/flatpickr/th.js') }}"></script>
 
     <script>
         // Register the plugin to all charts if needed, or just specific ones
@@ -315,12 +407,13 @@
 
         $(document).ready(function() {
             if (typeof flatpickr !== 'undefined') {
+                const yearOffset = 543;
                 const commonConfig = {
                     locale: "th",
                     dateFormat: "Y-m-d",
                     altInput: true,
                     altFormat: "j M Y",
-                    allowInput: true,
+                    allowInput: false,
                     onReady: function(selectedDates, dateStr, instance) {
                         // Add Today Button
                         const container = instance.calendarContainer;
@@ -335,6 +428,30 @@
                                 instance.close();
                             });
                             container.appendChild(btn);
+                        }
+
+                        if (instance.altInput) {
+                            const originalValue = instance.altInput.value;
+                            if (originalValue) {
+                                const date = instance.selectedDates[0] || new Date(instance.input.value);
+                                if (date && !isNaN(date.getTime())) {
+                                    const day = date.getDate();
+                                    const month = instance.l10n.months.shorthand[date.getMonth()];
+                                    const year = date.getFullYear() + yearOffset;
+                                    instance.altInput.value = `${day} ${month} ${year}`;
+                                }
+                            }
+                        }
+                    },
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (instance.altInput && selectedDates.length > 0) {
+                            const date = selectedDates[0];
+                            setTimeout(() => {
+                                const day = date.getDate();
+                                const month = instance.l10n.months.shorthand[date.getMonth()];
+                                const year = date.getFullYear() + yearOffset;
+                                instance.altInput.value = `${day} ${month} ${year}`;
+                            }, 10);
                         }
                     }
                 };

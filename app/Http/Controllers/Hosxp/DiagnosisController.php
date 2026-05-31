@@ -156,6 +156,126 @@ class DiagnosisController extends Controller
             'group' => 'Others',
             'group_icon' => 'fas fa-clipboard-check',
             'group_color' => '#fef3c7'
+        ],
+        'ic_bacteria_virus' => [
+            'name' => 'รหัสเชื้อก่อโรคแบคทีเรียและไวรัส (B95-B97)',
+            'icon' => 'fas fa-bug',
+            'color' => 'text-danger',
+            'codes' => ['B95', 'B96', 'B97'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_drug_resistance' => [
+            'name' => 'รหัสการดื้อยาต้านจุลชีพ (Z16 และ U84)',
+            'icon' => 'fas fa-capsules',
+            'color' => 'text-warning',
+            'codes' => ['Z16', 'U84'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_vap_j958' => [
+            'name' => 'ปอดอักเสบจากการใช้เครื่องช่วยหายใจ (VAP - J95.8)',
+            'icon' => 'fas fa-lungs',
+            'color' => 'text-primary',
+            'codes' => ['J958'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_vap_j180' => [
+            'name' => 'ปอดอักเสบจากการใช้เครื่องช่วยหายใจ (VAP - J18.0)',
+            'icon' => 'fas fa-lungs',
+            'color' => 'text-primary',
+            'codes' => ['J180'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_ssi_t814' => [
+            'name' => 'การติดเชื้อที่แผลผ่าตัด (SSI - T81.4)',
+            'icon' => 'fas fa-scissors',
+            'color' => 'text-danger',
+            'codes' => ['T814'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_cauti_t83511' => [
+            'name' => 'การติดเชื้อจากสายสวนปัสสาวะค้างในร่างกาย (T83.511)',
+            'icon' => 'fas fa-tint',
+            'color' => 'text-info',
+            'codes' => ['T83511'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_cauti_t83518' => [
+            'name' => 'การติดเชื้อจากสายสวนปัสสาวะชนิดอื่น (T83.518)',
+            'icon' => 'fas fa-tint',
+            'color' => 'text-info',
+            'codes' => ['T83518'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_phlebitis' => [
+            'name' => 'ภาวะหลอดเลือดดำอักเสบ (Phlebitis - I80.0-I80.9)',
+            'icon' => 'fas fa-heart-pulse',
+            'color' => 'text-danger',
+            'codes' => ['I800', 'I801', 'I802', 'I803', 'I804', 'I805', 'I806', 'I807', 'I808', 'I809'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_vascular_catheter' => [
+            'name' => 'สายสวนหลอดเลือด (Vascular Catheter - T80.211, T80.212, T80.218, T82.7, T85.7)',
+            'icon' => 'fas fa-syringe',
+            'color' => 'text-warning',
+            'codes' => ['T80211', 'T80212', 'T80218', 'T827', 'T857'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_hap_y95' => [
+            'name' => 'การติดเชื้อในโรงพยาบาล (HAP - Y95)',
+            'icon' => 'fas fa-hospital',
+            'color' => 'text-secondary',
+            'codes' => ['Y95'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_capd_t8571_t856' => [
+            'name' => 'การติดเชื้อที่สายล้างไตทางช่องท้อง (CAPD - T85.71, T85.6)',
+            'icon' => 'fas fa-circle-nodes',
+            'color' => 'text-primary',
+            'codes' => ['T8571', 'T856'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
+        ],
+        'ic_hemodialysis' => [
+            'name' => 'ติดเชื้อทางเส้นเลือดสำหรับการฟอกไต (T82.4, T82.7)',
+            'icon' => 'fas fa-droplet',
+            'color' => 'text-danger',
+            'codes' => ['T824', 'T827'],
+            'categories' => ['ic'],
+            'group' => 'Infection Control',
+            'group_icon' => 'fas fa-shield-virus',
+            'group_color' => '#e0f2fe'
         ]
     ];
 
@@ -191,7 +311,7 @@ class DiagnosisController extends Controller
             $date_col = "i.dchdate";
             $hn_col = "i.hn";
             $vn_col = "i.an";
-        } elseif ($category === 'refer') {
+        } elseif ($category === 'refer' || $category === 'ic') {
             $stats_base = "referout r LEFT JOIN vn_stat v ON v.vn=r.vn LEFT JOIN an_stat a ON a.an=r.vn";
             $v_prefix = "r"; // Referout PDX
             $date_col = "r.refer_date";
@@ -207,23 +327,31 @@ class DiagnosisController extends Controller
 
         $params_set = [];
         $where_clauses = [];
+        $is_ic_disease = in_array('ic', $config['categories'] ?? []);
 
-        if ($category === 'refer') {
-            foreach ($codes as $code) {
-                // Stats (Graph) should use PDX only
-                $where_clauses[] = "r.pdx LIKE ?";
-                $params_set[] = $code . '%';
-                $where_clauses[] = "v.pdx LIKE ?";
-                $params_set[] = $code . '%';
-                $where_clauses[] = "a.pdx LIKE ?";
-                $params_set[] = $code . '%';
+        if ($category === 'refer' || $category === 'ic') {
+            $diag_cols = $is_ic_disease ? ['pdx', 'dx0', 'dx1', 'dx2', 'dx3', 'dx4', 'dx5'] : ['pdx'];
+            foreach ($diag_cols as $col) {
+                foreach ($codes as $code) {
+                    if ($col === 'pdx') {
+                        $where_clauses[] = "r.pdx LIKE ?";
+                        $params_set[] = $code . '%';
+                    }
+                    $where_clauses[] = "v.$col LIKE ?";
+                    $params_set[] = $code . '%';
+                    $where_clauses[] = "a.$col LIKE ?";
+                    $params_set[] = $code . '%';
+                }
             }
             $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
         } else {
-            // PDX Only for Charts (OPD/IPD)
-            foreach ($codes as $code) {
-                $where_clauses[] = "$v_prefix.pdx LIKE ?";
-                $params_set[] = $code . '%';
+            // OPD/IPD
+            $diag_cols = $is_ic_disease ? ['pdx', 'dx0', 'dx1', 'dx2', 'dx3', 'dx4', 'dx5'] : ['pdx'];
+            foreach ($diag_cols as $col) {
+                foreach ($codes as $code) {
+                    $where_clauses[] = "$v_prefix.$col LIKE ?";
+                    $params_set[] = $code . '%';
+                }
             }
             $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
         }
@@ -268,10 +396,9 @@ class DiagnosisController extends Controller
         $diag_visit_y = array_column($diag_year, 'visit');
         $diag_hn_y = array_column($diag_year, 'hn');
 
-        // Fetch category-specific list
         if ($category === 'ipd') {
             $diag_list = $this->fetch_ipd_list($start_date, $end_date, $codes);
-        } elseif ($category === 'refer') {
+        } elseif ($category === 'refer' || $category === 'ic') {
             $diag_list = $this->fetch_refer_list($start_date, $end_date, $codes);
         } else {
             $diag_list = $this->fetch_opd_list($start_date, $end_date, $codes);
