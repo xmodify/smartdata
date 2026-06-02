@@ -238,10 +238,10 @@ class DiagnosisController extends Controller
             'group_color' => '#e0f2fe'
         ],
         'ic_vascular_catheter' => [
-            'name' => 'สายสวนหลอดเลือด (Vascular Catheter - T80.211, T80.212, T80.218, T82.7, T85.7)',
+            'name' => 'สายสวนหลอดเลือด (Vascular Catheter - T80.211, T80.212, T80.218, T82.7)',
             'icon' => 'fas fa-syringe',
             'color' => 'text-warning',
-            'codes' => ['T80211', 'T80212', 'T80218', 'T827', 'T857'],
+            'codes' => ['T80211', 'T80212', 'T80218', 'T827'],
             'categories' => ['ic'],
             'group' => 'Infection Control',
             'group_icon' => 'fas fa-shield-virus',

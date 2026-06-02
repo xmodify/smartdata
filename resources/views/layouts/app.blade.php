@@ -393,7 +393,7 @@
                                 </a>
                                 <a href="{{ route('hosxp.diagnosis.index', ['category' => 'ic']) }}"
                                     class="list-group-item list-group-item-action bg-transparent text-dark">
-                                    <i class="fas fa-shield-virus me-2" style="color: #6610f2;"></i> โรคทาง IC
+                                    <i class="fas fa-shield-virus me-2" style="color: #6610f2;"></i> โรคเฝ้าระวังระบบ IC
                                 </a>
                             </div>
                         </div>
@@ -451,7 +451,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-05-31 11:00
+                V. 69-06-02 10:00
             </div>
         </div>
         <!-- /#sidebar-wrapper -->

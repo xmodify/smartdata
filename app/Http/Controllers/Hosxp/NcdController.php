@@ -20,33 +20,106 @@ class NcdController extends Controller
         return view('hosxp.ncd.index', compact('title', 'budget_year_select', 'budget_year', 'start_date', 'end_date'));
     }
 
-    /**
-     * ทะเบียนผู้ป่วยคลินิกเบาหวาน (clinic = '001')
-     */
-    public function dm_register(Request $request)
+    private $clinics_config = [
+        '001' => [
+            'name' => 'เบาหวาน',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกเบาหวาน',
+            'theme' => 'red',
+            'icon' => 'fas fa-syringe',
+        ],
+        '002' => [
+            'name' => 'ความดัน',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกความดัน',
+            'theme' => 'orange',
+            'icon' => 'fas fa-heartbeat',
+        ],
+        '007' => [
+            'name' => 'CKD',
+            'title' => 'ทะเบียนผู้ป่วยคลินิก CKD',
+            'theme' => 'teal',
+            'icon' => 'fas fa-circle-nodes',
+        ],
+        '009' => [
+            'name' => 'วัณโรค / Asthma',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกวัณโรค / Asthma',
+            'theme' => 'green',
+            'icon' => 'fas fa-lungs',
+        ],
+        '012' => [
+            'name' => 'สุขภาพจิต',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกสุขภาพจิต',
+            'theme' => 'cyan',
+            'icon' => 'fas fa-brain',
+        ],
+        '013' => [
+            'name' => 'ฟอกไต HD',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกฟอกไต HD',
+            'theme' => 'teal',
+            'icon' => 'fas fa-procedures',
+        ],
+        '014' => [
+            'name' => 'ฟอกไต CAPD',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกฟอกไต CAPD',
+            'theme' => 'cyan',
+            'icon' => 'fas fa-water',
+        ],
+        '020' => [
+            'name' => 'บำบัดยาเสพติด',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกบำบัดยาเสพติด',
+            'theme' => 'orange',
+            'icon' => 'fas fa-capsules',
+        ],
+        '021' => [
+            'name' => 'COPD',
+            'title' => 'ทะเบียนผู้ป่วยคลินิก COPD',
+            'theme' => 'green',
+            'icon' => 'fas fa-lungs',
+        ],
+        '028' => [
+            'name' => 'โรคหลอดเลือดสมอง',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกโรคหลอดเลือดสมอง',
+            'theme' => 'red',
+            'icon' => 'fas fa-head-side-virus',
+        ],
+        '029' => [
+            'name' => 'โรคหัวใจล้มเหลว',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกโรคหัวใจล้มเหลว',
+            'theme' => 'indigo',
+            'icon' => 'fas fa-heart',
+        ],
+        '032' => [
+            'name' => 'โรคไตเรื้อรังระยะ 4-5',
+            'title' => 'ทะเบียนผู้ป่วยคลินิกโรคไตเรื้อรังระยะ 4-5',
+            'theme' => 'teal',
+            'icon' => 'fas fa-network-wired',
+        ],
+    ];
+
+    public function clinic_register(Request $request, $clinic_code)
     {
-        $title = 'ทะเบียนผู้ป่วยคลินิกเบาหวาน';
+        if (!isset($this->clinics_config[$clinic_code])) {
+            abort(404);
+        }
+
+        $config = $this->clinics_config[$clinic_code];
+        $title = $config['title'];
         $dates = $this->resolveDateRange($request);
         $start_date = $dates['start_date'];
         $end_date   = $dates['end_date'];
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        // 1. สรุปจำนวนผู้ป่วยแยกตามสถานะ (clinic_member_status_name)
+        // 1. สรุปจำนวนผู้ป่วยแยกตามสถานะ (Optimized)
         $status_summary = DB::connection('hosxp')->select("
-            SELECT clinic_member_status_name, COUNT(hn) AS total
-            FROM (
-                SELECT c.hn, cm.clinic_member_status_name, c.clinic_member_status_id
-                FROM clinicmember c
-                LEFT OUTER JOIN clinic_member_status cm ON cm.clinic_member_status_id = c.clinic_member_status_id
-                WHERE c.clinic = '001'
-                GROUP BY c.hn
-            ) AS a
-            GROUP BY clinic_member_status_id
+            SELECT cm.clinic_member_status_name, COUNT(c.hn) AS total
+            FROM clinicmember c
+            LEFT OUTER JOIN clinic_member_status cm ON cm.clinic_member_status_id = c.clinic_member_status_id
+            WHERE c.clinic = ?
+            GROUP BY c.clinic_member_status_id, cm.clinic_member_status_name
             ORDER BY total DESC
-        ");
+        ", [$clinic_code]);
 
-        // 2. จำนวนผู้ป่วยรายใหม่แยกรายเดือน (regdate ในช่วงที่เลือก)
+        // 2. จำนวนผู้ป่วยรายใหม่แยกรายเดือน
         $new_by_month = DB::connection('hosxp')->select("
             SELECT
                 CASE
@@ -67,49 +140,203 @@ class NcdController extends Controller
                 YEAR(regdate) AS y,
                 MONTH(regdate) AS m
             FROM clinicmember
-            WHERE clinic = '001'
+            WHERE clinic = ?
               AND regdate BETWEEN ? AND ?
             GROUP BY y, m, month_name
             ORDER BY y, m
-        ", [$start_date, $end_date]);
+        ", [$clinic_code, $start_date, $end_date]);
 
-        // 3. รายชื่อผู้ป่วยทั้งหมด
-        $patients = DB::connection('hosxp')->select("
-            SELECT
-                n.NAME AS clinic_name,
-                p.cid,
-                c.hn,
-                CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS patient_name,
-                c.regdate,
-                c.lastvisit,
-                c.last_hba1c_date,
-                c.last_hba1c_value,
-                c.last_ua_date,
-                c.last_ua_value,
-                c.last_bp_date,
-                CONCAT(c.last_bp_bps_value, '/', c.last_bp_bpd_value) AS last_bp_value,
-                c.last_fbs_date,
-                c.last_fbs_value,
-                y.NAME AS pttype_name,
-                s.NAME AS sex_name,
-                d.NAME AS doctor_name,
-                cm.clinic_member_status_name,
-                c.clinic_member_status_id,
-                CONCAT(ph.hosptype, SPACE(1), ph.NAME) AS send_pcu_hospital_name
-            FROM clinicmember c
-            LEFT OUTER JOIN patient p ON p.hn = c.hn
-            LEFT OUTER JOIN clinic n ON n.clinic = c.clinic
-            LEFT OUTER JOIN pttype y ON y.pttype = p.pttype
-            LEFT OUTER JOIN sex s ON s.CODE = p.sex
-            LEFT OUTER JOIN doctor d ON d.CODE = c.doctor
-            LEFT OUTER JOIN clinic_member_status cm ON cm.clinic_member_status_id = c.clinic_member_status_id
-            LEFT OUTER JOIN hospcode ph ON ph.hospcode = c.send_to_pcu_hcode
-            WHERE c.clinic = '001'
-            GROUP BY c.hn
-            ORDER BY c.pt_number, c.regdate
-        ");
+        if ($request->ajax()) {
+            $draw = $request->get('draw');
+            $start = $request->get('start', 0);
+            $length = $request->get('length', 10);
+            $searchValue = $request->get('search')['value'] ?? '';
 
-        return view('hosxp.ncd.dm_register', compact(
+            // Map columns for ordering
+            $orderColumnIndex = $request->get('order')[0]['column'] ?? 6;
+            $orderDir = $request->get('order')[0]['dir'] ?? 'desc';
+
+            $columnsMap = [
+                1 => 'c.hn',
+                2 => 'p.cid',
+                3 => 'p.fname',
+                4 => 's.name',
+                5 => 'y.name',
+                6 => 'c.regdate',
+                7 => 'c.lastvisit',
+                8 => 'c.last_fbs_value',
+                9 => 'c.last_hba1c_value',
+                10 => 'c.last_ua_value',
+                11 => 'c.last_bp_bps_value',
+                12 => 'd.name',
+                13 => 'c.clinic_member_status_id',
+                14 => 'ph.name'
+            ];
+
+            $orderBy = $columnsMap[$orderColumnIndex] ?? 'c.regdate';
+
+            $baseSql = "
+                FROM clinicmember c
+                INNER JOIN patient p ON p.hn = c.hn
+                LEFT OUTER JOIN clinic n ON n.clinic = c.clinic
+                LEFT OUTER JOIN pttype y ON y.pttype = p.pttype
+                LEFT OUTER JOIN sex s ON s.CODE = p.sex
+                LEFT OUTER JOIN doctor d ON d.CODE = c.doctor
+                LEFT OUTER JOIN clinic_member_status cm ON cm.clinic_member_status_id = c.clinic_member_status_id
+                LEFT OUTER JOIN hospcode ph ON ph.hospcode = c.send_to_pcu_hcode
+                WHERE c.clinic = :clinic
+            ";
+
+            // Total records
+            $totalCountRow = DB::connection('hosxp')->selectOne("SELECT COUNT(DISTINCT c.hn) AS total " . str_replace(':clinic', '?', $baseSql), [$clinic_code]);
+            $recordsTotal = $totalCountRow ? $totalCountRow->total : 0;
+
+            // Search filter
+            $bindings = ['clinic' => $clinic_code];
+            $searchSql = "";
+            if (!empty($searchValue)) {
+                $searchSql = "
+                    AND (
+                        c.hn LIKE :search
+                        OR p.cid LIKE :search
+                        OR p.fname LIKE :search
+                        OR p.lname LIKE :search
+                        OR y.NAME LIKE :search
+                        OR d.NAME LIKE :search
+                        OR ph.NAME LIKE :search
+                    )
+                ";
+                $bindings['search'] = '%' . $searchValue . '%';
+            }
+
+            // Filtered records count
+            $filteredCountRow = DB::connection('hosxp')->selectOne("
+                SELECT COUNT(DISTINCT c.hn) AS total
+                $baseSql
+                $searchSql
+            ", $bindings);
+            $recordsFiltered = $filteredCountRow ? $filteredCountRow->total : 0;
+
+            // Limit
+            $limitSql = " LIMIT " . (int)$start . ", " . (int)$length;
+            if ((int)$length === -1) {
+                $limitSql = "";
+            }
+
+            // Fetch
+            $patients = DB::connection('hosxp')->select("
+                SELECT DISTINCT
+                    n.NAME AS clinic_name,
+                    p.cid,
+                    c.hn,
+                    CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS patient_name,
+                    c.regdate,
+                    c.lastvisit,
+                    c.last_hba1c_date,
+                    c.last_hba1c_value,
+                    c.last_ua_date,
+                    c.last_ua_value,
+                    c.last_bp_date,
+                    CONCAT(c.last_bp_bps_value, '/', c.last_bp_bpd_value) AS last_bp_value,
+                    c.last_fbs_date,
+                    c.last_fbs_value,
+                    y.NAME AS pttype_name,
+                    s.NAME AS sex_name,
+                    d.NAME AS doctor_name,
+                    cm.clinic_member_status_name,
+                    c.clinic_member_status_id,
+                    CONCAT(ph.hosptype, SPACE(1), ph.NAME) AS send_pcu_hospital_name
+                $baseSql
+                $searchSql
+                ORDER BY $orderBy $orderDir
+                $limitSql
+            ", $bindings);
+
+            // Helpers for formatting
+            $cleanDecimal = function($val) {
+                if ($val === null || $val === '') return '-';
+                $num = (float)$val;
+                return ($num == (int)$num) ? (string)(int)$num : (string)round($num, 2);
+            };
+
+            $formatBp = function($val) {
+                if (!$val) return '-';
+                $parts = explode('/', $val);
+                if (count($parts) === 2) {
+                    $bps = (float)$parts[0];
+                    $bpd = (float)$parts[1];
+                    return round($bps) . '/' . round($bpd);
+                }
+                return str_replace('.00', '', $val);
+            };
+
+            $data = [];
+            foreach ($patients as $idx => $row) {
+                // FBS Format
+                if ($row->last_fbs_date) {
+                    $fbs_color = (float)$row->last_fbs_value > 126 ? 'text-danger' : 'text-success';
+                    $last_fbs = '<span class="d-block text-muted" style="font-size:0.7rem;">'.DateThai($row->last_fbs_date).'</span>'
+                              . '<span class="fw-bold '.$fbs_color.'">'.$cleanDecimal($row->last_fbs_value).'</span>';
+                } else {
+                    $last_fbs = '<span class="text-muted">-</span>';
+                }
+
+                // HbA1c Format
+                if ($row->last_hba1c_date) {
+                    $hba1c_color = (float)$row->last_hba1c_value > 7 ? 'text-danger' : 'text-success';
+                    $last_hba1c = '<span class="d-block text-muted" style="font-size:0.7rem;">'.DateThai($row->last_hba1c_date).'</span>'
+                                . '<span class="fw-bold '.$hba1c_color.'">'.$cleanDecimal($row->last_hba1c_value).'</span>';
+                } else {
+                    $last_hba1c = '<span class="text-muted">-</span>';
+                }
+
+                // UA Format
+                if ($row->last_ua_date) {
+                    $last_ua = '<span class="d-block text-muted" style="font-size:0.7rem;">'.DateThai($row->last_ua_date).'</span>'
+                             . '<span>'.$cleanDecimal($row->last_ua_value).'</span>';
+                } else {
+                    $last_ua = '<span class="text-muted">-</span>';
+                }
+
+                // Status Badge
+                $statusId = $row->clinic_member_status_id ?? '';
+                $statusName = $row->clinic_member_status_name ?? 'ไม่ระบุ';
+                $badgeColor = match((string)$statusId) {
+                    '1' => 'success',
+                    '2' => 'warning',
+                    '3' => 'secondary',
+                    default => 'light'
+                };
+                $status_badge = '<span class="badge bg-'.$badgeColor.' badge-status">'.$statusName.'</span>';
+
+                $data[] = [
+                    'index' => $start + $idx + 1,
+                    'hn' => $row->hn,
+                    'cid' => $row->cid,
+                    'patient_name' => $row->patient_name,
+                    'sex_name' => $row->sex_name ?? '-',
+                    'pttype_name' => $row->pttype_name ?? '-',
+                    'regdate' => $row->regdate ? DateThai($row->regdate) : '-',
+                    'lastvisit' => $row->lastvisit ? DateThai($row->lastvisit) : '-',
+                    'last_fbs' => $last_fbs,
+                    'last_hba1c' => $last_hba1c,
+                    'last_ua' => $last_ua,
+                    'last_bp_value' => $formatBp($row->last_bp_value),
+                    'doctor_name' => $row->doctor_name ?? '-',
+                    'status_badge' => $status_badge,
+                    'send_pcu_hospital_name' => $row->send_pcu_hospital_name ?? '-'
+                ];
+            }
+
+            return response()->json([
+                'draw' => intval($draw),
+                'recordsTotal' => $recordsTotal,
+                'recordsFiltered' => $recordsFiltered,
+                'data' => $data
+            ]);
+        }
+
+        return view('hosxp.ncd.register', compact(
             'title',
             'budget_year_select',
             'budget_year',
@@ -117,7 +344,7 @@ class NcdController extends Controller
             'end_date',
             'status_summary',
             'new_by_month',
-            'patients'
+            'config'
         ));
     }
 

@@ -109,7 +109,10 @@ Route::middleware(['auth'])->group(function () {
     // NCD Routes
     Route::prefix('hosxp/ncd')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\NcdController::class, 'index'])->name('hosxp.ncd.index');
-        Route::get('/dm-register', [App\Http\Controllers\Hosxp\NcdController::class, 'dm_register'])->name('hosxp.ncd.dm_register');
+        Route::get('/register/{clinic_code}', [App\Http\Controllers\Hosxp\NcdController::class, 'clinic_register'])->name('hosxp.ncd.clinic_register');
+        Route::get('/dm-register', function() {
+            return redirect()->route('hosxp.ncd.clinic_register', ['clinic_code' => '001']);
+        })->name('hosxp.ncd.dm_register');
     });
 
     // PCU Routes

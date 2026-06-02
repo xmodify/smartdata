@@ -15,7 +15,7 @@
                     'opd' => 'ผู้ป่วยนอก OPD',
                     'ipd' => 'ผู้ป่วยใน IPD',
                     'refer' => 'ผู้ป่วยส่งต่อ Refer',
-                    'ic' => 'โรคทาง IC',
+                    'ic' => 'โรคเฝ้าระวังระบบ IC',
                     'all' => ''
                 ];
                 $category_label = $category_names[(string)$category] ?? '';

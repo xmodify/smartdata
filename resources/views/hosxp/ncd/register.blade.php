@@ -1,18 +1,47 @@
 @extends('layouts.app')
 
+@php
+    $themeColor = match($config['theme'] ?? 'red') {
+        'orange' => '#f57c00',
+        'teal' => '#00796b',
+        'indigo' => '#3949ab',
+        'cyan' => '#0097a7',
+        'green' => '#388e3c',
+        default => '#e53935' // red
+    };
+    
+    $btnClass = match($config['theme'] ?? 'red') {
+        'orange' => 'btn-warning text-white',
+        'teal' => 'btn-success',
+        'indigo' => 'btn-primary',
+        'cyan' => 'btn-info text-white',
+        'green' => 'btn-success',
+        default => 'btn-danger' // red
+    };
+    
+    $textClass = match($config['theme'] ?? 'red') {
+        'orange' => 'text-orange',
+        'teal' => 'text-teal',
+        'indigo' => 'text-indigo',
+        'cyan' => 'text-cyan',
+        'green' => 'text-green2',
+        default => 'text-dm-red'
+    };
+@endphp
+
 @section('title', 'SmartData | ' . $title)
 
 @section('topbar_actions')
     <a href="{{ route('hosxp.ncd.index') }}" class="btn btn-light btn-sm fw-bold shadow-sm"
-        style="border-radius: 10px; padding: 5px 15px; color: #4e73df; transition: all 0.3s;">
+        style="border-radius: 10px; padding: 5px 15px; color: {{ $themeColor }}; transition: all 0.3s;">
         <i class="fas fa-chevron-left me-1"></i> ย้อนกลับ
     </a>
 @endsection
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/jquery.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/buttons.dataTables.min.css') }}">
     <style>
         .page-header-container {
             background: #fff;
@@ -35,72 +64,85 @@
 
         .card-custom { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
 
-        .table thead th {
-            background-color: #f8fafc;
-            color: #1e3a8a;
-            font-weight: 600;
-            font-size: 0.75rem;
-            letter-spacing: 0.025em;
-            border-bottom: 1px solid #e2e8f0;
+        /* Premium DataTables Overrides matching other dashboards but with Dynamic accent */
+        table.dataTable thead th {
+            background-color: #f8fafc !important;
+            color: {{ $themeColor }} !important;
+            font-weight: 700 !important;
+            border-bottom: 2px solid #e2e8f0 !important;
+            font-size: 0.82rem !important;
+            padding: 12px 10px !important;
             white-space: nowrap;
         }
-        .table td { font-size: 0.82rem; vertical-align: middle; }
-
-        /* DataTable layout styling to match user mockup */
-        .dataTables_length {
-            font-size: 0.85rem;
-            color: #475569;
-        }
-        .dataTables_length select {
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 0.25rem 1.5rem 0.25rem 0.5rem;
-            margin: 0 0.25rem;
-            outline: none;
-            font-size: 0.85rem;
-            background-color: #fff;
-        }
-        .dataTables_filter {
-            font-size: 0.85rem;
-            color: #475569;
-        }
-        .dataTables_filter input {
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 0.25rem 0.75rem;
-            margin-left: 0.5rem;
-            outline: none;
-            font-size: 0.85rem;
-            width: 180px;
-            transition: border-color 0.2s;
-        }
-        .dataTables_filter input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
-        }
-        .dt-buttons .btn-success {
-            background-color: #1b5e20 !important;
-            border-color: #1b5e20 !important;
-            color: #fff !important;
+        
+        table.dataTable tbody td {
             font-size: 0.82rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 6px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            vertical-align: middle;
+            padding: 8px 10px !important;
         }
-        .dt-buttons .btn-success:hover {
-            background-color: #154c18 !important;
-            border-color: #154c18 !important;
+
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+            padding: 0.2rem 0.6rem !important;
+            outline: none !important;
+            font-size: 0.8rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 0;
+            font-size: 0.85rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 0rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: {{ $themeColor }} !important;
+            color: white !important;
+            border: 1px solid {{ $themeColor }} !important;
+            border-radius: 0.5rem !important;
+            padding: 0.3em 0.8em !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #fff5f5 !important;
+            color: {{ $themeColor }} !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+        }
+
+        .dt-buttons {
+            margin-bottom: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+        }
+
+        .dt-buttons .btn-success {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+            color: #ffffff !important;
+            border-radius: 0.4rem !important;
+            font-weight: 500 !important;
+            padding: 0.25rem 0.6rem !important;
+            font-size: 0.75rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.2) !important;
         }
 
         .flatpickr-today-button {
             border-top: 1px solid #e6e6e6; padding: 8px; text-align: center; cursor: pointer;
-            color: #e53935; font-weight: bold; font-size: 0.9rem; transition: background 0.2s;
+            color: {{ $themeColor }}; font-weight: bold; font-size: 0.9rem; transition: background 0.2s;
             border-radius: 0 0 12px 12px;
         }
-        .flatpickr-today-button:hover { background: #fff5f5; color: #b71c1c; }
+        .flatpickr-today-button:hover { background: #fff5f5; color: {{ $themeColor }}; }
 
         .badge-status {
             font-size: 0.72rem;
@@ -108,7 +150,12 @@
             border-radius: 20px;
             font-weight: 600;
         }
-        .text-dm-red { color: #e53935; }
+        .text-dm-red { color: {{ $themeColor }}; }
+
+        /* ซ่อนแถบกำลังโหลด (Processing) ของ DataTable ทั้งหมดแบบถาวร */
+        div.dataTables_processing {
+            display: none !important;
+        }
     </style>
 @endpush
 
@@ -119,10 +166,10 @@
         <div class="d-flex align-items-center report-title-box">
             <div class="ps-3 py-1">
                 <h5 class="text-dark mb-0 fw-bold">
-                    <i class="fas fa-syringe text-dm-red me-2"></i> {{ $title }}
+                    <i class="{{ $config['icon'] ?? 'fas fa-syringe' }} {{ $textClass }} me-2"></i> {{ $title }}
                 </h5>
                 <div class="text-muted small mt-1">ปีงบประมาณ {{ $budget_year }}</div>
-                <div class="text-dm-red small fw-bold mt-1">
+                <div class="{{ $textClass }} small fw-bold mt-1">
                     <i class="fas fa-calendar-alt me-1"></i>
                     ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}
                 </div>
@@ -131,12 +178,12 @@
         <div class="d-flex align-items-center">
             <form action="" method="GET" class="m-0 header-form-controls">
                 <div class="input-group input-group-sm shadow-sm input-group-date" style="border-radius:8px;overflow:hidden;">
-                    <span class="input-group-text bg-white border-end-0 text-dm-red"><i class="fas fa-calendar-alt"></i></span>
+                    <span class="input-group-text bg-white border-end-0 {{ $textClass }}"><i class="fas fa-calendar-alt"></i></span>
                     <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0"
                         value="{{ $start_date }}" style="font-size:0.8rem;">
                 </div>
                 <div class="input-group input-group-sm shadow-sm input-group-date" style="border-radius:8px;overflow:hidden;">
-                    <span class="input-group-text bg-white border-end-0 text-dm-red"><i class="fas fa-calendar-alt"></i></span>
+                    <span class="input-group-text bg-white border-end-0 {{ $textClass }}"><i class="fas fa-calendar-alt"></i></span>
                     <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0"
                         value="{{ $end_date }}" style="font-size:0.8rem;">
                 </div>
@@ -150,7 +197,7 @@
                         @endforeach
                     </select>
                     <input type="hidden" name="budget_year_changed" id="budget_year_changed" value="0">
-                    <button type="submit" class="btn btn-danger text-white px-3" style="font-size:0.8rem;">
+                    <button type="submit" class="btn {{ $btnClass }} px-3" style="font-size:0.8rem;">
                         <i class="fas fa-search"></i> ค้นหา
                     </button>
                 </div>
@@ -164,9 +211,9 @@
     @endphp
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm text-center py-3" style="border-radius:14px; border-left: 4px solid #e53935 !important;">
+            <div class="card border-0 shadow-sm text-center py-3" style="border-radius:14px; border-left: 4px solid {{ $themeColor }} !important;">
                 <div class="text-muted small mb-1">ผู้ป่วยทั้งหมด</div>
-                <div class="fw-bold fs-4 text-dm-red">{{ number_format($totalAll) }}</div>
+                <div class="fw-bold fs-4 {{ $textClass }}">{{ number_format($totalAll) }}</div>
                 <div class="text-muted" style="font-size:0.7rem;">ราย</div>
             </div>
         </div>
@@ -187,7 +234,7 @@
         <div class="col-md-5">
             <div class="card card-custom h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4">
-                    <h6 class="fw-bold mb-0 text-dm-red">
+                    <h6 class="fw-bold mb-0 {{ $textClass }}">
                         <i class="fas fa-chart-pie me-2"></i>สัดส่วนผู้ป่วยแยกตามสถานะ
                     </h6>
                 </div>
@@ -201,7 +248,7 @@
         <div class="col-md-7">
             <div class="card card-custom h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4">
-                    <h6 class="fw-bold mb-0 text-danger">
+                    <h6 class="fw-bold mb-0 {{ $textClass }}">
                         <i class="fas fa-chart-bar me-2"></i>จำนวนผู้ป่วยรายใหม่ แยกรายเดือน
                     </h6>
                     <div class="text-muted small">วันที่ลงทะเบียน (regdate) ในช่วงที่เลือก</div>
@@ -217,9 +264,9 @@
     <div class="card card-custom mb-4">
         <div class="card-header bg-transparent border-0 pt-3 px-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h6 class="fw-bold mb-0 text-dm-red">
-                    <i class="fas fa-table me-2"></i>รายชื่อผู้ป่วยคลินิกเบาหวาน
-                    <span class="badge bg-danger ms-2" id="countBadge">{{ number_format(count($patients)) }} ราย</span>
+                <h6 class="fw-bold mb-0 {{ $textClass }}">
+                    <i class="fas fa-table me-2"></i>รายชื่อผู้ป่วย
+                    <span class="badge bg-danger ms-2" id="countBadge" style="display: none;"></span>
                 </h6>
             </div>
         </div>
@@ -246,62 +293,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($patients as $i => $row)
-                        <tr>
-                            <td class="text-center text-muted small">{{ $i + 1 }}</td>
-                            <td class="fw-bold small">{{ $row->hn }}</td>
-                            <td class="small text-muted">{{ $row->cid }}</td>
-                            <td class="small">{{ $row->patient_name }}</td>
-                            <td class="small text-center">{{ $row->sex_name }}</td>
-                            <td class="small">{{ $row->pttype_name }}</td>
-                            <td class="small text-center">{{ $row->regdate }}</td>
-                            <td class="small text-center">{{ $row->lastvisit }}</td>
-                            <td class="small text-center">
-                                @if($row->last_fbs_date)
-                                    <span class="d-block text-muted" style="font-size:0.7rem;">{{ $row->last_fbs_date }}</span>
-                                    <span class="fw-bold {{ $row->last_fbs_value > 126 ? 'text-danger' : 'text-success' }}">
-                                        {{ $row->last_fbs_value }}
-                                    </span>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td class="small text-center">
-                                @if($row->last_hba1c_date)
-                                    <span class="d-block text-muted" style="font-size:0.7rem;">{{ $row->last_hba1c_date }}</span>
-                                    <span class="fw-bold {{ $row->last_hba1c_value > 7 ? 'text-danger' : 'text-success' }}">
-                                        {{ $row->last_hba1c_value }}
-                                    </span>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td class="small text-center">
-                                @if($row->last_ua_date)
-                                    <span class="d-block text-muted" style="font-size:0.7rem;">{{ $row->last_ua_date }}</span>
-                                    <span>{{ $row->last_ua_value }}</span>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td class="small text-center">{{ $row->last_bp_value ?? '-' }}</td>
-                            <td class="small">{{ $row->doctor_name }}</td>
-                            <td class="text-center">
-                                @php
-                                    $statusId = $row->clinic_member_status_id ?? '';
-                                    $statusName = $row->clinic_member_status_name ?? 'ไม่ระบุ';
-                                    $badgeColor = match((string)$statusId) {
-                                        '1' => 'success',
-                                        '2' => 'warning',
-                                        '3' => 'secondary',
-                                        default => 'light'
-                                    };
-                                @endphp
-                                <span class="badge bg-{{ $badgeColor }} badge-status">{{ $statusName }}</span>
-                            </td>
-                            <td class="small">{{ $row->send_pcu_hospital_name }}</td>
-                        </tr>
-                        @endforeach
+                        {{-- Populated via serverSide AJAX --}}
                     </tbody>
                 </table>
             </div>
@@ -309,33 +301,42 @@
     </div>
 </div>
 
+<script>
+window.themeColor = "{{ $themeColor }}";
+// ข้อมูลจาก PHP สำหรับชาร์ต (ผ่าน window global variable โหลดก่อน push scripts block)
+window.statusLabels = @json(array_values(array_map(function($v) { return $v->clinic_member_status_name ?? 'ไม่ระบุ'; }, $status_summary)));
+window.statusValues = @json(array_values(array_map(function($v) { return (int)$v->total; }, $status_summary)));
+window.monthLabels  = @json(array_column($new_by_month, 'month_name'));
+window.monthValues  = @json(array_column($new_by_month, 'total'));
+</script>
+
 @push('scripts')
     <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('vendor/flatpickr/flatpickr.min.js') }}"></script>
     <script src="{{ asset('vendor/flatpickr/th.js') }}"></script>
     <script src="{{ asset('vendor/apexcharts/apexcharts.min.js') }}"></script>
     <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="{{ asset('vendor/datatables/dataTables.buttons.min.js') }}"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
     <script src="{{ asset('vendor/jszip/jszip.min.js') }}"></script>
     <script src="{{ asset('vendor/datatables/buttons.html5.min.js') }}"></script>
 
     <script>
-    // ข้อมูลจาก PHP (render ก่อน script เริ่มทำงาน)
-    var statusLabels = @json(array_map(fn($v) => $v->clinic_member_status_name ?? 'ไม่ระบุ', $status_summary));
-    var statusValues = @json(array_map(fn($v) => (int)$v->total, $status_summary));
-    var monthLabels  = @json(array_column($new_by_month, 'month_name'));
-    var monthValues  = @json(array_map(fn($v) => (int)$v->total, $new_by_month));
+    var statusLabels = window.statusLabels || [];
+    var statusValues = window.statusValues || [];
+    var monthLabels  = window.monthLabels  || [];
+    var monthValues  = window.monthValues  || [];
+    var themeColor   = window.themeColor   || '#e53935';
 
     function initCharts() {
-        // ===== Donut Chart: Status =====
-        if (document.querySelector('#statusDonutChart') && typeof ApexCharts !== 'undefined') {
-            var donutChart = new ApexCharts(document.querySelector('#statusDonutChart'), {
+        // Donut Chart: Status
+        var statusChartEl = document.querySelector('#statusDonutChart');
+        if (statusChartEl) {
+            statusChartEl.innerHTML = '';
+            var donutChart = new ApexCharts(statusChartEl, {
                 chart: { type: 'donut', height: 320, toolbar: { show: false } },
                 series: statusValues,
                 labels: statusLabels,
-                colors: ['#e53935','#fb8c00','#43a047','#1e88e5','#8e24aa','#00897b'],
+                colors: [themeColor, '#fb8c00','#43a047','#1e88e5','#8e24aa','#00897b'],
                 legend: { position: 'bottom', fontSize: '13px' },
                 dataLabels: { enabled: true, style: { fontSize: '12px' } },
                 plotOptions: {
@@ -355,16 +356,18 @@
             donutChart.render();
         }
 
-        // ===== Bar Chart: New by Month =====
-        if (document.querySelector('#newByMonthChart') && typeof ApexCharts !== 'undefined') {
+        // Bar Chart: New by Month
+        var monthChartEl = document.querySelector('#newByMonthChart');
+        if (monthChartEl) {
+            monthChartEl.innerHTML = '';
             var noData = monthValues.length === 0
                 ? { text: 'ไม่มีผู้ป่วยลงทะเบียนใหม่ในช่วงนี้', align: 'center', style: { fontSize: '14px', color: '#999' } }
                 : {};
-            var barChart = new ApexCharts(document.querySelector('#newByMonthChart'), {
+            var barChart = new ApexCharts(monthChartEl, {
                 chart: { type: 'bar', height: 320, toolbar: { show: false } },
                 series: [{ name: 'ผู้ป่วยรายใหม่', data: monthValues.length ? monthValues : [0] }],
                 xaxis: { categories: monthLabels.length ? monthLabels : ['ไม่มีข้อมูล'] },
-                colors: ['#e53935'],
+                colors: [themeColor],
                 plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
                 dataLabels: { enabled: true, style: { fontSize: '11px', colors: ['#333'] } },
                 yaxis: { labels: { formatter: function(val) { return Math.floor(val).toLocaleString(); } } },
@@ -375,16 +378,17 @@
         }
     }
 
-    // รอให้ ApexCharts โหลดเสร็จก่อน
-    if (typeof ApexCharts !== 'undefined') {
-        initCharts();
-    } else {
-        document.querySelector('script[src*="apexcharts"]').addEventListener('load', initCharts);
+    function waitForCharts() {
+        if (typeof ApexCharts !== 'undefined') {
+            initCharts();
+        } else {
+            setTimeout(waitForCharts, 100);
+        }
     }
+    waitForCharts();
 
-    // ===== DataTable =====
+    // ===== DataTable Server-Side =====
     var dtInstance;
-    var STATUS_COL = 13; // column index ของ "สถานะสมาชิก"
 
     (function initDataTable() {
         if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
@@ -393,40 +397,61 @@
         }
 
         dtInstance = $('#patientTable').DataTable({
+            processing: false,
+            serverSide: true,
+            ajax: {
+                url: window.location.href,
+                type: 'GET'
+            },
+            columns: [
+                { data: 'index', name: 'index', orderable: false, searchable: false, className: 'text-center text-muted small' },
+                { data: 'hn', name: 'c.hn', className: 'fw-bold small' },
+                { data: 'cid', name: 'p.cid', className: 'small text-muted' },
+                { data: 'patient_name', name: 'patient_name', className: 'small' },
+                { data: 'sex_name', name: 's.name', className: 'small text-center' },
+                { data: 'pttype_name', name: 'y.name', className: 'small' },
+                { data: 'regdate', name: 'c.regdate', className: 'small text-center' },
+                { data: 'lastvisit', name: 'c.lastvisit', className: 'small text-center' },
+                { data: 'last_fbs', name: 'last_fbs', className: 'small text-center', searchable: false },
+                { data: 'last_hba1c', name: 'last_hba1c', className: 'small text-center', searchable: false },
+                { data: 'last_ua', name: 'last_ua', className: 'small text-center', searchable: false },
+                { data: 'last_bp_value', name: 'last_bp_value', className: 'small text-center', searchable: false },
+                { data: 'doctor_name', name: 'd.name', className: 'small' },
+                { data: 'status_badge', name: 'status_badge', className: 'text-center', searchable: false },
+                { data: 'send_pcu_hospital_name', name: 'send_pcu_hospital_name', className: 'small' }
+            ],
             pageLength: 10,
-            dom: '<"d-flex justify-content-between align-items-center mb-3"l<"d-flex align-items-center gap-2"fB>>rtip',
+            dom: '<"d-flex justify-content-between align-items-center mb-3 py-2 px-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center p-3"ip>',
             buttons: [
                 {
                     extend: 'excelHtml5',
                     text: '<i class="fas fa-file-excel me-1"></i> Excel',
-                    className: 'btn btn-success btn-sm shadow-sm px-3',
-                    title: 'ทะเบียนผู้ป่วยคลินิกเบาหวาน',
-                    exportOptions: { search: 'applied', order: 'applied' }
+                    className: 'btn btn-success',
+                    title: 'ทะเบียนผู้ป่วย'
                 }
             ],
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json',
                 search: "ค้นหา:",
                 lengthMenu: "แสดง _MENU_ รายการ",
-                searchPlaceholder: "กรอกข้อมูลเพื่อค้นหา..."
+                searchPlaceholder: "กรอกข้อมูลเพื่อค้นหา...",
+                info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                paginate: {
+                    previous: "ก่อนหน้า",
+                    next: "ถัดไป"
+                }
             },
-            order: [[6, 'asc']],
+            order: [[6, 'desc']],
             scrollX: true,
-            initComplete: function() {
+            drawCallback: function(settings) {
                 updateCountBadge(this.api());
             }
         });
 
-        // อัปเดต badge จำนวนที่แสดง
         function updateCountBadge(api) {
-            var count = api.rows({ search: 'applied' }).count();
-            $('#countBadge').text(count.toLocaleString() + ' ราย');
+            if (!api || typeof api.page !== 'function') return;
+            var count = api.page.info().recordsFiltered;
+            $('#countBadge').text(count.toLocaleString() + ' ราย').show();
         }
-
-        // อัปเดต badge เมื่อค้นหา
-        dtInstance.on('search.dt draw.dt', function() {
-            updateCountBadge(dtInstance);
-        });
     })();
 
     // ===== Flatpickr (ภาษาไทย พุทธศักราช) =====
@@ -447,7 +472,6 @@
         altInput: true,
         altFormat: 'j F Y',
         onReady: function(selectedDates, dateStr, instance) {
-            // ปุ่มวันนี้
             var container = instance.calendarContainer;
             if (container && !container.querySelector('.flatpickr-today-button')) {
                 var btn = document.createElement('div');
@@ -460,7 +484,6 @@
                 });
                 container.appendChild(btn);
             }
-            // แสดงปีพุทธศักราชทันทีที่ init
             if (selectedDates.length > 0) {
                 setThaiAltValue(instance, selectedDates[0]);
             }
@@ -477,7 +500,6 @@
     startPicker = flatpickr('#start_date', fpConfig);
     endPicker   = flatpickr('#end_date',   fpConfig);
 
-    // แสดงปีพุทธศักราชสำหรับค่าเริ่มต้น (onReady อาจ fire ก่อน l10n โหลด)
     setTimeout(function() {
         if (startPicker.selectedDates.length) setThaiAltValue(startPicker, startPicker.selectedDates[0]);
         if (endPicker.selectedDates.length)   setThaiAltValue(endPicker,   endPicker.selectedDates[0]);
@@ -489,12 +511,11 @@
         budgetSelect.addEventListener('change', function() {
             var v = parseInt(this.value);
             if (!isNaN(v)) {
-                var sDate = (v - 544) + '-10-01';  // เช่น ปีงบ 2569 → 2025-10-01
-                var eDate = (v - 543) + '-09-30';  // เช่น ปีงบ 2569 → 2026-09-30
+                var sDate = (v - 544) + '-10-01';
+                var eDate = (v - 543) + '-09-30';
                 startPicker.setDate(sDate, true);
                 endPicker.setDate(eDate, true);
                 document.getElementById('budget_year_changed').value = '1';
-                // อัปเดต display ภาษาไทย
                 setTimeout(function() {
                     if (startPicker.selectedDates.length) setThaiAltValue(startPicker, startPicker.selectedDates[0]);
                     if (endPicker.selectedDates.length)   setThaiAltValue(endPicker,   endPicker.selectedDates[0]);
@@ -505,4 +526,3 @@
     </script>
 @endpush
 @endsection
-

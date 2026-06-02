@@ -48,6 +48,95 @@
 @endpush
 
 @section('content')
+    @php
+        $clinics = [
+            [
+                'code' => '001',
+                'name' => 'คลินิกเบาหวาน',
+                'icon' => 'fas fa-syringe',
+                'bg_class' => 'bg-pastel-red',
+                'text_class' => 'text-red',
+            ],
+            [
+                'code' => '002',
+                'name' => 'คลินิกความดัน',
+                'icon' => 'fas fa-heartbeat',
+                'bg_class' => 'bg-pastel-orange',
+                'text_class' => 'text-orange',
+            ],
+            [
+                'code' => '007',
+                'name' => 'คลินิก CKD',
+                'icon' => 'fas fa-circle-nodes',
+                'bg_class' => 'bg-pastel-teal',
+                'text_class' => 'text-teal',
+            ],
+            [
+                'code' => '009',
+                'name' => 'คลินิกวัณโรค / Asthma',
+                'icon' => 'fas fa-lungs',
+                'bg_class' => 'bg-pastel-green',
+                'text_class' => 'text-green2',
+            ],
+            [
+                'code' => '012',
+                'name' => 'คลินิกสุขภาพจิต',
+                'icon' => 'fas fa-brain',
+                'bg_class' => 'bg-pastel-cyan',
+                'text_class' => 'text-cyan',
+            ],
+            [
+                'code' => '013',
+                'name' => 'คลินิกฟอกไต HD',
+                'icon' => 'fas fa-procedures',
+                'bg_class' => 'bg-pastel-teal',
+                'text_class' => 'text-teal',
+            ],
+            [
+                'code' => '014',
+                'name' => 'คลินิกฟอกไต CAPD',
+                'icon' => 'fas fa-water',
+                'bg_class' => 'bg-pastel-cyan',
+                'text_class' => 'text-cyan',
+            ],
+            [
+                'code' => '020',
+                'name' => 'คลินิกบำบัดยาเสพติด',
+                'icon' => 'fas fa-capsules',
+                'bg_class' => 'bg-pastel-orange',
+                'text_class' => 'text-orange',
+            ],
+            [
+                'code' => '021',
+                'name' => 'คลินิก COPD',
+                'icon' => 'fas fa-lungs',
+                'bg_class' => 'bg-pastel-green',
+                'text_class' => 'text-green2',
+            ],
+            [
+                'code' => '028',
+                'name' => 'คลินิกโรคหลอดเลือดสมอง',
+                'icon' => 'fas fa-head-side-virus',
+                'bg_class' => 'bg-pastel-red',
+                'text_class' => 'text-red',
+            ],
+            [
+                'code' => '029',
+                'name' => 'คลินิกโรคหัวใจล้มเหลว',
+                'icon' => 'fas fa-heart',
+                'bg_class' => 'bg-pastel-indigo',
+                'text_class' => 'text-indigo',
+            ],
+            [
+                'code' => '032',
+                'name' => 'คลินิกโรคไตเรื้อรังระยะ 4-5',
+                'icon' => 'fas fa-network-wired',
+                'bg_class' => 'bg-pastel-teal',
+                'text_class' => 'text-teal',
+            ],
+        ];
+    @endphp
+
     <div class="container-fluid px-2 px-md-3">
         <div class="page-header-container d-flex justify-content-between align-items-center mt-3">
             <div class="d-flex align-items-center report-title-box">
@@ -58,236 +147,28 @@
             </div>
         </div>
 
-        {{-- Row 1 --}}
         <div class="row g-4 mb-4">
-            {{-- คลินิกความดัน --}}
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                    <div class="card-header bg-pastel-orange py-3 border-0" style="border-radius: 15px 15px 0 0;">
-                        <h6 class="fw-bold mb-0 text-orange"><i class="fas fa-tachometer-alt me-2"></i>คลินิกความดัน</h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ทะเบียนผู้ป่วยคลินิกโรคความดัน</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">จำนวนผู้ป่วยคลินิกโรคความดัน</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ประเมินผลภาวะความดัน ผู้ป่วย-ห้องตรวจ/ผลการรักษา</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">รายชื่อผู้ป่วยโรคความดัน ที่มีโรคอื่นร่วม Chronic</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">รายชื่อผู้ป่วยโรคความดันที่รักษาต่อเนื่องครั้งล่าสุด</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ตรวจสอบความถูกต้องสิทธิ์การรักษาโรคความดันในโรงพยาบาล</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ตรวจสอบอาการแทรกซ้อนสิทธิ์การรักษา ความดัน รายบุคคล</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
+            @foreach ($clinics as $c)
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                        <div class="card-header {{ $c['bg_class'] }} py-3 border-0" style="border-radius: 15px 15px 0 0;">
+                            <h6 class="fw-bold mb-0 {{ $c['text_class'] }}"><i class="{{ $c['icon'] }} me-2"></i>{{ $c['name'] }}</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <a href="{{ route('hosxp.ncd.clinic_register', ['clinic_code' => $c['code']]) }}" 
+                                   class="list-group-item list-group-item-action py-3 px-4 border-0"
+                                   style="border-radius: 0 0 15px 15px;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="small fw-bold {{ $c['text_class'] }}">ทะเบียนผู้ป่วย{{ $c['name'] }}</span>
+                                        <i class="fas fa-chevron-right {{ $c['text_class'] }}" style="font-size: 0.7rem;"></i>
+                                    </div>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {{-- คลินิกเบาหวาน --}}
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                    <div class="card-header bg-pastel-red py-3 border-0" style="border-radius: 15px 15px 0 0;">
-                        <h6 class="fw-bold mb-0 text-red"><i class="fas fa-syringe me-2"></i>คลินิกเบาหวาน</h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            <a href="{{ route('hosxp.ncd.dm_register') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-danger fw-bold">ทะเบียนผู้ป่วยคลินิกเบาหวาน</span>
-                                    <i class="fas fa-chevron-right text-danger" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">จำนวนผู้ป่วยคลินิกโรคเบาหวาน</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ประเมินผล ผู้ป่วย-ห้องตรวจ/ผลการรักษา</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">รายชื่อผู้ป่วยโรคเบาหวาน ที่มีโรคอื่นร่วม Chronic</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">รายชื่อผู้ป่วยโรคเบาหวานที่รักษาต่อเนื่องครั้งล่าสุดที่ Admit</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ตรวจสอบความถูกต้องสิทธิ์การรักษา เบาหวาน รายบุคคล</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
-
-        {{-- Row 2 --}}
-        <div class="row g-4 mb-4">
-            {{-- คลินิก ARV --}}
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                    <div class="card-header bg-pastel-indigo py-3 border-0" style="border-radius: 15px 15px 0 0;">
-                        <h6 class="fw-bold mb-0 text-indigo"><i class="fas fa-pills me-2"></i>คลินิก ARV</h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ทะเบียนผู้ป่วยคลินิก ARV</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- คลินิกผู้ป่วย HD --}}
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                    <div class="card-header bg-pastel-teal py-3 border-0" style="border-radius: 15px 15px 0 0;">
-                        <h6 class="fw-bold mb-0 text-teal"><i class="fas fa-procedures me-2"></i>คลินิกผู้ป่วย HD</h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ทะเบียนผู้ป่วยคลินิกผู้ป่วย Hd (รพ.หลัก)</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">จำนวนผู้ป่วยที่รับบริการ HD แยกเดือน (&lt;5 คน)</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">จำนวนครั้งผู้ป่วยที่รับบริการ HD แยกเดือน (&lt;5 ครั้ง)</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ดัชนี GFR น้อยกว่า 30</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Row 3 --}}
-        <div class="row g-4 mb-4">
-            {{-- คลินิกผู้ป่วย CAPD --}}
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                    <div class="card-header bg-pastel-cyan py-3 border-0" style="border-radius: 15px 15px 0 0;">
-                        <h6 class="fw-bold mb-0 text-cyan"><i class="fas fa-water me-2"></i>คลินิกผู้ป่วย CAPD</h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ทะเบียนผู้ป่วยคลินิกผู้ป่วย CAPD</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">จำนวนผู้ป่วยที่รับบริการ CAPD แยกเดือน</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ตรวจสอบความถูกต้องสิทธิ์การรักษาโรค CAPD</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ดัชนี Stem eGFR 4.5 ที่ยังไม่เริ่มเยียวยา</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- คลินิก Asthma --}}
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                    <div class="card-header bg-pastel-green py-3 border-0" style="border-radius: 15px 15px 0 0;">
-                        <h6 class="fw-bold mb-0 text-green2"><i class="fas fa-lungs me-2"></i>คลินิก Asthma</h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ทะเบียนผู้ป่วยคลินิก Asthma</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">จำนวนผู้ป่วยโรค Asthma</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 @endsection
