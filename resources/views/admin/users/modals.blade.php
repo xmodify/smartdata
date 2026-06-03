@@ -128,7 +128,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small">Username</label>
-                            <input type="text" name="username" id="edit_username" class="form-control" required>
+                            <input type="text" name="username" id="edit_username" class="form-control bg-light" readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small">สิทธิ์ (Role)</label>
