@@ -64,8 +64,11 @@
                                 @if($user->hasAccessAssessment())
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">แบบประเมิน</span>
                                 @endif
+                                @if($user->hasAccessLend())
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">ศูนย์ยืม-คืน</span>
+                                @endif
                                 
-                                @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessAudit() && !$user->hasAccessAssessment())
+                                @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessAudit() && !$user->hasAccessAssessment() && !$user->hasAccessLend())
                                     <span class="text-muted small">ไม่มีสิทธิ์เข้าถึง</span>
                                 @endif
                             </div>
@@ -136,6 +139,7 @@
             document.getElementById('edit_allow_skpcard').checked = user.allow_skpcard === 'Y';
             document.getElementById('edit_allow_audit').checked = user.allow_audit === 'Y';
             document.getElementById('edit_allow_assessment').checked = user.allow_assessment === 'Y';
+            document.getElementById('edit_allow_lend').checked = user.allow_lend === 'Y';
         });
     });
 

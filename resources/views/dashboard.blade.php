@@ -53,8 +53,8 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card dashboard-card border-0 shadow-sm">
-                <div class="card-header bg-pastel-teal py-2 border-bottom-0"> <!-- Reduced py-3 to py-2 -->
-                    <h6 class="m-0 font-weight-bold text-primary small"><i class="fas fa-tools me-2"></i>ข้อมูลงานสนับสนุน BackOffice</h6>
+                <div class="card-header bg-pastel-teal py-3 border-bottom-0">
+                    <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-tools me-2"></i>ข้อมูลงานสนับสนุน BackOffice</h6>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
@@ -64,6 +64,7 @@
                                 ['url' => '/backoffice/hrd', 'label' => 'บุคลากร', 'icon' => 'fa-id-card', 'color' => '#1cc88a', 'permission' => 'hasAccessPersonnel'],
                                 ['url' => '/backoffice/incident', 'label' => 'รายงานอุบัติการณ์', 'icon' => 'fa-triangle-exclamation', 'color' => '#e74a3b', 'permission' => 'hasAccessIncident'],
                                 ['url' => '/skpcard', 'label' => 'บัตรสังฆะประชาร่วมใจ', 'icon' => 'fa-address-card', 'color' => '#f6c23e', 'permission' => 'hasAccessSkpcard'],
+                                ['url' => '/lend', 'label' => 'ศูนย์ยืม-คืน', 'icon' => 'fa-hand-holding-medical', 'color' => '#0ea5e9', 'permission' => 'hasAccessLend'],
                                 ['url' => '#', 'label' => 'ระบบตรวจสอบ', 'icon' => 'fa-check-to-slot', 'color' => '#6610f2', 'permission' => 'hasAccessAudit'],
                                 ['url' => '#', 'label' => 'แบบประเมิน', 'icon' => 'fa-clipboard-check', 'color' => '#20c997', 'permission' => 'hasAccessAssessment'],
                             ];

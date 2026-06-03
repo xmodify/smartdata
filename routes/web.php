@@ -157,6 +157,21 @@ Route::middleware(['auth'])->group(function () {
         'destroy' => 'skpcard.destroy',
     ]);
 
+    // ─── ศูนย์ยืม-คืน ────────────────────────────────────────────────
+    Route::prefix('lend')->group(function () {
+        Route::get('/',                [App\Http\Controllers\Smartdata\LendController::class, 'index'])->name('lend.index');
+        Route::get('/create',          [App\Http\Controllers\Smartdata\LendController::class, 'create'])->name('lend.create');
+        Route::post('/',               [App\Http\Controllers\Smartdata\LendController::class, 'store'])->name('lend.store');
+        Route::get('/settings',        [App\Http\Controllers\Smartdata\LendItemController::class, 'index'])->name('lend.settings');
+        Route::post('/settings',       [App\Http\Controllers\Smartdata\LendItemController::class, 'store'])->name('lend.settings.store');
+        Route::put('/settings/{id}',   [App\Http\Controllers\Smartdata\LendItemController::class, 'update'])->name('lend.settings.update');
+        Route::put('/settings/{id}/toggle', [App\Http\Controllers\Smartdata\LendItemController::class, 'toggleActive'])->name('lend.settings.toggle');
+        Route::put('/{id}',            [App\Http\Controllers\Smartdata\LendController::class, 'update'])->name('lend.update');
+        Route::put('/{id}/return',     [App\Http\Controllers\Smartdata\LendController::class, 'processReturn'])->name('lend.process_return');
+        Route::put('/{id}/cancel',     [App\Http\Controllers\Smartdata\LendController::class, 'cancel'])->name('lend.cancel');
+        Route::get('/{id}/print',      [App\Http\Controllers\Smartdata\LendController::class, 'printForm'])->name('lend.print');
+    });
+
     Route::resource('/admin/users', App\Http\Controllers\Admin\UserController::class)->names([
         'index' => 'admin.users.index',
         'create' => 'admin.users.create',

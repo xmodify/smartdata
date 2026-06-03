@@ -416,7 +416,7 @@
                             </a>
                         @endif
                         @if(auth()->user()->hasAccessAsset())
-                            <a href="{{ url('/backoffice_asset') }}"
+                            <a href="#"
                                 class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-boxes-stacked me-2" style="color: #4e73df;"></i> งานทรัพย์สิน
                             </a>
@@ -436,13 +436,18 @@
                                 <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆะประชาร่วมใจ
                             </a>
                         @endif
+                        @if(auth()->user()->hasAccessLend())
+                            <a href="{{ route('lend.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-hand-holding-medical me-2" style="color: #0ea5e9;"></i> ศูนย์ยืม-คืน
+                            </a>
+                        @endif
                         @if(auth()->user()->hasAccessAudit())
-                            <a href="{{ url('/form') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <a href="#" class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-check-to-slot me-2" style="color: #6610f2;"></i> ระบบตรวจสอบ
                             </a>
                         @endif
                         @if(auth()->user()->hasAccessAssessment())
-                            <a href="{{ url('/form') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <a href="#" class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-clipboard-check me-2" style="color: #20c997;"></i> แบบประเมิน
                             </a>
                         @endif
@@ -451,7 +456,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-06-02 10:00
+                V. 69-06-03 17:00
             </div>
         </div>
         <!-- /#sidebar-wrapper -->

@@ -86,6 +86,12 @@
                                         <label class="form-check-label small" for="add_allow_assessment">แบบประเมิน</label>
                                     </div>
                                 </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_lend" value="Y" id="add_allow_lend">
+                                        <label class="form-check-label small" for="add_allow_lend">ศูนย์ยืม-คืน</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -186,6 +192,12 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="allow_assessment" value="Y" id="edit_allow_assessment">
                                         <label class="form-check-label small" for="edit_allow_assessment">แบบประเมิน</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_lend" value="Y" id="edit_allow_lend">
+                                        <label class="form-check-label small" for="edit_allow_lend">ศูนย์ยืม-คืน</label>
                                     </div>
                                 </div>
                             </div>

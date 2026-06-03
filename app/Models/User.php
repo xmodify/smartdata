@@ -31,6 +31,7 @@ class User extends Authenticatable
         'allow_skpcard',
         'allow_audit',
         'allow_assessment',
+        'allow_lend',
     ];
 
     /**
@@ -89,6 +90,11 @@ class User extends Authenticatable
     public function hasAccessAssessment()
     {
         return $this->role === 'admin' || $this->allow_assessment === 'Y';
+    }
+
+    public function hasAccessLend()
+    {
+        return $this->role === 'admin' || $this->allow_lend === 'Y';
     }
 
     public function hasAccessRole($role)

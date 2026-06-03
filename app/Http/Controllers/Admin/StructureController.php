@@ -129,6 +129,25 @@ class StructureController extends Controller
             $result = $output->fetch();
             $result .= "\nDatabase upgrade and notify records synced.";
 
+            // Seed default lend items
+            if (Schema::hasTable('lend_items')) {
+                $defaultItems = [
+                    ['name' => 'ชุดถังออกซิเจนพร้อมหัว', 'category' => 'equipment', 'sort_order' => 1],
+                    ['name' => 'เครื่องผลิตออกซิเจน',    'category' => 'equipment', 'sort_order' => 2],
+                    ['name' => 'เตียงผู้ป่วย',             'category' => 'equipment', 'sort_order' => 3],
+                    ['name' => 'ที่นอนลม',                 'category' => 'equipment', 'sort_order' => 4],
+                ];
+                foreach ($defaultItems as $item) {
+                    DB::table('lend_items')->insertOrIgnore(array_merge($item, [
+                        'total_qty'  => 1,
+                        'active'     => 'Y',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]));
+                }
+                $result .= "\nLend items synced.";
+            }
+
             return back()->with('success', 'อัปเกรดโครงสร้างฐานข้อมูลเสร็จสิ้น')->with('migrate_output', $result)->with('active_tab', 'system');
         } catch (\Exception $e) {
             return back()->with('error', 'เกิดข้อผิดพลาดในการอัปเกรด: ' . $e->getMessage())->with('active_tab', 'system');
