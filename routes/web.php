@@ -172,6 +172,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/print',      [App\Http\Controllers\Smartdata\LendController::class, 'printForm'])->name('lend.print');
     });
 
+    Route::put('/admin/users/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('admin.users.reset_password');
     Route::resource('/admin/users', App\Http\Controllers\Admin\UserController::class)->names([
         'index' => 'admin.users.index',
         'create' => 'admin.users.create',

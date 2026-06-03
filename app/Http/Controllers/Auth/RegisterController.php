@@ -67,9 +67,32 @@ class RegisterController extends Controller
     {
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:255', 'unique:users'],
+            'username' => [
+                'required', 
+                'string', 
+                'regex:/^[0-9]{13}$/', 
+                'unique:users',
+                function ($attribute, $value, $fail) {
+                    try {
+                        $exists = \Illuminate\Support\Facades\DB::connection('backoffice')
+                            ->table('hrd_person')
+                            ->where('HR_CID', $value)
+                            ->where('HR_STATUS_ID', 1)
+                            ->exists();
+                        if (!$exists) {
+                            $fail('คุณไม่ใช่เจ้าหน้าที่โรงพยาบาลหัวตะพาน โปรดติดต่อ Admin');
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Backoffice Database Connection Error during registration: ' . $e->getMessage());
+                        $fail('ระบบขัดข้องไม่สามารถตรวจสอบข้อมูลเจ้าหน้าที่ได้ในขณะนี้ โปรดติดต่อ Admin');
+                    }
+                }
+            ],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'username.regex' => 'Username ต้องเป็นเลขบัตรประชาชน 13 หลักเท่านั้น',
+            'username.unique' => 'Username นี้ถูกใช้งานแล้ว',
         ]);
     }
 }

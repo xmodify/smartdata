@@ -137,10 +137,7 @@
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
-                        <div class="col-md-12">
-                            <label class="form-label fw-bold small">รหัสผ่าน (เว้นว่างไว้หากไม่ต้องการเปลี่ยน)</label>
-                            <input type="password" name="password" class="form-control" autocomplete="new-password">
-                        </div>
+
                         <div class="col-md-12">
                             <div class="form-check form-switch mt-2">
                                 <input type="hidden" name="active" value="0">

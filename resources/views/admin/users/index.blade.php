@@ -92,13 +92,21 @@
                                 <button class="btn btn-white btn-sm edit-user" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#editUserModal"
-                                    data-user="{{ json_encode($user) }}">
+                                    data-user="{{ json_encode($user) }}"
+                                    title="แก้ไขข้อมูล">
                                     <i class="fas fa-edit text-primary"></i>
                                 </button>
+                                <form action="{{ route('admin.users.reset_password', $user) }}" method="POST" class="d-inline reset-password-form">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="button" class="btn btn-white btn-sm btn-reset-password" title="รีเซ็ตรหัสผ่านเป็น 12345678">
+                                        <i class="fas fa-key text-warning"></i>
+                                    </button>
+                                </form>
                                 <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline delete-user-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" class="btn btn-white btn-sm btn-delete-user">
+                                    <button type="button" class="btn btn-white btn-sm btn-delete-user" title="ลบผู้ใช้งาน">
                                         <i class="fas fa-trash-alt text-danger"></i>
                                     </button>
                                 </form>
@@ -140,6 +148,23 @@
             document.getElementById('edit_allow_audit').checked = user.allow_audit === 'Y';
             document.getElementById('edit_allow_assessment').checked = user.allow_assessment === 'Y';
             document.getElementById('edit_allow_lend').checked = user.allow_lend === 'Y';
+        });
+    });
+
+    // Reset Password Confirmation
+    document.querySelectorAll('.btn-reset-password').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = this.closest('form');
+            Swal.fire({
+                title: 'ยืนยันการรีเซ็ตรหัสผ่าน?',
+                text: "รหัสผ่านของผู้ใช้งานรายนี้จะถูกรีเซ็ตเป็น 12345678 ทันที",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, รีเซ็ตเลย!',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#e0a800'
+            }).then((result) => { if (result.isConfirmed) form.submit(); });
         });
     });
 

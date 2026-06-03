@@ -118,4 +118,16 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
+
+    /**
+     * Reset the user's password to 12345678.
+     */
+    public function resetPassword(User $user)
+    {
+        $user->update([
+            'password' => Hash::make('12345678')
+        ]);
+
+        return redirect()->route('admin.users.index')->with('success', 'เปลี่ยนรหัสผ่านผู้ใช้เรียบร้อยแล้ว (รหัสผ่านใหม่คือ 12345678)');
+    }
 }

@@ -67,8 +67,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="username" class="form-label text-success fw-bold">Username</label>
-                            <input id="username" type="text" class="form-control @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="username">
+                            <label for="username" class="form-label text-success fw-bold">Username (เลขบัตรประชาชน / CID)</label>
+                            <input id="username" type="text" class="form-control @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" placeholder="เลขบัตรประชาชน 13 หลัก" maxlength="13" pattern="[0-9]{13}">
                             @error('username')
                                 <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
                             @enderror
