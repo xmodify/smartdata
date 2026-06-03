@@ -205,6 +205,7 @@
                         <th>เบอร์โทร</th>
                         <th>วันยืม</th>
                         <th>กำหนดคืน</th>
+                        <th>วันที่คืน</th>
                         <th>มัดจำ</th>
                         <th>สถานะ</th>
                         <th>ผู้จ่าย</th>
@@ -237,6 +238,16 @@
                                     </span>
                                     @if($isOverdue)
                                         <br><small class="text-danger"><i class="fas fa-exclamation-circle"></i> เกิน {{ $t->due_date->diffInDays(now()) }} วัน</small>
+                                    @endif
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="small">
+                                @if($t->return_date)
+                                    <div>{{ DateThai($t->return_date) }}</div>
+                                    @if($t->return_time)
+                                        <small class="text-muted">{{ date('H:i', strtotime($t->return_time)) }} น.</small>
                                     @endif
                                 @else
                                     <span class="text-muted">-</span>
