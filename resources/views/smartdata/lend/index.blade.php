@@ -351,7 +351,10 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เลข HN</label>
-                            <input type="text" name="hn" id="create_hn" class="form-control" placeholder="HN">
+                            <div class="input-group">
+                                <input type="text" name="hn" id="create_hn" class="form-control" placeholder="HN">
+                                <button class="btn btn-outline-primary" type="button" onclick="performPatientSearch('create')"><i class="fas fa-search"></i> ค้นหา</button>
+                            </div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เบอร์โทรผู้ป่วย</label>
@@ -454,7 +457,10 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เลข HN</label>
-                            <input type="text" name="hn" id="edit_hn" class="form-control">
+                            <div class="input-group">
+                                <input type="text" name="hn" id="edit_hn" class="form-control">
+                                <button class="btn btn-outline-primary" type="button" onclick="performPatientSearch('edit')"><i class="fas fa-search"></i> ค้นหา</button>
+                            </div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เบอร์โทรผู้ป่วย</label>
@@ -873,6 +879,42 @@ function openDetailModal(t) {
     }
     
     new bootstrap.Modal(document.getElementById('detailModal')).show();
+}
+
+function performPatientSearch(mode) {
+    const hnInput = document.getElementById(mode + '_hn');
+    const hn = hnInput.value.trim();
+    if (!hn) {
+        alert('กรุณากรอกเลข HN ก่อนค้นหา');
+        return;
+    }
+
+    const btn = hnInput.nextElementSibling;
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ค้นหา';
+
+    fetch(`/lend/search-patient?hn=${hn}`)
+        .then(response => response.json())
+        .then(res => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+
+            if (res.success) {
+                document.getElementById(mode + '_hn').value = res.data.hn;
+                document.getElementById(mode + '_patient_name').value = res.data.name;
+                document.getElementById(mode + '_patient_address').value = res.data.address;
+                document.getElementById(mode + '_patient_phone').value = res.data.phone;
+            } else {
+                alert(res.message || 'ไม่พบข้อมูลผู้ป่วย');
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            console.error(err);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+        });
 }
 
 function openReturnModal(id, name) {

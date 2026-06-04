@@ -247,4 +247,106 @@ class LendController extends Controller
         $transaction = LendTransaction::with(['lendItem', 'creator'])->findOrFail($id);
         return view('smartdata.lend.print', compact('transaction'));
     }
+
+    /**
+     * ค้นหาข้อมูลผู้ป่วยจาก HOSxP
+     */
+    public function searchPatient(Request $request)
+    {
+        $hn = $request->hn;
+        if (!$hn) {
+            return response()->json(['success' => false, 'message' => 'โปรดระบุ HN']);
+        }
+
+        // ค้นหาโดยตรง
+        $patient = DB::connection('hosxp')
+            ->table('patient')
+            ->where('hn', $hn)
+            ->first();
+
+        // ค้นหาด้วยการเติม 0 นำหน้ากรณีพิมพ์มาไม่ครบ
+        if (!$patient) {
+            $paddedHn = str_pad($hn, 9, '0', STR_PAD_LEFT);
+            $patient = DB::connection('hosxp')
+                ->table('patient')
+                ->where('hn', $paddedHn)
+                ->first();
+            
+            if (!$patient) {
+                $paddedHn = str_pad($hn, 8, '0', STR_PAD_LEFT);
+                $patient = DB::connection('hosxp')
+                    ->table('patient')
+                    ->where('hn', $paddedHn)
+                    ->first();
+            }
+            
+            if (!$patient) {
+                $paddedHn = str_pad($hn, 7, '0', STR_PAD_LEFT);
+                $patient = DB::connection('hosxp')
+                    ->table('patient')
+                    ->where('hn', $paddedHn)
+                    ->first();
+            }
+        }
+
+        if (!$patient) {
+            return response()->json(['success' => false, 'message' => 'ไม่พบข้อมูลผู้ป่วยใน HOSxP']);
+        }
+
+        // รวมชื่อ-นามสกุล
+        $name = trim(($patient->pname ?? '') . ($patient->fname ?? '') . ' ' . ($patient->lname ?? ''));
+
+        // ประกอบที่อยู่
+        $addressParts = [];
+        if (!empty($patient->addrpart)) {
+            $addressParts[] = 'บ้านเลขที่ ' . $patient->addrpart;
+        }
+        if (!empty($patient->moopart)) {
+            $addressParts[] = 'หมู่ที่ ' . $patient->moopart;
+        }
+        if (!empty($patient->soi)) {
+            $addressParts[] = 'ซอย ' . $patient->soi;
+        }
+        if (!empty($patient->road)) {
+            $addressParts[] = 'ถนน ' . $patient->road;
+        }
+
+        // ดึงชื่อ ตำบล อำเภอ จังหวัด จาก thaiaddress
+        $thaiAddress = null;
+        if (!empty($patient->chwpart) && !empty($patient->amppart) && !empty($patient->tmbpart)) {
+            $addressId = $patient->chwpart . $patient->amppart . $patient->tmbpart;
+            $thaiAddress = DB::connection('hosxp')
+                ->table('thaiaddress')
+                ->where('addressid', $addressId)
+                ->first();
+        }
+
+        if ($thaiAddress) {
+            $addressParts[] = 'ต.' . ($thaiAddress->name ?? '');
+            $addressParts[] = 'อ.' . ($thaiAddress->amppart_name ?? '');
+            $addressParts[] = 'จ.' . ($thaiAddress->chwpart_name ?? '');
+        } else {
+            if (!empty($patient->tmbpart)) $addressParts[] = 'ต.รหัส ' . $patient->tmbpart;
+            if (!empty($patient->amppart)) $addressParts[] = 'อ.รหัส ' . $patient->amppart;
+            if (!empty($patient->chwpart)) $addressParts[] = 'จ.รหัส ' . $patient->chwpart;
+        }
+
+        $address = implode(' ', $addressParts);
+
+        // ดึงเบอร์โทรศัพท์
+        $phone = $patient->hometel ?? $patient->informtel ?? '';
+        if (isset($patient->mobile_phone) && !empty($patient->mobile_phone)) {
+            $phone = $patient->mobile_phone;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'hn' => $patient->hn,
+                'name' => $name,
+                'address' => $address,
+                'phone' => $phone
+            ]
+        ]);
+    }
 }
