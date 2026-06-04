@@ -217,6 +217,27 @@
         .flatpickr-today-button:hover {
             background: #1d4ed8;
         }
+
+        /* Mobile Responsive Adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+            .header-section {
+                padding: 1.2rem 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.8rem;
+            }
+            .clinic-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .clinic-card {
+                padding: 1.2rem 1rem;
+            }
+        }
     </style>
 </head>
 <body>
