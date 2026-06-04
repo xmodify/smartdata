@@ -37,8 +37,6 @@ class UserController extends Controller
             'allow_personnel' => 'nullable|string|in:Y,N',
             'allow_incident' => 'nullable|string|in:Y,N',
             'allow_skpcard' => 'nullable|string|in:Y,N',
-            'allow_audit' => 'nullable|string|in:Y,N',
-            'allow_assessment' => 'nullable|string|in:Y,N',
             'allow_lend' => 'nullable|string|in:Y,N',
         ]);
 
@@ -54,8 +52,6 @@ class UserController extends Controller
             'allow_personnel' => $request->has('allow_personnel') ? 'Y' : 'N',
             'allow_incident' => $request->has('allow_incident') ? 'Y' : 'N',
             'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
-            'allow_audit' => $request->has('allow_audit') ? 'Y' : 'N',
-            'allow_assessment' => $request->has('allow_assessment') ? 'Y' : 'N',
             'allow_lend' => $request->has('allow_lend') ? 'Y' : 'N',
         ]);
 
@@ -79,8 +75,6 @@ class UserController extends Controller
             'allow_personnel' => 'nullable|string|in:Y,N',
             'allow_incident' => 'nullable|string|in:Y,N',
             'allow_skpcard' => 'nullable|string|in:Y,N',
-            'allow_audit' => 'nullable|string|in:Y,N',
-            'allow_assessment' => 'nullable|string|in:Y,N',
             'allow_lend' => 'nullable|string|in:Y,N',
         ]);
 
@@ -95,8 +89,6 @@ class UserController extends Controller
             'allow_personnel' => $request->has('allow_personnel') ? 'Y' : 'N',
             'allow_incident' => $request->has('allow_incident') ? 'Y' : 'N',
             'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
-            'allow_audit' => $request->has('allow_audit') ? 'Y' : 'N',
-            'allow_assessment' => $request->has('allow_assessment') ? 'Y' : 'N',
             'allow_lend' => $request->has('allow_lend') ? 'Y' : 'N',
         ];
 

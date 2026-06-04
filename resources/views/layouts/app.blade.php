@@ -429,7 +429,7 @@
                         @endif
                     @endif
 
-                    @if(auth()->user()->hasAccessSkpcard() || auth()->user()->hasAccessAudit() || auth()->user()->hasAccessAssessment())
+                    @if(auth()->user()->hasAccessSkpcard() || auth()->user()->hasAccessLend())
                         <div class="sidebar-section-header">ระบบ SmartData</div>
                         @if(auth()->user()->hasAccessSkpcard())
                             <a href="{{ url('/skpcard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
@@ -439,16 +439,6 @@
                         @if(auth()->user()->hasAccessLend())
                             <a href="{{ route('lend.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-hand-holding-medical me-2" style="color: #0ea5e9;"></i> ศูนย์ยืม-คืน
-                            </a>
-                        @endif
-                        @if(auth()->user()->hasAccessAudit())
-                            <a href="#" class="list-group-item list-group-item-action bg-transparent text-dark">
-                                <i class="fas fa-check-to-slot me-2" style="color: #6610f2;"></i> ระบบตรวจสอบ
-                            </a>
-                        @endif
-                        @if(auth()->user()->hasAccessAssessment())
-                            <a href="#" class="list-group-item list-group-item-action bg-transparent text-dark">
-                                <i class="fas fa-clipboard-check me-2" style="color: #20c997;"></i> แบบประเมิน
                             </a>
                         @endif
                     @endif

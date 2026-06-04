@@ -97,6 +97,18 @@ class StructureController extends Controller
                 });
             }
 
+            // Drop allow_audit and allow_assessment columns in users table if they exist
+            if (Schema::hasTable('users')) {
+                Schema::table('users', function ($table) {
+                    if (Schema::hasColumn('users', 'allow_audit')) {
+                        $table->dropColumn('allow_audit');
+                    }
+                    if (Schema::hasColumn('users', 'allow_assessment')) {
+                        $table->dropColumn('allow_assessment');
+                    }
+                });
+            }
+
             // Ensure patient_name column exists and borrower_type column is removed in lend_transactions table
             if (Schema::hasTable('lend_transactions')) {
                 Schema::table('lend_transactions', function ($table) {

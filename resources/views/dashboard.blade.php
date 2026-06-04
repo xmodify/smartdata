@@ -65,8 +65,6 @@
                                 ['url' => '/backoffice/incident', 'label' => 'รายงานอุบัติการณ์', 'icon' => 'fa-triangle-exclamation', 'color' => '#e74a3b', 'permission' => 'hasAccessIncident'],
                                 ['url' => '/skpcard', 'label' => 'บัตรสังฆะประชาร่วมใจ', 'icon' => 'fa-address-card', 'color' => '#f6c23e', 'permission' => 'hasAccessSkpcard'],
                                 ['url' => '/lend', 'label' => 'ศูนย์ยืม-คืน', 'icon' => 'fa-hand-holding-medical', 'color' => '#0ea5e9', 'permission' => 'hasAccessLend'],
-                                ['url' => '#', 'label' => 'ระบบตรวจสอบ', 'icon' => 'fa-check-to-slot', 'color' => '#6610f2', 'permission' => 'hasAccessAudit'],
-                                ['url' => '#', 'label' => 'แบบประเมิน', 'icon' => 'fa-clipboard-check', 'color' => '#20c997', 'permission' => 'hasAccessAssessment'],
                             ];
                         @endphp
 
