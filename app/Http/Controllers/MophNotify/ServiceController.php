@@ -478,8 +478,8 @@ class ServiceController extends Controller
                 ((a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = ''))
             )", [$start_date, $end_date]);
 
-        // ดึงข้อมูลนัดหมาย พรุ่งนี้
-        $oapp_date = date('Y-m-d', strtotime('+1 day'));
+        // ดึงข้อมูลนัดหมาย วันนี้
+        $oapp_date = date('Y-m-d');
         $oapps = DB::connection('hosxp')->select('
             SELECT c.`name` AS clinic, COUNT(o.vn) AS oapp
             FROM oapp o
