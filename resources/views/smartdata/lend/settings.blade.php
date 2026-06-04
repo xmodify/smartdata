@@ -330,7 +330,7 @@
 @push('scripts')
 <script>
 function openEditModal(id, name, category, qty, desc, sort, active) {
-    document.getElementById('editItemForm').action = '/lend/settings/' + id;
+    document.getElementById('editItemForm').action = `{{ route('lend.settings.update', ':id') }}`.replace(':id', id);
     document.getElementById('editName').value     = name;
     document.getElementById('editCategory').value = category;
     document.getElementById('editQty').value      = qty;
