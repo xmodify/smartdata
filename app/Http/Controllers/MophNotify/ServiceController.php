@@ -97,6 +97,28 @@ class ServiceController extends Controller
                 ((a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = ''))
             )", [$start_date, $end_date]);
 
+        // ดึงข้อมูลนัดหมาย วันนี้
+        $oapp_date = date('Y-m-d');
+        $oapps = DB::connection('hosxp')->select('
+            SELECT c.`name` AS clinic, COUNT(o.vn) AS oapp
+            FROM oapp o
+            LEFT JOIN clinic c ON c.clinic = o.clinic
+            WHERE o.nextdate = ?
+            GROUP BY o.clinic, c.`name`
+            ORDER BY oapp DESC
+        ', [$oapp_date]);
+
+        $oapp_text = "นัดหมาย (วันที่ " . DateThai($oapp_date) . ")\n";
+        if (empty($oapps)) {
+            $oapp_text .= " - ไม่มีนัดหมาย\n";
+        } else {
+            foreach ($oapps as $oapp) {
+                $oapp_text .= " - " . ($oapp->clinic ?: 'ไม่ระบุคลินิก') . " " . $oapp->oapp . " ราย\n";
+            }
+            $oapp_text .= url('dashboard/oapp') . "?date=" . $oapp_date . "\n";
+        }
+        $oapp_text .= "\n";
+
     //2. สร้างข้อความสรุป
         $message = "สรุปข้อมูลบริการ " .DateThai(date('Y-m-d')) ."\n"
             ."เวรดึก 🕒 00.00-08.00 น." ."\n\n"
@@ -116,6 +138,7 @@ class ServiceController extends Controller
             ." - ReferOUT " . ($service->referout ?? 0) ."\n"
             ." - ReferIN " . ($service->referin ?? 0) ."\n\n"      
            
+            . $oapp_text
             . "Admit อยู่ " . $ipd->ipd_all ." | occ " . $ipd->occ_ipd_all_rate ." %" ."\n"
             . " - สามัญ " . $ipd->ipd_normal ." | occ " . $ipd->occ_ipd_normal_rate ." %" ."\n"
             . " - VIP " . $ipd->ipd_vip ." | occ " . $ipd->occ_ipd_vip_rate ." %" ."\n"
@@ -265,6 +288,28 @@ class ServiceController extends Controller
                 ((a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = ''))
             )", [$start_date, $end_date]);
 
+        // ดึงข้อมูลนัดหมาย พรุ่งนี้
+        $oapp_date = date('Y-m-d', strtotime('+1 day'));
+        $oapps = DB::connection('hosxp')->select('
+            SELECT c.`name` AS clinic, COUNT(o.vn) AS oapp
+            FROM oapp o
+            LEFT JOIN clinic c ON c.clinic = o.clinic
+            WHERE o.nextdate = ?
+            GROUP BY o.clinic, c.`name`
+            ORDER BY oapp DESC
+        ', [$oapp_date]);
+
+        $oapp_text = "นัดหมาย (วันที่ " . DateThai($oapp_date) . ")\n";
+        if (empty($oapps)) {
+            $oapp_text .= " - ไม่มีนัดหมาย\n";
+        } else {
+            foreach ($oapps as $oapp) {
+                $oapp_text .= " - " . ($oapp->clinic ?: 'ไม่ระบุคลินิก') . " " . $oapp->oapp . " ราย\n";
+            }
+            $oapp_text .= url('dashboard/oapp') . "?date=" . $oapp_date . "\n";
+        }
+        $oapp_text .= "\n";
+
     //2. สร้างข้อความสรุป
         $message = "สรุปข้อมูลบริการ " .DateThai(date('Y-m-d')) ."\n"
             ."เวรเช้า 🕒 08.00-16.00 น." ."\n"
@@ -284,6 +329,7 @@ class ServiceController extends Controller
             ." - ReferOUT " . ($service->referout ?? 0) ."\n"
             ." - ReferIN " . ($service->referin ?? 0) ."\n\n"      
            
+            . $oapp_text
             . "Admit อยู่ " . $ipd->ipd_all ." | occ " . $ipd->occ_ipd_all_rate ." %" ."\n"
             . " - สามัญ " . $ipd->ipd_normal ." | occ " . $ipd->occ_ipd_normal_rate ." %" ."\n"
             . " - VIP " . $ipd->ipd_vip ." | occ " . $ipd->occ_ipd_vip_rate ." %" ."\n"
@@ -432,6 +478,28 @@ class ServiceController extends Controller
                 ((a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = ''))
             )", [$start_date, $end_date]);
 
+        // ดึงข้อมูลนัดหมาย พรุ่งนี้
+        $oapp_date = date('Y-m-d', strtotime('+1 day'));
+        $oapps = DB::connection('hosxp')->select('
+            SELECT c.`name` AS clinic, COUNT(o.vn) AS oapp
+            FROM oapp o
+            LEFT JOIN clinic c ON c.clinic = o.clinic
+            WHERE o.nextdate = ?
+            GROUP BY o.clinic, c.`name`
+            ORDER BY oapp DESC
+        ', [$oapp_date]);
+
+        $oapp_text = "นัดหมาย (วันที่ " . DateThai($oapp_date) . ")\n";
+        if (empty($oapps)) {
+            $oapp_text .= " - ไม่มีนัดหมาย\n";
+        } else {
+            foreach ($oapps as $oapp) {
+                $oapp_text .= " - " . ($oapp->clinic ?: 'ไม่ระบุคลินิก') . " " . $oapp->oapp . " ราย\n";
+            }
+            $oapp_text .= url('dashboard/oapp') . "?date=" . $oapp_date . "\n";
+        }
+        $oapp_text .= "\n";
+
     //2. สร้างข้อความสรุป
         $message = "สรุปข้อมูลบริการ " .DateThai(date("Y-m-d", strtotime("-1 day"))) ."\n"
             ."เวรบ่าย 🕒 16.00-24.00 น." ."\n"
@@ -451,6 +519,7 @@ class ServiceController extends Controller
             ." - ReferOUT " . ($service->referout ?? 0) ."\n"
             ." - ReferIN " . ($service->referin ?? 0) ."\n\n"      
            
+            . $oapp_text
             . "Admit อยู่ " . $ipd->ipd_all ." | occ " . $ipd->occ_ipd_all_rate ." %" ."\n"
             . " - สามัญ " . $ipd->ipd_normal ." | occ " . $ipd->occ_ipd_normal_rate ." %" ."\n"
             . " - VIP " . $ipd->ipd_vip ." | occ " . $ipd->occ_ipd_vip_rate ." %" ."\n"

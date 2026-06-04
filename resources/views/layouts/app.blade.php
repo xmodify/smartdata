@@ -448,6 +448,9 @@
                     <a href="{{ route('ipd.wait_dchsummary') }}" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">
                         <i class="fas fa-file-invoice me-2" style="color: #dc3545;"></i> ผู้ป่วยในรอสรุป Chart
                     </a>
+                    <a href="{{ route('dashboard.oapp') }}" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fa-solid fa-calendar-days me-2" style="color: #2563eb;"></i> ตารางนัดหมายผู้ป่วย
+                    </a>
                 @endauth
             </div>
 
