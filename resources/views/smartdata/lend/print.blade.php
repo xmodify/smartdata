@@ -52,10 +52,66 @@
         .btn-print { position: fixed; bottom: 30px; right: 30px; z-index: 999; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: none; background: #0268c7; color: #fff; cursor: pointer; }
 
         @media print {
-            body { background: #fff; padding: 0; }
-            .print-page { box-shadow: none; margin: 0; padding: 15mm 15mm; width: 100%; }
+            @page {
+                margin: 0; /* Removes browser header/footer (red boxes) */
+            }
+            body { 
+                background: #fff; 
+                padding: 10mm 15mm 5mm 15mm; /* Moves top content higher up */
+                color: #000 !important; 
+            }
+            .print-page { 
+                box-shadow: none; 
+                margin: 0; 
+                padding: 0; 
+                width: 100%; 
+                min-height: auto !important; 
+            }
             .btn-print { display: none !important; }
             .no-print { display: none !important; }
+
+            /* Font scaling and spacing adjustments for a tighter layout */
+            .hospital-name { font-size: 1.15rem !important; color: #000 !important; }
+            .doc-title { font-size: 0.95rem !important; margin-top: 0.2rem !important; }
+            .doc-no { font-size: 0.8rem !important; }
+            .hospital-header { margin-bottom: 1rem !important; padding-bottom: 0.5rem !important; border-bottom: 2px solid #000 !important; }
+            
+            .info-table td { padding: 4px 6px !important; font-size: 0.8rem !important; }
+            .info-table .label { color: #000 !important; width: 110px !important; }
+            .info-table .value { border-bottom: 1px solid #000 !important; color: #000 !important; }
+            
+            .item-table th { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 6px 8px !important; font-size: 0.8rem !important; }
+            .item-table td { border: 1px solid #000 !important; color: #000 !important; background: none !important; padding: 6px 8px !important; font-size: 0.8rem !important; }
+            .item-table tr:nth-child(even) td { background: none !important; }
+            .item-table { margin: 1rem 0 !important; }
+            
+            .conditions { background: none !important; border: 1px solid #000 !important; color: #000 !important; border-radius: 0; padding: 8px 12px !important; margin: 1rem 0 !important; font-size: 0.75rem !important; }
+            .conditions h6 { color: #000 !important; font-size: 0.8rem !important; margin-bottom: 4px !important; }
+            
+            .deposit-box { background: none !important; border: 1px solid #000 !important; color: #000 !important; border-radius: 0; padding: 8px 12px !important; margin: 0.8rem 0 !important; font-size: 0.8rem !important; }
+            .deposit-box strong, .deposit-box span { color: #000 !important; }
+            .deposit-box span { font-size: 0.95rem !important; }
+            
+            .status-returned { background: none !important; border: 1px solid #000 !important; color: #000 !important; border-radius: 0; }
+            
+            h6 { color: #000 !important; }
+            h6 span { border-bottom: 2px solid #000 !important; }
+            
+            .sign-section { margin-top: 2rem !important; }
+            .sign-line { border-top: 1px solid #000 !important; margin: 2rem 1rem 0.2rem !important; }
+            .sign-label { color: #000 !important; font-size: 0.75rem !important; }
+            
+            .print-footer { 
+                position: relative !important; 
+                bottom: auto !important; 
+                left: auto !important; 
+                right: auto !important; 
+                margin-top: 1.5rem !important; 
+                padding-top: 6px !important; 
+                border-top: 1px solid #000 !important; 
+                color: #000 !important; 
+                font-size: 0.65rem !important;
+            }
         }
     </style>
 </head>
@@ -235,7 +291,7 @@
     </div>
     @endif
 
-    <div style="position:absolute;bottom:12mm;left:18mm;right:18mm;text-align:center;font-size:0.72rem;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:6px;">
+    <div class="print-footer" style="position:absolute;bottom:12mm;left:18mm;right:18mm;text-align:center;font-size:0.72rem;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:6px;">
         พิมพ์โดยระบบ SmartData | {{ now()->locale('th')->translatedFormat('j F Y H:i') }}
     </div>
 </div>
