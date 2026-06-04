@@ -172,6 +172,14 @@
                         </a>
                     </li>
                 </ul>
+
+                <div class="ms-auto d-flex gap-2 flex-wrap align-items-center">
+                    @if(auth()->user()->hasAccessRole('admin'))
+                    <a href="{{ route('lend.settings') }}" class="btn btn-outline-secondary btn-sm px-3" style="border-radius:8px;">
+                        <i class="fas fa-cog me-1"></i> ตั้งค่า
+                    </a>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -198,12 +206,6 @@
         </div>
         
         <div class="d-flex gap-2 align-items-center">
-            @if(auth()->user()->hasAccessRole('admin'))
-            <a href="{{ route('lend.settings') }}" class="btn btn-outline-secondary btn-sm px-3" style="border-radius:8px;">
-                <i class="fas fa-cog me-1"></i> ตั้งค่า
-            </a>
-            @endif
-
             <button type="button" class="btn btn-sm text-white px-3 shadow-sm" onclick="openCreateModal()"
                style="background:linear-gradient(135deg,#0268c7,#17a6a7);border-radius:8px;border:none;padding: 0.35rem 1rem;">
                 <i class="fas fa-plus me-1"></i> ยืมรายการ
