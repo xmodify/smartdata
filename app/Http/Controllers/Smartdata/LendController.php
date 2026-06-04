@@ -49,7 +49,7 @@ class LendController extends Controller
             'cancelled' => LendTransaction::where('status', 'cancelled')->count(),
         ];
 
-        $lendItems = LendItem::active()->orderBy('sort_order')->orderBy('name')->get();
+        $lendItems = LendItem::active()->where('category', 'equipment')->orderBy('sort_order')->orderBy('name')->get();
 
         return view('smartdata.lend.index', compact('transactions', 'stats', 'status_filter', 'search', 'lendItems'));
     }
@@ -63,7 +63,7 @@ class LendController extends Controller
             abort(403);
         }
 
-        $lendItems = LendItem::active()->orderBy('sort_order')->orderBy('name')->get();
+        $lendItems = LendItem::active()->where('category', 'equipment')->orderBy('sort_order')->orderBy('name')->get();
         return view('smartdata.lend.create', compact('lendItems'));
     }
 
