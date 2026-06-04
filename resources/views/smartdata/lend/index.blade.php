@@ -822,7 +822,7 @@ function openCreateModal() {
 }
 
 function openEditModal(t) {
-    document.getElementById('editForm').action = '/lend/' + t.id;
+    document.getElementById('editForm').action = `{{ route('lend.update', ':id') }}`.replace(':id', t.id);
     document.getElementById('edit_borrower_name').value = t.borrower_name;
     document.getElementById('edit_borrower_address').value = t.borrower_address || '';
     document.getElementById('edit_borrower_phone').value = t.borrower_phone || '';
@@ -918,7 +918,7 @@ function initPatientSearch(mode) {
         }
 
         timeout = setTimeout(() => {
-            fetch(`/lend/search-patient?q=${encodeURIComponent(q)}`)
+            fetch(`{{ route('lend.search_patient') }}?q=${encodeURIComponent(q)}`)
                 .then(res => res.json())
                 .then(res => {
                     if (res.success && res.data.length > 0) {
@@ -963,7 +963,7 @@ function initPatientSearch(mode) {
 
 function openReturnModal(id, name) {
     document.getElementById('returnBorrowerName').textContent = name;
-    document.getElementById('returnForm').action = '/lend/' + id + '/return';
+    document.getElementById('returnForm').action = `{{ route('lend.process_return', ':id') }}`.replace(':id', id);
     
     // Clear returner inputs
     document.getElementById('returner_name').value = '';
@@ -978,7 +978,7 @@ function openReturnModal(id, name) {
 
 function openCancelModal(id, name) {
     document.getElementById('cancelBorrowerName').textContent = name;
-    document.getElementById('cancelForm').action = '/lend/' + id + '/cancel';
+    document.getElementById('cancelForm').action = `{{ route('lend.cancel', ':id') }}`.replace(':id', id);
     new bootstrap.Modal(document.getElementById('cancelModal')).show();
 }
 
