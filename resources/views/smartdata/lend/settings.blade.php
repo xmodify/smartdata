@@ -41,88 +41,185 @@
         @endif
     </div>
 
-    <div class="card settings-card shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead style="background:#f8fafc;">
-                        <tr>
-                            <th class="px-4 py-3 small fw-bold text-muted" style="width:50px;">#</th>
-                            <th class="py-3 small fw-bold text-muted">ชื่อรายการ</th>
-                            <th class="py-3 small fw-bold text-muted">ประเภท</th>
-                            <th class="py-3 small fw-bold text-muted text-center">จำนวน (ทั้งหมด)</th>
-                            <th class="py-3 small fw-bold text-muted text-center">ว่าง</th>
-                            <th class="py-3 small fw-bold text-muted text-center">สถานะ</th>
-                            @if(auth()->user()->hasAccessRole('admin'))
-                            <th class="py-3 small fw-bold text-muted text-center">จัดการ</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($items as $item)
-                        <tr class="item-row">
-                            <td class="px-4 text-muted small">{{ $loop->iteration }}</td>
-                            <td>
-                                <div class="fw-semibold">{{ $item->name }}</div>
-                                @if($item->description)
-                                <small class="text-muted">{{ $item->description }}</small>
+    {{-- Tabs --}}
+    <ul class="nav nav-pills mb-3 gap-2" id="settingsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active px-4 py-2 fw-semibold" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment-pane" type="button" role="tab" style="border-radius:10px;">
+                <i class="fas fa-boxes-stacked me-1"></i> วัสดุ/ครุภัณฑ์
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link px-4 py-2 fw-semibold" id="medicine-tab" data-bs-toggle="tab" data-bs-target="#medicine-pane" type="button" role="tab" style="border-radius:10px;">
+                <i class="fas fa-pills me-1"></i> ยา
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="settingsTabContent">
+        {{-- Tab 1: วัสดุ/ครุภัณฑ์ --}}
+        <div class="tab-pane fade show active" id="equipment-pane" role="tabpanel" aria-labelledby="equipment-tab">
+            <div class="card settings-card shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead style="background:#f8fafc;">
+                                <tr>
+                                    <th class="px-4 py-3 small fw-bold text-muted" style="width:50px;">#</th>
+                                    <th class="py-3 small fw-bold text-muted">ชื่อรายการ</th>
+                                    <th class="py-3 small fw-bold text-muted text-center" style="width:150px;">จำนวน (ทั้งหมด)</th>
+                                    <th class="py-3 small fw-bold text-muted text-center" style="width:100px;">ว่าง</th>
+                                    <th class="py-3 small fw-bold text-muted text-center" style="width:120px;">สถานะ</th>
+                                    @if(auth()->user()->hasAccessRole('admin'))
+                                    <th class="py-3 small fw-bold text-muted text-center" style="width:120px;">จัดการ</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $eqCount = 0; @endphp
+                                @foreach($items as $item)
+                                    @if($item->category === 'equipment')
+                                        @php $eqCount++; @endphp
+                                        <tr class="item-row">
+                                            <td class="px-4 text-muted small">{{ $eqCount }}</td>
+                                            <td>
+                                                <div class="fw-semibold">{{ $item->name }}</div>
+                                                @if($item->description)
+                                                <small class="text-muted">{{ $item->description }}</small>
+                                                @endif
+                                            </td>
+                                            <td class="text-center fw-semibold">{{ $item->total_qty }}</td>
+                                            <td class="text-center">
+                                                @php $avail = $item->availableQty(); @endphp
+                                                <span class="{{ $avail > 0 ? 'text-success fw-bold' : 'text-danger fw-bold' }}">
+                                                    {{ $avail }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($item->active === 'Y')
+                                                    <span class="badge-active">เปิดใช้งาน</span>
+                                                @else
+                                                    <span class="badge-inactive">ปิด</span>
+                                                @endif
+                                            </td>
+                                            @if(auth()->user()->hasAccessRole('admin'))
+                                            <td class="text-center">
+                                                <div class="d-flex gap-1 justify-content-center">
+                                                    <button class="btn btn-outline-primary btn-sm" style="border-radius:6px;font-size:0.75rem;"
+                                                            onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ $item->category }}', {{ $item->total_qty }}, '{{ $item->description }}', {{ $item->sort_order }}, '{{ $item->active }}')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <form action="{{ route('lend.settings.toggle', $item->id) }}" method="POST" class="d-inline">
+                                                        @csrf @method('PUT')
+                                                        <button type="submit" class="btn btn-sm {{ $item->active === 'Y' ? 'btn-outline-warning' : 'btn-outline-success' }}"
+                                                                style="border-radius:6px;font-size:0.75rem;"
+                                                                title="{{ $item->active === 'Y' ? 'ปิดใช้งาน' : 'เปิดใช้งาน' }}">
+                                                            <i class="fas {{ $item->active === 'Y' ? 'fa-eye-slash' : 'fa-eye' }}"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                            @endif
+                                        </tr>
+                                    @endif
+                                @endforeach
+                                @if($eqCount === 0)
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <i class="fas fa-box-open fa-2x mb-2 d-block opacity-50"></i>
+                                            ยังไม่มีรายการวัสดุ/ครุภัณฑ์<br>
+                                            <small>กด "+ เพิ่มรายการ" เพื่อเริ่มต้น</small>
+                                        </td>
+                                    </tr>
                                 @endif
-                            </td>
-                            <td>
-                                @if($item->category === 'equipment')
-                                    <span class="badge" style="background:#dbeafe;color:#1d4ed8;border-radius:6px;font-size:0.75rem;">ครุภัณฑ์</span>
-                                @else
-                                    <span class="badge" style="background:#fef3c7;color:#92400e;border-radius:6px;font-size:0.75rem;">ยา</span>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Tab 2: ยา --}}
+        <div class="tab-pane fade" id="medicine-pane" role="tabpanel" aria-labelledby="medicine-tab">
+            <div class="card settings-card shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead style="background:#f8fafc;">
+                                <tr>
+                                    <th class="px-4 py-3 small fw-bold text-muted" style="width:50px;">#</th>
+                                    <th class="py-3 small fw-bold text-muted">ชื่อรายการ</th>
+                                    <th class="py-3 small fw-bold text-muted text-center" style="width:150px;">จำนวน (ทั้งหมด)</th>
+                                    <th class="py-3 small fw-bold text-muted text-center" style="width:100px;">ว่าง</th>
+                                    <th class="py-3 small fw-bold text-muted text-center" style="width:120px;">สถานะ</th>
+                                    @if(auth()->user()->hasAccessRole('admin'))
+                                    <th class="py-3 small fw-bold text-muted text-center" style="width:120px;">จัดการ</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $medCount = 0; @endphp
+                                @foreach($items as $item)
+                                    @if($item->category === 'medicine')
+                                        @php $medCount++; @endphp
+                                        <tr class="item-row">
+                                            <td class="px-4 text-muted small">{{ $medCount }}</td>
+                                            <td>
+                                                <div class="fw-semibold">{{ $item->name }}</div>
+                                                @if($item->description)
+                                                <small class="text-muted">{{ $item->description }}</small>
+                                                @endif
+                                            </td>
+                                            <td class="text-center fw-semibold">{{ $item->total_qty }}</td>
+                                            <td class="text-center">
+                                                @php $avail = $item->availableQty(); @endphp
+                                                <span class="{{ $avail > 0 ? 'text-success fw-bold' : 'text-danger fw-bold' }}">
+                                                    {{ $avail }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($item->active === 'Y')
+                                                    <span class="badge-active">เปิดใช้งาน</span>
+                                                @else
+                                                    <span class="badge-inactive">ปิด</span>
+                                                @endif
+                                            </td>
+                                            @if(auth()->user()->hasAccessRole('admin'))
+                                            <td class="text-center">
+                                                <div class="d-flex gap-1 justify-content-center">
+                                                    <button class="btn btn-outline-primary btn-sm" style="border-radius:6px;font-size:0.75rem;"
+                                                            onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ $item->category }}', {{ $item->total_qty }}, '{{ $item->description }}', {{ $item->sort_order }}, '{{ $item->active }}')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <form action="{{ route('lend.settings.toggle', $item->id) }}" method="POST" class="d-inline">
+                                                        @csrf @method('PUT')
+                                                        <button type="submit" class="btn btn-sm {{ $item->active === 'Y' ? 'btn-outline-warning' : 'btn-outline-success' }}"
+                                                                style="border-radius:6px;font-size:0.75rem;"
+                                                                title="{{ $item->active === 'Y' ? 'ปิดใช้งาน' : 'เปิดใช้งาน' }}">
+                                                            <i class="fas {{ $item->active === 'Y' ? 'fa-eye-slash' : 'fa-eye' }}"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                            @endif
+                                        </tr>
+                                    @endif
+                                @endforeach
+                                @if($medCount === 0)
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <i class="fas fa-box-open fa-2x mb-2 d-block opacity-50"></i>
+                                            ยังไม่มีรายการยา<br>
+                                            <small>กด "+ เพิ่มรายการ" เพื่อเริ่มต้น</small>
+                                        </td>
+                                    </tr>
                                 @endif
-                            </td>
-                            <td class="text-center fw-semibold">{{ $item->total_qty }}</td>
-                            <td class="text-center">
-                                @php $avail = $item->availableQty(); @endphp
-                                <span class="{{ $avail > 0 ? 'text-success fw-bold' : 'text-danger fw-bold' }}">
-                                    {{ $avail }}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                @if($item->active === 'Y')
-                                    <span class="badge-active">เปิดใช้งาน</span>
-                                @else
-                                    <span class="badge-inactive">ปิด</span>
-                                @endif
-                            </td>
-                            @if(auth()->user()->hasAccessRole('admin'))
-                            <td class="text-center">
-                                <div class="d-flex gap-1 justify-content-center">
-                                    <button class="btn btn-outline-primary btn-sm" style="border-radius:6px;font-size:0.75rem;"
-                                            onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ $item->category }}', {{ $item->total_qty }}, '{{ $item->description }}', {{ $item->sort_order }}, '{{ $item->active }}')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <form action="{{ route('lend.settings.toggle', $item->id) }}" method="POST" class="d-inline">
-                                        @csrf @method('PUT')
-                                        <button type="submit" class="btn btn-sm {{ $item->active === 'Y' ? 'btn-outline-warning' : 'btn-outline-success' }}"
-                                                style="border-radius:6px;font-size:0.75rem;"
-                                                title="{{ $item->active === 'Y' ? 'ปิดใช้งาน' : 'เปิดใช้งาน' }}">
-                                            <i class="fas {{ $item->active === 'Y' ? 'fa-eye-slash' : 'fa-eye' }}"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                            @endif
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="fas fa-box-open fa-2x mb-2 d-block opacity-50"></i>
-                                ยังไม่มีรายการ<br>
-                                <small>กด "+ เพิ่มรายการ" เพื่อเริ่มต้น</small>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 {{-- Modal: เพิ่มรายการ --}}
 <div class="modal fade" id="addItemModal" tabindex="-1">
