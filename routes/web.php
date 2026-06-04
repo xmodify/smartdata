@@ -166,6 +166,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings',       [App\Http\Controllers\Smartdata\LendItemController::class, 'store'])->name('lend.settings.store');
         Route::put('/settings/{id}',   [App\Http\Controllers\Smartdata\LendItemController::class, 'update'])->name('lend.settings.update');
         Route::put('/settings/{id}/toggle', [App\Http\Controllers\Smartdata\LendItemController::class, 'toggleActive'])->name('lend.settings.toggle');
+        Route::get('/search-patient',  [App\Http\Controllers\Smartdata\LendController::class, 'searchPatient'])->name('lend.search_patient');
         Route::put('/{id}',            [App\Http\Controllers\Smartdata\LendController::class, 'update'])->name('lend.update');
         Route::put('/{id}/return',     [App\Http\Controllers\Smartdata\LendController::class, 'processReturn'])->name('lend.process_return');
         Route::put('/{id}/cancel',     [App\Http\Controllers\Smartdata\LendController::class, 'cancel'])->name('lend.cancel');

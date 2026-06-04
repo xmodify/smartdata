@@ -81,6 +81,22 @@
         display: flex !important;
         align-items: center !important;
     }
+    .patient-search-results {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+    .patient-search-results .list-group-item {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        color: #1e293b !important;
+        transition: background-color 0.15s ease;
+    }
+    .patient-search-results .list-group-item:hover {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+    }
 </style>
 @endpush
 
@@ -348,23 +364,23 @@
                         <div class="col-md-12 position-relative">
                             <label class="form-label fw-bold text-dark"><i class="fas fa-search me-1 text-primary"></i>พิมพ์ค้นหาผู้ป่วยจาก HOSxP (ระบุ HN หรือ ชื่อ หรือ นามสกุล)</label>
                             <input type="text" id="create_patient_search" class="form-control" placeholder="พิมพ์เพื่อค้นหา..." autocomplete="off">
-                            <div id="create_patient_results" class="list-group position-absolute w-100 shadow-lg" style="display: none; z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+                            <div id="create_patient_results" class="list-group position-absolute w-100 shadow-lg patient-search-results" style="display: none; z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">ชื่อผู้ป่วย</label>
-                            <input type="text" name="patient_name" id="create_patient_name" class="form-control" placeholder="ชื่อ-นามสกุลผู้ป่วย">
+                            <input type="text" name="patient_name" id="create_patient_name" class="form-control" placeholder="ชื่อ-นามสกุลผู้ป่วย" readonly>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เลข HN</label>
-                            <input type="text" name="hn" id="create_hn" class="form-control" placeholder="HN">
+                            <input type="text" name="hn" id="create_hn" class="form-control" placeholder="HN" readonly>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เบอร์โทรผู้ป่วย</label>
-                            <input type="text" name="patient_phone" id="create_patient_phone" class="form-control" placeholder="0xx-xxx-xxxx">
+                            <input type="text" name="patient_phone" id="create_patient_phone" class="form-control" placeholder="0xx-xxx-xxxx" readonly>
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">ที่อยู่ผู้ป่วย</label>
-                            <textarea name="patient_address" id="create_patient_address" class="form-control" rows="2" placeholder="ที่อยู่ผู้ป่วย"></textarea>
+                            <textarea name="patient_address" id="create_patient_address" class="form-control" rows="2" placeholder="ที่อยู่ผู้ป่วย" readonly></textarea>
                         </div>
                     </div>
 
@@ -456,23 +472,23 @@
                         <div class="col-md-12 position-relative">
                             <label class="form-label fw-bold text-dark"><i class="fas fa-search me-1 text-primary"></i>พิมพ์ค้นหาผู้ป่วยจาก HOSxP (ระบุ HN หรือ ชื่อ หรือ นามสกุล)</label>
                             <input type="text" id="edit_patient_search" class="form-control" placeholder="พิมพ์เพื่อค้นหา..." autocomplete="off">
-                            <div id="edit_patient_results" class="list-group position-absolute w-100 shadow-lg" style="display: none; z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+                            <div id="edit_patient_results" class="list-group position-absolute w-100 shadow-lg patient-search-results" style="display: none; z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">ชื่อผู้ป่วย</label>
-                            <input type="text" name="patient_name" id="edit_patient_name" class="form-control">
+                            <input type="text" name="patient_name" id="edit_patient_name" class="form-control" readonly>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เลข HN</label>
-                            <input type="text" name="hn" id="edit_hn" class="form-control">
+                            <input type="text" name="hn" id="edit_hn" class="form-control" readonly>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เบอร์โทรผู้ป่วย</label>
-                            <input type="text" name="patient_phone" id="edit_patient_phone" class="form-control">
+                            <input type="text" name="patient_phone" id="edit_patient_phone" class="form-control" readonly>
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">ที่อยู่ผู้ป่วย</label>
-                            <textarea name="patient_address" id="edit_patient_address" class="form-control" rows="2"></textarea>
+                            <textarea name="patient_address" id="edit_patient_address" class="form-control" rows="2" readonly></textarea>
                         </div>
                     </div>
 
@@ -921,16 +937,6 @@ function initPatientSearch(mode) {
                                 document.getElementById(mode + '_patient_name').value = p.name;
                                 document.getElementById(mode + '_patient_address').value = p.address;
                                 document.getElementById(mode + '_patient_phone').value = p.phone;
-
-                                // Auto fill borrower details if empty
-                                if (mode === 'create') {
-                                    const bName = document.getElementById('create_borrower_name');
-                                    if (bName && !bName.value) {
-                                        bName.value = p.name;
-                                        document.querySelector('#createModal textarea[name="borrower_address"]').value = p.address;
-                                        document.querySelector('#createModal input[name="borrower_phone"]').value = p.phone;
-                                    }
-                                }
 
                                 searchInput.value = '';
                                 resultsDiv.style.display = 'none';

@@ -258,63 +258,23 @@ class LendController extends Controller
             return response()->json(['success' => false, 'message' => 'โปรดระบุคำค้นหา']);
         }
 
-        // ค้นหาคนไข้ใน HOSxP ด้วย HN หรือ ชื่อ หรือ นามสกุล
-        $patients = DB::connection('hosxp')
-            ->table('patient')
-            ->where(function ($query) use ($q) {
-                $query->where('hn', 'like', $q . '%')
-                      ->orWhere('fname', 'like', $q . '%')
-                      ->orWhere('lname', 'like', $q . '%');
-            })
-            ->limit(15)
-            ->get();
+        $searchParam = '%' . $q . '%';
+        
+        // ค้นหาคนไข้ใน HOSxP ด้วยคำสั่ง SQL เฉพาะที่ใช้ LEFT JOIN thaiaddress และเลือก pt.mobile_phone_number
+        $patients = DB::connection('hosxp')->select('
+            SELECT pt.hn, pt.pname, pt.fname, pt.lname, pt.mobile_phone_number,
+                   CONCAT(pt.addrpart, " หมู่ ", pt.moopart, " ", t.full_name) AS address
+            FROM patient pt
+            LEFT JOIN thaiaddress t ON t.chwpart=pt.chwpart AND t.amppart=pt.amppart AND t.tmbpart=pt.tmbpart
+            WHERE pt.hn LIKE ? OR pt.fname LIKE ? OR pt.lname LIKE ? OR CONCAT(pt.fname, " ", pt.lname) LIKE ?
+            LIMIT 15
+        ', [$searchParam, $searchParam, $searchParam, $searchParam]);
 
         $results = [];
         foreach ($patients as $p) {
             $name = trim(($p->pname ?? '') . ($p->fname ?? '') . ' ' . ($p->lname ?? ''));
-
-            // ประกอบที่อยู่
-            $addressParts = [];
-            if (!empty($p->addrpart)) {
-                $addressParts[] = 'บ้านเลขที่ ' . $p->addrpart;
-            }
-            if (!empty($p->moopart)) {
-                $addressParts[] = 'หมู่ที่ ' . $p->moopart;
-            }
-            if (!empty($p->soi)) {
-                $addressParts[] = 'ซอย ' . $p->soi;
-            }
-            if (!empty($p->road)) {
-                $addressParts[] = 'ถนน ' . $p->road;
-            }
-
-            // ตำบล อำเภอ จังหวัด
-            $thaiAddress = null;
-            if (!empty($p->chwpart) && !empty($p->amppart) && !empty($p->tmbpart)) {
-                $addressId = $p->chwpart . $p->amppart . $p->tmbpart;
-                $thaiAddress = DB::connection('hosxp')
-                    ->table('thaiaddress')
-                    ->where('addressid', $addressId)
-                    ->first();
-            }
-
-            if ($thaiAddress) {
-                $addressParts[] = 'ต.' . ($thaiAddress->name ?? '');
-                $addressParts[] = 'อ.' . ($thaiAddress->amppart_name ?? '');
-                $addressParts[] = 'จ.' . ($thaiAddress->chwpart_name ?? '');
-            } else {
-                if (!empty($p->tmbpart)) $addressParts[] = 'ต.รหัส ' . $p->tmbpart;
-                if (!empty($p->amppart)) $addressParts[] = 'อ.รหัส ' . $p->amppart;
-                if (!empty($p->chwpart)) $addressParts[] = 'จ.รหัส ' . $p->chwpart;
-            }
-
-            $address = implode(' ', $addressParts);
-
-            // เบอร์โทร
-            $phone = $p->hometel ?? $p->informtel ?? '';
-            if (isset($p->mobile_phone) && !empty($p->mobile_phone)) {
-                $phone = $p->mobile_phone;
-            }
+            $address = $p->address ?? '';
+            $phone = $p->mobile_phone_number ?? '';
 
             $results[] = [
                 'hn' => $p->hn,
