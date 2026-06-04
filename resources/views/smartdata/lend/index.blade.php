@@ -172,41 +172,43 @@
                         </a>
                     </li>
                 </ul>
-
-                <div class="ms-auto d-flex gap-2 flex-wrap align-items-center">
-                    @if(auth()->user()->hasAccessRole('admin'))
-                    <a href="{{ route('lend.settings') }}" class="btn btn-outline-secondary btn-sm px-3" style="border-radius:8px;">
-                        <i class="fas fa-cog me-1"></i> ตั้งค่า
-                    </a>
-                    @endif
-
-                    <button type="button" class="btn btn-sm text-white px-3 shadow-sm" onclick="openCreateModal()"
-                       style="background:linear-gradient(135deg,#0268c7,#17a6a7);border-radius:8px;border:none;">
-                        <i class="fas fa-plus me-1"></i> ยืมรายการ
-                    </button>
-                </div>
             </div>
         </div>
     </div>
 
-    {{-- Filter Chips --}}
-    <div class="mb-3 d-flex flex-wrap gap-2">
-        @php
-            $chips = [
-                'all'       => ['label'=>'ทั้งหมด',    'color'=>'#64748b', 'bg'=>'#f1f5f9'],
-                'borrowed'  => ['label'=>'กำลังยืม',   'color'=>'#0ea5e9', 'bg'=>'#e0f2fe'],
-                'overdue'   => ['label'=>'เกินกำหนด',  'color'=>'#ef4444', 'bg'=>'#fee2e2'],
-                'returned'  => ['label'=>'คืนแล้ว',    'color'=>'#10b981', 'bg'=>'#d1fae5'],
-                'cancelled' => ['label'=>'ยกเลิก',     'color'=>'#94a3b8', 'bg'=>'#f1f5f9'],
-            ];
-        @endphp
-        @foreach($chips as $val => $chip)
-            <a href="{{ route('lend.index', ['status'=>$val]) }}"
-               class="filter-chip {{ $status_filter === $val ? 'active' : '' }}"
-               style="color:{{ $chip['color'] }};background:{{ $chip['bg'] }};{{ $status_filter===$val ? 'border-color:'.$chip['color'].';' : '' }}">
-                {{ $chip['label'] }}
+    {{-- Filter Chips & Actions --}}
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex flex-wrap gap-2">
+            @php
+                $chips = [
+                    'all'       => ['label'=>'ทั้งหมด',    'color'=>'#64748b', 'bg'=>'#f1f5f9'],
+                    'borrowed'  => ['label'=>'กำลังยืม',   'color'=>'#0ea5e9', 'bg'=>'#e0f2fe'],
+                    'overdue'   => ['label'=>'เกินกำหนด',  'color'=>'#ef4444', 'bg'=>'#fee2e2'],
+                    'returned'  => ['label'=>'คืนแล้ว',    'color'=>'#10b981', 'bg'=>'#d1fae5'],
+                    'cancelled' => ['label'=>'ยกเลิก',     'color'=>'#94a3b8', 'bg'=>'#f1f5f9'],
+                ];
+            @endphp
+            @foreach($chips as $val => $chip)
+                <a href="{{ route('lend.index', ['status'=>$val]) }}"
+                   class="filter-chip {{ $status_filter === $val ? 'active' : '' }}"
+                   style="color:{{ $chip['color'] }};background:{{ $chip['bg'] }};{{ $status_filter===$val ? 'border-color:'.$chip['color'].';' : '' }}">
+                    {{ $chip['label'] }}
+                </a>
+            @endforeach
+        </div>
+        
+        <div class="d-flex gap-2 align-items-center">
+            @if(auth()->user()->hasAccessRole('admin'))
+            <a href="{{ route('lend.settings') }}" class="btn btn-outline-secondary btn-sm px-3" style="border-radius:8px;">
+                <i class="fas fa-cog me-1"></i> ตั้งค่า
             </a>
-        @endforeach
+            @endif
+
+            <button type="button" class="btn btn-sm text-white px-3 shadow-sm" onclick="openCreateModal()"
+               style="background:linear-gradient(135deg,#0268c7,#17a6a7);border-radius:8px;border:none;padding: 0.35rem 1rem;">
+                <i class="fas fa-plus me-1"></i> ยืมรายการ
+            </button>
+        </div>
     </div>
 
     {{-- ตาราง --}}
