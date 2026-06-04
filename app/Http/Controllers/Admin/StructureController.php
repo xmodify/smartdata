@@ -165,12 +165,15 @@ class StructureController extends Controller
                     ['name' => 'ที่นอนลม',                 'category' => 'equipment', 'sort_order' => 4],
                 ];
                 foreach ($defaultItems as $item) {
-                    DB::table('lend_items')->insertOrIgnore(array_merge($item, [
-                        'total_qty'  => 1,
-                        'active'     => 'Y',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]));
+                    $exists = DB::table('lend_items')->where('name', $item['name'])->exists();
+                    if (!$exists) {
+                        DB::table('lend_items')->insert(array_merge($item, [
+                            'total_qty'  => 1,
+                            'active'     => 'Y',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]));
+                    }
                 }
                 $result .= "\nLend items synced.";
             }
