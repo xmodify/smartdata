@@ -125,7 +125,7 @@ class ServiceController extends Controller
             . "\n"
             . "Chart รอแพทย์สรุป: " . ($chart->non_diagtext ?? 0) . " AN" . "\n"
             . "Chart รอลงรหัสโรค: " . ($chart->non_icd10 ?? 0) . " AN" . "\n"
-            . "https://huataphanhospital.go.th/rims/ipd_non_dchsummary" . "\n";
+            . url('dashboard/ipd_wait_dchsummary') . "\n";
 
     //3. ดึงรายการ client จากตาราง moph_notify
         $clients = DB::table('moph_notify')
@@ -293,7 +293,7 @@ class ServiceController extends Controller
             . "\n"
             . "Chart รอแพทย์สรุป: " . ($chart->non_diagtext ?? 0) . " AN" . "\n"
             . "Chart รอลงรหัสโรค: " . ($chart->non_icd10 ?? 0) . " AN" . "\n"
-            . "https://huataphanhospital.go.th/rims/ipd_non_dchsummary" . "\n";
+            . url('dashboard/ipd_wait_dchsummary') . "\n";
 
     //3. ดึงรายการ client จากตาราง moph_notify
         $clients = DB::table('moph_notify')
@@ -460,7 +460,7 @@ class ServiceController extends Controller
             . "\n"
             . "Chart รอแพทย์สรุป: " . ($chart->non_diagtext ?? 0) . " AN" . "\n"
             . "Chart รอลงรหัสโรค: " . ($chart->non_icd10 ?? 0) . " AN" . "\n"
-            . "https://huataphanhospital.go.th/rims/ipd_non_dchsummary" . "\n";
+            . url('dashboard/ipd_wait_dchsummary') . "\n";
 
     //3. ดึงรายการ client จากตาราง moph_notify
         $clients = DB::table('moph_notify')

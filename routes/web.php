@@ -20,6 +20,7 @@ Route::get('/', function () {
 Route::post('/moph-notify/night', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_night']);
 Route::post('/moph-notify/morning', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_morning']);
 Route::post('/moph-notify/afternoon', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_afternoon']);
+Route::get('/dashboard/ipd_wait_dchsummary', [App\Http\Controllers\Dashboard\IpdWaitDchSummaryController::class, 'ipd_non_dchsummary'])->name('ipd.wait_dchsummary');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');

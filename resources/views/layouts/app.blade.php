@@ -361,6 +361,7 @@
                 </a>
 
                 @auth
+
                     @if(auth()->user()->hasAccessHosxpReport())
                         <div class="sidebar-section-header">รายงาน HOSxP</div>
 
@@ -442,6 +443,11 @@
                             </a>
                         @endif
                     @endif
+
+                    <div class="sidebar-section-header">ระบบ Dashboard</div>
+                    <a href="{{ route('ipd.wait_dchsummary') }}" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-file-invoice me-2" style="color: #dc3545;"></i> ผู้ป่วยในรอสรุป Chart
+                    </a>
                 @endauth
             </div>
 
