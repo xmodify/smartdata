@@ -77,11 +77,13 @@ class LendController extends Controller
         }
 
         $request->validate([
-            'borrower_type'    => 'required|in:patient,other',
             'borrower_name'    => 'required|string|max:255',
             'borrower_address' => 'nullable|string',
             'borrower_phone'   => 'nullable|string|max:20',
+            'patient_name'     => 'nullable|string|max:255',
             'hn'               => 'nullable|string|max:20',
+            'patient_address'  => 'nullable|string',
+            'patient_phone'    => 'nullable|string|max:20',
             'lend_item_id'     => 'required|exists:lend_items,id',
             'qty'              => 'required|integer|min:1',
             'borrow_date'      => 'required|date',
@@ -93,11 +95,13 @@ class LendController extends Controller
 
         LendTransaction::create([
             'lend_item_id'       => $request->lend_item_id,
-            'borrower_type'      => $request->borrower_type,
-            'hn'                 => $request->borrower_type === 'patient' ? $request->hn : null,
+            'hn'                 => $request->hn,
             'borrower_name'      => $request->borrower_name,
             'borrower_address'   => $request->borrower_address,
             'borrower_phone'     => $request->borrower_phone,
+            'patient_name'       => $request->patient_name,
+            'patient_address'    => $request->patient_address,
+            'patient_phone'      => $request->patient_phone,
             'borrow_date'        => $request->borrow_date,
             'due_date'           => $request->due_date,
             'qty'                => $request->qty,
@@ -128,11 +132,13 @@ class LendController extends Controller
         }
 
         $request->validate([
-            'borrower_type'    => 'required|in:patient,other',
             'borrower_name'    => 'required|string|max:255',
             'borrower_address' => 'nullable|string',
             'borrower_phone'   => 'nullable|string|max:20',
+            'patient_name'     => 'nullable|string|max:255',
             'hn'               => 'nullable|string|max:20',
+            'patient_address'  => 'nullable|string',
+            'patient_phone'    => 'nullable|string|max:20',
             'lend_item_id'     => 'required|exists:lend_items,id',
             'qty'              => 'required|integer|min:1',
             'borrow_date'      => 'required|date',
@@ -144,11 +150,13 @@ class LendController extends Controller
 
         $transaction->update([
             'lend_item_id'       => $request->lend_item_id,
-            'borrower_type'      => $request->borrower_type,
-            'hn'                 => $request->borrower_type === 'patient' ? $request->hn : null,
+            'hn'                 => $request->hn,
             'borrower_name'      => $request->borrower_name,
             'borrower_address'   => $request->borrower_address,
             'borrower_phone'     => $request->borrower_phone,
+            'patient_name'       => $request->patient_name,
+            'patient_address'    => $request->patient_address,
+            'patient_phone'      => $request->patient_phone,
             'borrow_date'        => $request->borrow_date,
             'due_date'           => $request->due_date,
             'qty'                => $request->qty,
@@ -176,17 +184,23 @@ class LendController extends Controller
         }
 
         $request->validate([
-            'return_date'  => 'required|date',
-            'return_time'  => 'nullable|date_format:H:i',
-            'returned_note' => 'nullable|string',
+            'return_date'       => 'required|date',
+            'return_time'       => 'nullable|date_format:H:i',
+            'returner_name'     => 'nullable|string|max:255',
+            'returner_address'  => 'nullable|string',
+            'returner_phone'    => 'nullable|string|max:20',
+            'returned_note'     => 'nullable|string',
         ]);
 
         $transaction->update([
-            'status'        => 'returned',
-            'return_date'   => $request->return_date,
-            'return_time'   => $request->return_time ?? now()->format('H:i:s'),
-            'returned_by'   => auth()->id(),
-            'returned_note' => $request->returned_note,
+            'status'            => 'returned',
+            'return_date'       => $request->return_date,
+            'return_time'       => $request->return_time ?? now()->format('H:i:s'),
+            'returner_name'     => $request->returner_name,
+            'returner_address'  => $request->returner_address,
+            'returner_phone'    => $request->returner_phone,
+            'returned_by'       => auth()->id(),
+            'returned_note'     => $request->returned_note,
         ]);
 
         return redirect()->route('lend.index')->with('success', 'บันทึกการคืนอุปกรณ์เรียบร้อยแล้ว');

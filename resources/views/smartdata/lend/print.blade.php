@@ -98,16 +98,16 @@
     </h6>
     <table class="info-table mb-3">
         <tr>
-            <td class="label">ชื่อ-สกุล</td>
+            <td class="label">ชื่อผู้ยืม</td>
             <td class="value">{{ $transaction->borrower_name }}</td>
-            @if($transaction->hn)
-            <td class="label" style="padding-left:20px;">HN</td>
-            <td class="value">{{ $transaction->hn }}</td>
-            @endif
+            <td class="label" style="padding-left:20px;">ชื่อผู้ป่วย</td>
+            <td class="value">{{ $transaction->patient_name ?: '-' }}</td>
         </tr>
         <tr>
-            <td class="label">ที่อยู่</td>
-            <td class="value" colspan="{{ $transaction->hn ? 3 : 1 }}">{{ $transaction->borrower_address ?: '-' }}</td>
+            <td class="label">เลข HN ผู้ป่วย</td>
+            <td class="value">{{ $transaction->hn ?: '-' }}</td>
+            <td class="label" style="padding-left:20px;">ที่อยู่</td>
+            <td class="value">{{ $transaction->borrower_address ?: '-' }}</td>
         </tr>
         <tr>
             <td class="label">เบอร์โทรศัพท์</td>
@@ -196,7 +196,17 @@
     @if($transaction->status === 'returned')
     <div style="margin-top:2rem;padding-top:1rem;border-top:1px dashed #ccc;">
         <h6 class="fw-bold mb-2" style="color:#10b981;font-size:0.9rem;">ข้อมูลการคืน</h6>
-        <table class="info-table">
+        <table class="info-table mb-3">
+            <tr>
+                <td class="label">ชื่อผู้คืน</td>
+                <td class="value">{{ $transaction->returner_name ?: '-' }}</td>
+                <td class="label" style="padding-left:20px;">เบอร์โทรผู้คืน</td>
+                <td class="value">{{ $transaction->returner_phone ?: '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">ที่อยู่ผู้คืน</td>
+                <td class="value" colspan="3">{{ $transaction->returner_address ?: '-' }}</td>
+            </tr>
             <tr>
                 <td class="label">วันที่คืน</td>
                 <td class="value">{{ $transaction->return_date?->locale('th')->translatedFormat('j F Y') }} เวลา {{ $transaction->return_time ?? '-' }}</td>
@@ -214,7 +224,7 @@
             <div class="sign-box">
                 <div class="sign-line"></div>
                 <div class="fw-bold" style="font-size:0.9rem;">ลายเซ็นผู้คืน</div>
-                <div class="sign-label">({{ $transaction->borrower_name }})</div>
+                <div class="sign-label">({{ $transaction->returner_name ?: $transaction->borrower_name }})</div>
             </div>
             <div class="sign-box">
                 <div class="sign-line"></div>

@@ -105,11 +105,11 @@
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card stat-card shadow-sm h-100" style="background: linear-gradient(135deg,#fef3c7,#fde68a);">
+            <div class="card stat-card shadow-sm h-100" style="background: linear-gradient(135deg,#fee2e2,#fecaca);">
                 <div class="card-body d-flex align-items-center gap-3 p-3">
-                    <div class="stat-icon" style="background:#f59e0b;color:#fff;"><i class="fas fa-clock"></i></div>
+                    <div class="stat-icon" style="background:#ef4444;color:#fff;"><i class="fas fa-clock"></i></div>
                     <div>
-                        <div class="fs-2 fw-bold text-warning">{{ $stats['overdue'] }}</div>
+                        <div class="fs-2 fw-bold text-danger">{{ $stats['overdue'] }}</div>
                         <div class="small text-muted fw-semibold">เกินกำหนด</div>
                     </div>
                 </div>
@@ -228,6 +228,16 @@
                             </td>
                             <td>
                                 <div class="fw-semibold">{{ $t->borrower_name }}</div>
+                                @if($t->patient_name)
+                                    <div class="small text-muted" style="font-size: 0.78rem;">
+                                        <i class="fas fa-user-injured me-1"></i>ผู้ป่วย: {{ $t->patient_name }} 
+                                        @if($t->hn) (HN: {{ $t->hn }}) @endif
+                                    </div>
+                                @elseif($t->hn)
+                                    <div class="small text-muted" style="font-size: 0.78rem;">
+                                        (HN: {{ $t->hn }})
+                                    </div>
+                                @endif
                             </td>
                             <td class="text-muted small">{{ $t->borrower_phone ?: '-' }}</td>
                             <td class="small">{{ DateThai($t->borrow_date) }}</td>
@@ -266,8 +276,12 @@
                             <td class="small text-muted">{{ $t->creator->name ?? '-' }}</td>
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                    <button type="button" class="btn btn-outline-info action-btn" title="ดูรายละเอียด"
+                                            onclick="openDetailModal({{ json_encode($t->load(['lendItem', 'creator', 'returner'])) }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                     @if($t->status === 'borrowed')
-                                        <button type="button" class="btn btn-outline-primary action-btn" title="แก้ไข"
+                                        <button type="button" class="btn btn-outline-warning action-btn" title="แก้ไข"
                                                 onclick="openEditModal({{ json_encode($t) }})">
                                             <i class="fas fa-edit"></i>
                                         </button>
@@ -289,7 +303,7 @@
                                             <i class="fas fa-print"></i>
                                         </a>
                                     @else
-                                        <span class="text-muted small">-</span>
+                                        <!-- Cancelled -->
                                     @endif
                                 </div>
                             </td>
@@ -311,23 +325,41 @@
             </div>
             <form action="{{ route('lend.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="borrower_type" value="other">
-                <input type="hidden" name="hn" value="">
                 
                 <div class="modal-body p-4">
                     <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-user me-2"></i>ข้อมูลผู้ยืม</h6>
                     <div class="row g-3 mb-4">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <label class="form-label">ชื่อผู้ยืม <span class="text-danger">*</span></label>
-                            <input type="text" name="borrower_name" class="form-control" placeholder="ชื่อ-นามสกุลผู้ยืม" required>
+                            <input type="text" name="borrower_name" id="create_borrower_name" class="form-control" placeholder="ชื่อ-นามสกุลผู้ยืม" required>
                         </div>
-                        <div class="col-md-8">
-                            <label class="form-label">ที่อยู่</label>
+                        <div class="col-md-6">
+                            <label class="form-label">เบอร์โทรผู้ยืม</label>
+                            <input type="text" name="borrower_phone" class="form-control" placeholder="0xx-xxx-xxxx">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">ที่อยู่ผู้ยืม</label>
                             <textarea name="borrower_address" class="form-control" rows="2" placeholder="ที่อยู่ผู้ยืม"></textarea>
                         </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-user-injured me-2"></i>ข้อมูลผู้ป่วย</h6>
+                    <div class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <label class="form-label">เบอร์โทร</label>
-                            <input type="text" name="borrower_phone" class="form-control" placeholder="0xx-xxx-xxxx">
+                            <label class="form-label">ชื่อผู้ป่วย</label>
+                            <input type="text" name="patient_name" id="create_patient_name" class="form-control" placeholder="ชื่อ-นามสกุลผู้ป่วย">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">เลข HN</label>
+                            <input type="text" name="hn" id="create_hn" class="form-control" placeholder="HN">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">เบอร์โทรผู้ป่วย</label>
+                            <input type="text" name="patient_phone" class="form-control" placeholder="0xx-xxx-xxxx">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">ที่อยู่ผู้ป่วย</label>
+                            <textarea name="patient_address" class="form-control" rows="2" placeholder="ที่อยู่ผู้ป่วย"></textarea>
                         </div>
                     </div>
 
@@ -396,23 +428,41 @@
             </div>
             <form id="editForm" method="POST">
                 @csrf @method('PUT')
-                <input type="hidden" name="borrower_type" value="other">
-                <input type="hidden" name="hn" value="">
                 
                 <div class="modal-body p-4">
                     <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-user me-2"></i>ข้อมูลผู้ยืม</h6>
                     <div class="row g-3 mb-4">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <label class="form-label">ชื่อผู้ยืม <span class="text-danger">*</span></label>
                             <input type="text" name="borrower_name" id="edit_borrower_name" class="form-control" required>
                         </div>
-                        <div class="col-md-8">
-                            <label class="form-label">ที่อยู่</label>
+                        <div class="col-md-6">
+                            <label class="form-label">เบอร์โทรผู้ยืม</label>
+                            <input type="text" name="borrower_phone" id="edit_borrower_phone" class="form-control">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">ที่อยู่ผู้ยืม</label>
                             <textarea name="borrower_address" id="edit_borrower_address" class="form-control" rows="2"></textarea>
                         </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-user-injured me-2"></i>ข้อมูลผู้ป่วย</h6>
+                    <div class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <label class="form-label">เบอร์โทร</label>
-                            <input type="text" name="borrower_phone" id="edit_borrower_phone" class="form-control">
+                            <label class="form-label">ชื่อผู้ป่วย</label>
+                            <input type="text" name="patient_name" id="edit_patient_name" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">เลข HN</label>
+                            <input type="text" name="hn" id="edit_hn" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">เบอร์โทรผู้ป่วย</label>
+                            <input type="text" name="patient_phone" id="edit_patient_phone" class="form-control">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">ที่อยู่ผู้ป่วย</label>
+                            <textarea name="patient_address" id="edit_patient_address" class="form-control" rows="2"></textarea>
                         </div>
                     </div>
 
@@ -467,6 +517,130 @@
     </div>
 </div>
 
+{{-- Modal: รายละเอียดการยืม --}}
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+            <div class="modal-header border-0 pb-0" style="background:linear-gradient(135deg,#17a6a7,#0268c7);">
+                <h5 class="modal-title fw-bold text-white"><i class="fas fa-info-circle me-2"></i>รายละเอียดการยืม-คืน</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    {{-- คอลัมน์ซ้าย: ข้อมูลการยืม --}}
+                    <div class="col-md-6 border-end">
+                        <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-boxes-stacked me-2"></i>ข้อมูลอุปกรณ์ & สัญญา</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width: 120px;">รายการยืม:</td>
+                                <td class="fw-semibold" id="detail_item_name"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">จำนวน:</td>
+                                <td id="detail_qty"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">วันที่ยืม:</td>
+                                <td id="detail_borrow_date"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">กำหนดคืน:</td>
+                                <td id="detail_due_date"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">มัดจำ:</td>
+                                <td id="detail_deposit"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ผู้บันทึก:</td>
+                                <td id="detail_creator"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">หมายเหตุ:</td>
+                                <td id="detail_note"></td>
+                            </tr>
+                        </table>
+
+                        <h6 class="fw-bold mb-3 mt-4 text-success"><i class="fas fa-undo-alt me-2"></i>ข้อมูลการคืน</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width: 120px;">สถานะ:</td>
+                                <td id="detail_status"></td>
+                            </tr>
+                            <tr class="return-info-row" style="display:none;">
+                                <td class="text-muted">วันที่คืน:</td>
+                                <td id="detail_return_date"></td>
+                            </tr>
+                            <tr class="return-info-row" style="display:none;">
+                                <td class="text-muted">ผู้คืน:</td>
+                                <td id="detail_returner_name"></td>
+                            </tr>
+                            <tr class="return-info-row" style="display:none;">
+                                <td class="text-muted">เบอร์โทรผู้คืน:</td>
+                                <td id="detail_returner_phone"></td>
+                            </tr>
+                            <tr class="return-info-row" style="display:none;">
+                                <td class="text-muted">ที่อยู่ผู้คืน:</td>
+                                <td id="detail_returner_address"></td>
+                            </tr>
+                            <tr class="return-info-row" style="display:none;">
+                                <td class="text-muted">ผู้รับคืน:</td>
+                                <td id="detail_returner_staff"></td>
+                            </tr>
+                            <tr class="return-info-row" style="display:none;">
+                                <td class="text-muted">หมายเหตุคืน:</td>
+                                <td id="detail_return_note"></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    {{-- คอลัมน์ขวา: ผู้ยืม & ผู้ป่วย --}}
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-user me-2"></i>ข้อมูลผู้ยืม</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width: 100px;">ชื่อผู้ยืม:</td>
+                                <td class="fw-semibold" id="detail_borrower_name"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">เบอร์โทร:</td>
+                                <td id="detail_borrower_phone"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ที่อยู่:</td>
+                                <td id="detail_borrower_address"></td>
+                            </tr>
+                        </table>
+
+                        <h6 class="fw-bold mb-3 mt-4 text-primary"><i class="fas fa-user-injured me-2"></i>ข้อมูลผู้ป่วย</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width: 100px;">ชื่อผู้ป่วย:</td>
+                                <td class="fw-semibold" id="detail_patient_name"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">HN:</td>
+                                <td id="detail_hn"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">เบอร์โทร:</td>
+                                <td id="detail_patient_phone"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">ที่อยู่:</td>
+                                <td id="detail_patient_address"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius:8px;">ปิด</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Modal: บันทึกคืน --}}
 <div class="modal fade" id="returnModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -487,6 +661,18 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">เวลาที่คืน</label>
                         <input type="time" name="return_time" class="form-control" value="{{ now()->format('H:i') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">ชื่อผู้คืน</label>
+                        <input type="text" name="returner_name" id="returner_name" class="form-control" placeholder="ชื่อผู้ส่งคืนอุปกรณ์">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">เบอร์โทรผู้คืน</label>
+                        <input type="text" name="returner_phone" id="returner_phone" class="form-control" placeholder="0xx-xxx-xxxx">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">ที่อยู่ผู้คืน</label>
+                        <textarea name="returner_address" id="returner_address" class="form-control" rows="2" placeholder="ที่อยู่ผู้ส่งคืน..."></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">หมายเหตุ</label>
@@ -614,6 +800,12 @@ function openEditModal(t) {
     document.getElementById('edit_borrower_name').value = t.borrower_name;
     document.getElementById('edit_borrower_address').value = t.borrower_address || '';
     document.getElementById('edit_borrower_phone').value = t.borrower_phone || '';
+    
+    document.getElementById('edit_patient_name').value = t.patient_name || '';
+    document.getElementById('edit_hn').value = t.hn || '';
+    document.getElementById('edit_patient_address').value = t.patient_address || '';
+    document.getElementById('edit_patient_phone').value = t.patient_phone || '';
+    
     document.getElementById('edit_lend_item_id').value = t.lend_item_id;
     document.getElementById('edit_qty').value = t.qty;
     
@@ -631,9 +823,66 @@ function openEditModal(t) {
     new bootstrap.Modal(document.getElementById('editModal')).show();
 }
 
+function openDetailModal(t) {
+    document.getElementById('detail_item_name').textContent = t.lend_item ? t.lend_item.name : '-';
+    document.getElementById('detail_qty').textContent = t.qty + ' ชิ้น';
+    
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '-';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+    
+    document.getElementById('detail_borrow_date').textContent = formatDate(t.borrow_date);
+    document.getElementById('detail_due_date').textContent = formatDate(t.due_date);
+    document.getElementById('detail_deposit').textContent = t.deposit_amount ? parseFloat(t.deposit_amount).toLocaleString() + ' บาท' + (t.deposit_receipt_no ? ' (เลขใบเสร็จ: ' + t.deposit_receipt_no + ')' : '') : '-';
+    document.getElementById('detail_creator').textContent = t.creator ? t.creator.name : '-';
+    document.getElementById('detail_note').textContent = t.note || '-';
+    
+    // Borrower
+    document.getElementById('detail_borrower_name').textContent = t.borrower_name || '-';
+    document.getElementById('detail_borrower_phone').textContent = t.borrower_phone || '-';
+    document.getElementById('detail_borrower_address').textContent = t.borrower_address || '-';
+    
+    // Patient
+    document.getElementById('detail_patient_name').textContent = t.patient_name || '-';
+    document.getElementById('detail_hn').textContent = t.hn || '-';
+    document.getElementById('detail_patient_phone').textContent = t.patient_phone || '-';
+    document.getElementById('detail_patient_address').textContent = t.patient_address || '-';
+    
+    // Status
+    const statusMap = {
+        'borrowed': '<span class="badge bg-primary">กำลังยืม</span>',
+        'returned': '<span class="badge bg-success">คืนแล้ว</span>',
+        'cancelled': '<span class="badge bg-secondary">ยกเลิก</span>'
+    };
+    document.getElementById('detail_status').innerHTML = statusMap[t.status] || t.status;
+    
+    // Return Info
+    if (t.status === 'returned') {
+        $('.return-info-row').show();
+        document.getElementById('detail_return_date').textContent = formatDate(t.return_date) + ' ' + (t.return_time ? t.return_time.substring(0, 5) + ' น.' : '');
+        document.getElementById('detail_returner_name').textContent = t.returner_name || '-';
+        document.getElementById('detail_returner_phone').textContent = t.returner_phone || '-';
+        document.getElementById('detail_returner_address').textContent = t.returner_address || '-';
+        document.getElementById('detail_returner_staff').textContent = t.returner ? t.returner.name : '-';
+        document.getElementById('detail_return_note').textContent = t.returned_note || '-';
+    } else {
+        $('.return-info-row').hide();
+    }
+    
+    new bootstrap.Modal(document.getElementById('detailModal')).show();
+}
+
 function openReturnModal(id, name) {
     document.getElementById('returnBorrowerName').textContent = name;
     document.getElementById('returnForm').action = '/lend/' + id + '/return';
+    
+    // Clear returner inputs
+    document.getElementById('returner_name').value = '';
+    document.getElementById('returner_phone').value = '';
+    document.getElementById('returner_address').value = '';
     
     const returnModalEl = document.getElementById('returnModal');
     const modal = new bootstrap.Modal(returnModalEl);
