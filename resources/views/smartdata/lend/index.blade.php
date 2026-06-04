@@ -345,24 +345,26 @@
 
                     <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-user-injured me-2"></i>ข้อมูลผู้ป่วย</h6>
                     <div class="row g-3 mb-4">
+                        <div class="col-md-12 position-relative">
+                            <label class="form-label fw-bold text-dark"><i class="fas fa-search me-1 text-primary"></i>พิมพ์ค้นหาผู้ป่วยจาก HOSxP (ระบุ HN หรือ ชื่อ หรือ นามสกุล)</label>
+                            <input type="text" id="create_patient_search" class="form-control" placeholder="พิมพ์เพื่อค้นหา..." autocomplete="off">
+                            <div id="create_patient_results" class="list-group position-absolute w-100 shadow-lg" style="display: none; z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+                        </div>
                         <div class="col-md-4">
                             <label class="form-label">ชื่อผู้ป่วย</label>
                             <input type="text" name="patient_name" id="create_patient_name" class="form-control" placeholder="ชื่อ-นามสกุลผู้ป่วย">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เลข HN</label>
-                            <div class="input-group">
-                                <input type="text" name="hn" id="create_hn" class="form-control" placeholder="HN">
-                                <button class="btn btn-outline-primary" type="button" onclick="performPatientSearch('create')"><i class="fas fa-search"></i> ค้นหา</button>
-                            </div>
+                            <input type="text" name="hn" id="create_hn" class="form-control" placeholder="HN">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เบอร์โทรผู้ป่วย</label>
-                            <input type="text" name="patient_phone" class="form-control" placeholder="0xx-xxx-xxxx">
+                            <input type="text" name="patient_phone" id="create_patient_phone" class="form-control" placeholder="0xx-xxx-xxxx">
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">ที่อยู่ผู้ป่วย</label>
-                            <textarea name="patient_address" class="form-control" rows="2" placeholder="ที่อยู่ผู้ป่วย"></textarea>
+                            <textarea name="patient_address" id="create_patient_address" class="form-control" rows="2" placeholder="ที่อยู่ผู้ป่วย"></textarea>
                         </div>
                     </div>
 
@@ -451,16 +453,18 @@
 
                     <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-user-injured me-2"></i>ข้อมูลผู้ป่วย</h6>
                     <div class="row g-3 mb-4">
+                        <div class="col-md-12 position-relative">
+                            <label class="form-label fw-bold text-dark"><i class="fas fa-search me-1 text-primary"></i>พิมพ์ค้นหาผู้ป่วยจาก HOSxP (ระบุ HN หรือ ชื่อ หรือ นามสกุล)</label>
+                            <input type="text" id="edit_patient_search" class="form-control" placeholder="พิมพ์เพื่อค้นหา..." autocomplete="off">
+                            <div id="edit_patient_results" class="list-group position-absolute w-100 shadow-lg" style="display: none; z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+                        </div>
                         <div class="col-md-4">
                             <label class="form-label">ชื่อผู้ป่วย</label>
                             <input type="text" name="patient_name" id="edit_patient_name" class="form-control">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เลข HN</label>
-                            <div class="input-group">
-                                <input type="text" name="hn" id="edit_hn" class="form-control">
-                                <button class="btn btn-outline-primary" type="button" onclick="performPatientSearch('edit')"><i class="fas fa-search"></i> ค้นหา</button>
-                            </div>
+                            <input type="text" name="hn" id="edit_hn" class="form-control">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">เบอร์โทรผู้ป่วย</label>
@@ -881,40 +885,74 @@ function openDetailModal(t) {
     new bootstrap.Modal(document.getElementById('detailModal')).show();
 }
 
-function performPatientSearch(mode) {
-    const hnInput = document.getElementById(mode + '_hn');
-    const hn = hnInput.value.trim();
-    if (!hn) {
-        alert('กรุณากรอกเลข HN ก่อนค้นหา');
-        return;
-    }
+function initPatientSearch(mode) {
+    const searchInput = document.getElementById(mode + '_patient_search');
+    const resultsDiv = document.getElementById(mode + '_patient_results');
+    let timeout = null;
 
-    const btn = hnInput.nextElementSibling;
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ค้นหา';
+    if (!searchInput) return;
 
-    fetch(`/lend/search-patient?hn=${hn}`)
-        .then(response => response.json())
-        .then(res => {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(timeout);
+        const q = this.value.trim();
+        if (q.length < 2) {
+            resultsDiv.style.display = 'none';
+            resultsDiv.innerHTML = '';
+            return;
+        }
 
-            if (res.success) {
-                document.getElementById(mode + '_hn').value = res.data.hn;
-                document.getElementById(mode + '_patient_name').value = res.data.name;
-                document.getElementById(mode + '_patient_address').value = res.data.address;
-                document.getElementById(mode + '_patient_phone').value = res.data.phone;
-            } else {
-                alert(res.message || 'ไม่พบข้อมูลผู้ป่วย');
-            }
-        })
-        .catch(err => {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-            console.error(err);
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
-        });
+        timeout = setTimeout(() => {
+            fetch(`/lend/search-patient?q=${encodeURIComponent(q)}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success && res.data.length > 0) {
+                        resultsDiv.innerHTML = '';
+                        res.data.forEach(p => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'list-group-item list-group-item-action text-start py-2';
+                            btn.style.fontSize = '0.85rem';
+                            btn.innerHTML = `
+                                <strong>HN: ${p.hn}</strong> - ${p.name} <br>
+                                <small class="text-muted">${p.address || 'ไม่มีที่อยู่'}</small>
+                            `;
+                            btn.addEventListener('click', function() {
+                                document.getElementById(mode + '_hn').value = p.hn;
+                                document.getElementById(mode + '_patient_name').value = p.name;
+                                document.getElementById(mode + '_patient_address').value = p.address;
+                                document.getElementById(mode + '_patient_phone').value = p.phone;
+
+                                // Auto fill borrower details if empty
+                                if (mode === 'create') {
+                                    const bName = document.getElementById('create_borrower_name');
+                                    if (bName && !bName.value) {
+                                        bName.value = p.name;
+                                        document.querySelector('#createModal textarea[name="borrower_address"]').value = p.address;
+                                        document.querySelector('#createModal input[name="borrower_phone"]').value = p.phone;
+                                    }
+                                }
+
+                                searchInput.value = '';
+                                resultsDiv.style.display = 'none';
+                                resultsDiv.innerHTML = '';
+                            });
+                            resultsDiv.appendChild(btn);
+                        });
+                        resultsDiv.style.display = 'block';
+                    } else {
+                        resultsDiv.style.display = 'none';
+                        resultsDiv.innerHTML = '';
+                    }
+                })
+                .catch(err => console.error(err));
+        }, 300);
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target !== searchInput && e.target !== resultsDiv && !resultsDiv.contains(e.target)) {
+            resultsDiv.style.display = 'none';
+        }
+    });
 }
 
 function openReturnModal(id, name) {
@@ -960,6 +998,9 @@ $(document).ready(function() {
         pageLength: 10,
         responsive: true
     });
+
+    initPatientSearch('create');
+    initPatientSearch('edit');
 
     if (typeof flatpickr !== 'undefined') {
         createBorrowPicker = flatpickr("#create_borrow_date", commonConfig);

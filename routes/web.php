@@ -159,7 +159,6 @@ Route::middleware(['auth'])->group(function () {
 
     // ─── ศูนย์ยืม-คืน ────────────────────────────────────────────────
     Route::prefix('lend')->group(function () {
-        Route::get('/search-patient',  [App\Http\Controllers\Smartdata\LendController::class, 'searchPatient'])->name('lend.search_patient');
         Route::get('/',                [App\Http\Controllers\Smartdata\LendController::class, 'index'])->name('lend.index');
         Route::get('/create',          [App\Http\Controllers\Smartdata\LendController::class, 'create'])->name('lend.create');
         Route::post('/',               [App\Http\Controllers\Smartdata\LendController::class, 'store'])->name('lend.store');

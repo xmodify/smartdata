@@ -249,104 +249,84 @@ class LendController extends Controller
     }
 
     /**
-     * ค้นหาข้อมูลผู้ป่วยจาก HOSxP
+     * ค้นหาข้อมูลผู้ป่วยจาก HOSxP (autocomplete)
      */
     public function searchPatient(Request $request)
     {
-        $hn = $request->hn;
-        if (!$hn) {
-            return response()->json(['success' => false, 'message' => 'โปรดระบุ HN']);
+        $q = $request->q;
+        if (!$q) {
+            return response()->json(['success' => false, 'message' => 'โปรดระบุคำค้นหา']);
         }
 
-        // ค้นหาโดยตรง
-        $patient = DB::connection('hosxp')
+        // ค้นหาคนไข้ใน HOSxP ด้วย HN หรือ ชื่อ หรือ นามสกุล
+        $patients = DB::connection('hosxp')
             ->table('patient')
-            ->where('hn', $hn)
-            ->first();
+            ->where(function ($query) use ($q) {
+                $query->where('hn', 'like', $q . '%')
+                      ->orWhere('fname', 'like', $q . '%')
+                      ->orWhere('lname', 'like', $q . '%');
+            })
+            ->limit(15)
+            ->get();
 
-        // ค้นหาด้วยการเติม 0 นำหน้ากรณีพิมพ์มาไม่ครบ
-        if (!$patient) {
-            $paddedHn = str_pad($hn, 9, '0', STR_PAD_LEFT);
-            $patient = DB::connection('hosxp')
-                ->table('patient')
-                ->where('hn', $paddedHn)
-                ->first();
-            
-            if (!$patient) {
-                $paddedHn = str_pad($hn, 8, '0', STR_PAD_LEFT);
-                $patient = DB::connection('hosxp')
-                    ->table('patient')
-                    ->where('hn', $paddedHn)
+        $results = [];
+        foreach ($patients as $p) {
+            $name = trim(($p->pname ?? '') . ($p->fname ?? '') . ' ' . ($p->lname ?? ''));
+
+            // ประกอบที่อยู่
+            $addressParts = [];
+            if (!empty($p->addrpart)) {
+                $addressParts[] = 'บ้านเลขที่ ' . $p->addrpart;
+            }
+            if (!empty($p->moopart)) {
+                $addressParts[] = 'หมู่ที่ ' . $p->moopart;
+            }
+            if (!empty($p->soi)) {
+                $addressParts[] = 'ซอย ' . $p->soi;
+            }
+            if (!empty($p->road)) {
+                $addressParts[] = 'ถนน ' . $p->road;
+            }
+
+            // ตำบล อำเภอ จังหวัด
+            $thaiAddress = null;
+            if (!empty($p->chwpart) && !empty($p->amppart) && !empty($p->tmbpart)) {
+                $addressId = $p->chwpart . $p->amppart . $p->tmbpart;
+                $thaiAddress = DB::connection('hosxp')
+                    ->table('thaiaddress')
+                    ->where('addressid', $addressId)
                     ->first();
             }
-            
-            if (!$patient) {
-                $paddedHn = str_pad($hn, 7, '0', STR_PAD_LEFT);
-                $patient = DB::connection('hosxp')
-                    ->table('patient')
-                    ->where('hn', $paddedHn)
-                    ->first();
+
+            if ($thaiAddress) {
+                $addressParts[] = 'ต.' . ($thaiAddress->name ?? '');
+                $addressParts[] = 'อ.' . ($thaiAddress->amppart_name ?? '');
+                $addressParts[] = 'จ.' . ($thaiAddress->chwpart_name ?? '');
+            } else {
+                if (!empty($p->tmbpart)) $addressParts[] = 'ต.รหัส ' . $p->tmbpart;
+                if (!empty($p->amppart)) $addressParts[] = 'อ.รหัส ' . $p->amppart;
+                if (!empty($p->chwpart)) $addressParts[] = 'จ.รหัส ' . $p->chwpart;
             }
-        }
 
-        if (!$patient) {
-            return response()->json(['success' => false, 'message' => 'ไม่พบข้อมูลผู้ป่วยใน HOSxP']);
-        }
+            $address = implode(' ', $addressParts);
 
-        // รวมชื่อ-นามสกุล
-        $name = trim(($patient->pname ?? '') . ($patient->fname ?? '') . ' ' . ($patient->lname ?? ''));
+            // เบอร์โทร
+            $phone = $p->hometel ?? $p->informtel ?? '';
+            if (isset($p->mobile_phone) && !empty($p->mobile_phone)) {
+                $phone = $p->mobile_phone;
+            }
 
-        // ประกอบที่อยู่
-        $addressParts = [];
-        if (!empty($patient->addrpart)) {
-            $addressParts[] = 'บ้านเลขที่ ' . $patient->addrpart;
-        }
-        if (!empty($patient->moopart)) {
-            $addressParts[] = 'หมู่ที่ ' . $patient->moopart;
-        }
-        if (!empty($patient->soi)) {
-            $addressParts[] = 'ซอย ' . $patient->soi;
-        }
-        if (!empty($patient->road)) {
-            $addressParts[] = 'ถนน ' . $patient->road;
-        }
-
-        // ดึงชื่อ ตำบล อำเภอ จังหวัด จาก thaiaddress
-        $thaiAddress = null;
-        if (!empty($patient->chwpart) && !empty($patient->amppart) && !empty($patient->tmbpart)) {
-            $addressId = $patient->chwpart . $patient->amppart . $patient->tmbpart;
-            $thaiAddress = DB::connection('hosxp')
-                ->table('thaiaddress')
-                ->where('addressid', $addressId)
-                ->first();
-        }
-
-        if ($thaiAddress) {
-            $addressParts[] = 'ต.' . ($thaiAddress->name ?? '');
-            $addressParts[] = 'อ.' . ($thaiAddress->amppart_name ?? '');
-            $addressParts[] = 'จ.' . ($thaiAddress->chwpart_name ?? '');
-        } else {
-            if (!empty($patient->tmbpart)) $addressParts[] = 'ต.รหัส ' . $patient->tmbpart;
-            if (!empty($patient->amppart)) $addressParts[] = 'อ.รหัส ' . $patient->amppart;
-            if (!empty($patient->chwpart)) $addressParts[] = 'จ.รหัส ' . $patient->chwpart;
-        }
-
-        $address = implode(' ', $addressParts);
-
-        // ดึงเบอร์โทรศัพท์
-        $phone = $patient->hometel ?? $patient->informtel ?? '';
-        if (isset($patient->mobile_phone) && !empty($patient->mobile_phone)) {
-            $phone = $patient->mobile_phone;
+            $results[] = [
+                'hn' => $p->hn,
+                'name' => $name,
+                'address' => $address,
+                'phone' => $phone
+            ];
         }
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'hn' => $patient->hn,
-                'name' => $name,
-                'address' => $address,
-                'phone' => $phone
-            ]
+            'data' => $results
         ]);
     }
 }
