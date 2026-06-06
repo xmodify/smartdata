@@ -169,53 +169,17 @@
         <!-- Windows Task Scheduler Commands Card (Full Width) -->
         <div class="col-md-12">
             <div class="card border-0 shadow-sm rounded-lg p-4 mb-4">
-                        <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-clock me-2"></i> ตัวอย่างคำสั่ง Windows Task Scheduler</h5>
-                        <p class="small text-muted mb-4">คุณสามารถคัดลอกคำสั่งด้านล่างนี้ไปตั้งค่าในโปรแกรม Windows Task Scheduler เพื่อให้ระบบทำงานและส่งแจ้งเตือนอัตโนมัติ (รันคู่กับโปรแกรม <code>powershell.exe</code> ในส่วน Action)</p>
-                        
-                        <div class="row">
-                            <!-- Shift Notification Commands (Left 50%) -->
-                            <div class="col-md-6 border-md-end mb-4 mb-md-0">
-                                <h6 class="fw-bold mb-3 small text-muted"><i class="fas fa-bell me-2"></i> รายงานสถิติตามเวร (ส่งแจ้งเตือนรายคาบเวลา)</h6>
-                                @php
-                                    $shifts = [
-                                        ['label' => 'ดึก (00-08)', 'slug' => 'night', 'color' => 'dark'],
-                                        ['label' => 'เช้า (08-16)', 'slug' => 'morning', 'color' => 'primary'],
-                                        ['label' => 'บ่าย (16-24)', 'slug' => 'afternoon', 'color' => 'info']
-                                    ];
-                                @endphp
-                                <div class="row g-2">
-                                    @foreach($shifts as $shift)
-                                    <div class="col-12 mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="badge bg-{{ $shift['color'] }} xsmall" style="font-size: 0.65rem;">เวร{{ $shift['label'] }}</span>
-                                            <button class="btn btn-link btn-xs text-muted p-0 text-decoration-none" type="button" onclick="copyText('cmd_{{ $shift['slug'] }}')">
-                                                <i class="fas fa-copy me-1"></i> คัดลอกคำสั่ง (Copy)
-                                            </button>
-                                        </div>
-                                        <div class="bg-dark text-light p-3 rounded xsmall shadow-sm" id="cmd_{{ $shift['slug'] }}" style="font-size: 0.75rem; white-space: pre-wrap; font-family: monospace;">-ExecutionPolicy Bypass -WindowStyle Hidden -Command "Invoke-RestMethod -Uri '{{ url('/') }}/moph-notify/{{ $shift['slug'] }}' -Method Post"</div>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            
-                            <!-- Replication Monitor Command (Right 50%) -->
-                            <div class="col-md-6 ps-md-4">
-                                <h6 class="fw-bold mb-3 small text-muted"><i class="fas fa-database me-2"></i> ตรวจสอบสถานะ MySQL Replication (เช็คสถานะฐานข้อมูล Master/Slaves)</h6>
-                                <div class="col-12 mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge bg-danger xsmall" style="font-size: 0.65rem;">ตรวจเช็คสถานะ MySQL Replication (ส่งแจ้งเตือน ID 1)</span>
-                                        <button class="btn btn-link btn-xs text-muted p-0 text-decoration-none" type="button" onclick="copyText('cmd_replication')">
-                                            <i class="fas fa-copy me-1"></i> คัดลอกคำสั่ง (Copy)
-                                        </button>
-                                    </div>
-                                    <div class="bg-dark text-light p-3 rounded xsmall shadow-sm" id="cmd_replication" style="font-size: 0.75rem; white-space: pre-wrap; font-family: monospace;">-ExecutionPolicy Bypass -WindowStyle Hidden -Command "Invoke-RestMethod -Uri '{{ url('/') }}/moph-notify/replication' -Method Post"</div>
-                                    <p class="xsmall text-muted mt-2 mb-0">
-                                        <i class="fas fa-info-circle me-1"></i> แนะนำให้ตั้งรันตรวจสอบการทำงานและการซิงค์ข้อมูลทุกๆ 5-10 นาที
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-clock me-2"></i> การตั้งค่าระบบตั้งเวลาอัตโนมัติ (Laravel Task Scheduler)</h5>
+                <p class="small text-muted mb-3">คุณสามารถคัดลอกคำสั่งด้านล่างนี้ไปตั้งค่าในโปรแกรม Windows Task Scheduler (รันทุก ๆ 1 นาที) เพื่อเปิดใช้งานระบบแจ้งเตือนทั้งหมด</p>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-success xsmall" style="font-size: 0.65rem;">คำสั่งหลักสำหรับรันบน Windows (PowerShell)</span>
+                        <button class="btn btn-link btn-xs text-muted p-0 text-decoration-none" type="button" onclick="copyText('cmd_scheduler')">
+                            <i class="fas fa-copy me-1"></i> คัดลอกคำสั่ง (Copy)
+                        </button>
                     </div>
+                    <div class="bg-dark text-light p-3 rounded xsmall shadow-sm" id="cmd_scheduler" style="font-size: 0.75rem; white-space: pre-wrap; font-family: monospace;">-ExecutionPolicy Bypass -WindowStyle Hidden -Command "php {{ str_replace('/', '\\', base_path('artisan')) }} schedule:run"</div>
                 </div>
             </div>
         </div>
@@ -471,12 +435,17 @@
         document.body.removeChild(tempInput);
         
         // Visual feedback
-        const btn = element.nextElementSibling;
-        const icon = btn.querySelector('i');
-        const originalText = btn.innerHTML;
-        
-        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        btn.classList.add('text-success', 'border-success');
+        const btn = document.querySelector(`button[onclick*="'${id}'"]`);
+        if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            btn.classList.add('text-success', 'border-success');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('text-success', 'border-success');
+            }, 2000);
+        }
         
         Swal.fire({
             icon: 'success',
@@ -487,11 +456,6 @@
             toast: true,
             position: 'top-end'
         });
-
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.classList.remove('text-success', 'border-success');
-        }, 2000);
     }
 </script>
 @endpush
