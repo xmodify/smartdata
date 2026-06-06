@@ -149,9 +149,23 @@ class ReplicationController extends Controller
             // หากปกติทั้งหมด
             if (empty($errors) && empty($statusReport)) {
                 $message .= "✅ ปกติทุกฐานข้อมูล (100%)\n";
-                $message .= "- Master (Visit: " . (isset($lastVisitTime['hosxp_master']) && $lastVisitTime['hosxp_master'] !== 'Offline' ? DateThai($lastVisitTime['hosxp_master']) : 'Offline') . " | AN: " . ($ipdMaxAn['hosxp_master'] ?? 'Offline') . ")\n";
-                $message .= "- Slave1 (Visit: " . (isset($lastVisitTime['hosxp']) && $lastVisitTime['hosxp'] !== 'Offline' ? DateThai($lastVisitTime['hosxp']) : 'Offline') . " | AN: " . ($ipdMaxAn['hosxp'] ?? 'Offline') . ")\n";
-                $message .= "- Slave2 (Visit: " . (isset($lastVisitTime['hosxp_slave2']) && $lastVisitTime['hosxp_slave2'] !== 'Offline' ? DateThai($lastVisitTime['hosxp_slave2']) : 'Offline') . " | AN: " . ($ipdMaxAn['hosxp_slave2'] ?? 'Offline') . ")\n";
+                
+                $visitMaster = $lastVisitTime['hosxp_master'] ?? null;
+                if ($visitMaster && $visitMaster !== 'Offline') {
+                    $strYear = date("Y", strtotime($visitMaster)) + 543;
+                    $strMonth = date("n", strtotime($visitMaster));
+                    $strDay = date("j", strtotime($visitMaster));
+                    $strHour = date("H", strtotime($visitMaster));
+                    $strMinute = date("i", strtotime($visitMaster));
+                    $strMonthCut = array("", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.");
+                    $strMonthThai = $strMonthCut[$strMonth];
+                    $visitText = "$strDay $strMonthThai $strYear เวลา $strHour:$strMinute";
+                } else {
+                    $visitText = 'Offline';
+                }
+
+                $message .= "Visit ล่าสุด: {$visitText}\n";
+                $message .= "AN ล่าสุด: " . ($ipdMaxAn['hosxp_master'] ?? 'Offline') . "\n";
             }
             
             $message .= "-----------------------\n";
