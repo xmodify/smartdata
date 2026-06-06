@@ -152,20 +152,20 @@ class ReplicationController extends Controller
                 
                 $visitMaster = $lastVisitTime['hosxp_master'] ?? null;
                 if ($visitMaster && $visitMaster !== 'Offline') {
-                    $strYear = date("Y", strtotime($visitMaster)) + 543;
+                    $strYear = (date("Y", strtotime($visitMaster)) + 543) % 100; // แปลง พ.ศ. 2569 -> 69
                     $strMonth = date("n", strtotime($visitMaster));
                     $strDay = date("j", strtotime($visitMaster));
                     $strHour = date("H", strtotime($visitMaster));
                     $strMinute = date("i", strtotime($visitMaster));
                     $strMonthCut = array("", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.");
                     $strMonthThai = $strMonthCut[$strMonth];
-                    $visitText = "$strDay $strMonthThai $strYear เวลา $strHour:$strMinute";
+                    $visitText = "$strDay $strMonthThai $strYear ($strHour:$strMinute)";
                 } else {
                     $visitText = 'Offline';
                 }
 
-                $message .= "Visit ล่าสุด: {$visitText}\n";
-                $message .= "AN ล่าสุด: " . ($ipdMaxAn['hosxp_master'] ?? 'Offline') . "\n";
+                $message .= "Visit: {$visitText}\n";
+                $message .= "AN: " . ($ipdMaxAn['hosxp_master'] ?? 'Offline') . "\n";
             }
             
             $message .= "-----------------------\n";
