@@ -149,9 +149,9 @@ class ReplicationController extends Controller
             // หากปกติทั้งหมด
             if (empty($errors) && empty($statusReport)) {
                 $message .= "✅ ปกติทุกฐานข้อมูล (100%)\n";
-                $message .= "- Master (" . (isset($lastVisitTime['hosxp_master']) && $lastVisitTime['hosxp_master'] !== 'Offline' ? DateThai($lastVisitTime['hosxp_master']) : 'Offline') . ")\n";
-                $message .= "- Slave1 (" . (isset($lastVisitTime['hosxp']) && $lastVisitTime['hosxp'] !== 'Offline' ? DateThai($lastVisitTime['hosxp']) : 'Offline') . ")\n";
-                $message .= "- Slave2 (" . (isset($lastVisitTime['hosxp_slave2']) && $lastVisitTime['hosxp_slave2'] !== 'Offline' ? DateThai($lastVisitTime['hosxp_slave2']) : 'Offline') . ")\n";
+                $message .= "- Master (Visit: " . (isset($lastVisitTime['hosxp_master']) && $lastVisitTime['hosxp_master'] !== 'Offline' ? DateThai($lastVisitTime['hosxp_master']) : 'Offline') . " | AN: " . ($ipdMaxAn['hosxp_master'] ?? 'Offline') . ")\n";
+                $message .= "- Slave1 (Visit: " . (isset($lastVisitTime['hosxp']) && $lastVisitTime['hosxp'] !== 'Offline' ? DateThai($lastVisitTime['hosxp']) : 'Offline') . " | AN: " . ($ipdMaxAn['hosxp'] ?? 'Offline') . ")\n";
+                $message .= "- Slave2 (Visit: " . (isset($lastVisitTime['hosxp_slave2']) && $lastVisitTime['hosxp_slave2'] !== 'Offline' ? DateThai($lastVisitTime['hosxp_slave2']) : 'Offline') . " | AN: " . ($ipdMaxAn['hosxp_slave2'] ?? 'Offline') . ")\n";
             }
             
             $message .= "-----------------------\n";
