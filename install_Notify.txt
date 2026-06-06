@@ -42,9 +42,13 @@
 ตั้งค่าเพื่อกระตุ้นให้โปรเจกต์ตื่นขึ้นมาเช็คเวลาทุกๆ 1 นาทีผ่านระบบ Cron Job
 
 1. ล็อกอินรีโมทเข้าไปที่ Linux Server ผ่าน SSH (หรือเปิด Terminal)
-2. รันคำสั่งเปิดตัวแก้ไขตารางเวลา (Crontab) ของ User ปัจจุบัน:
+2. รันคำสั่งเปิดตัวแก้ไขตารางเวลา (Crontab) โดยระบุสิทธิ์เป็น User ของ Apache เพื่อป้องกันปัญหาไฟล์ Log ล็อค:
    
-   crontab -e
+   - สำหรับ Ubuntu / Debian (Apache ใช้ User: www-data):
+     sudo -u www-data crontab -e
+     
+   - สำหรับ AlmaLinux / CentOS / RHEL (Apache ใช้ User: apache):
+     sudo -u apache crontab -e
 
 3. วางบรรทัดคำสั่งตั้งเวลาด้านล่างนี้ลงไปที่บรรทัดล่างสุด:
    (กรุณาเปลี่ยนพาธโฟลเดอร์ /var/www/html/smartdata ให้ตรงกับพาธจริงที่ติดตั้งโครงการ)
