@@ -417,7 +417,7 @@
                             </a>
                         @endif
                         @if(auth()->user()->hasAccessAsset())
-                            <a href="#"
+                            <a href="{{ route('backoffice.asset.index') }}"
                                 class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-boxes-stacked me-2" style="color: #4e73df;"></i> งานทรัพย์สิน
                             </a>
@@ -455,7 +455,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-06-04 10:00
+                V. 69-06-06 20:00
             </div>
         </div>
         <!-- /#sidebar-wrapper -->

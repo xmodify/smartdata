@@ -191,6 +191,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/backoffice/hrd/pdf/summary/{id}', [App\Http\Controllers\Backoffice\HrdController::class, 'checkin_indiv_pdf'])->name('backoffice.hrd.pdf.summary');
     Route::get('/backoffice/hrd/pdf/detail/{id}', [App\Http\Controllers\Backoffice\HrdController::class, 'checkin_indiv_detail_pdf'])->name('backoffice.hrd.pdf.detail');
 
+    // Backoffice Asset Routes
+    Route::get('/backoffice/asset', [App\Http\Controllers\Backoffice\AssetController::class, 'index'])->name('backoffice.asset.index');
+    Route::get('/backoffice/asset/{decline_id}', [App\Http\Controllers\Backoffice\AssetController::class, 'show'])->name('backoffice.asset.show');
+    Route::get('/backoffice/asset/{decline_id}/pdf', [App\Http\Controllers\Backoffice\AssetController::class, 'pdf'])->name('backoffice.asset.pdf');
+    Route::get('/backoffice/asset/software/{article_id}', [App\Http\Controllers\Backoffice\AssetController::class, 'getSoftware'])->name('backoffice.asset.software');
+
     // Backoffice Incident Routes
     Route::prefix('backoffice/incident')->group(function () {
         Route::get('/', [App\Http\Controllers\Backoffice\IncidentController::class, 'index'])->name('backoffice.incident.index');
