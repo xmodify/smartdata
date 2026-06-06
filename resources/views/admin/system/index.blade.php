@@ -49,50 +49,7 @@
             </div>
         </div>
 
-        <!-- System Variables Card (Full Width) -->
-        <div class="col-md-12">
-            <div class="card border-0 shadow-sm rounded-lg p-4 mb-4">
-                <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-cog me-2"></i> ตัวแปรระบบ (System Variables)</h5>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover align-middle border-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="border-0 small">ชื่อตัวแปร</th>
-                                <th class="border-0 small">ค่าที่กำหนด</th>
-                                <th class="border-0 small text-center">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $notifyKeys = ['telegram_token', 'telegram_chat_id_register', 'moph_notify_secret', 'moph_notify_client_id'];
-                            @endphp
-                            @foreach($sysVars as $var)
-                            @if(!in_array($var->sys_name, $notifyKeys))
-                            <tr>
-                                <td>
-                                    <div class="fw-bold small">{{ $var->sys_name_th }}</div>
-                                    <code class="xsmall text-muted">{{ $var->sys_name }}</code>
-                                </td>
-                                <td class="small text-truncate" style="max-width: 200px;">
-                                    {{ $var->sys_value ?: '(ว่าง)' }}
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-outline-primary btn-xs edit-sysvar" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#editSysVarModal"
-                                        data-var="{{ json_encode($var) }}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            @endif
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
-            <div class="row">
                 <!-- Moph Notify Settings (Left 50%) -->
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm rounded-lg p-4 mb-4 h-100">
@@ -157,34 +114,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        
-                        <!-- Task Scheduler Help -->
-                        <div class="mt-4 pt-3 border-top">
-                            <h6 class="fw-bold mb-3 small text-muted"><i class="fas fa-clock me-2"></i> ตัวอย่างคำสั่ง Windows Task Scheduler (รายเวร)</h6>
-                            @php
-                                $shifts = [
-                                    ['label' => 'ดึก (00-08)', 'slug' => 'night', 'color' => 'dark'],
-                                    ['label' => 'เช้า (08-16)', 'slug' => 'morning', 'color' => 'primary'],
-                                    ['label' => 'บ่าย (16-24)', 'slug' => 'afternoon', 'color' => 'info']
-                                ];
-                            @endphp
-                            <div class="row g-2">
-                                @foreach($shifts as $shift)
-                                <div class="col-12 mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge bg-{{ $shift['color'] }} xsmall" style="font-size: 0.65rem;">เวร{{ $shift['label'] }}</span>
-                                        <button class="btn btn-link btn-xs text-muted p-0 text-decoration-none" type="button" onclick="copyText('cmd_{{ $shift['slug'] }}')">
-                                            <i class="fas fa-copy me-1"></i> คัดลอกคำสั่ง (Copy)
-                                        </button>
-                                    </div>
-                                    <div class="bg-dark text-light p-3 rounded xsmall shadow-sm" id="cmd_{{ $shift['slug'] }}" style="font-size: 0.75rem; white-space: pre-wrap; font-family: monospace;">-ExecutionPolicy Bypass -WindowStyle Hidden -Command "Invoke-RestMethod -Uri '{{ url('/') }}/moph-notify/{{ $shift['slug'] }}' -Method Post"</div>
-                                </div>
-                                @endforeach
-                            </div>
-                            <p class="xsmall text-muted mt-2 mb-0">
-                                <i class="fas fa-info-circle me-1"></i> ใช้คู่กับโปรแกรม <code>powershell.exe</code> ในส่วน Action ของ Task Scheduler
-                            </p>
-                        </div>
                     </div>
                 </div>
 
@@ -236,37 +165,61 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Edit SysVar Modal -->
-<div class="modal fade" id="editSysVarModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-primary text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-cog me-2"></i>แก้ไขค่าตัวแปรระบบ</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editSysVarForm" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small" id="sys_name_th_label"></label>
-                        <p class="xsmall text-muted mb-2">Key: <code id="sys_name_label"></code></p>
-                        <textarea name="sys_value" id="edit_sys_value" class="form-control" rows="4"></textarea>
+        <!-- Windows Task Scheduler Commands Card (Full Width) -->
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm rounded-lg p-4 mb-4">
+                        <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-clock me-2"></i> ตัวอย่างคำสั่ง Windows Task Scheduler</h5>
+                        <p class="small text-muted mb-4">คุณสามารถคัดลอกคำสั่งด้านล่างนี้ไปตั้งค่าในโปรแกรม Windows Task Scheduler เพื่อให้ระบบทำงานและส่งแจ้งเตือนอัตโนมัติ (รันคู่กับโปรแกรม <code>powershell.exe</code> ในส่วน Action)</p>
+                        
+                        <div class="row">
+                            <!-- Shift Notification Commands (Left 50%) -->
+                            <div class="col-md-6 border-md-end mb-4 mb-md-0">
+                                <h6 class="fw-bold mb-3 small text-muted"><i class="fas fa-bell me-2"></i> รายงานสถิติตามเวร (ส่งแจ้งเตือนรายคาบเวลา)</h6>
+                                @php
+                                    $shifts = [
+                                        ['label' => 'ดึก (00-08)', 'slug' => 'night', 'color' => 'dark'],
+                                        ['label' => 'เช้า (08-16)', 'slug' => 'morning', 'color' => 'primary'],
+                                        ['label' => 'บ่าย (16-24)', 'slug' => 'afternoon', 'color' => 'info']
+                                    ];
+                                @endphp
+                                <div class="row g-2">
+                                    @foreach($shifts as $shift)
+                                    <div class="col-12 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge bg-{{ $shift['color'] }} xsmall" style="font-size: 0.65rem;">เวร{{ $shift['label'] }}</span>
+                                            <button class="btn btn-link btn-xs text-muted p-0 text-decoration-none" type="button" onclick="copyText('cmd_{{ $shift['slug'] }}')">
+                                                <i class="fas fa-copy me-1"></i> คัดลอกคำสั่ง (Copy)
+                                            </button>
+                                        </div>
+                                        <div class="bg-dark text-light p-3 rounded xsmall shadow-sm" id="cmd_{{ $shift['slug'] }}" style="font-size: 0.75rem; white-space: pre-wrap; font-family: monospace;">-ExecutionPolicy Bypass -WindowStyle Hidden -Command "Invoke-RestMethod -Uri '{{ url('/') }}/moph-notify/{{ $shift['slug'] }}' -Method Post"</div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            
+                            <!-- Replication Monitor Command (Right 50%) -->
+                            <div class="col-md-6 ps-md-4">
+                                <h6 class="fw-bold mb-3 small text-muted"><i class="fas fa-database me-2"></i> ตรวจสอบสถานะ MySQL Replication (เช็คสถานะฐานข้อมูล Master/Slaves)</h6>
+                                <div class="col-12 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-danger xsmall" style="font-size: 0.65rem;">ตรวจเช็คสถานะ MySQL Replication (ส่งแจ้งเตือน ID 1)</span>
+                                        <button class="btn btn-link btn-xs text-muted p-0 text-decoration-none" type="button" onclick="copyText('cmd_replication')">
+                                            <i class="fas fa-copy me-1"></i> คัดลอกคำสั่ง (Copy)
+                                        </button>
+                                    </div>
+                                    <div class="bg-dark text-light p-3 rounded xsmall shadow-sm" id="cmd_replication" style="font-size: 0.75rem; white-space: pre-wrap; font-family: monospace;">-ExecutionPolicy Bypass -WindowStyle Hidden -Command "Invoke-RestMethod -Uri '{{ url('/') }}/moph-notify/replication' -Method Post"</div>
+                                    <p class="xsmall text-muted mt-2 mb-0">
+                                        <i class="fas fa-info-circle me-1"></i> แนะนำให้ตั้งรันตรวจสอบการทำงานและการซิงค์ข้อมูลทุกๆ 5-10 นาที
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0 p-4 pt-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="submit" class="btn btn-primary px-4 shadow-sm">บันทึกการเปลี่ยนแปลง</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
+
 
 <!-- Edit Moph Notify Modal -->
 <div class="modal fade" id="editMophModal" tabindex="-1" aria-hidden="true">
@@ -417,19 +370,6 @@
             }).then((result) => { if (result.isConfirmed) { Swal.showLoading(); this.submit(); } });
         });
     }
-
-    // Edit SysVar Modal Population
-    document.querySelectorAll('.edit-sysvar').forEach(button => {
-        button.addEventListener('click', function() {
-            const sysVar = JSON.parse(this.dataset.var);
-            const form = document.getElementById('editSysVarForm');
-            form.action = `{{ url('/') }}/admin/sys-var/${sysVar.sys_name}`;
-            
-            document.getElementById('sys_name_th_label').innerText = sysVar.sys_name_th;
-            document.getElementById('sys_name_label').innerText = sysVar.sys_name;
-            document.getElementById('edit_sys_value').value = sysVar.sys_value;
-        });
-    });
 
     // Edit Moph Modal Population
     document.querySelectorAll('.edit-moph').forEach(button => {

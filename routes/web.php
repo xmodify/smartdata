@@ -20,6 +20,7 @@ Route::get('/', function () {
 Route::post('/moph-notify/night', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_night']);
 Route::post('/moph-notify/morning', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_morning']);
 Route::post('/moph-notify/afternoon', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_afternoon']);
+Route::match(['get', 'post'], '/moph-notify/replication', [App\Http\Controllers\MophNotify\ReplicationController::class, 'check']);
 Route::get('/dashboard/ipd_wait_dchsummary', [App\Http\Controllers\Dashboard\IpdWaitDchSummaryController::class, 'ipd_non_dchsummary'])->name('ipd.wait_dchsummary');
 Route::get('/dashboard/oapp', [App\Http\Controllers\Dashboard\OappController::class, 'index'])->name('dashboard.oapp');
 
@@ -33,7 +34,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/system', [App\Http\Controllers\Admin\StructureController::class, 'index'])->name('admin.system.index');
     Route::post('/admin/git-pull', [App\Http\Controllers\Admin\StructureController::class, 'gitPull'])->name('admin.git_pull');
     Route::post('/admin/upgrade-structure', [App\Http\Controllers\Admin\StructureController::class, 'upgrade'])->name('admin.upgrade_structure');
-    Route::put('/admin/sys-var/{sysVar}', [App\Http\Controllers\Admin\StructureController::class, 'update_sysvar'])->name('admin.sys_var.update');
     
     // Moph Notify Routes
     Route::post('/admin/moph-notify', [App\Http\Controllers\Admin\StructureController::class, 'store_moph_notify'])->name('admin.moph_notify.store');

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
-use App\Models\SysVar;
 use App\Models\MophNotify;
 use App\Models\TelegramNotify;
 use Illuminate\Support\Facades\DB;
@@ -24,8 +23,6 @@ class StructureController extends Controller
             abort(403);
         }
         
-        $sysVars = SysVar::all();
-        
         // Handle cases where tables might be missing (e.g. after manual deletion)
         try {
             $mophNotifies = MophNotify::all();
@@ -39,7 +36,7 @@ class StructureController extends Controller
             $telegramNotifies = collect();
         }
 
-        return view('admin.system.index', compact('sysVars', 'mophNotifies', 'telegramNotifies'));
+        return view('admin.system.index', compact('mophNotifies', 'telegramNotifies'));
     }
 
     /**
@@ -79,6 +76,11 @@ class StructureController extends Controller
         }
 
         try {
+            // Drop legacy sys_var table if it exists
+            if (Schema::hasTable('sys_var')) {
+                Schema::dropIfExists('sys_var');
+            }
+
             // If tables were manually deleted, clear migration records to force recreate
             if (!Schema::hasTable('moph_notify')) {
                 DB::table('migrations')->where('migration', 'like', '%create_moph_notifies_table%')->delete();
@@ -184,23 +186,6 @@ class StructureController extends Controller
         }
     }
 
-    /**
-     * Update a system variable value.
-     */
-    public function update_sysvar(Request $request, SysVar $sysVar)
-    {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
-
-        $validated = $request->validate([
-            'sys_value' => 'nullable|string',
-        ]);
-
-        $sysVar->update($validated);
-
-        return back()->with('success', 'อัปเดตค่า ' . $sysVar->sys_name_th . ' เรียบร้อยแล้ว')->with('active_tab', 'system');
-    }
 
     /**
      * Update Moph Notify settings.

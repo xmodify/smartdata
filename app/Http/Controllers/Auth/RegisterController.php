@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\SysVar;
+use App\Models\TelegramNotify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -33,8 +33,8 @@ class RegisterController extends Controller
 
         // Send Telegram Notification
         try {
-            $token = SysVar::where('sys_name', 'telegram_token')->value('sys_value');
-            $chatIdsString = SysVar::where('sys_name', 'telegram_chat_id_register')->value('sys_value');
+            $token = TelegramNotify::where('name', 'telegram_bot_token')->value('value');
+            $chatIdsString = TelegramNotify::where('name', 'telegram_chat_id_register')->value('value');
 
             if ($token && $chatIdsString && $token !== 'xxx' && $chatIdsString !== 'xxx') {
                 $message = "🔔 <b>มีการลงทะเบียนใหม่</b>\n\n"
