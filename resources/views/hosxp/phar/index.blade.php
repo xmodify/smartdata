@@ -79,9 +79,9 @@
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <a href="{{ route('hosxp.phar.night_shift') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted">ข้อมูลการสั่งยาช่วงเวลา 00.00-08.00 น.</span>
+                                    <span class="small text-dark fw-bold">ข้อมูลการสั่งยาช่วงเวลา 00.00-08.00 น.</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>

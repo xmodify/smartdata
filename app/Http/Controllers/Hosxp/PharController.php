@@ -1736,6 +1736,68 @@ class PharController extends Controller
         ));
     }
 
+    public function nightShift(Request $request)
+    {
+        $title = 'ข้อมูลการสั่งยาช่วงเวลาเวรดึก 00.00-08.00 น.';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        $night_shift_data = DB::connection('hosxp')->select('
+            SELECT o.rxdate,o.rxtime,IF(o.an is NULL ,"ER","IPD") as department,d1.`name` AS doctor,o.hn,o.an,o.vn,o.icode,
+            CONCAT(d.`name`," ",d.strength) as drug_name,CONCAT(p.pname,p.fname,SPACE(1),p.lname) AS ptname,
+            CASE WHEN d.drugaccount ="" THEN "NED" when d.drugaccount <>"" THEN "ED" END AS "acc" ,
+            sum(o.qty) AS qty,sum(o.cost*o.qty) AS sum_cost,sum(o.sum_price) AS sum_price       
+            FROM opitemrece o INNER JOIN drugitems d ON d.icode=o.icode   
+            LEFT OUTER JOIN (SELECT an,rxdate,rxtime,order_no,order_type    
+            FROM ipt_order_no WHERE  order_type = "TRx") as i on i.an=o.an 
+            LEFT JOIN doctor d1 ON d1.code=o.doctor
+            LEFT JOIN patient p ON p.hn=o.hn
+            WHERE o.rxdate BETWEEN ? AND ?
+            AND  o.rxtime BETWEEN "00:00:00" AND "07:59:59" AND  o.icode LIKE "1%" 
+            GROUP BY o.icode ORDER BY o.rxdate,o.rxtime
+        ', [$start_date, $end_date]);
+
+        // Monthly trend for chart
+        $monthly_data = DB::connection('hosxp')->select('
+            SELECT 
+                CASE 
+                    WHEN MONTH(rxdate)="10" THEN CONCAT("ต.ค. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="11" THEN CONCAT("พ.ย. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="12" THEN CONCAT("ธ.ค. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="1" THEN CONCAT("ม.ค. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="2" THEN CONCAT("ก.พ. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="3" THEN CONCAT("มี.ค. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="4" THEN CONCAT("เม.ย. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="5" THEN CONCAT("พ.ค. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="6" THEN CONCAT("มิ.ย. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="7" THEN CONCAT("ก.ค. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="8" THEN CONCAT("ส.ค. ",RIGHT(YEAR(rxdate)+543,2))
+                    WHEN MONTH(rxdate)="9" THEN CONCAT("ก.ย. ",RIGHT(YEAR(rxdate)+543,2))
+                END AS month_name,
+                COUNT(icode) AS order_count,
+                YEAR(rxdate) as y, MONTH(rxdate) as m
+            FROM opitemrece
+            WHERE rxdate BETWEEN ? AND ?
+              AND rxtime BETWEEN "00:00:00" AND "07:59:59"
+              AND icode LIKE "1%"
+            GROUP BY y, m, month_name
+            ORDER BY y, m
+        ', [$start_date, $end_date]);
+
+        return view('hosxp.phar.night_shift', compact(
+            'title',
+            'budget_year_select',
+            'budget_year',
+            'start_date',
+            'end_date',
+            'night_shift_data',
+            'monthly_data'
+        ));
+    }
+
     public function allergyPcu(Request $request)
     {
         $title = 'ข้อมูลการแพ้ยา แยก รพ.สต.';
