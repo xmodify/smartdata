@@ -906,6 +906,400 @@ class PharController extends Controller
         return $pdf->stream('antiviral_' . $type . '_report.pdf');
     }
 
+    public function hd(Request $request)
+    {
+        $title = 'ข้อมูลการใช้ยา HD';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        // OPD Query
+        $hd_opd = DB::connection('hosxp')->select('
+            SELECT 
+                o.icode,
+                d.name AS drug_name,
+                d.generic_name AS generic_name,
+                COUNT(DISTINCT o.vn) AS total_visit,
+                SUM(o.qty) AS total_qty,
+                SUM(o.qty * o.cost) AS total_cost,
+                SUM(o.sum_price) AS total_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "UCS" THEN o.vn END) AS ucs_visit,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.sum_price ELSE 0 END) AS ucs_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "OFC" THEN o.vn END) AS ofc_visit,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.sum_price ELSE 0 END) AS ofc_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "LGO" THEN o.vn END) AS lgo_visit,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.sum_price ELSE 0 END) AS lgo_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.vn END) AS sss_visit,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.sum_price ELSE 0 END) AS sss_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.vn END) AS other_visit,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+            FROM opitemrece o
+            INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = 8
+            LEFT JOIN pttype p ON p.pttype = o.pttype
+            LEFT JOIN drugitems d ON d.icode = o.icode								
+            WHERE o.rxdate BETWEEN ? AND ?
+              AND (o.vn IS NOT NULL AND o.vn <> "")
+            GROUP BY o.icode
+            ORDER BY total_price DESC
+        ', [$start_date, $end_date]);
+
+        // IPD Query
+        $hd_ipd = DB::connection('hosxp')->select('
+            SELECT 
+                o.icode,
+                d.name AS drug_name,
+                d.generic_name AS generic_name,
+                COUNT(DISTINCT o.an) AS total_visit,
+                SUM(o.qty) AS total_qty,
+                SUM(o.qty * o.cost) AS total_cost,
+                SUM(o.sum_price) AS total_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "UCS" THEN o.an END) AS ucs_visit,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.sum_price ELSE 0 END) AS ucs_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "OFC" THEN o.an END) AS ofc_visit,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.sum_price ELSE 0 END) AS ofc_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "LGO" THEN o.an END) AS lgo_visit,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.sum_price ELSE 0 END) AS lgo_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.an END) AS sss_visit,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.sum_price ELSE 0 END) AS sss_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.an END) AS other_visit,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+            FROM opitemrece o
+            INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = 8
+            LEFT JOIN pttype p ON p.pttype = o.pttype
+            LEFT JOIN drugitems d ON d.icode = o.icode								
+            WHERE o.rxdate BETWEEN ? AND ?
+              AND (o.an IS NOT NULL AND o.an <> "")
+            GROUP BY o.icode
+            ORDER BY total_price DESC
+        ', [$start_date, $end_date]);
+
+        // Monthly cost for chart
+        $monthly_raw_opd = DB::connection('hosxp')->select('
+            SELECT 
+                d.name AS drug_name,
+                YEAR(o.rxdate) as y,
+                MONTH(o.rxdate) as m,
+                SUM(o.qty * o.cost) AS cost
+            FROM opitemrece o
+            INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = 8
+            LEFT JOIN drugitems d ON d.icode = o.icode
+            WHERE o.rxdate BETWEEN ? AND ?
+              AND (o.vn IS NOT NULL AND o.vn <> "")
+            GROUP BY d.name, y, m
+            ORDER BY d.name, y, m
+        ', [$start_date, $end_date]);
+
+        $monthly_raw_ipd = DB::connection('hosxp')->select('
+            SELECT 
+                d.name AS drug_name,
+                YEAR(o.rxdate) as y,
+                MONTH(o.rxdate) as m,
+                SUM(o.qty * o.cost) AS cost
+            FROM opitemrece o
+            INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = 8
+            LEFT JOIN drugitems d ON d.icode = o.icode
+            WHERE o.rxdate BETWEEN ? AND ?
+              AND (o.an IS NOT NULL AND o.an <> "")
+            GROUP BY d.name, y, m
+            ORDER BY d.name, y, m
+        ', [$start_date, $end_date]);
+
+        // Generate all months in range for X-Axis
+        $thai_months = [
+            '01' => 'ม.ค.', '02' => 'ก.พ.', '03' => 'มี.ค.', '04' => 'เม.ย.',
+            '05' => 'พ.ค.', '06' => 'มิ.ย.', '07' => 'ก.ค.', '08' => 'ส.ค.',
+            '09' => 'ก.ย.', '10' => 'ต.ค.', '11' => 'พ.ย.', '12' => 'ธ.ค.'
+        ];
+        
+        $start = new \DateTime($start_date);
+        $start->modify('first day of this month');
+        $end = new \DateTime($end_date);
+        $end->modify('last day of this month');
+        
+        $interval = new \DateInterval('P1M');
+        $period = new \DatePeriod($start, $interval, $end);
+        
+        $month_keys = [];
+        $month_categories = [];
+        foreach ($period as $dt) {
+            $ym = $dt->format('Y-m');
+            $month_keys[] = $ym;
+            list($y, $m) = explode('-', $ym);
+            $thai_year = ($y + 543) % 100;
+            $month_categories[] = $thai_months[$m] . ' ' . $thai_year;
+        }
+
+        // Format chart helper
+        $formatChart = function($raw_data) use ($month_keys) {
+            $series = [];
+            $drugs_data = [];
+            
+            // Group raw data by drug name
+            foreach ($raw_data as $row) {
+                $drug_name = $row->drug_name;
+                $ym = sprintf('%04d-%02d', $row->y, $row->m);
+                if (!isset($drugs_data[$drug_name])) {
+                    $drugs_data[$drug_name] = array_fill_keys($month_keys, 0);
+                }
+                $drugs_data[$drug_name][$ym] = (float)$row->cost;
+            }
+            
+            foreach ($drugs_data as $drug_name => $values) {
+                $series[] = [
+                    'name' => $drug_name,
+                    'data' => array_values($values)
+                ];
+            }
+            
+            return $series;
+        };
+
+        $chart_series_opd = $formatChart($monthly_raw_opd);
+        $chart_series_ipd = $formatChart($monthly_raw_ipd);
+
+        return view('hosxp.phar.hd', compact(
+            'title',
+            'budget_year_select',
+            'budget_year',
+            'start_date',
+            'end_date',
+            'hd_opd',
+            'hd_ipd',
+            'month_categories',
+            'chart_series_opd',
+            'chart_series_ipd'
+        ));
+    }
+
+    public function esrd(Request $request)
+    {
+        $title = 'ข้อมูลการใช้ยา ESRD';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        // OPD Query
+        $esrd_opd = DB::connection('hosxp')->select('
+            SELECT 
+                o.icode,
+                d.name AS drug_name,
+                d.generic_name AS generic_name,
+                COUNT(DISTINCT o.vn) AS total_visit,
+                SUM(o.qty) AS total_qty,
+                SUM(o.qty * o.cost) AS total_cost,
+                SUM(o.sum_price) AS total_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "UCS" THEN o.vn END) AS ucs_visit,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.sum_price ELSE 0 END) AS ucs_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "OFC" THEN o.vn END) AS ofc_visit,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.sum_price ELSE 0 END) AS ofc_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "LGO" THEN o.vn END) AS lgo_visit,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.sum_price ELSE 0 END) AS lgo_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.vn END) AS sss_visit,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.sum_price ELSE 0 END) AS sss_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.vn END) AS other_visit,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+            FROM opitemrece o
+            INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = 7
+            LEFT JOIN pttype p ON p.pttype = o.pttype
+            LEFT JOIN drugitems d ON d.icode = o.icode								
+            WHERE o.rxdate BETWEEN ? AND ?
+              AND (o.vn IS NOT NULL AND o.vn <> "")
+            GROUP BY o.icode
+            ORDER BY total_price DESC
+        ', [$start_date, $end_date]);
+
+        // IPD Query
+        $esrd_ipd = DB::connection('hosxp')->select('
+            SELECT 
+                o.icode,
+                d.name AS drug_name,
+                d.generic_name AS generic_name,
+                COUNT(DISTINCT o.an) AS total_visit,
+                SUM(o.qty) AS total_qty,
+                SUM(o.qty * o.cost) AS total_cost,
+                SUM(o.sum_price) AS total_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "UCS" THEN o.an END) AS ucs_visit,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.sum_price ELSE 0 END) AS ucs_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "OFC" THEN o.an END) AS ofc_visit,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.sum_price ELSE 0 END) AS ofc_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = "LGO" THEN o.an END) AS lgo_visit,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.sum_price ELSE 0 END) AS lgo_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.an END) AS sss_visit,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.sum_price ELSE 0 END) AS sss_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.an END) AS other_visit,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+            FROM opitemrece o
+            INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = 7
+            LEFT JOIN pttype p ON p.pttype = o.pttype
+            LEFT JOIN drugitems d ON d.icode = o.icode								
+            WHERE o.rxdate BETWEEN ? AND ?
+              AND (o.an IS NOT NULL AND o.an <> "")
+            GROUP BY o.icode
+            ORDER BY total_price DESC
+        ', [$start_date, $end_date]);
+
+        // Monthly qty for chart
+        $monthly_raw_opd = DB::connection('hosxp')->select('
+            SELECT 
+                d.name AS drug_name,
+                YEAR(o.rxdate) as y,
+                MONTH(o.rxdate) as m,
+                SUM(o.qty) AS qty
+            FROM opitemrece o
+            INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = 7
+            LEFT JOIN drugitems d ON d.icode = o.icode
+            WHERE o.rxdate BETWEEN ? AND ?
+              AND (o.vn IS NOT NULL AND o.vn <> "")
+            GROUP BY d.name, y, m
+            ORDER BY d.name, y, m
+        ', [$start_date, $end_date]);
+
+        $monthly_raw_ipd = DB::connection('hosxp')->select('
+            SELECT 
+                d.name AS drug_name,
+                YEAR(o.rxdate) as y,
+                MONTH(o.rxdate) as m,
+                SUM(o.qty) AS qty
+            FROM opitemrece o
+            INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = 7
+            LEFT JOIN drugitems d ON d.icode = o.icode
+            WHERE o.rxdate BETWEEN ? AND ?
+              AND (o.an IS NOT NULL AND o.an <> "")
+            GROUP BY d.name, y, m
+            ORDER BY d.name, y, m
+        ', [$start_date, $end_date]);
+
+        // Generate all months in range for X-Axis
+        $thai_months = [
+            '01' => 'ม.ค.', '02' => 'ก.พ.', '03' => 'มี.ค.', '04' => 'เม.ย.',
+            '05' => 'พ.ค.', '06' => 'มิ.ย.', '07' => 'ก.ค.', '08' => 'ส.ค.',
+            '09' => 'ก.ย.', '10' => 'ต.ค.', '11' => 'พ.ย.', '12' => 'ธ.ค.'
+        ];
+        
+        $start = new \DateTime($start_date);
+        $start->modify('first day of this month');
+        $end = new \DateTime($end_date);
+        $end->modify('last day of this month');
+        
+        $interval = new \DateInterval('P1M');
+        $period = new \DatePeriod($start, $interval, $end);
+        
+        $month_keys = [];
+        $month_categories = [];
+        foreach ($period as $dt) {
+            $ym = $dt->format('Y-m');
+            $month_keys[] = $ym;
+            list($y, $m) = explode('-', $ym);
+            $thai_year = ($y + 543) % 100;
+            $month_categories[] = $thai_months[$m] . ' ' . $thai_year;
+        }
+
+        // Format chart helper
+        $formatChart = function($raw_data) use ($month_keys) {
+            $series = [];
+            $drugs_data = [];
+            
+            // Group raw data by drug name
+            foreach ($raw_data as $row) {
+                $drug_name = $row->drug_name;
+                $ym = sprintf('%04d-%02d', $row->y, $row->m);
+                if (!isset($drugs_data[$drug_name])) {
+                    $drugs_data[$drug_name] = array_fill_keys($month_keys, 0);
+                }
+                $drugs_data[$drug_name][$ym] = (float)$row->qty;
+            }
+            
+            foreach ($drugs_data as $drug_name => $values) {
+                $series[] = [
+                    'name' => $drug_name,
+                    'data' => array_values($values)
+                ];
+            }
+            
+            return $series;
+        };
+
+        $chart_series_opd = $formatChart($monthly_raw_opd);
+        $chart_series_ipd = $formatChart($monthly_raw_ipd);
+
+        return view('hosxp.phar.esrd', compact(
+            'title',
+            'budget_year_select',
+            'budget_year',
+            'start_date',
+            'end_date',
+            'esrd_opd',
+            'esrd_ipd',
+            'month_categories',
+            'chart_series_opd',
+            'chart_series_ipd'
+        ));
+    }
+
     private function aggregateMonthly($data, $start_date, $end_date, $dateField = 'rxdate')
     {
         $thai_months = [

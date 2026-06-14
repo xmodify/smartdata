@@ -111,6 +111,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/due', [App\Http\Controllers\Hosxp\PharController::class, 'due'])->name('hosxp.phar.due');
         Route::get('/antiviral', [App\Http\Controllers\Hosxp\PharController::class, 'antiviral'])->name('hosxp.phar.antiviral');
         Route::get('/antiviral/pdf', [App\Http\Controllers\Hosxp\PharController::class, 'antiviral_pdf'])->name('hosxp.phar.antiviral.pdf');
+        Route::get('/hd', [App\Http\Controllers\Hosxp\PharController::class, 'hd'])->name('hosxp.phar.hd');
+        Route::get('/esrd', [App\Http\Controllers\Hosxp\PharController::class, 'esrd'])->name('hosxp.phar.esrd');
     });
 
     // NCD Routes
