@@ -43,63 +43,28 @@
             .input-group-date, .input-group-budget { width: 100% !important; }
         }
 
-        /* Custom Tabs Styling */
-        .nav-tabs-custom { border-bottom: 2px solid #f0f0f0; margin-bottom: 1.5rem; }
-        .nav-tabs-custom .nav-link {
-            border: none;
-            color: #64748b;
-            font-weight: 600;
-            padding: 0.75rem 1.25rem;
-            transition: all 0.3s;
-            position: relative;
-        }
-        .nav-tabs-custom .nav-link#opd-tab.active {
-            color: #10b981;
-            background: transparent;
-        }
-        .nav-tabs-custom .nav-link#opd-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #10b981;
-        }
-        .nav-tabs-custom .nav-link#ipd-tab.active {
-            color: #ef4444;
-            background: transparent;
-        }
-        .nav-tabs-custom .nav-link#ipd-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #ef4444;
-        }
-
         .card-custom {
             border-radius: 20px;
             border: none;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
 
-        .table thead th {
+        .table-custom {
+            font-size: 0.85rem;
+        }
+        .table-custom th {
             background-color: #f8fafc;
             color: #475569;
             font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             letter-spacing: 0.025em;
             border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+            vertical-align: middle;
         }
-
-        .text-green { color: #10b981 !important; }
-        .text-red { color: #ef4444 !important; }
-        .bg-pastel-green { background-color: #ecfdf5 !important; }
-        .bg-pastel-red { background-color: #fef2f2 !important; }
+        .table-custom td {
+            vertical-align: middle;
+        }
 
         .flatpickr-today-button {
             border-top: 1px solid #e6e6e6;
@@ -218,7 +183,7 @@
         <div class="page-header-container d-flex justify-content-between align-items-center mt-3">
             <div class="d-flex align-items-center report-title-box">
                 <div class="ps-3 py-1">
-                    <h5 class="text-dark mb-0 fw-bold"><i class="fas fa-virus-slash text-primary me-2"></i> {{ $title }}
+                    <h5 class="text-dark mb-0 fw-bold"><i class="fas fa-filter text-primary me-2"></i> {{ $title }}
                     </h5>
                     <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
                     <div class="text-primary small fw-bold mt-1">
@@ -249,155 +214,56 @@
             </div>
         </div>
 
-        <!-- Summary Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm bg-white h-100" style="border-radius: 15px;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <div class="bg-light p-2 rounded-3"><i class="fas fa-prescription-bottle-alt text-primary fa-lg"></i></div>
-                        </div>
-                        <div class="label-small mb-1 text-muted small fw-bold">จำนวนเคสรวม (สิทธิประกันสังคม)</div>
-                        <div class="stat-val text-dark fw-bold h4">{{ number_format(count($antiviral_opd) + count($antiviral_ipd)) }} <span class="fs-6 fw-normal text-muted">ราย</span></div>
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card card-custom">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-primary"></i>รายชื่อผู้แพ้ยาแยกตาม รพ.สต. ในพื้นที่</h6>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm bg-white h-100" style="border-radius: 15px;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <div class="bg-pastel-green p-2 rounded-3"><i class="fas fa-user-nurse text-green fa-lg"></i></div>
-                        </div>
-                        <div class="label-small mb-1 text-muted small fw-bold">ผู้ป่วยนอก (OPD)</div>
-                        <div class="stat-val text-dark fw-bold h4">{{ number_format(count($antiviral_opd)) }} <span class="fs-6 fw-normal text-muted">ราย</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm bg-white h-100" style="border-radius: 15px;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <div class="bg-pastel-red p-2 rounded-3"><i class="fas fa-bed-pulse text-red fa-lg"></i></div>
-                        </div>
-                        <div class="label-small mb-1 text-muted small fw-bold">ผู้ป่วยใน (IPD)</div>
-                        <div class="stat-val text-dark fw-bold h4">{{ number_format(count($antiviral_ipd)) }} <span class="fs-6 fw-normal text-muted">ราย</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content with Tabs -->
-        <ul class="nav nav-tabs nav-tabs-custom" id="antiviralTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="opd-tab" data-bs-toggle="tab" data-bs-target="#opd-content" type="button" role="tab"><i class="fas fa-user-nurse me-2"></i>ผู้ป่วยนอก (OPD)</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="ipd-tab" data-bs-toggle="tab" data-bs-target="#ipd-content" type="button" role="tab"><i class="fas fa-bed-pulse me-2"></i>ผู้ป่วยใน (IPD)</button>
-            </li>
-        </ul>
-
-        <div class="tab-content" id="antiviralTabsContent">
-            <!-- OPD Tab -->
-            <div class="tab-pane fade show active" id="opd-content" role="tabpanel">
-                <div class="row g-4 mb-4">
-                    <div class="col-12">
-                        <div class="card card-custom">
-                            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-table me-2"></i>ผู้ป่วยนอก</h6>
-                                <a href="{{ route('hosxp.phar.antiviral.pdf', ['type' => 'opd', 'start_date' => $start_date, 'end_date' => $end_date, 'budget_year' => $budget_year]) }}" 
-                                   target="_blank" class="btn btn-danger btn-sm fw-bold shadow-sm" style="border-radius: 8px;">
-                                   <i class="fas fa-print me-1"></i> พิมพ์
-                                </a>
-                            </div>
-                            <div class="card-body px-4 pb-4">
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle" id="opdTable">
-                                        <thead>
-                                            <tr>
-                                                <th class="text-center" style="width: 50px;">#</th>
-                                                <th>วันที่ได้รับ</th>
-                                                <th>HN</th>
-                                                <th>CID</th>
-                                                <th>ชื่อ-สกุล</th>
-                                                <th class="text-center" style="width: 80px;">อายุ</th>
-                                                <th>สิทธิการรักษา</th>
-                                                <th>รายการยา</th>
-                                                <th class="text-center" style="width: 100px;">จำนวน</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @php $idx_opd = 1; @endphp
-                                            @foreach ($antiviral_opd as $row)
-                                                <tr>
-                                                    <td class="text-center">{{ $idx_opd++ }}</td>
-                                                    <td>{{ DateThai($row->vstdate) }}</td>
-                                                    <td>{{ $row->hn }}</td>
-                                                    <td>{{ $row->cid }}</td>
-                                                    <td><span class="fw-bold text-dark">{{ $row->ptname }}</span></td>
-                                                    <td class="text-center">{{ $row->age_y }}</td>
-                                                    <td>{{ $row->pttype_name }}</td>
-                                                    <td><span class="text-dark">{{ $row->drug }}</span></td>
-                                                    <td class="text-center fw-bold text-primary">{{ number_format($row->qty) }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- IPD Tab -->
-            <div class="tab-pane fade" id="ipd-content" role="tabpanel">
-                <div class="row g-4 mb-4">
-                    <div class="col-12">
-                        <div class="card card-custom">
-                            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                                <h6 class="fw-bold mb-0 text-red"><i class="fas fa-table me-2"></i>ผู้ป่วยใน</h6>
-                                <a href="{{ route('hosxp.phar.antiviral.pdf', ['type' => 'ipd', 'start_date' => $start_date, 'end_date' => $end_date, 'budget_year' => $budget_year]) }}" 
-                                   target="_blank" class="btn btn-danger btn-sm fw-bold shadow-sm" style="border-radius: 8px;">
-                                   <i class="fas fa-print me-1"></i> พิมพ์
-                                </a>
-                            </div>
-                            <div class="card-body px-4 pb-4">
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle" id="ipdTable">
-                                        <thead>
-                                            <tr>
-                                                <th class="text-center" style="width: 50px;">#</th>
-                                                <th>วันที่ได้รับ</th>
-                                                <th>HN</th>
-                                                <th>AN</th>
-                                                <th>CID</th>
-                                                <th>ชื่อ-สกุล</th>
-                                                <th class="text-center" style="width: 80px;">อายุ</th>
-                                                <th>สิทธิการรักษา</th>
-                                                <th>รายการยา</th>
-                                                <th class="text-center" style="width: 100px;">จำนวน</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @php $idx_ipd = 1; @endphp
-                                            @foreach ($antiviral_ipd as $row)
-                                                <tr>
-                                                    <td class="text-center">{{ $idx_ipd++ }}</td>
-                                                    <td>{{ DateThai($row->regdate) }}</td>
-                                                    <td>{{ $row->hn }}</td>
-                                                    <td>{{ $row->an }}</td>
-                                                    <td>{{ $row->cid }}</td>
-                                                    <td><span class="fw-bold text-dark">{{ $row->ptname }}</span></td>
-                                                    <td class="text-center">{{ $row->age_y }}</td>
-                                                    <td>{{ $row->pttype_name }}</td>
-                                                    <td><span class="text-dark">{{ $row->drug }}</span></td>
-                                                    <td class="text-center fw-bold text-primary">{{ number_format($row->qty) }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                    <div class="card-body px-4 pb-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle table-custom" id="allergyTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">ลำดับ</th>
+                                        <th style="min-width: 150px;">รพ.สต. (PCU)</th>
+                                        <th style="width: 110px;">HN</th>
+                                        <th style="width: 130px;">เลขบัตรประชาชน</th>
+                                        <th style="min-width: 150px;">ชื่อ-สกุล</th>
+                                        <th style="width: 110px;">วันที่รายงาน</th>
+                                        <th style="min-width: 150px;">ชื่อยาที่แพ้</th>
+                                        <th style="min-width: 150px;">อาการที่แพ้</th>
+                                        <th style="width: 100px;">ความรุนแรง</th>
+                                        <th style="width: 100px;">ผลการแพ้</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($allergy_data as $index => $row)
+                                        <tr>
+                                            <td class="text-center">{{ $index + 1 }}</td>
+                                            <td class="fw-bold text-primary">{{ $row->pcu ?? 'ไม่พบข้อมูล รพ.สต.' }}</td>
+                                            <td class="text-center font-monospace">{{ $row->hn }}</td>
+                                            <td class="text-center font-monospace">{{ $row->cid ?? '-' }}</td>
+                                            <td>{{ $row->ptname }}</td>
+                                            <td class="text-center">{{ $row->report_date ? DateThai($row->report_date) : '-' }}</td>
+                                            <td class="fw-bold text-danger">{{ $row->drugallergy ?? $row->agent }}</td>
+                                            <td>{{ $row->symptom ?? '-' }}</td>
+                                            <td class="text-center">
+                                                @if(Str::contains($row->seiousness_name, 'เสียชีวิต'))
+                                                    <span class="badge bg-danger">{{ $row->seiousness_name }}</span>
+                                                @elseif(Str::contains($row->seiousness_name, 'รุนแรง') || Str::contains($row->seiousness_name, 'อันตราย'))
+                                                    <span class="badge bg-warning text-dark">{{ $row->seiousness_name }}</span>
+                                                @else
+                                                    <span class="badge bg-light text-dark border">{{ $row->seiousness_name ?? '-' }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="small">{{ $row->result_name ?? '-' }}</span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -418,15 +284,14 @@
 
         <script>
             $(document).ready(function() {
-                // DataTables Config
-                const dataTableConfig = {
+                var table = $('#allergyTable').DataTable({
                     pageLength: 10,
                     dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
                     buttons: [{
                         extend: 'excelHtml5',
                         text: '<i class="fas fa-file-excel me-1"></i> Excel',
                         className: 'btn btn-success btn-sm',
-                        title: 'รายงานผู้ได้รับยาต้านไวรัส',
+                        title: 'รายงานข้อมูลผู้แพ้ยา แยก รพ.สต.',
                         exportOptions: { columns: ':visible' }
                     }],
                     language: {
@@ -438,12 +303,9 @@
                             next: "ถัดไป"
                         }
                     }
-                };
+                });
 
-                $('#opdTable').DataTable(dataTableConfig);
-                $('#ipdTable').DataTable(dataTableConfig);
-
-                // Flatpickr
+                // Flatpickr setup
                 if (typeof flatpickr !== 'undefined') {
                     const yearOffset = 543;
                     const commonConfig = {
@@ -452,7 +314,6 @@
                         altInput: true,
                         altFormat: "j M Y",
                         onReady: function(selectedDates, dateStr, instance) {
-                            // Add Today Button
                             const container = instance.calendarContainer;
                             if (container && !container.querySelector('.flatpickr-today-button')) {
                                 const btn = document.createElement("div");
@@ -495,7 +356,6 @@
                     const startPicker = flatpickr("#start_date", commonConfig);
                     const endPicker = flatpickr("#end_date", commonConfig);
 
-                    // Update dates when budget year changes
                     $('select[name="budget_year"]').on('change', function() {
                         const selectedYear = parseInt($(this).val());
                         if (!isNaN(selectedYear)) {
@@ -510,11 +370,6 @@
                         }
                     });
                 }
-
-                // Handle tab switch
-                $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
-                    $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
-                });
             });
         </script>
     @endpush

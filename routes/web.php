@@ -113,6 +113,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/antiviral/pdf', [App\Http\Controllers\Hosxp\PharController::class, 'antiviral_pdf'])->name('hosxp.phar.antiviral.pdf');
         Route::get('/hd', [App\Http\Controllers\Hosxp\PharController::class, 'hd'])->name('hosxp.phar.hd');
         Route::get('/esrd', [App\Http\Controllers\Hosxp\PharController::class, 'esrd'])->name('hosxp.phar.esrd');
+        Route::get('/herbal', [App\Http\Controllers\Hosxp\PharController::class, 'herbal'])->name('hosxp.phar.herbal');
+        Route::get('/dmht', [App\Http\Controllers\Hosxp\PharController::class, 'dmht'])->name('hosxp.phar.dmht');
+        Route::get('/allergy-pcu', [App\Http\Controllers\Hosxp\PharController::class, 'allergyPcu'])->name('hosxp.phar.allergy_pcu');
     });
 
     // NCD Routes

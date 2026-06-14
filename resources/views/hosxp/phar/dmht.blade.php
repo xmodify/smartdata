@@ -264,7 +264,7 @@
         </div>
 
         <!-- Main Content with Tabs -->
-        <ul class="nav nav-tabs nav-tabs-custom" id="esrdReportTabs" role="tablist">
+        <ul class="nav nav-tabs nav-tabs-custom" id="dmhtReportTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="opd-tab" data-bs-toggle="tab" data-bs-target="#opd-content" type="button" role="tab"><i class="fas fa-user-nurse me-2"></i>ผู้ป่วยนอก (OPD)</button>
             </li>
@@ -273,7 +273,7 @@
             </li>
         </ul>
 
-        <div class="tab-content" id="esrdReportTabsContent">
+        <div class="tab-content" id="dmhtReportTabsContent">
             <!-- OPD Tab -->
             <div class="tab-pane fade show active" id="opd-content" role="tabpanel">
                 <div class="row g-4 mb-4">
@@ -281,11 +281,11 @@
                     <div class="col-12">
                         <div class="card card-custom">
                             <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-chart-line me-2"></i>ปริมาณการใช้ยา ESRD (QTY) รายเดือน แยกตามตัวยา (OPD)</h6>
+                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-chart-line me-2"></i>ปริมาณการใช้ยา DM-HT (QTY) รายเดือน แยกตามตัวยา (OPD) <span class="text-muted small fw-normal">(แสดงข้อมูล Top 10)</span></h6>
                             </div>
                             <div class="card-body px-4 pb-4">
                                 @if(count($chart_series_opd) > 0)
-                                    <div id="esrdOpdChart" style="min-height: 300px;"></div>
+                                    <div id="dmhtOpdChart" style="min-height: 300px;"></div>
                                 @else
                                     <div class="text-center text-muted py-5">ไม่มีข้อมูลการสั่งใช้ยาในช่วงเวลาดังกล่าว</div>
                                 @endif
@@ -296,7 +296,7 @@
                     <div class="col-12">
                         <div class="card card-custom">
                             <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยา ESRD (OPD)</h6>
+                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยา DM-HT (OPD)</h6>
                             </div>
                             <div class="card-body px-4 pb-4">
                                 <div class="table-responsive">
@@ -337,7 +337,7 @@
                                                 $s_v = 0; $s_q = 0; $s_c = 0; $s_p = 0;
                                                 $ot_v = 0; $ot_q = 0; $ot_c = 0; $ot_p = 0;
                                             @endphp
-                                            @foreach ($esrd_opd as $row)
+                                            @foreach ($dmht_opd as $row)
                                                 <tr>
                                                     <td class="text-center font-monospace">{{ $row->icode }}</td>
                                                     <td class="fw-bold text-dark">{{ $row->drug_name }}</td>
@@ -439,11 +439,11 @@
                     <div class="col-12">
                         <div class="card card-custom">
                             <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                <h6 class="fw-bold mb-0 text-red"><i class="fas fa-chart-line me-2"></i>ปริมาณการใช้ยา ESRD (QTY) รายเดือน แยกตามตัวยา (IPD)</h6>
+                                <h6 class="fw-bold mb-0 text-red"><i class="fas fa-chart-line me-2"></i>ปริมาณการใช้ยา DM-HT (QTY) รายเดือน แยกตามตัวยา (IPD) <span class="text-muted small fw-normal">(แสดงข้อมูล Top 10)</span></h6>
                             </div>
                             <div class="card-body px-4 pb-4">
                                 @if(count($chart_series_ipd) > 0)
-                                    <div id="esrdIpdChart" style="min-height: 300px;"></div>
+                                    <div id="dmhtIpdChart" style="min-height: 300px;"></div>
                                 @else
                                     <div class="text-center text-muted py-5">ไม่มีข้อมูลการสั่งใช้ยาในช่วงเวลาดังกล่าว</div>
                                 @endif
@@ -454,7 +454,7 @@
                     <div class="col-12">
                         <div class="card card-custom">
                             <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                <h6 class="fw-bold mb-0 text-red"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยา ESRD (IPD)</h6>
+                                <h6 class="fw-bold mb-0 text-red"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยา DM-HT (IPD)</h6>
                             </div>
                             <div class="card-body px-4 pb-4">
                                 <div class="table-responsive">
@@ -495,7 +495,7 @@
                                                 $s_v_ipd = 0; $s_q_ipd = 0; $s_c_ipd = 0; $s_p_ipd = 0;
                                                 $ot_v_ipd = 0; $ot_q_ipd = 0; $ot_c_ipd = 0; $ot_p_ipd = 0;
                                             @endphp
-                                            @foreach ($esrd_ipd as $row)
+                                            @foreach ($dmht_ipd as $row)
                                                 <tr>
                                                     <td class="text-center font-monospace">{{ $row->icode }}</td>
                                                     <td class="fw-bold text-dark">{{ $row->drug_name }}</td>
@@ -608,7 +608,7 @@
             $(document).ready(function() {
                 // Charts
                 @if(count($chart_series_opd) > 0)
-                var opdChart = new ApexCharts(document.querySelector("#esrdOpdChart"), {
+                var opdChart = new ApexCharts(document.querySelector("#dmhtOpdChart"), {
                     series: @json($chart_series_opd),
                     chart: { type: 'line', height: 300, toolbar: { show: true } },
                     stroke: { curve: 'smooth', width: 3 },
@@ -620,7 +620,7 @@
                 @endif
 
                 @if(count($chart_series_ipd) > 0)
-                var ipdChart = new ApexCharts(document.querySelector("#esrdIpdChart"), {
+                var ipdChart = new ApexCharts(document.querySelector("#dmhtIpdChart"), {
                     series: @json($chart_series_ipd),
                     chart: { type: 'line', height: 300, toolbar: { show: true } },
                     stroke: { curve: 'smooth', width: 3 },
@@ -652,7 +652,7 @@
                         extend: 'excelHtml5',
                         text: '<i class="fas fa-file-excel me-1"></i> Excel',
                         className: 'btn btn-success btn-sm',
-                        title: 'รายงานสรุปการใช้ยา ESRD (OPD) แยกตามสิทธิ',
+                        title: 'รายงานสรุปการใช้ยา DM-HT (OPD) แยกตามสิทธิ',
                         exportOptions: { columns: ':visible' }
                     }]
                 });
@@ -663,7 +663,7 @@
                         extend: 'excelHtml5',
                         text: '<i class="fas fa-file-excel me-1"></i> Excel',
                         className: 'btn btn-success btn-sm',
-                        title: 'รายงานสรุปการใช้ยา ESRD (IPD) แยกตามสิทธิ',
+                        title: 'รายงานสรุปการใช้ยา DM-HT (IPD) แยกตามสิทธิ',
                         exportOptions: { columns: ':visible' }
                     }]
                 });

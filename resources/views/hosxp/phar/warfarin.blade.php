@@ -118,6 +118,99 @@
             background: #fdfaff;
             color: #059669;
         }
+
+        /* DataTables Custom Styling to match Image 2 */
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input,
+        .dataTables_filter input {
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+            padding: 0.25rem 0.6rem !important;
+            outline: none !important;
+            font-size: 0.85rem !important;
+            box-shadow: none !important;
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            padding-right: 1.5rem !important;
+            min-width: 60px !important;
+        }
+        
+        /* Excel Button Styling */
+        .dt-buttons .btn-success, .buttons-excel {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+            color: #ffffff !important;
+            border-radius: 0.4rem !important;
+            font-weight: 500 !important;
+            padding: 0.3rem 0.75rem !important;
+            font-size: 0.85rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.15) !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+        
+        .dt-buttons .btn-success:hover, .buttons-excel:hover {
+            background-color: #157347 !important;
+            border-color: #146c43 !important;
+        }
+
+        /* Pagination Styling */
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+        .page-item.active .page-link {
+            background: #4f46e5 !important; /* Royal blue / Indigo */
+            color: white !important;
+            border-color: #4f46e5 !important;
+            border-radius: 0.4rem !important;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button:not(.current),
+        .page-item:not(.active) .page-link {
+            color: #4f46e5 !important;
+            background: transparent !important;
+            border: 1px solid transparent !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover,
+        .page-link:hover {
+            background: #f3f4f6 !important;
+            color: #4f46e5 !important;
+            border-radius: 0.4rem !important;
+            border-color: #dee2e6 !important;
+        }
+        
+        .page-item:first-child .page-link,
+        .page-item:last-child .page-link {
+            border-radius: 0.4rem !important;
+        }
+        
+        .page-link {
+            margin: 0 2px !important;
+            border-radius: 0.4rem !important;
+            padding: 0.35rem 0.75rem !important;
+            font-size: 0.85rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 0rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_filter label,
+        .dataTables_filter label {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            margin-bottom: 0 !important;
+            font-size: 0.85rem !important;
+        }
+
+        .dt-buttons {
+            margin-bottom: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+        }
     </style>
 @endpush
 
@@ -220,9 +313,8 @@
                     </div>
                     <div class="col-12">
                         <div class="card card-custom">
-                            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
                                 <h6 class="fw-bold mb-0 text-green"><i class="fas fa-table me-2"></i>ตารางข้อมูลการใช้ยา (OPD)</h6>
-                                <div id="opdExportBtn"></div>
                             </div>
                             <div class="card-body px-4 pb-4">
                                 <div class="table-responsive">
@@ -311,9 +403,8 @@
                     </div>
                     <div class="col-12">
                         <div class="card card-custom">
-                            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4">
                                 <h6 class="fw-bold mb-0 text-red"><i class="fas fa-table me-2"></i>ตารางข้อมูลการใช้ยา (IPD)</h6>
-                                <div id="ipdExportBtn"></div>
                             </div>
                             <div class="card-body px-4 pb-4">
                                 <div class="table-responsive">
@@ -566,15 +657,20 @@
                 // DataTables
                 const dataTableConfig = {
                     pageLength: 10,
-                    language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/th.json' },
-                    dom: 'lrtip'
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+                    language: {
+                        search: "ค้นหา:",
+                        lengthMenu: "แสดง _MENU_ รายการ",
+                        info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                        paginate: {
+                            previous: "ก่อนหน้า",
+                            next: "ถัดไป"
+                        }
+                    }
                 };
 
-                var opdTable = $('#opdTable').DataTable(dataTableConfig);
-                var ipdTable = $('#ipdTable').DataTable(dataTableConfig);
-
-                // Export Buttons
-                new $.fn.dataTable.Buttons(opdTable, {
+                var opdTable = $('#opdTable').DataTable({
+                    ...dataTableConfig,
                     buttons: [{
                         extend: 'excelHtml5',
                         text: '<i class="fas fa-file-excel me-1"></i> Excel',
@@ -582,9 +678,10 @@
                         title: 'รายงานข้อมูลการใช้ยา Warfarin (OPD)',
                         exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
                     }]
-                }).container().appendTo($('#opdExportBtn'));
+                });
 
-                new $.fn.dataTable.Buttons(ipdTable, {
+                var ipdTable = $('#ipdTable').DataTable({
+                    ...dataTableConfig,
                     buttons: [{
                         extend: 'excelHtml5',
                         text: '<i class="fas fa-file-excel me-1"></i> Excel',
@@ -592,7 +689,7 @@
                         title: 'รายงานข้อมูลการใช้ยา Warfarin (IPD)',
                         exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6] }
                     }]
-                }).container().appendTo($('#ipdExportBtn'));
+                });
 
                 // Flatpickr
                 if (typeof flatpickr !== 'undefined') {

@@ -85,15 +85,15 @@
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>
-                            <a href="#" class="list-group-item list-group-item-action py-2 px-4 border-0">
+                            <a href="{{ route('hosxp.phar.allergy_pcu') }}" class="list-group-item list-group-item-action py-2 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted">ข้อมูลการแพ้ยาแยก รพ.สต.</span>
+                                    <span class="small text-dark fw-bold">ข้อมูลการแพ้ยาแยก รพ.สต.</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>
-                            <a href="#" class="list-group-item list-group-item-action py-2 px-4 border-0">
+                            <a href="/backoffice/incident/med_error" class="list-group-item list-group-item-action py-2 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted">Medication Error Report</span>
+                                    <span class="small text-dark fw-bold">Medication Error Report</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>
@@ -110,9 +110,9 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action py-3 px-4 border-0">
+                            <a href="{{ route('hosxp.phar.herbal') }}" class="list-group-item list-group-item-action py-2 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted">มูลค่าการใช้ยาสมุนไพร</span>
+                                    <span class="small text-dark fw-bold">มูลค่าการใช้ยาสมุนไพร</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a>
@@ -128,9 +128,9 @@
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a> 
-                            <a href="#" class="list-group-item list-group-item-action py-2 px-4 border-0">
+                            <a href="{{ route('hosxp.phar.dmht') }}" class="list-group-item list-group-item-action py-2 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted">ข้อมูลการใช้ยา DM-HT</span>
+                                    <span class="small text-dark fw-bold">ข้อมูลการใช้ยา DM-HT</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a> 
