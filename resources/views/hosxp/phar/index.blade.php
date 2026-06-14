@@ -134,16 +134,16 @@
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a> 
-                            <a href="#" class="list-group-item list-group-item-action py-2 px-4 border-0">
+                            <a href="{{ route('hosxp.phar.due') }}" class="list-group-item list-group-item-action py-2 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ข้อมูลการใช้ยา DUE</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                    <span class="small text-primary fw-bold">ข้อมูลการใช้ยา DUE</span>
+                                    <i class="fas fa-chevron-right text-primary" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a> 
-                            <a href="#" class="list-group-item list-group-item-action py-2 px-4 border-0">
+                            <a href="{{ route('hosxp.phar.metformin') }}" class="list-group-item list-group-item-action py-2 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">ข้อมูลการใช้ยา Metformin</span>
-                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                    <span class="small text-primary fw-bold">ข้อมูลการใช้ยา Metformin</span>
+                                    <i class="fas fa-chevron-right text-primary" style="font-size: 0.7rem;"></i>
                                 </div>
                             </a> 
                             <a href="{{ route('hosxp.phar.warfarin') }}" class="list-group-item list-group-item-action py-2 px-4 border-0">
