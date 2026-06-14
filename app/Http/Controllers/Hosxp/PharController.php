@@ -222,6 +222,248 @@ class PharController extends Controller
         ));
     }
 
+    public function warfarin(Request $request)
+    {
+        $title = 'ข้อมูลการใช้ยา Warfarin';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        // OPD Query
+        $warfarin_opd = DB::connection('hosxp')->select('
+            SELECT o.vn, o.vstdate, o.vsttime, CONCAT(d1.`name`," ",d1.strength) AS drug ,CONCAT(p.pname,p.fname," ",p.lname) AS ptname,
+                v.age_y,o.hn,o1.rxdate,o1.rxtime,d2.`code` AS drugusage,lh.report_date,lh.report_time,
+                lo.lab_items_name_ref AS pt,lo.lab_order_result AS pt_result,
+                lo2.lab_items_name_ref AS inr,lo2.lab_order_result AS inr_result,
+                CASE WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370601") THEN "รพ.สต.หัวตะพาน" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370602" AND p.moopart IN ("4","5","6","10","11")) THEN "รพ.สต.โนนหนามแท่ง"   
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370602" AND p.moopart IN ("1","2","3","7","8","9","12")) THEN "รพ.สต.คำพระ"  
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370603" ) THEN "รพ.สต.เค็งใหญ่"  
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370604" ) THEN "รพ.สต.โคกเลาะ"   
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370605" AND p.moopart IN ("2","5","6","7","8","9")) THEN "รพ.สต.ขุมเหล็ก" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370605" AND p.moopart IN ("1","3","4","10","11","12")) THEN "รพ.สต.โพนเมืองน้อย" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370606"AND p.moopart IN ("1","3","7","10","11","12","13")) THEN "รพ.สต.สร้างถ่อน้อย" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370606" AND p.moopart IN ("2","4","5","6","8","9") ) THEN "รพ.สต.นาคู" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370607" AND p.moopart IN ("3","6","7","8","9")) THEN "รพ.สต.หนองยอ"  
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370607" AND p.moopart IN ("1","2","4","5","10","11","12")) THEN "รพ.สต.จิกดู่"   
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370608" ) THEN "PCU รัตนวารี" 
+                ELSE "นอกเขตอำเภอหัวตะพาน" END AS "pcu" 
+            FROM ovst o
+            INNER JOIN opitemrece o1 ON o1.vn=o.vn AND o1.icode IN ("1550002","1500035","1500036")
+            LEFT JOIN patient p ON p.hn=o.hn
+            LEFT JOIN vn_stat v ON v.vn=o.vn
+            LEFT JOIN drugitems d1 ON d1.icode=o1.icode
+            LEFT JOIN drugusage d2 ON d2.drugusage=o1.drugusage
+            INNER JOIN lab_head lh ON lh.vn=o.vn
+            LEFT JOIN lab_head lh2 ON lh2.vn=o.vn
+            LEFT JOIN lab_order lo ON lo.lab_order_number=lh.lab_order_number AND lo.lab_items_code ="350" 
+            LEFT JOIN lab_order lo2 ON lo2.lab_order_number=lh2.lab_order_number AND lo2.lab_items_code ="353" 
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND ((lo.lab_items_code ="350" AND lo.lab_order_result <>"") OR (lo2.lab_items_code ="353" AND lo2.lab_order_result <>""))
+            GROUP BY o.vn,o1.icode,lo.lab_items_code
+            ORDER BY pcu,o.hn,o.vstdate,o1.icode,lo.lab_items_code
+        ', [$start_date, $end_date]);
+
+        // IPD Query
+        $warfarin_ipd = DB::connection('hosxp')->select('
+            SELECT i.an, i.regdate, i.regtime, i.dchdate, i.dchtime, CONCAT(d1.`name`," ",d1.strength) AS drug ,CONCAT(p.pname,p.fname," ",p.lname) AS ptname,
+                a.age_y,i.hn,o1.rxdate,o1.rxtime,d2.`code` AS drugusage,lh.report_date,lh.report_time,
+                lo.lab_items_name_ref AS pt,lo.lab_order_result AS pt_result,
+                lo2.lab_items_name_ref AS inr,lo2.lab_order_result AS inr_result,
+                CASE WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370601") THEN "รพ.สต.หัวตะพาน" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370602" AND p.moopart IN ("4","5","6","10","11")) THEN "รพ.สต.โนนหนามแท่ง"   
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370602" AND p.moopart IN ("1","2","3","7","8","9","12")) THEN "รพ.สต.คำพระ"  
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370603" ) THEN "รพ.สต.เค็งใหญ่"  
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370604" ) THEN "รพ.สต.โคกเลาะ"   
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370605" AND p.moopart IN ("2","5","6","7","8","9")) THEN "รพ.สต.ขุมเหล็ก" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370605" AND p.moopart IN ("1","3","4","10","11","12")) THEN "รพ.สต.โพนเมืองน้อย" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370606"AND p.moopart IN ("1","3","7","10","11","12","13")) THEN "รพ.สต.สร้างถ่อน้อย" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370606" AND p.moopart IN ("2","4","5","6","8","9") ) THEN "รพ.สต.นาคู" 
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370607" AND p.moopart IN ("3","6","7","8","9")) THEN "รพ.สต.หนองยอ"  
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370607" AND p.moopart IN ("1","2","4","5","10","11","12")) THEN "รพ.สต.จิกดู่"   
+                WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )="370608" ) THEN "PCU รัตนวารี" 
+                ELSE "นอกเขตอำเภอหัวตะพาน" END AS "pcu" 
+            FROM ipt i
+            INNER JOIN opitemrece o1 ON o1.an=i.an AND o1.icode IN ("1550002","1500035","1500036")
+            LEFT JOIN patient p ON p.hn=i.hn
+            LEFT JOIN an_stat a ON a.an=i.an
+            LEFT JOIN drugitems d1 ON d1.icode=o1.icode
+            LEFT JOIN drugusage d2 ON d2.drugusage=o1.drugusage
+            INNER JOIN lab_head lh ON lh.vn=i.an
+            LEFT JOIN lab_head lh2 ON lh2.vn=i.an
+            LEFT JOIN lab_order lo ON lo.lab_order_number=lh.lab_order_number AND lo.lab_items_code ="350" 
+            LEFT JOIN lab_order lo2 ON lo2.lab_order_number=lh2.lab_order_number AND lo2.lab_items_code ="353" 
+            WHERE i.regdate BETWEEN ? AND ?
+            AND ((lo.lab_items_code ="350" AND lo.lab_order_result <>"") OR (lo2.lab_items_code ="353" AND lo2.lab_order_result <>""))
+            GROUP BY i.an,o1.icode,o1.rxdate,lo.lab_items_code
+            ORDER BY pcu,i.an,o1.icode,o1.rxdate,lo.lab_items_code
+        ', [$start_date, $end_date]);
+
+        // Process grouping by vn (OPD) and an (IPD)
+        $grouped_opd = [];
+        foreach ($warfarin_opd as $row) {
+            $vn = $row->vn;
+            if (!isset($grouped_opd[$vn])) {
+                $grouped_opd[$vn] = [
+                    'vn' => $vn,
+                    'vstdate' => $row->vstdate,
+                    'vsttime' => $row->vsttime,
+                    'ptname' => $row->ptname,
+                    'age_y' => $row->age_y,
+                    'hn' => $row->hn,
+                    'pcu' => $row->pcu,
+                    'drugs' => [],
+                    'labs' => []
+                ];
+            }
+            
+            // Add drug and usage if not already added
+            $drug_exists = false;
+            foreach ($grouped_opd[$vn]['drugs'] as $d) {
+                if ($d['name'] == $row->drug && $d['usage'] == $row->drugusage) {
+                    $drug_exists = true;
+                    break;
+                }
+            }
+            if (!$drug_exists) {
+                $grouped_opd[$vn]['drugs'][] = [
+                    'name' => $row->drug,
+                    'usage' => $row->drugusage,
+                    'rxdate' => $row->rxdate,
+                    'rxtime' => $row->rxtime
+                ];
+            }
+
+            // Add lab result if not already added
+            $lab_key = ($row->report_date ?? '') . '_' . ($row->pt_result ?? '') . '_' . ($row->inr_result ?? '');
+            if (!isset($grouped_opd[$vn]['labs'][$lab_key])) {
+                $grouped_opd[$vn]['labs'][$lab_key] = [
+                    'report_date' => $row->report_date,
+                    'report_time' => $row->report_time,
+                    'pt' => $row->pt,
+                    'pt_result' => $row->pt_result,
+                    'inr' => $row->inr,
+                    'inr_result' => $row->inr_result
+                ];
+            }
+        }
+
+        $grouped_ipd = [];
+        foreach ($warfarin_ipd as $row) {
+            $an = $row->an;
+            if (!isset($grouped_ipd[$an])) {
+                $grouped_ipd[$an] = [
+                    'an' => $an,
+                    'regdate' => $row->regdate,
+                    'regtime' => $row->regtime,
+                    'dchdate' => $row->dchdate,
+                    'dchtime' => $row->dchtime,
+                    'ptname' => $row->ptname,
+                    'age_y' => $row->age_y,
+                    'hn' => $row->hn,
+                    'pcu' => $row->pcu,
+                    'drugs' => [],
+                    'labs' => []
+                ];
+            }
+            
+            // Add drug and usage if not already added
+            $drug_exists = false;
+            foreach ($grouped_ipd[$an]['drugs'] as $d) {
+                if ($d['name'] == $row->drug && $d['usage'] == $row->drugusage) {
+                    $drug_exists = true;
+                    break;
+                }
+            }
+            if (!$drug_exists) {
+                $grouped_ipd[$an]['drugs'][] = [
+                    'name' => $row->drug,
+                    'usage' => $row->drugusage,
+                    'rxdate' => $row->rxdate,
+                    'rxtime' => $row->rxtime
+                ];
+            }
+
+            // Add lab result if not already added
+            $lab_key = ($row->report_date ?? '') . '_' . ($row->pt_result ?? '') . '_' . ($row->inr_result ?? '');
+            if (!isset($grouped_ipd[$an]['labs'][$lab_key])) {
+                $grouped_ipd[$an]['labs'][$lab_key] = [
+                    'report_date' => $row->report_date,
+                    'report_time' => $row->report_time,
+                    'pt' => $row->pt,
+                    'pt_result' => $row->pt_result,
+                    'inr' => $row->inr,
+                    'inr_result' => $row->inr_result
+                ];
+            }
+        }
+
+        // Process monthly counts for charts
+        $monthly_opd = $this->aggregateMonthly($warfarin_opd, $start_date, $end_date, 'rxdate');
+        $monthly_ipd = $this->aggregateMonthly($warfarin_ipd, $start_date, $end_date, 'rxdate');
+
+        return view('hosxp.phar.warfarin', compact(
+            'title',
+            'budget_year_select',
+            'budget_year',
+            'start_date',
+            'end_date',
+            'grouped_opd',
+            'grouped_ipd',
+            'monthly_opd',
+            'monthly_ipd'
+        ));
+    }
+
+    private function aggregateMonthly($data, $start_date, $end_date, $dateField = 'rxdate')
+    {
+        $thai_months = [
+            '01' => 'ม.ค.', '02' => 'ก.พ.', '03' => 'มี.ค.', '04' => 'เม.ย.',
+            '05' => 'พ.ค.', '06' => 'มิ.ย.', '07' => 'ก.ค.', '08' => 'ส.ค.',
+            '09' => 'ก.ย.', '10' => 'ต.ค.', '11' => 'พ.ย.', '12' => 'ธ.ค.'
+        ];
+
+        // Generate all months in range
+        $start = new \DateTime($start_date);
+        $start->modify('first day of this month');
+        $end = new \DateTime($end_date);
+        $end->modify('last day of this month');
+        
+        $interval = new \DateInterval('P1M');
+        $period = new \DatePeriod($start, $interval, $end);
+        
+        $months = [];
+        foreach ($period as $dt) {
+            $months[$dt->format('Y-m')] = 0;
+        }
+
+        // Count
+        foreach ($data as $row) {
+            if (isset($row->$dateField)) {
+                $m = date('Y-m', strtotime($row->$dateField));
+                if (isset($months[$m])) {
+                    $months[$m]++;
+                }
+            }
+        }
+
+        $categories = [];
+        $values = [];
+        foreach ($months as $ym => $count) {
+            list($y, $m) = explode('-', $ym);
+            $thai_year = ($y + 543) % 100;
+            $categories[] = $thai_months[$m] . ' ' . $thai_year;
+            $values[] = $count;
+        }
+
+        return [
+            'categories' => $categories,
+            'values' => $values
+        ];
+    }
+
     private function resolveDateRange(Request $request)
     {
         $budget_year_select = DB::table('budget_year')->select('LEAVE_YEAR_ID', 'LEAVE_YEAR_NAME')->orderByDesc('LEAVE_YEAR_ID')->limit(7)->get();
