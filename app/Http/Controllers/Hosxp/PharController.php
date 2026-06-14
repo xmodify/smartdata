@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Hosxp;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PharController extends Controller
 {
@@ -785,6 +786,124 @@ class PharController extends Controller
             'monthly_opd',
             'monthly_ipd'
         ));
+    }
+
+    public function antiviral(Request $request)
+    {
+        $title = 'ข้อมูลการใช้ยาต้านไวรัส';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        // OPD Query
+        $antiviral_opd = DB::connection('hosxp')->select('
+            SELECT o.vn, o.vstdate, o.vsttime, CONCAT(d1.`name`," ",d1.strength) AS drug ,CONCAT(p.pname,p.fname," ",p.lname) AS ptname,
+                v.age_y,o.hn,p.cid,o1.rxdate,o1.rxtime,SUM(o1.qty) AS qty,pt.name AS pttype_name
+            FROM ovst o
+            INNER JOIN opitemrece o1 ON o1.vn=o.vn AND o1.icode IN ("1630768","1630855","1500051","1306001")
+            LEFT JOIN patient p ON p.hn=o.hn
+            LEFT JOIN vn_stat v ON v.vn=o.vn
+            LEFT JOIN drugitems d1 ON d1.icode=o1.icode
+            LEFT JOIN pttype pt ON pt.pttype=o.pttype
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND pt.hipdata_code LIKE "SS%"
+            GROUP BY o.vn,o1.icode
+            ORDER BY o.vstdate,o.hn,o1.icode
+        ', [$start_date, $end_date]);
+
+        // IPD Query
+        $antiviral_ipd = DB::connection('hosxp')->select('
+            SELECT i.an, i.regdate, i.regtime, i.dchdate, i.dchtime, CONCAT(d1.`name`," ",d1.strength) AS drug ,CONCAT(p.pname,p.fname," ",p.lname) AS ptname,
+                a.age_y,i.hn,p.cid,o1.rxdate,o1.rxtime,SUM(o1.qty) AS qty,pt.name AS pttype_name
+            FROM ipt i
+            INNER JOIN opitemrece o1 ON o1.an=i.an AND o1.icode IN ("1630768","1630855","1500051","1306001")
+            LEFT JOIN patient p ON p.hn=i.hn
+            LEFT JOIN an_stat a ON a.an=i.an
+            LEFT JOIN drugitems d1 ON d1.icode=o1.icode
+            LEFT JOIN pttype pt ON pt.pttype=i.pttype
+            WHERE i.regdate BETWEEN ? AND ?
+            AND pt.hipdata_code LIKE "SS%"
+            GROUP BY i.an,o1.icode
+            ORDER BY i.regdate,i.hn,o1.icode
+        ', [$start_date, $end_date]);
+
+        return view('hosxp.phar.antiviral', compact(
+            'title',
+            'budget_year_select',
+            'budget_year',
+            'start_date',
+            'end_date',
+            'antiviral_opd',
+            'antiviral_ipd'
+        ));
+    }
+
+    public function antiviral_pdf(Request $request)
+    {
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $type = $request->type ?? 'opd';
+
+        if ($type === 'ipd') {
+            $data = DB::connection('hosxp')->select('
+                SELECT i.an, i.regdate AS rxdate, i.regtime AS rxtime, CONCAT(d1.`name`," ",d1.strength) AS drug ,CONCAT(p.pname,p.fname," ",p.lname) AS ptname,
+                    a.age_y,i.hn,p.cid,SUM(o1.qty) AS qty,pt.name AS pttype_name
+                FROM ipt i
+                INNER JOIN opitemrece o1 ON o1.an=i.an AND o1.icode IN ("1630768","1630855","1500051","1306001")
+                LEFT JOIN patient p ON p.hn=i.hn
+                LEFT JOIN an_stat a ON a.an=i.an
+                LEFT JOIN drugitems d1 ON d1.icode=o1.icode
+                LEFT JOIN pttype pt ON pt.pttype=i.pttype
+                WHERE i.regdate BETWEEN ? AND ?
+                AND pt.hipdata_code LIKE "SS%"
+                GROUP BY i.an,o1.icode
+                ORDER BY i.regdate,i.hn,o1.icode
+            ', [$start_date, $end_date]);
+            $title = 'รายงานรายชื่อผู้ใช้เวชภัณฑ์ยาต้านไวรัส';
+            $subtitle = 'สิทธิประกันสังคมผู้ป่วยใน โรงพยาบาลหัวตะพาน';
+        } else {
+            $data = DB::connection('hosxp')->select('
+                SELECT o.vn, o.vstdate AS rxdate, o.vsttime AS rxtime, CONCAT(d1.`name`," ",d1.strength) AS drug ,CONCAT(p.pname,p.fname," ",p.lname) AS ptname,
+                    v.age_y,o.hn,p.cid,SUM(o1.qty) AS qty,pt.name AS pttype_name
+                FROM ovst o
+                INNER JOIN opitemrece o1 ON o1.vn=o.vn AND o1.icode IN ("1630768","1630855","1500051","1306001")
+                LEFT JOIN patient p ON p.hn=o.hn
+                LEFT JOIN vn_stat v ON v.vn=o.vn
+                LEFT JOIN drugitems d1 ON d1.icode=o1.icode
+                LEFT JOIN pttype pt ON pt.pttype=o.pttype
+                WHERE o.vstdate BETWEEN ? AND ?
+                AND pt.hipdata_code LIKE "SS%"
+                GROUP BY o.vn,o1.icode
+                ORDER BY o.vstdate,o.hn,o1.icode
+            ', [$start_date, $end_date]);
+            $title = 'รายงานรายชื่อผู้ใช้เวชภัณฑ์ยาต้านไวรัส';
+            $subtitle = 'สิทธิประกันสังคมผู้ป่วยนอก โรงพยาบาลหัวตะพาน';
+        }
+
+        // Calculate summary of each drug type at the bottom
+        $summary = [];
+        foreach ($data as $row) {
+            $drug = $row->drug;
+            if (!isset($summary[$drug])) {
+                $summary[$drug] = 0;
+            }
+            $summary[$drug] += $row->qty;
+        }
+
+        $pdf = Pdf::loadView('hosxp.phar.antiviral_pdf', compact(
+            'title',
+            'subtitle',
+            'start_date',
+            'end_date',
+            'data',
+            'summary',
+            'type'
+        ));
+
+        return $pdf->stream('antiviral_' . $type . '_report.pdf');
     }
 
     private function aggregateMonthly($data, $start_date, $end_date, $dateField = 'rxdate')

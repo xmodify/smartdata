@@ -109,6 +109,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/warfarin', [App\Http\Controllers\Hosxp\PharController::class, 'warfarin'])->name('hosxp.phar.warfarin');
         Route::get('/metformin', [App\Http\Controllers\Hosxp\PharController::class, 'metformin'])->name('hosxp.phar.metformin');
         Route::get('/due', [App\Http\Controllers\Hosxp\PharController::class, 'due'])->name('hosxp.phar.due');
+        Route::get('/antiviral', [App\Http\Controllers\Hosxp\PharController::class, 'antiviral'])->name('hosxp.phar.antiviral');
+        Route::get('/antiviral/pdf', [App\Http\Controllers\Hosxp\PharController::class, 'antiviral_pdf'])->name('hosxp.phar.antiviral.pdf');
     });
 
     // NCD Routes
