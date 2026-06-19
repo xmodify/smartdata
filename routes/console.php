@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Schedule;
 use App\Http\Controllers\MophNotify\ServiceController;
 use App\Http\Controllers\MophNotify\ReplicationController;
 use App\Http\Controllers\MophNotify\BackupController;
+use App\Http\Controllers\MophNotify\AuditEmrController;
 
 // Default inspiring quote command
 Artisan::command('inspire', function () {
@@ -51,3 +52,12 @@ Schedule::call(function () {
 Schedule::call(function () {
     app(BackupController::class)->check(request());
 })->everyTenMinutes();
+
+// 6. ส่งรายงาน EMR Audit วันละ 2 เวลา: 08:00 น. และ 20:00 น.
+Schedule::call(function () {
+    app(AuditEmrController::class)->check(request());
+})->dailyAt('08:00');
+
+Schedule::call(function () {
+    app(AuditEmrController::class)->check(request());
+})->dailyAt('20:00');

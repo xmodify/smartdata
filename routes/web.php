@@ -22,6 +22,7 @@ Route::post('/moph-notify/morning', [App\Http\Controllers\MophNotify\ServiceCont
 Route::post('/moph-notify/afternoon', [App\Http\Controllers\MophNotify\ServiceController::class, 'service_afternoon']);
 Route::match(['get', 'post'], '/moph-notify/replication', [App\Http\Controllers\MophNotify\ReplicationController::class, 'check']);
 Route::match(['get', 'post'], '/moph-notify/backup_hosxp', [App\Http\Controllers\MophNotify\BackupController::class, 'check']);
+Route::match(['get', 'post'], '/moph-notify/audit_emr', [App\Http\Controllers\MophNotify\AuditEmrController::class, 'check']);
 Route::get('/mophnotify/backup_hosxp', [App\Http\Controllers\MophNotify\BackupController::class, 'index'])->name('mophnotify.backup_hosxp');
 Route::get('/dashboard/ipd_wait_dchsummary', [App\Http\Controllers\Dashboard\IpdWaitDchSummaryController::class, 'ipd_non_dchsummary'])->name('ipd.wait_dchsummary');
 Route::get('/dashboard/ipd_wait_dchsummary/diags/{an}', [App\Http\Controllers\Dashboard\IpdWaitDchSummaryController::class, 'get_diags'])->name('ipd.wait_dchsummary.diags');
