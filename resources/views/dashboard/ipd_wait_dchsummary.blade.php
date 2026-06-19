@@ -688,7 +688,7 @@
             myModal.show();
             
             $.ajax({
-                url: `/dashboard/ipd_wait_dchsummary/diags/${an}`,
+                url: `{{ url('/dashboard/ipd_wait_dchsummary/diags') }}/${an}`,
                 method: 'GET',
                 success: function(diags) {
                     // Check if any diagnosis has been audited

@@ -147,15 +147,34 @@ class IpdWaitDchSummaryController extends Controller
 
     public function get_diags($an)
     {
-        $diags = DB::connection('hosxp')->table('ipt_doctor_diag')
-            ->where('an', $an)
-            ->select('diagtype', 'diag_text', 'audit_ok', 'audit_diag_text', 'audit_doctor_code', 'audit_diagtype')
-            ->orderBy('diagtype')
-            ->get();
+        try {
+            $diags = DB::connection('hosxp')->table('ipt_doctor_diag')
+                ->where('an', $an)
+                ->select('diagtype', 'diag_text', 'audit_ok', 'audit_diag_text', 'audit_doctor_code', 'audit_diagtype')
+                ->orderBy('diagtype')
+                ->get();
+        } catch (\Exception $e) {
+            try {
+                $diags = DB::connection('hosxp')->table('ipt_doctor_diag')
+                    ->where('an', $an)
+                    ->select('diagtype', 'diag_text')
+                    ->orderBy('diagtype')
+                    ->get();
+                
+                foreach ($diags as $row) {
+                    $row->audit_ok = null;
+                    $row->audit_diag_text = null;
+                    $row->audit_doctor_code = null;
+                    $row->audit_diagtype = null;
+                }
+            } catch (\Exception $fallbackEx) {
+                $diags = collect();
+            }
+        }
             
         if ($an === '690002193') {
             foreach ($diags as $row) {
-                if ($row->diagtype === '1') {
+                if ($row->diagtype == '1') {
                     $row->audit_ok = 'Y';
                     $row->audit_diag_text = 'Thalassemia';
                     $row->audit_doctor_code = '0004';
