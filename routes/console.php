@@ -56,8 +56,8 @@ Schedule::call(function () {
 // 6. ส่งรายงาน EMR Audit วันละ 2 เวลา: 08:00 น. และ 20:00 น.
 Schedule::call(function () {
     app(AuditEmrController::class)->check(request());
-})->dailyAt('08:00');
+})->dailyAt('07:00');
 
 Schedule::call(function () {
     app(AuditEmrController::class)->check(request());
-})->dailyAt('20:00');
+})->dailyAt('19:00');
