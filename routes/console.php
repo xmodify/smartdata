@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use App\Http\Controllers\MophNotify\ServiceController;
 use App\Http\Controllers\MophNotify\ReplicationController;
+use App\Http\Controllers\MophNotify\BackupController;
 
 // Default inspiring quote command
 Artisan::command('inspire', function () {
@@ -44,4 +45,9 @@ Schedule::call(function () {
 // 4. ตรวจสอบ MySQL Replication (Master-Slaves) ทุกๆ 10 นาที
 Schedule::call(function () {
     app(ReplicationController::class)->check(request());
+})->everyTenMinutes();
+
+// 5. ตรวจสอบสถานะการสำรองข้อมูล (Backup HOSxP) ทุกๆ 10 นาที
+Schedule::call(function () {
+    app(BackupController::class)->check(request());
 })->everyTenMinutes();

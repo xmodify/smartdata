@@ -87,6 +87,19 @@
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.08);
         }
 
+        .nav-pills-custom .nav-link.btn-audit {
+            background-color: #ffffff;
+            color: #2563eb;
+            border-color: #dbeafe;
+        }
+
+        .nav-pills-custom .nav-link.btn-audit.active {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border-color: #bfdbfe;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+        }
+
         .nav-pills-custom .nav-link.btn-icd10 {
             background-color: #ffffff;
             color: #d97706;
@@ -140,6 +153,14 @@
             border-bottom: 2px solid #fbd5d5 !important;
         }
 
+        #tableAudit thead th {
+            background-color: #dbeafe !important;
+            color: #1e40af !important;
+            font-weight: 700 !important;
+            font-size: 0.85rem !important;
+            border-bottom: 2px solid #bfdbfe !important;
+        }
+
         #tableIcd10 thead th {
             background-color: #fef3c7 !important;
             color: #92400e !important;
@@ -148,11 +169,18 @@
             border-bottom: 2px solid #fde68a !important;
         }
 
-        /* Ensure sorting icons stand out on colored header backgrounds */
+        /* Ensure sorting icons stand out on colored header backgrounds and are clickable */
+        table.dataTable thead th {
+            cursor: pointer !important;
+            user-select: none;
+            position: relative;
+        }
+
         table.dataTable thead .sorting,
         table.dataTable thead .sorting_asc,
         table.dataTable thead .sorting_desc {
-            background-color: inherit !important;
+            background-repeat: no-repeat !important;
+            background-position: center right 8px !important;
         }
 
         .footer {
@@ -196,6 +224,24 @@
             </div>
         </div>
 
+        <!-- Navigation Pills (Moved above the Chart) -->
+        <div class="px-4 pt-4 pb-2 border-bottom" style="background-color: #ffffff;">
+            <div class="nav nav-pills nav-pills-custom" id="pills-tab" role="tablist">
+                <button class="nav-link btn-diag active" id="pills-diag-tab" data-bs-toggle="pill" data-bs-target="#pills-diag" type="button" role="tab" aria-controls="pills-diag" aria-selected="true">
+                    <i class="fas fa-user-md me-1"></i> รอแพทย์สรุป Chart 
+                    <span class="badge bg-danger ms-1">{{ count($non_diagtext_list) }}</span>
+                </button>
+                <button class="nav-link btn-audit" id="pills-audit-tab" data-bs-toggle="pill" data-bs-target="#pills-audit" type="button" role="tab" aria-controls="pills-audit" aria-selected="false">
+                    <i class="fas fa-search me-1"></i> รอ Audit 
+                    <span class="badge bg-primary ms-1">{{ count($wait_audit_list) }}</span>
+                </button>
+                <button class="nav-link btn-icd10" id="pills-icd10-tab" data-bs-toggle="pill" data-bs-target="#pills-icd10" type="button" role="tab" aria-controls="pills-icd10" aria-selected="false">
+                    <i class="fas fa-code me-1"></i> รอบันทึกรหัสโรค 
+                    <span class="badge bg-warning text-dark ms-1">{{ count($non_icd10_wait_audit) + count($non_icd10_audited) }}</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Chart -->
         <div class="p-4 border-bottom" style="background-color: #fafafa;">
             <div class="chart-container">
@@ -203,21 +249,8 @@
             </div>
         </div>
 
-        <!-- Tabs & Lists -->
+        <!-- Tab Content Tables (Below the Chart) -->
         <div class="p-4">
-            <!-- Navigation Pills -->
-            <div class="nav nav-pills nav-pills-custom" id="pills-tab" role="tablist">
-                <button class="nav-link btn-diag active" id="pills-diag-tab" data-bs-toggle="pill" data-bs-target="#pills-diag" type="button" role="tab" aria-controls="pills-diag" aria-selected="true">
-                    <i class="fas fa-user-md me-1"></i> รอแพทย์สรุป Chart 
-                    <span class="badge bg-danger ms-1">{{ count($non_diagtext_list) }}</span>
-                </button>
-                <button class="nav-link btn-icd10" id="pills-icd10-tab" data-bs-toggle="pill" data-bs-target="#pills-icd10" type="button" role="tab" aria-controls="pills-icd10" aria-selected="false">
-                    <i class="fas fa-code me-1"></i> รอลงบันทึก ICD10 
-                    <span class="badge bg-warning text-dark ms-1">{{ count($non_icd10_list) }}</span>
-                </button>
-            </div>
-
-            <!-- Tab Content Tables -->
             <div class="tab-content" id="pills-tabContent">
                 <!-- Waiting for Doctor Summary -->
                 <div class="tab-pane fade show active" id="pills-diag" role="tabpanel" aria-labelledby="pills-diag-tab">
@@ -257,10 +290,10 @@
                     </div>
                 </div>
 
-                <!-- Waiting for ICD10 Coding -->
-                <div class="tab-pane fade" id="pills-icd10" role="tabpanel" aria-labelledby="pills-icd10-tab">
+                <!-- Waiting for Audit -->
+                <div class="tab-pane fade" id="pills-audit" role="tabpanel" aria-labelledby="pills-audit-tab">
                     <div class="table-responsive">
-                        <table id="tableIcd10" class="table table-hover align-middle" style="width:100%">
+                        <table id="tableAudit" class="table table-hover align-middle" style="width:100%">
                             <thead class="table-light">
                                 <tr>
                                     <th class="text-center" style="width: 60px;">ลำดับ</th>
@@ -269,11 +302,12 @@
                                     <th>แพทย์เจ้าของคนไข้</th>
                                     <th class="text-center">วันที่จำหน่าย</th>
                                     <th class="text-center">จำนวนวันคงค้าง</th>
+                                    <th class="text-center">การวินิจฉัยโรค</th>
                                     <th class="text-center">สถานะ</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($non_icd10_list as $index => $row)
+                                @foreach ($wait_audit_list as $index => $row)
                                     <tr>
                                         <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
                                         <td>{{ $row->ward }}</td>
@@ -281,18 +315,203 @@
                                         <td>{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}</td>
                                         <td class="text-center">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
                                         <td class="text-center">
-                                            <span class="badge bg-warning bg-opacity-10 text-warning px-2 fw-bold" style="color: #b07d0d !important;">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary px-2 fw-bold">
                                                 {{ $row->dch_day }} วัน
                                             </span>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-warning text-dark px-2 py-1 small">รอลงบันทึก ICD10</span>
+                                            <button type="button" class="btn btn-sm btn-info btn-view-diag text-white" 
+                                                data-an="{{ $row->an }}"
+                                                data-doctor="{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}"
+                                                data-dch-doctor="{{ $row->discharge_doctor_name ?: 'ไม่ระบุแพทย์' }}"
+                                                data-dchdate="{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}"
+                                                style="border-radius: 8px;">
+                                                <i class="fas fa-search-plus me-1"></i> ดูวินิจฉัย
+                                            </button>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary px-2 py-1 small">รอ Audit</span>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <!-- Waiting for ICD10 Coding -->
+                <div class="tab-pane fade" id="pills-icd10" role="tabpanel" aria-labelledby="pills-icd10-tab">
+                    <!-- Sub-tabs nav-tabs -->
+                    <ul class="nav nav-tabs mb-3" id="icd10SubTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold text-success" id="icd10-audited-tab" data-bs-toggle="tab" data-bs-target="#icd10-audited" type="button" role="tab" aria-controls="icd10-audited" aria-selected="true">
+                                <i class="fas fa-check-circle me-1 text-success"></i>Audit แล้ว
+                                <span class="badge bg-success ms-1">{{ count($non_icd10_audited) }}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold text-danger" id="icd10-wait-audit-tab" data-bs-toggle="tab" data-bs-target="#icd10-wait-audit" type="button" role="tab" aria-controls="icd10-wait-audit" aria-selected="false">
+                                <i class="fas fa-minus-circle me-1 text-danger"></i>รอ Audit
+                                <span class="badge bg-danger ms-1">{{ count($non_icd10_wait_audit) }}</span>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="icd10SubTabsContent">
+                        <!-- Audit แล้ว Sub-tab -->
+                        <div class="tab-pane fade show active" id="icd10-audited" role="tabpanel" aria-labelledby="icd10-audited-tab">
+                            <div class="table-responsive">
+                                <table id="tableIcd10Audited" class="table table-hover align-middle" style="width:100%">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-center" style="width: 60px;">ลำดับ</th>
+                                            <th>Ward</th>
+                                            <th class="text-center">AN</th>
+                                            <th>แพทย์เจ้าของคนไข้</th>
+                                            <th class="text-center">วันที่จำหน่าย</th>
+                                            <th class="text-center">จำนวนวันคงค้าง</th>
+                                            <th class="text-center">การวินิจฉัยโรค</th>
+                                            <th class="text-center">สถานะ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($non_icd10_audited as $index => $row)
+                                            <tr>
+                                                <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
+                                                <td>{{ $row->ward }}</td>
+                                                <td class="text-center fw-bold text-primary">{{ $row->an }}</td>
+                                                <td>{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}</td>
+                                                <td class="text-center">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning px-2 fw-bold" style="color: #b07d0d !important;">
+                                                        {{ $row->dch_day }} วัน
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-info btn-view-diag text-white" 
+                                                        data-an="{{ $row->an }}"
+                                                        data-doctor="{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}"
+                                                        data-dch-doctor="{{ $row->discharge_doctor_name ?: 'ไม่ระบุแพทย์' }}"
+                                                        data-dchdate="{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}"
+                                                        style="border-radius: 8px;">
+                                                        <i class="fas fa-search-plus me-1"></i> ดูวินิจฉัย
+                                                    </button>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-warning text-dark px-2 py-1 small">รอบันทึกรหัสโรค</span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- รอ Audit Sub-tab -->
+                        <div class="tab-pane fade" id="icd10-wait-audit" role="tabpanel" aria-labelledby="icd10-wait-audit-tab">
+                            <div class="table-responsive">
+                                <table id="tableIcd10WaitAudit" class="table table-hover align-middle" style="width:100%">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-center" style="width: 60px;">ลำดับ</th>
+                                            <th>Ward</th>
+                                            <th class="text-center">AN</th>
+                                            <th>แพทย์เจ้าของคนไข้</th>
+                                            <th class="text-center">วันที่จำหน่าย</th>
+                                            <th class="text-center">จำนวนวันคงค้าง</th>
+                                            <th class="text-center">การวินิจฉัยโรค</th>
+                                            <th class="text-center">สถานะ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($non_icd10_wait_audit as $index => $row)
+                                            <tr>
+                                                <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
+                                                <td>{{ $row->ward }}</td>
+                                                <td class="text-center fw-bold text-primary">{{ $row->an }}</td>
+                                                <td>{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}</td>
+                                                <td class="text-center">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning px-2 fw-bold" style="color: #b07d0d !important;">
+                                                        {{ $row->dch_day }} วัน
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-info btn-view-diag text-white" 
+                                                        data-an="{{ $row->an }}"
+                                                        data-doctor="{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}"
+                                                        data-dch-doctor="{{ $row->discharge_doctor_name ?: 'ไม่ระบุแพทย์' }}"
+                                                        data-dchdate="{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}"
+                                                        style="border-radius: 8px;">
+                                                        <i class="fas fa-search-plus me-1"></i> ดูวินิจฉัย
+                                                    </button>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-warning text-dark px-2 py-1 small">รอบันทึกรหัสโรค</span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for viewing Diagnosis -->
+    <div class="modal fade" id="diagModal" tabindex="-1" aria-labelledby="diagModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary" id="diagModalLabel">
+                        <i class="fas fa-user-md me-2"></i>รายละเอียดการวินิจฉัยโรค
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">AN</span>
+                            <strong id="modal-an" class="fs-5 text-dark">-</strong>
+                        </div>
+                        <div class="col-sm-6 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small d-block">วันที่จำหน่าย</span>
+                                <strong id="modal-dchdate" class="fs-5 text-dark">-</strong>
+                            </div>
+                            <div id="modal-status-container">
+                                <!-- Status badge will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">แพทย์ผู้รักษา</span>
+                            <span id="modal-doctor" class="fw-bold text-dark">-</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">แพทย์ผู้จำหน่าย</span>
+                            <span id="modal-dch-doctor" class="fw-bold text-dark">-</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-light rounded-3 border">
+                        <span class="text-muted small d-block mb-2 fw-semibold" id="modal-diag-title">การวินิจฉัยโรค</span>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle bg-white m-0" style="font-size: 0.9rem;">
+                                <thead class="table-secondary text-dark" id="modal-diag-thead">
+                                    <!-- Dynamic headers will be generated here -->
+                                </thead>
+                                <tbody id="modal-diag-tbody">
+                                    <!-- Rows will be generated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px;">ปิด</button>
                 </div>
             </div>
         </div>
@@ -328,7 +547,10 @@
                 name: 'รอสรุป Chart',
                 data: chartData.non_diagtext.map(Number)
             }, {
-                name: 'รอบันทึก ICD10',
+                name: 'รอ Audit',
+                data: chartData.wait_audit.map(Number)
+            }, {
+                name: 'รอบันทึกรหัสโรค',
                 data: chartData.non_icd10.map(Number)
             }],
             chart: {
@@ -345,7 +567,7 @@
                     barHeight: '75%',
                 }
             },
-            colors: ['#dc3545', '#f6c23e'], // Red and Yellow/Orange
+            colors: ['#dc3545', '#2563eb', '#f6c23e'], // Red, Blue, and Yellow/Orange
             xaxis: {
                 categories: chartData.doctors.map(d => d || 'ไม่ระบุแพทย์'),
                 labels: {
@@ -428,14 +650,154 @@
         }
 
         const tableDiag = initTable('#tableDiagText', 'รายชื่อผู้ป่วยในรอแพทย์สรุป Chart');
-        const tableIcd10 = initTable('#tableIcd10', 'รายชื่อผู้ป่วยในรอลงบันทึก ICD10');
+        const tableAudit = initTable('#tableAudit', 'รายชื่อผู้ป่วยในรอ Audit');
+        const tableIcd10WaitAudit = initTable('#tableIcd10WaitAudit', 'รายชื่อผู้ป่วยในรอบันทึกรหัสโรค (รอ Audit)');
+        const tableIcd10Audited = initTable('#tableIcd10Audited', 'รายชื่อผู้ป่วยในรอบันทึกรหัสโรค (Audit แล้ว)');
 
         // Adjust table headers when switching tabs
-        $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function(e) {
+        $('button[data-bs-toggle="pill"], button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
             $.fn.dataTable.tables({
                 visible: true,
                 api: true
             }).columns.adjust();
+        });
+
+        // Show diagnosis modal
+        $(document).on('click', '.btn-view-diag', function() {
+            const an = $(this).data('an');
+            const doctor = $(this).data('doctor');
+            const dchDoctor = $(this).data('dch-doctor');
+            const dchdate = $(this).data('dchdate');
+            
+            $('#modal-an').text(an);
+            $('#modal-doctor').text(doctor);
+            $('#modal-dch-doctor').text(dchDoctor);
+            $('#modal-dchdate').text(dchdate);
+            
+            const listContainer = $('#modal-diag-tbody');
+            const theadContainer = $('#modal-diag-thead');
+            const titleContainer = $('#modal-diag-title');
+            
+            listContainer.empty();
+            theadContainer.empty();
+            listContainer.append('<tr><td colspan="3" class="text-center text-muted"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> กำลังโหลดข้อมูล...</td></tr>');
+            
+            $('#modal-status-container').html('<div class="spinner-border spinner-border-sm text-primary" role="status"></div>');
+            
+            const myModal = new bootstrap.Modal(document.getElementById('diagModal'));
+            myModal.show();
+            
+            $.ajax({
+                url: `/dashboard/ipd_wait_dchsummary/diags/${an}`,
+                method: 'GET',
+                success: function(diags) {
+                    // Check if any diagnosis has been audited
+                    const isAudited = diags.some(item => item.audit_ok === 'Y' || (item.audit_diag_text && item.audit_diag_text.trim() !== ''));
+                    
+                    const statusContainer = $('#modal-status-container');
+                    statusContainer.empty();
+                    if (isAudited) {
+                        statusContainer.append('<span class="badge bg-success fs-6 px-3 py-2"><i class="fas fa-check-circle me-1"></i> Audit แล้ว</span>');
+                    } else {
+                        statusContainer.append('<span class="badge bg-danger fs-6 px-3 py-2"><i class="fas fa-history me-1"></i> รอ Audit</span>');
+                    }
+                    
+                    // Set title and headers dynamically
+                    theadContainer.empty();
+                    if (isAudited) {
+                        titleContainer.text("การวินิจฉัยโรค (เปรียบเทียบการ Audit)");
+                        theadContainer.append(`
+                            <tr>
+                                <th style="width: 25%;">ประเภท</th>
+                                <th style="width: 37.5%;">การวินิจฉัยเดิม (แพทย์)</th>
+                                <th style="width: 37.5%;">การวินิจฉัยหลัง Audit (ผู้ตรวจสอบ)</th>
+                            </tr>
+                        `);
+                    } else {
+                        titleContainer.text("การวินิจฉัยโรค");
+                        theadContainer.append(`
+                            <tr>
+                                <th style="width: 25%;">ประเภท</th>
+                                <th style="width: 55%;">การวินิจฉัยของแพทย์</th>
+                                <th style="width: 20%;">Audit</th>
+                            </tr>
+                        `);
+                    }
+                    
+                    listContainer.empty();
+                    if (!diags || diags.length === 0) {
+                        listContainer.append(`<tr><td colspan="3" class="text-center text-muted">ไม่มีข้อมูลการวินิจฉัย</td></tr>`);
+                    } else {
+                        const typeNames = {
+                            '1': { name: 'วินิจฉัยหลัก (Principal Diag)', badgeClass: 'bg-danger' },
+                            '2': { name: 'วินิจฉัยร่วม (Comorbidity)', badgeClass: 'bg-primary' },
+                            '3': { name: 'โรคแทรก (Complication)', badgeClass: 'bg-warning text-dark' },
+                            '4': { name: 'อื่น ๆ (Other)', badgeClass: 'bg-secondary' },
+                            '5': { name: 'สาเหตุภายนอก (External Cause)', badgeClass: 'bg-info text-white' }
+                        };
+                        
+                        diags.forEach((item) => {
+                            const type = item.diagtype || '';
+                            const text = item.diag_text || 'ไม่มีระบุข้อความ';
+                            const auditOk = item.audit_ok || '';
+                            const auditText = item.audit_diag_text || '';
+                            const auditDoc = item.audit_doctor_code || '';
+                            const auditDiagtype = item.audit_diagtype || '';
+                            
+                            const typeInfo = typeNames[type] || { name: `ประเภท ${type}`, badgeClass: 'bg-dark' };
+                            
+                            if (isAudited) {
+                                const isRowAudited = auditOk === 'Y' || (auditText && auditText.trim() !== '');
+                                let auditDisplayVal = '';
+                                if (isRowAudited) {
+                                    if (auditDiagtype === type) {
+                                        auditDisplayVal = `
+                                            <div class="fw-bold text-success">${auditText || 'ถูกต้อง (ไม่มีแก้ไข)'}</div>
+                                            <div class="text-muted small mt-1">ผู้ตรวจสอบ: ${auditDoc}</div>
+                                        `;
+                                    } else {
+                                        auditDisplayVal = `<span class="text-muted small">-</span>`;
+                                    }
+                                } else {
+                                    auditDisplayVal = `
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-2 py-0.5" style="font-size: 0.75rem;">
+                                            รอ Audit
+                                        </span>
+                                    `;
+                                }
+                                
+                                const rowHtml = `
+                                    <tr>
+                                        <td><span class="badge ${typeInfo.badgeClass} d-block text-wrap text-center" style="font-size: 0.75rem;">${typeInfo.name}</span></td>
+                                        <td class="fw-bold text-dark" style="white-space: pre-wrap;">${text}</td>
+                                        <td style="white-space: pre-wrap;">${auditDisplayVal}</td>
+                                    </tr>
+                                `;
+                                listContainer.append(rowHtml);
+                            } else {
+                                const rowHtml = `
+                                    <tr>
+                                        <td><span class="badge ${typeInfo.badgeClass} d-block text-wrap text-center" style="font-size: 0.75rem;">${typeInfo.name}</span></td>
+                                        <td class="fw-bold text-dark" style="white-space: pre-wrap;">${text}</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-2 py-0.5" style="font-size: 0.75rem;">
+                                                รอ Audit
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `;
+                                listContainer.append(rowHtml);
+                            }
+                        });
+                    }
+                },
+                error: function() {
+                    $('#modal-status-container').empty();
+                    const colspan = theadContainer.find('th').length || 3;
+                    listContainer.empty();
+                    listContainer.append(`<tr><td colspan="${colspan}" class="text-center text-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`);
+                }
+            });
         });
     });
 </script>

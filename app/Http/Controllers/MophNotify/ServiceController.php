@@ -84,18 +84,15 @@ class ServiceController extends Controller
 
         $chart = DB::connection('hosxp')->selectOne("
             SELECT
-                SUM(CASE WHEN (a.diag_text_list IS NULL OR a.diag_text_list = '') THEN 1 ELSE 0 END) AS non_diagtext,
-                SUM(CASE WHEN (a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = '') THEN 1 ELSE 0 END) AS non_icd10
+                COUNT(DISTINCT CASE WHEN (idd.diag_text = '' OR idd.diag_text IS NULL) THEN i.an END) AS non_diagtext,
+                COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (idd.audit_ok <> 'Y' AND (idd.audit_diag_text = '' OR idd.audit_diag_text IS NULL)) THEN i.an END) AS wait_audit,
+                COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (id.icd10 = '' OR id.icd10 IS NULL) THEN i.an END) AS non_icd10
             FROM ipt i
             LEFT JOIN iptdiag id ON id.an = i.an AND id.diagtype = 1
-            LEFT JOIN an_stat a ON a.an = i.an
+            LEFT JOIN ipt_doctor_diag idd ON idd.an = i.an AND idd.diagtype = 1
             WHERE i.dchdate BETWEEN ? AND ?
             AND i.ward IN ('01','02','03','10')
-            AND (
-                (a.diag_text_list IS NULL OR a.diag_text_list = '')
-                OR
-                ((a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = ''))
-            )", [$start_date, $end_date]);
+        ", [$start_date, $end_date]);
 
         // ดึงข้อมูลนัดหมาย วันนี้
         $oapp_date = date('Y-m-d');
@@ -147,7 +144,8 @@ class ServiceController extends Controller
             . " - Homeward " . $ipd->homeward ."\n"
             . "\n"
             . "Chart รอแพทย์สรุป: " . ($chart->non_diagtext ?? 0) . " AN" . "\n"
-            . "Chart รอลงรหัสโรค: " . ($chart->non_icd10 ?? 0) . " AN" . "\n"
+            . "Chart รอ Audit: " . ($chart->wait_audit ?? 0) . " AN" . "\n"
+            . "Chart รอบันทึกรหัสโรค: " . ($chart->non_icd10 ?? 0) . " AN" . "\n"
             . url('dashboard/ipd_wait_dchsummary') . "\n";
 
     //3. ดึงรายการ client จากตาราง moph_notify
@@ -275,18 +273,15 @@ class ServiceController extends Controller
 
         $chart = DB::connection('hosxp')->selectOne("
             SELECT
-                SUM(CASE WHEN (a.diag_text_list IS NULL OR a.diag_text_list = '') THEN 1 ELSE 0 END) AS non_diagtext,
-                SUM(CASE WHEN (a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = '') THEN 1 ELSE 0 END) AS non_icd10
+                COUNT(DISTINCT CASE WHEN (idd.diag_text = '' OR idd.diag_text IS NULL) THEN i.an END) AS non_diagtext,
+                COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (idd.audit_ok <> 'Y' AND (idd.audit_diag_text = '' OR idd.audit_diag_text IS NULL)) THEN i.an END) AS wait_audit,
+                COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (id.icd10 = '' OR id.icd10 IS NULL) THEN i.an END) AS non_icd10
             FROM ipt i
             LEFT JOIN iptdiag id ON id.an = i.an AND id.diagtype = 1
-            LEFT JOIN an_stat a ON a.an = i.an
+            LEFT JOIN ipt_doctor_diag idd ON idd.an = i.an AND idd.diagtype = 1
             WHERE i.dchdate BETWEEN ? AND ?
             AND i.ward IN ('01','02','03','10')
-            AND (
-                (a.diag_text_list IS NULL OR a.diag_text_list = '')
-                OR
-                ((a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = ''))
-            )", [$start_date, $end_date]);
+        ", [$start_date, $end_date]);
 
         // ดึงข้อมูลนัดหมาย พรุ่งนี้
         $oapp_date = date('Y-m-d', strtotime('+1 day'));
@@ -338,7 +333,8 @@ class ServiceController extends Controller
             . " - Homeward " . $ipd->homeward ."\n"
             . "\n"
             . "Chart รอแพทย์สรุป: " . ($chart->non_diagtext ?? 0) . " AN" . "\n"
-            . "Chart รอลงรหัสโรค: " . ($chart->non_icd10 ?? 0) . " AN" . "\n"
+            . "Chart รอ Audit: " . ($chart->wait_audit ?? 0) . " AN" . "\n"
+            . "Chart รอบันทึกรหัสโรค: " . ($chart->non_icd10 ?? 0) . " AN" . "\n"
             . url('dashboard/ipd_wait_dchsummary') . "\n";
 
     //3. ดึงรายการ client จากตาราง moph_notify
@@ -465,18 +461,15 @@ class ServiceController extends Controller
 
         $chart = DB::connection('hosxp')->selectOne("
             SELECT
-                SUM(CASE WHEN (a.diag_text_list IS NULL OR a.diag_text_list = '') THEN 1 ELSE 0 END) AS non_diagtext,
-                SUM(CASE WHEN (a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = '') THEN 1 ELSE 0 END) AS non_icd10
+                COUNT(DISTINCT CASE WHEN (idd.diag_text = '' OR idd.diag_text IS NULL) THEN i.an END) AS non_diagtext,
+                COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (idd.audit_ok <> 'Y' AND (idd.audit_diag_text = '' OR idd.audit_diag_text IS NULL)) THEN i.an END) AS wait_audit,
+                COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (id.icd10 = '' OR id.icd10 IS NULL) THEN i.an END) AS non_icd10
             FROM ipt i
             LEFT JOIN iptdiag id ON id.an = i.an AND id.diagtype = 1
-            LEFT JOIN an_stat a ON a.an = i.an
+            LEFT JOIN ipt_doctor_diag idd ON idd.an = i.an AND idd.diagtype = 1
             WHERE i.dchdate BETWEEN ? AND ?
             AND i.ward IN ('01','02','03','10')
-            AND (
-                (a.diag_text_list IS NULL OR a.diag_text_list = '')
-                OR
-                ((a.diag_text_list IS NOT NULL AND a.diag_text_list <> '') AND (id.icd10 IS NULL OR id.icd10 = ''))
-            )", [$start_date, $end_date]);
+        ", [$start_date, $end_date]);
 
         // ดึงข้อมูลนัดหมาย วันนี้
         $oapp_date = date('Y-m-d');
@@ -528,7 +521,8 @@ class ServiceController extends Controller
             . " - Homeward " . $ipd->homeward ."\n"
             . "\n"
             . "Chart รอแพทย์สรุป: " . ($chart->non_diagtext ?? 0) . " AN" . "\n"
-            . "Chart รอลงรหัสโรค: " . ($chart->non_icd10 ?? 0) . " AN" . "\n"
+            . "Chart รอ Audit: " . ($chart->wait_audit ?? 0) . " AN" . "\n"
+            . "Chart รอบันทึกรหัสโรค: " . ($chart->non_icd10 ?? 0) . " AN" . "\n"
             . url('dashboard/ipd_wait_dchsummary') . "\n";
 
     //3. ดึงรายการ client จากตาราง moph_notify

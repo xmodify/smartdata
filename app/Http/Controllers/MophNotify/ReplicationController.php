@@ -164,8 +164,7 @@ class ReplicationController extends Controller
                     $visitText = 'Offline';
                 }
 
-                $message .= "Visit: {$visitText}\n";
-                $message .= "AN: " . ($ipdMaxAn['hosxp_master'] ?? 'Offline') . "\n";
+                $message .= "Visit ล่าสุด: {$visitText}\n";
             }
             
             $message .= "-----------------------\n";
