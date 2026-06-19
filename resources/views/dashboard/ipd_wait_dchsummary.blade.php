@@ -237,7 +237,8 @@
                 </button>
                 <button class="nav-link btn-icd10" id="pills-icd10-tab" data-bs-toggle="pill" data-bs-target="#pills-icd10" type="button" role="tab" aria-controls="pills-icd10" aria-selected="false">
                     <i class="fas fa-code me-1"></i> รอบันทึกรหัสโรค 
-                    <span class="badge bg-warning text-dark ms-1">{{ count($non_icd10_wait_audit) + count($non_icd10_audited) }}</span>
+                    <span class="badge bg-success ms-1">Audit แล้ว {{ count($non_icd10_audited) }}</span>
+                    <span class="badge bg-danger ms-1">รอ Audit {{ count($non_icd10_wait_audit) }}</span>
                 </button>
             </div>
         </div>
