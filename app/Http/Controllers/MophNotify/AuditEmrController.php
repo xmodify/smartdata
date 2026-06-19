@@ -24,10 +24,10 @@ class AuditEmrController extends Controller
             $chart = DB::connection('hosxp')->selectOne("
                 SELECT
                     COUNT(DISTINCT CASE WHEN (idd.diag_text = '' OR idd.diag_text IS NULL) THEN i.an END) AS non_diagtext,
-                    COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (idd.audit_ok <> 'Y' AND (idd.audit_diag_text = '' OR idd.audit_diag_text IS NULL)) THEN i.an END) AS wait_audit,
+                    COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (id.icd10 = '' OR id.icd10 IS NULL) AND ((idd.audit_ok IS NULL OR idd.audit_ok <> 'Y') AND (idd.audit_diag_text = '' OR idd.audit_diag_text IS NULL)) THEN i.an END) AS wait_audit,
                     COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (id.icd10 = '' OR id.icd10 IS NULL) THEN i.an END) AS total_non_icd10,
                     COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (id.icd10 = '' OR id.icd10 IS NULL) AND (idd.audit_ok = 'Y' OR (idd.audit_diag_text <> '' AND idd.audit_diag_text IS NOT NULL)) THEN i.an END) AS non_icd10_audited,
-                    COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (id.icd10 = '' OR id.icd10 IS NULL) AND (idd.audit_ok <> 'Y' AND (idd.audit_diag_text = '' OR idd.audit_diag_text IS NULL)) THEN i.an END) AS non_icd10_wait_audit
+                    COUNT(DISTINCT CASE WHEN (idd.diag_text <> '' AND idd.diag_text IS NOT NULL) AND (id.icd10 = '' OR id.icd10 IS NULL) AND ((idd.audit_ok IS NULL OR idd.audit_ok <> 'Y') AND (idd.audit_diag_text = '' OR idd.audit_diag_text IS NULL)) THEN i.an END) AS non_icd10_wait_audit
                 FROM ipt i
                 LEFT JOIN iptdiag id ON id.an = i.an AND id.diagtype = 1
                 LEFT JOIN ipt_doctor_diag idd ON idd.an = i.an AND idd.diagtype = 1
