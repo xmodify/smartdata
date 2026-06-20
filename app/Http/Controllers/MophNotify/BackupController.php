@@ -45,9 +45,9 @@ class BackupController extends Controller
                     . "-----------------------\n"
                     . "เวลาเช็ค: " . DateThai(now()->toDateTimeString());
 
-                // Send to MOPH Notify ID 1
+                // Send to MOPH Notify ID 2
                 $client = DB::table('moph_notify')
-                    ->where('id', 1)
+                    ->where('id', 2)
                     ->where('active', 'Y')
                     ->first(['id', 'name', 'client_id', 'secret']);
 

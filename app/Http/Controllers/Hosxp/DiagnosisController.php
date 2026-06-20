@@ -87,6 +87,16 @@ class DiagnosisController extends Controller
             'group_icon' => 'fas fa-heart-pulse',
             'group_color' => '#fee2e2'
         ],
+        'chf' => [
+            'name' => 'CHF (โรคหัวใจล้มเหลวเรื้อรัง)',
+            'icon' => 'fas fa-heart-crack',
+            'color' => 'text-danger',
+            'codes' => ['I500', 'I509', 'I501', 'I50'],
+            'categories' => ['opd', 'ipd', 'refer'],
+            'group' => 'Cardiovascular & Neurology',
+            'group_icon' => 'fas fa-heart-pulse',
+            'group_color' => '#fee2e2'
+        ],
         'copd' => [
             'name' => 'COPD (โรคปอดอุดกั้นเรื้อรัง)',
             'icon' => 'fas fa-smog',
