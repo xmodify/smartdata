@@ -38,11 +38,11 @@ class AuditEmrController extends Controller
             $message = "รายงาน EMR Audit\n"
                 . "✅ ณ " . DateThai(now()->toDateTimeString()) . "\n"
                 . "--------------------------------\n"
-                . "รอแพทย์สรุป : " . ($chart->non_diagtext ?? 0) . " AN\n"
-                . "รอ Audit : " . ($chart->wait_audit ?? 0) . " AN\n"
-                . "รอบันทึกรหัสโรค: " . ($chart->total_non_icd10 ?? 0) . " AN\n"
-                . "   - Audit แล้ว: " . ($chart->non_icd10_audited ?? 0) . " AN 🟢\n"
-                . "   - รอ Audit: " . ($chart->non_icd10_wait_audit ?? 0) . " AN 🔴\n"
+                . "Chart รอแพทย์สรุป: " . ($chart->non_diagtext ?? 0) . " AN\n"
+                . "Chart รอ Audit: " . ($chart->wait_audit ?? 0) . " AN\n"
+                . "Chart รอบันทึกรหัสโรค: " . ($chart->total_non_icd10 ?? 0) . " AN\n"
+                . "  - Audit แล้ว: " . ($chart->non_icd10_audited ?? 0) . " AN 🟢\n"
+                . "  - รอ Audit: " . ($chart->non_icd10_wait_audit ?? 0) . " AN 🔴\n"
                 . "--------------------------------\n"
                 . route('ipd.wait_dchsummary') . "\n";
 
