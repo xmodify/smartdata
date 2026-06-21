@@ -185,9 +185,9 @@
                             <span class="small">รายงานผู้ป่วยรอ Admit ที่ ER เกิน 2 ชั่วโมง</span>
                             <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
+                        <a href="{{ route('hosxp.er.revisit_48h') }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center">
                             <span class="small">รายงาน Re-Visit ใน 48 ชม. ด้วยโรคเดิม</span>
-                            <i class="fas fa-chevron-right smaller" style="font-size: 0.7rem;"></i>
+                            <i class="fas fa-chevron-right smaller text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                         <a href="#" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex justify-content-between align-items-center text-muted">
                             <span class="small">รายงาน 20 อันดับโรค งานอุบัติเหตุ-ฉุกเฉิน</span>

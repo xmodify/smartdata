@@ -161,12 +161,38 @@ class ErController extends Controller
             GROUP BY o.vn
         ', [$start_date, $end_date]);
 
+        $ems_monthly = DB::connection('hosxp')->select('
+            SELECT 
+                CASE 
+                    WHEN MONTH(o.vstdate) = 10 THEN CONCAT("ต.ค. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 11 THEN CONCAT("พ.ย. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 12 THEN CONCAT("ธ.ค. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 1 THEN CONCAT("ม.ค. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 2 THEN CONCAT("ก.พ. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 3 THEN CONCAT("มี.ค. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 4 THEN CONCAT("เม.ย. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 5 THEN CONCAT("พ.ค. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 6 THEN CONCAT("มิ.ย. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 7 THEN CONCAT("ก.ค. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 8 THEN CONCAT("ส.ค. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 9 THEN CONCAT("ก.ย. ", RIGHT(YEAR(o.vstdate) + 543, 2))
+                END AS month_year,
+                SUM(CASE WHEN o.ovstist = "08" THEN 1 ELSE 0 END) AS als,
+                SUM(CASE WHEN o.ovstist = "09" THEN 1 ELSE 0 END) AS fr,
+                SUM(CASE WHEN o.ovstist = "10" THEN 1 ELSE 0 END) AS ils
+            FROM ovst o
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND o.ovstist IN ("08", "09", "10")
+            GROUP BY YEAR(o.vstdate), MONTH(o.vstdate)
+            ORDER BY YEAR(o.vstdate), MONTH(o.vstdate)
+        ', [$start_date, $end_date]);
+
         return view('hosxp.er.ems', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
             'ems_diag_als', 'ems_diag_als_name', 'ems_diag_als_sum',
             'ems_diag_ils', 'ems_diag_ils_name', 'ems_diag_ils_sum',
             'ems_diag_fr', 'ems_diag_fr_name', 'ems_diag_fr_sum',
-            'ems_list'
+            'ems_list', 'ems_monthly'
         ));
     }
 
@@ -201,6 +227,149 @@ class ErController extends Controller
         return view('hosxp.er.wait_admit_2h', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
             'waitingtime_admit'
+        ));
+    }
+
+    public function revisit_48h(Request $request)
+    {
+        $title = 'รายงาน Re-visit ใน 48 ชม. ด้วยโรคเดิม ER';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        $revisit_list = DB::connection('hosxp')->select('
+            SELECT o.vstdate, CONCAT(v.lastvisit_hour, " ช.ม.") AS p_vstdate, o.main_dep_queue AS q, o.hn, c.cc, CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS ptname
+            , v.age_y, v.pttype, v.pdx, IF(e.vn <> "", "ER", "OPD") AS depart, IF(o.an <> "", "Admit", NULL) AS admit, IF(r.vn <> "", "Refer", NULL) AS refer
+            FROM ovst o
+            LEFT JOIN vn_stat v ON v.vn=o.vn
+            LEFT JOIN er_regist e ON e.vn=o.vn
+            LEFT JOIN opdscreen c ON c.vn=o.vn
+            LEFT JOIN ovstdiag o1 ON o1.vn=o.vn
+            LEFT JOIN referout r ON r.vn=o.vn
+            LEFT JOIN patient p ON p.hn=o.hn
+            WHERE v.lastvisit_hour <= 48
+            AND o.vstdate BETWEEN ? AND ?
+            AND v.pdx NOT LIKE "Z%" AND v.old_diagnosis = "Y"
+            AND (e.vn <> "" OR o.main_dep = "002")
+            AND o1.icd10 NOT IN ("U071", "U072", "Z290", "Z208")
+            AND c.cc NOT LIKE "%นัด%" AND c.cc NOT LIKE "%ต่อเนื่อง%" AND c.cc NOT LIKE "%ออกซิเจน%" AND c.cc NOT LIKE "%ออกชิเจน%"
+            AND c.cc NOT LIKE "%ยาเดิม%"  AND c.cc NOT LIKE "%ใบความเห็นแพทย์%"  AND c.cc NOT LIKE "%covid%" AND c.cc NOT LIKE "%ยาแทน%"
+            AND c.cc NOT LIKE "%ใบส่งตัว%" AND c.cc NOT LIKE "%ใบรับรองแพทย์%"
+            GROUP BY o.vn, v.pdx
+            ORDER BY v.pdx, o.hn, o.vstdate
+        ', [$start_date, $end_date]);
+
+        $revisit_diagtop = DB::connection('hosxp')->select('
+            SELECT a.pdx AS code, i.`name` AS pdx_name, i.`tname` AS pdx_tname,
+            SUM(CASE WHEN a.sex=1 THEN 1 ELSE 0 END) AS male,
+            SUM(CASE WHEN a.sex=2 THEN 1 ELSE 0 END) AS female,
+            COUNT(a.pdx) AS total
+            FROM (
+                SELECT o.vstdate, o.hn, p.sex, v.pdx
+                FROM ovst o
+                LEFT JOIN vn_stat v ON v.vn=o.vn
+                LEFT JOIN er_regist e ON e.vn=o.vn
+                LEFT JOIN opdscreen c ON c.vn=o.vn
+                LEFT JOIN ovstdiag o1 ON o1.vn=o.vn
+                LEFT JOIN patient p ON p.hn=o.hn
+                WHERE v.lastvisit_hour <= 48
+                AND o.vstdate BETWEEN ? AND ?
+                AND v.pdx NOT LIKE "Z%" AND v.old_diagnosis = "Y"
+                AND (e.vn <> "" OR o.main_dep = "002")
+                AND o1.icd10 NOT IN ("U071", "U072", "Z290", "Z208")
+                AND c.cc NOT LIKE "%นัด%" AND c.cc NOT LIKE "%ต่อเนื่อง%" AND c.cc NOT LIKE "%ออกซิเจน%" AND c.cc NOT LIKE "%ออกชิเจน%"
+                AND c.cc NOT LIKE "%ยาเดิม%"  AND c.cc NOT LIKE "%ใบความเห็นแพทย์%"  AND c.cc NOT LIKE "%covid%" AND c.cc NOT LIKE "%ยาแทน%"
+                AND c.cc NOT LIKE "%ใบส่งตัว%" AND c.cc NOT LIKE "%ใบรับรองแพทย์%"
+                GROUP BY o.vn, v.pdx
+            ) AS a
+            LEFT JOIN icd101 i ON i.`code`=a.pdx
+            GROUP BY a.pdx 
+            ORDER BY total DESC 
+            LIMIT 20
+        ', [$start_date, $end_date]);
+
+        $revisit_504 = DB::connection('hosxp')->select('
+            SELECT 
+                CONCAT(n.name1, " [", n.id, "]") AS name,
+                IFNULL(d.male, 0) AS male,
+                IFNULL(d.female, 0) AS female,
+                IFNULL(d.total, 0) AS total
+            FROM rpt_504_name n
+            LEFT JOIN (
+                SELECT c.id,
+                       SUM(CASE WHEN a.sex = 1 THEN 1 ELSE 0 END) AS male,
+                       SUM(CASE WHEN a.sex = 2 THEN 1 ELSE 0 END) AS female,
+                       COUNT(c.id) AS total
+                FROM rpt_504_code c
+                INNER JOIN (
+                    SELECT o.vstdate, p.sex, v.pdx
+                    FROM ovst o
+                    LEFT JOIN vn_stat v ON v.vn=o.vn
+                    LEFT JOIN er_regist e ON e.vn=o.vn
+                    LEFT JOIN opdscreen c ON c.vn=o.vn
+                    LEFT JOIN ovstdiag o1 ON o1.vn=o.vn
+                    LEFT JOIN patient p ON p.hn=o.hn
+                    WHERE v.lastvisit_hour <= 48
+                    AND o.vstdate BETWEEN ? AND ?
+                    AND v.pdx NOT LIKE "Z%" AND v.old_diagnosis = "Y"
+                    AND (e.vn <> "" OR o.main_dep = "002")
+                    AND o1.icd10 NOT IN ("U071", "U072", "Z290", "Z208")
+                    AND c.cc NOT LIKE "%นัด%" AND c.cc NOT LIKE "%ต่อเนื่อง%" AND c.cc NOT LIKE "%ออกซิเจน%" AND c.cc NOT LIKE "%ออกชิเจน%"
+                    AND c.cc NOT LIKE "%ยาเดิม%"  AND c.cc NOT LIKE "%ใบความเห็นแพทย์%"  AND c.cc NOT LIKE "%covid%" AND c.cc NOT LIKE "%ยาแทน%"
+                    AND c.cc NOT LIKE "%ใบส่งตัว%" AND c.cc NOT LIKE "%ใบรับรองแพทย์%"
+                    GROUP BY o.vn, v.pdx
+                ) a ON a.pdx BETWEEN c.code1 AND c.code2
+                GROUP BY c.id
+            ) d ON d.id = n.id
+            WHERE IFNULL(d.total, 0) > 0
+            ORDER BY total DESC
+        ', [$start_date, $end_date]);
+
+        $revisit_monthly = DB::connection('hosxp')->select('
+            SELECT 
+                CASE 
+                    WHEN MONTH(a.vstdate) = 10 THEN CONCAT("ต.ค. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 11 THEN CONCAT("พ.ย. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 12 THEN CONCAT("ธ.ค. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 1 THEN CONCAT("ม.ค. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 2 THEN CONCAT("ก.พ. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 3 THEN CONCAT("มี.ค. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 4 THEN CONCAT("เม.ย. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 5 THEN CONCAT("พ.ค. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 6 THEN CONCAT("มิ.ย. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 7 THEN CONCAT("ก.ค. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 8 THEN CONCAT("ส.ค. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                    WHEN MONTH(a.vstdate) = 9 THEN CONCAT("ก.ย. ", RIGHT(YEAR(a.vstdate) + 543, 2))
+                END AS month_year,
+                SUM(CASE WHEN a.depart = "ER" THEN 1 ELSE 0 END) AS er,
+                SUM(CASE WHEN a.depart = "OPD" THEN 1 ELSE 0 END) AS opd,
+                COUNT(*) AS total
+            FROM (
+                SELECT o.vstdate, IF(e.vn <> "", "ER", "OPD") AS depart
+                FROM ovst o
+                LEFT JOIN vn_stat v ON v.vn=o.vn
+                LEFT JOIN er_regist e ON e.vn=o.vn
+                LEFT JOIN opdscreen c ON c.vn=o.vn
+                LEFT JOIN ovstdiag o1 ON o1.vn=o.vn
+                WHERE v.lastvisit_hour <= 48
+                AND o.vstdate BETWEEN ? AND ?
+                AND v.pdx NOT LIKE "Z%" AND v.old_diagnosis = "Y"
+                AND (e.vn <> "" OR o.main_dep = "002")
+                AND o1.icd10 NOT IN ("U071", "U072", "Z290", "Z208")
+                AND c.cc NOT LIKE "%นัด%" AND c.cc NOT LIKE "%ต่อเนื่อง%" AND c.cc NOT LIKE "%ออกซิเจน%" AND c.cc NOT LIKE "%ออกชิเจน%"
+                AND c.cc NOT LIKE "%ยาเดิม%"  AND c.cc NOT LIKE "%ใบความเห็นแพทย์%"  AND c.cc NOT LIKE "%covid%" AND c.cc NOT LIKE "%ยาแทน%"
+                AND c.cc NOT LIKE "%ใบส่งตัว%" AND c.cc NOT LIKE "%ใบรับรองแพทย์%"
+                GROUP BY o.vn, v.pdx
+            ) AS a
+            GROUP BY YEAR(a.vstdate), MONTH(a.vstdate)
+            ORDER BY YEAR(a.vstdate), MONTH(a.vstdate)
+        ', [$start_date, $end_date]);
+
+        return view('hosxp.er.revisit_48h', compact(
+            'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
+            'revisit_list', 'revisit_diagtop', 'revisit_504', 'revisit_monthly'
         ));
     }
 

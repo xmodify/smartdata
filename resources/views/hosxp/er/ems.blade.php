@@ -272,6 +272,20 @@
             </div>
         </div>
 
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm card-ems" style="border-radius: 15px;">
+                    <div class="card-header bg-light py-3 border-0" style="border-radius: 16px 16px 0 0;">
+                        <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-chart-line me-2"></i>จำนวนผู้รับบริการ EMS แยกรายเดือน (ALS, ILS, FR)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="chart-ems-monthly"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Top 20 Diagnoses for ALS, ILS, FR -->
         <div class="row mb-4 g-3">
             <!-- ALS Top Diags -->
@@ -475,6 +489,7 @@
         <script src="{{ asset('vendor/datatables/buttons.html5.min.js') }}"></script>
         <script src="{{ asset('vendor/flatpickr/flatpickr.min.js') }}"></script>
         <script src="{{ asset('vendor/flatpickr/th.js') }}"></script>
+        <script src="{{ asset('vendor/apexcharts/apexcharts.min.js') }}"></script>
         
         <script>
             $(document).ready(function() {
@@ -568,6 +583,54 @@
                     pageLength: 10,
                     responsive: true
                 });
+
+                // Render EMS Monthly Trend Line Chart (ALS, ILS, FR)
+                const monthlyCategories = {!! json_encode(array_column($ems_monthly, 'month_year')) !!};
+                const alsData = {!! json_encode(array_map('intval', array_column($ems_monthly, 'als'))) !!};
+                const ilsData = {!! json_encode(array_map('intval', array_column($ems_monthly, 'ils'))) !!};
+                const frData = {!! json_encode(array_map('intval', array_column($ems_monthly, 'fr'))) !!};
+
+                const chartOptions = {
+                    series: [
+                        { name: 'ALS (Advanced Life Support)', data: alsData },
+                        { name: 'ILS (Intermediate Life Support)', data: ilsData },
+                        { name: 'FR (First Responder)', data: frData }
+                    ],
+                    chart: {
+                        type: 'line',
+                        height: 350,
+                        toolbar: { show: true }
+                    },
+                    dataLabels: {
+                        enabled: true
+                    },
+                    colors: ['#dc3545', '#0d6efd', '#198754'],
+                    stroke: {
+                        curve: 'smooth',
+                        width: 3
+                    },
+                    markers: {
+                        size: 5
+                    },
+                    xaxis: {
+                        categories: monthlyCategories,
+                        labels: { style: { fontSize: '11px', fontWeight: 600 } }
+                    },
+                    yaxis: {
+                        title: { text: 'จำนวนผู้ป่วย (ราย)', style: { fontWeight: 600 } },
+                        labels: { formatter: (val) => val.toLocaleString() }
+                    },
+                    legend: {
+                        position: 'top',
+                        horizontalAlign: 'center'
+                    },
+                    grid: {
+                        borderColor: '#f1f1f1'
+                    }
+                };
+
+                const chart = new ApexCharts(document.querySelector("#chart-ems-monthly"), chartOptions);
+                chart.render();
             });
         </script>
     @endpush
