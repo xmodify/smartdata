@@ -622,17 +622,13 @@
                     responsive: true
                 });
 
-                // Render Re-visit Monthly Trend Line Chart (ER, OPD, Total) - EMS style
+                // Render Re-visit Monthly Trend Line Chart (ER) - EMS style
                 const monthlyCategories = {!! json_encode(array_column($revisit_monthly, 'month_year')) !!};
                 const erData = {!! json_encode(array_map('intval', array_column($revisit_monthly, 'er'))) !!};
-                const opdData = {!! json_encode(array_map('intval', array_column($revisit_monthly, 'opd'))) !!};
-                const totalData = {!! json_encode(array_map('intval', array_column($revisit_monthly, 'total'))) !!};
 
                 const monthlyChartOptions = {
                     series: [
-                        { name: 'ER (ครั้ง)', data: erData },
-                        { name: 'OPD (ครั้ง)', data: opdData },
-                        { name: 'ทั้งหมด (ครั้ง)', data: totalData }
+                        { name: 'ER (ครั้ง)', data: erData }
                     ],
                     chart: {
                         type: 'line',
@@ -642,7 +638,7 @@
                     dataLabels: {
                         enabled: true
                     },
-                    colors: ['#dc3545', '#0d6efd', '#4e73df'],
+                    colors: ['#dc3545'],
                     stroke: {
                         curve: 'smooth',
                         width: 3
