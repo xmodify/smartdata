@@ -278,9 +278,6 @@
                     <!-- Left Column: Top 20 Chart -->
                     <div class="col-lg-6">
                         <div class="card border-0 shadow-sm card-revisit" style="border-radius: 15px; height: 100%;">
-                            <div class="card-header bg-light py-3 border-0" style="border-radius: 16px 16px 0 0;">
-                                <h6 class="fw-bold mb-0 text-danger"><i class="fas fa-chart-bar me-2"></i>20 อันดับโรคสูงสุด (Re-visit)</h6>
-                            </div>
                             <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 450px;">
                                 <div id="chart-revisit-top20" style="width: 100%;"></div>
                             </div>
@@ -290,9 +287,6 @@
                     <!-- Right Column: Top 20 DataTable -->
                     <div class="col-lg-6">
                         <div class="card border-0 shadow-sm card-revisit" style="border-radius: 15px; height: 100%;">
-                            <div class="card-header bg-light py-3 border-0" style="border-radius: 16px 16px 0 0;">
-                                <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-trophy me-2"></i>ตาราง 20 อันดับโรคสูงสุด (Re-visit)</h6>
-                            </div>
                             <div class="card-body p-3">
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0" id="table-revisit-top20" style="width: 100%">
@@ -348,9 +342,6 @@
                     <!-- Left Column: 504 Chart -->
                     <div class="col-lg-6">
                         <div class="card border-0 shadow-sm card-revisit" style="border-radius: 15px; height: 100%;">
-                            <div class="card-header bg-light py-3 border-0" style="border-radius: 16px 16px 0 0;">
-                                <h6 class="fw-bold mb-0 text-warning"><i class="fas fa-chart-bar me-2"></i>กราฟกลุ่มสาเหตุ รพ.504 (Re-visit)</h6>
-                            </div>
                             <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 450px;">
                                 <div id="chart-revisit-504" style="width: 100%;"></div>
                             </div>
@@ -360,9 +351,6 @@
                     <!-- Right Column: 504 DataTable -->
                     <div class="col-lg-6">
                         <div class="card border-0 shadow-sm card-revisit" style="border-radius: 15px; height: 100%;">
-                            <div class="card-header bg-light py-3 border-0" style="border-radius: 16px 16px 0 0;">
-                                <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-list me-2"></i>ตารางกลุ่มสาเหตุ รพ.504 (Re-visit)</h6>
-                            </div>
                             <div class="card-body p-3">
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0" id="table-revisit-504" style="width: 100%">
