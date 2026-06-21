@@ -146,6 +146,8 @@ Route::middleware(['auth'])->group(function () {
     // ER Routes
     Route::prefix('hosxp/er')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\ErController::class, 'index'])->name('hosxp.er.index');
+        Route::get('/ems', [App\Http\Controllers\Hosxp\ErController::class, 'ems'])->name('hosxp.er.ems');
+        Route::get('/wait-admit-2h', [App\Http\Controllers\Hosxp\ErController::class, 'wait_admit_2h'])->name('hosxp.er.wait_admit_2h');
     });
 
     // Refer Routes

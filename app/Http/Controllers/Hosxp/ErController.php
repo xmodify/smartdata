@@ -74,6 +74,136 @@ class ErController extends Controller
         ));
     }
 
+    public function ems(Request $request)
+    {
+        $title = 'รายงานผู้ป่วยให้บริการ EMS';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        $ems_diag_als = DB::connection('hosxp')->select('
+            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
+            FROM (
+                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
+                FROM vn_stat v
+                LEFT JOIN icd101 i ON i.code=v.pdx
+                LEFT JOIN ovst o ON o.vn=v.vn
+                WHERE v.vstdate BETWEEN ? AND ?
+                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
+                AND o.ovstist IN ("08")
+                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
+            ) AS a
+            GROUP BY pdx
+            ORDER BY sum DESC LIMIT 20
+        ', [$start_date, $end_date]);
+
+        $ems_diag_als_name = array_column($ems_diag_als, 'name');
+        $ems_diag_als_sum = array_column($ems_diag_als, 'sum');
+
+        $ems_diag_ils = DB::connection('hosxp')->select('
+            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
+            FROM (
+                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
+                FROM vn_stat v
+                LEFT JOIN icd101 i ON i.code=v.pdx
+                LEFT JOIN ovst o ON o.vn=v.vn
+                WHERE v.vstdate BETWEEN ? AND ?
+                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
+                AND o.ovstist IN ("09")
+                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
+            ) AS a
+            GROUP BY pdx
+            ORDER BY sum DESC LIMIT 20
+        ', [$start_date, $end_date]);
+
+        $ems_diag_ils_name = array_column($ems_diag_ils, 'name');
+        $ems_diag_ils_sum = array_column($ems_diag_ils, 'sum');
+
+        $ems_diag_fr = DB::connection('hosxp')->select('
+            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
+            FROM (
+                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
+                FROM vn_stat v
+                LEFT JOIN icd101 i ON i.code=v.pdx
+                LEFT JOIN ovst o ON o.vn=v.vn
+                WHERE v.vstdate BETWEEN ? AND ?
+                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
+                AND o.ovstist IN ("10")
+                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
+            ) AS a
+            GROUP BY pdx
+            ORDER BY sum DESC LIMIT 20
+        ', [$start_date, $end_date]);
+
+        $ems_diag_fr_name = array_column($ems_diag_fr, 'name');
+        $ems_diag_fr_sum = array_column($ems_diag_fr, 'sum');
+
+        $ems_list = DB::connection('hosxp')->select('
+            SELECT o.vn, o.oqueue, o.vstdate, o.vsttime, o.hn, CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS ptname,
+            v.age_y, CONCAT(o.pttype, " [", p1.hipdata_code, "]") AS pttype, o1.cc, v.pdx, d.`name` AS dx_doctor,
+            CASE WHEN o.ovstist = "08" THEN "ALS" WHEN o.ovstist = "09" THEN "FR" WHEN o.ovstist = "10" THEN "ILS" END AS ems,
+            IF(o.an <> "", "Admit", NULL) AS admit, CONCAT(r.refer_hospcode, " [", r.pdx, "]") AS refer,
+            CASE WHEN e.er_emergency_type = "1" THEN "Resuscitate" WHEN e.er_emergency_type = "2" THEN "Emergency" 
+            WHEN e.er_emergency_type = "3" THEN "Urgency" WHEN e.er_emergency_type = "4" THEN "Semi_Urgency"  
+            WHEN (e.er_emergency_type = "5" OR e.er_emergency_type IS NULL) THEN "Non_Urgency" END AS er_emergency_type
+            FROM ovst o
+            LEFT JOIN patient p ON p.hn=o.hn
+            LEFT JOIN pttype p1 ON p1.pttype=o.pttype
+            LEFT JOIN opdscreen o1 ON o1.vn=o.vn
+            LEFT JOIN vn_stat v ON v.vn=o.vn
+            LEFT JOIN referout r ON r.vn=o.vn
+            LEFT JOIN doctor d ON d.`code`=v.dx_doctor
+            LEFT JOIN er_regist e ON e.vn=o.vn
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND o.ovstist IN ("08", "09", "10")
+            GROUP BY o.vn
+        ', [$start_date, $end_date]);
+
+        return view('hosxp.er.ems', compact(
+            'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
+            'ems_diag_als', 'ems_diag_als_name', 'ems_diag_als_sum',
+            'ems_diag_ils', 'ems_diag_ils_name', 'ems_diag_ils_sum',
+            'ems_diag_fr', 'ems_diag_fr_name', 'ems_diag_fr_sum',
+            'ems_list'
+        ));
+    }
+
+    public function wait_admit_2h(Request $request)
+    {
+        $title = 'รายงานผู้ป่วยรอ Admit ที่ ER เกิน 2 ชั่วโมง';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        $waitingtime_admit = DB::connection('hosxp')->select('
+            SELECT * FROM (
+                SELECT o.vstdate, o.oqueue, o.hn, CONCAT(pt.pname, pt.fname, SPACE(1), pt.lname) AS ptname, o.an,
+                TIME(e.enter_er_time) AS er_time, et.`name` AS emergency_type, i.regtime AS admit_time, d.`name` AS er_doctor,
+                LEFT(SEC_TO_TIME(AVG((time_to_sec(TIME(i.regtime)) - time_to_sec(TIME(e.enter_er_time))) )), 8) AS time_wait_admit
+                FROM ovst o
+                INNER JOIN er_regist e ON e.vn=o.vn
+                LEFT JOIN er_emergency_type et ON et.er_emergency_type=e.er_emergency_type
+                LEFT JOIN ipt i ON i.an=o.an
+                LEFT JOIN patient pt ON pt.hn=o.hn
+                LEFT JOIN doctor d ON d.`code`=e.er_doctor
+                WHERE o.vstdate BETWEEN ? AND ?
+                AND (o.an IS NOT NULL AND o.vn <> "") 
+                GROUP BY o.vn
+            ) AS a
+            WHERE time_wait_admit >= "02:00:00"
+            ORDER BY time_wait_admit DESC
+        ', [$start_date, $end_date]);
+
+        return view('hosxp.er.wait_admit_2h', compact(
+            'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
+            'waitingtime_admit'
+        ));
+    }
+
     private function resolveDateRange(Request $request)
     {
         $budget_year_select = DB::table('budget_year')
