@@ -241,10 +241,10 @@ class ErController extends Controller
 
         $revisit_list = DB::connection('hosxp')->select('
             SELECT o.vstdate, CONCAT(v.lastvisit_hour, " ช.ม.") AS p_vstdate, o.main_dep_queue AS q, o.hn, c.cc, CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS ptname
-            , v.age_y, v.pttype, v.pdx, IF(e.vn <> "", "ER", "OPD") AS depart, IF(o.an <> "", "Admit", NULL) AS admit, IF(r.vn <> "", "Refer", NULL) AS refer
+            , v.age_y, v.pttype, v.pdx, "ER" AS depart, IF(o.an <> "", "Admit", NULL) AS admit, IF(r.vn <> "", "Refer", NULL) AS refer
             FROM ovst o
             LEFT JOIN vn_stat v ON v.vn=o.vn
-            LEFT JOIN er_regist e ON e.vn=o.vn
+            INNER JOIN er_regist e ON e.vn=o.vn
             LEFT JOIN opdscreen c ON c.vn=o.vn
             LEFT JOIN ovstdiag o1 ON o1.vn=o.vn
             LEFT JOIN referout r ON r.vn=o.vn
@@ -252,7 +252,7 @@ class ErController extends Controller
             WHERE v.lastvisit_hour <= 48
             AND o.vstdate BETWEEN ? AND ?
             AND v.pdx NOT LIKE "Z%" AND v.old_diagnosis = "Y"
-            AND (e.vn <> "" OR o.main_dep = "002")
+            AND e.vn <> ""
             AND o1.icd10 NOT IN ("U071", "U072", "Z290", "Z208")
             AND c.cc NOT LIKE "%นัด%" AND c.cc NOT LIKE "%ต่อเนื่อง%" AND c.cc NOT LIKE "%ออกซิเจน%" AND c.cc NOT LIKE "%ออกชิเจน%"
             AND c.cc NOT LIKE "%ยาเดิม%"  AND c.cc NOT LIKE "%ใบความเห็นแพทย์%"  AND c.cc NOT LIKE "%covid%" AND c.cc NOT LIKE "%ยาแทน%"
@@ -270,7 +270,7 @@ class ErController extends Controller
                 SELECT o.vstdate, o.hn, p.sex, v.pdx
                 FROM ovst o
                 LEFT JOIN vn_stat v ON v.vn=o.vn
-                LEFT JOIN er_regist e ON e.vn=o.vn
+                INNER JOIN er_regist e ON e.vn=o.vn
                 LEFT JOIN opdscreen c ON c.vn=o.vn
                 LEFT JOIN ovstdiag o1 ON o1.vn=o.vn
                 LEFT JOIN patient p ON p.hn=o.hn
@@ -307,7 +307,7 @@ class ErController extends Controller
                     SELECT o.vstdate, p.sex, v.pdx
                     FROM ovst o
                     LEFT JOIN vn_stat v ON v.vn=o.vn
-                    LEFT JOIN er_regist e ON e.vn=o.vn
+                    INNER JOIN er_regist e ON e.vn=o.vn
                     LEFT JOIN opdscreen c ON c.vn=o.vn
                     LEFT JOIN ovstdiag o1 ON o1.vn=o.vn
                     LEFT JOIN patient p ON p.hn=o.hn
@@ -343,20 +343,19 @@ class ErController extends Controller
                     WHEN MONTH(a.vstdate) = 8 THEN CONCAT("ส.ค. ", RIGHT(YEAR(a.vstdate) + 543, 2))
                     WHEN MONTH(a.vstdate) = 9 THEN CONCAT("ก.ย. ", RIGHT(YEAR(a.vstdate) + 543, 2))
                 END AS month_year,
-                SUM(CASE WHEN a.depart = "ER" THEN 1 ELSE 0 END) AS er,
-                SUM(CASE WHEN a.depart = "OPD" THEN 1 ELSE 0 END) AS opd,
+                COUNT(*) AS er,
                 COUNT(*) AS total
             FROM (
-                SELECT o.vstdate, IF(e.vn <> "", "ER", "OPD") AS depart
+                SELECT o.vstdate
                 FROM ovst o
                 LEFT JOIN vn_stat v ON v.vn=o.vn
-                LEFT JOIN er_regist e ON e.vn=o.vn
+                INNER JOIN er_regist e ON e.vn=o.vn
                 LEFT JOIN opdscreen c ON c.vn=o.vn
                 LEFT JOIN ovstdiag o1 ON o1.vn=o.vn
                 WHERE v.lastvisit_hour <= 48
                 AND o.vstdate BETWEEN ? AND ?
                 AND v.pdx NOT LIKE "Z%" AND v.old_diagnosis = "Y"
-                AND (e.vn <> "" OR o.main_dep = "002")
+                AND e.vn <> ""
                 AND o1.icd10 NOT IN ("U071", "U072", "Z290", "Z208")
                 AND c.cc NOT LIKE "%นัด%" AND c.cc NOT LIKE "%ต่อเนื่อง%" AND c.cc NOT LIKE "%ออกซิเจน%" AND c.cc NOT LIKE "%ออกชิเจน%"
                 AND c.cc NOT LIKE "%ยาเดิม%"  AND c.cc NOT LIKE "%ใบความเห็นแพทย์%"  AND c.cc NOT LIKE "%covid%" AND c.cc NOT LIKE "%ยาแทน%"
