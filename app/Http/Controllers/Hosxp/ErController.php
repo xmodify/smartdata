@@ -373,6 +373,63 @@ class ErController extends Controller
         ));
     }
 
+    public function top20(Request $request)
+    {
+        $title = '20 อันดับโรค งานอุบัติเหตุ-ฉุกเฉิน';
+
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        $diag_icd10 = DB::connection('hosxp')->select("
+            select 
+                i.`code`,
+                i.`name`,
+                i.tname,
+                count(v.pdx) as sum , 
+                sum(case when v.sex=1 THEN 1 ELSE 0 END) as male,   
+                sum(case when v.sex=2 THEN 1 ELSE 0 END) as female,
+                sum(v.inc03) as inc_lab,
+                sum(v.inc12) as inc_drug   
+            FROM vn_stat v   
+            inner join er_regist e on e.vn=v.vn
+            left outer join icd101 i on i.code=v.pdx 
+            where v.vstdate BETWEEN ? AND ?
+            and v.pdx<>'' AND v.pdx is not null 
+            group by v.pdx,i.name  
+            order by sum desc limit 20
+        ", [$start_date, $end_date]);
+
+        $diag_504 = DB::connection('hosxp')->select("
+            select 
+                concat(a.name1,' [',a.id,']') as name,
+                ifnull(d.male,0) as male,
+                ifnull(d.female,0) as female,
+                ifnull(d.amount,0) as sum,
+                ifnull(d.inc_lab,0) as inc_lab,
+                ifnull(d.inc_drug,0) as inc_drug
+            from rpt_504_name a 
+            left join (
+                select b.id,
+                    sum(case when v.sex=1 THEN 1 ELSE 0 END) as male,   
+                    sum(case when v.sex=2 THEN 1 ELSE 0 END) as female,
+                    count(b.id) as amount,
+                    sum(v.inc03) as inc_lab,
+                    sum(v.inc12) as inc_drug
+                from rpt_504_code b
+                inner join vn_stat v on v.pdx between b.code1 and b.code2
+                inner join er_regist e on e.vn=v.vn
+                where v.vstdate between ? AND ? 
+                group by b.id
+            ) d on d.id = a.id 
+            order by sum desc
+        ", [$start_date, $end_date]);
+
+        return view('hosxp.er.top20', compact('title', 'budget_year_select', 'budget_year', 'diag_icd10', 'diag_504', 'start_date', 'end_date'));
+    }
+
     private function resolveDateRange(Request $request)
     {
         $budget_year_select = DB::table('budget_year')
