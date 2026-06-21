@@ -277,7 +277,7 @@ class ErController extends Controller
                 WHERE v.lastvisit_hour <= 48
                 AND o.vstdate BETWEEN ? AND ?
                 AND v.pdx NOT LIKE "Z%" AND v.old_diagnosis = "Y"
-                AND (e.vn <> "" OR o.main_dep = "002")
+                AND e.vn <> ""
                 AND o1.icd10 NOT IN ("U071", "U072", "Z290", "Z208")
                 AND c.cc NOT LIKE "%นัด%" AND c.cc NOT LIKE "%ต่อเนื่อง%" AND c.cc NOT LIKE "%ออกซิเจน%" AND c.cc NOT LIKE "%ออกชิเจน%"
                 AND c.cc NOT LIKE "%ยาเดิม%"  AND c.cc NOT LIKE "%ใบความเห็นแพทย์%"  AND c.cc NOT LIKE "%covid%" AND c.cc NOT LIKE "%ยาแทน%"
@@ -314,7 +314,7 @@ class ErController extends Controller
                     WHERE v.lastvisit_hour <= 48
                     AND o.vstdate BETWEEN ? AND ?
                     AND v.pdx NOT LIKE "Z%" AND v.old_diagnosis = "Y"
-                    AND (e.vn <> "" OR o.main_dep = "002")
+                    AND e.vn <> ""
                     AND o1.icd10 NOT IN ("U071", "U072", "Z290", "Z208")
                     AND c.cc NOT LIKE "%นัด%" AND c.cc NOT LIKE "%ต่อเนื่อง%" AND c.cc NOT LIKE "%ออกซิเจน%" AND c.cc NOT LIKE "%ออกชิเจน%"
                     AND c.cc NOT LIKE "%ยาเดิม%"  AND c.cc NOT LIKE "%ใบความเห็นแพทย์%"  AND c.cc NOT LIKE "%covid%" AND c.cc NOT LIKE "%ยาแทน%"
