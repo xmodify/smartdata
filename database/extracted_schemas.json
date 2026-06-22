@@ -757,41 +757,6 @@
                 "default": null,
                 "extra": ""
             },
-            "ods": {
-                "type": "varchar",
-                "length": 1,
-                "nullable": true,
-                "default": null,
-                "extra": ""
-            },
-            "ods_p": {
-                "type": "varchar",
-                "length": 1,
-                "nullable": true,
-                "default": null,
-                "extra": ""
-            },
-            "kidney": {
-                "type": "varchar",
-                "length": 1,
-                "nullable": true,
-                "default": null,
-                "extra": ""
-            },
-            "hiv": {
-                "type": "varchar",
-                "length": 1,
-                "nullable": true,
-                "default": null,
-                "extra": ""
-            },
-            "tb": {
-                "type": "varchar",
-                "length": 1,
-                "nullable": true,
-                "default": null,
-                "extra": ""
-            },
             "created_at": {
                 "type": "timestamp",
                 "length": null,
