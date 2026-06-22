@@ -357,11 +357,19 @@ class NcdController extends Controller
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        $ucs_hospcodes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
-        if (empty($ucs_hospcodes)) {
-            $ucs_hospcodes = ['10989'];
+        $ucs_incup_codes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
+        if (empty($ucs_incup_codes)) {
+            $ucs_incup_codes = ['10989'];
         }
-        $ucs_hospcodes_str = "'" . implode("','", $ucs_hospcodes) . "'";
+        $ucs_incup_str = "'" . implode("','", $ucs_incup_codes) . "'";
+
+        $ucs_inprov_codes = DB::table('lookup_hospcode')->where('in_province', 'Y')->where(function($q) {
+            $q->whereNull('hmain_ucs')->orWhere('hmain_ucs', '<>', 'Y');
+        })->pluck('hospcode')->toArray();
+        if (empty($ucs_inprov_codes)) {
+            $ucs_inprov_codes = ['10703', '10985', '10986', '10987', '10988', '10990'];
+        }
+        $ucs_inprov_str = "'" . implode("','", $ucs_inprov_codes) . "'";
 
         $visit_month = DB::connection('hosxp')->select("
             SELECT 
@@ -385,19 +393,26 @@ class NcdController extends Controller
                 SUM(IFNULL(o.hd_price, 0)) AS inc_hd,
                 SUM(IFNULL(o.drug_price, 0)) AS inc_drug,
                 
-                -- UCS IN
-                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN v.hn END) AS ucs_incup_hn,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN 1 ELSE 0 END) AS ucs_incup,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN v.income ELSE 0 END) AS ucs_incup_income,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_incup_inc_hd,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_incup_inc_drug,
+                -- UCS IN-CUP
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN v.hn END) AS ucs_incup_hn,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN 1 ELSE 0 END) AS ucs_incup,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN v.income ELSE 0 END) AS ucs_incup_income,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_incup_inc_hd,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_incup_inc_drug,
 
-                -- UCS OUT
-                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN v.hn END) AS ucs_outcup_hn,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN 1 ELSE 0 END) AS ucs_outcup,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN v.income ELSE 0 END) AS ucs_outcup_income,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_outcup_inc_hd,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_outcup_inc_drug,
+                -- UCS IN-PROVINCE
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN v.hn END) AS ucs_inprov_hn,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN 1 ELSE 0 END) AS ucs_inprov,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN v.income ELSE 0 END) AS ucs_inprov_income,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_inprov_inc_hd,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_inprov_inc_drug,
+
+                -- UCS OUT-OF-PROVINCE
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN v.hn END) AS ucs_outprov_hn,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN 1 ELSE 0 END) AS ucs_outprov,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN v.income ELSE 0 END) AS ucs_outprov_income,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_outprov_inc_hd,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_outprov_inc_drug,
 
                 -- OFC
                 COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('OFC','BKK','BMT') AND p.paidst NOT IN ('01','03') THEN v.hn END) AS ofc_hn,
@@ -444,7 +459,6 @@ class NcdController extends Controller
             INNER JOIN vn_stat v ON v.hn = c.hn
             LEFT JOIN pttype p ON p.pttype = v.pttype
             LEFT JOIN visit_pttype vp ON vp.vn = v.vn 
-              AND vp.hospmain IN ($ucs_hospcodes_str)
             LEFT JOIN (
                 SELECT 
                     vn,
@@ -502,11 +516,19 @@ class NcdController extends Controller
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        $ucs_hospcodes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
-        if (empty($ucs_hospcodes)) {
-            $ucs_hospcodes = ['10989'];
+        $ucs_incup_codes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
+        if (empty($ucs_incup_codes)) {
+            $ucs_incup_codes = ['10989'];
         }
-        $ucs_hospcodes_str = "'" . implode("','", $ucs_hospcodes) . "'";
+        $ucs_incup_str = "'" . implode("','", $ucs_incup_codes) . "'";
+
+        $ucs_inprov_codes = DB::table('lookup_hospcode')->where('in_province', 'Y')->where(function($q) {
+            $q->whereNull('hmain_ucs')->orWhere('hmain_ucs', '<>', 'Y');
+        })->pluck('hospcode')->toArray();
+        if (empty($ucs_inprov_codes)) {
+            $ucs_inprov_codes = ['10703', '10985', '10986', '10987', '10988', '10990'];
+        }
+        $ucs_inprov_str = "'" . implode("','", $ucs_inprov_codes) . "'";
 
         $visit_month = DB::connection('hosxp')->select("
             SELECT 
@@ -530,19 +552,26 @@ class NcdController extends Controller
                 SUM(IFNULL(o.hd_price, 0)) AS inc_hd,
                 SUM(IFNULL(o.drug_price, 0)) AS inc_drug,
                 
-                -- UCS IN
-                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN v.hn END) AS ucs_incup_hn,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN 1 ELSE 0 END) AS ucs_incup,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN v.income ELSE 0 END) AS ucs_incup_income,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_incup_inc_hd,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'Y' THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_incup_inc_drug,
+                -- UCS IN-CUP
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN v.hn END) AS ucs_incup_hn,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN 1 ELSE 0 END) AS ucs_incup,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN v.income ELSE 0 END) AS ucs_incup_income,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_incup_inc_hd,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_incup_str) THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_incup_inc_drug,
 
-                -- UCS OUT
-                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN v.hn END) AS ucs_outcup_hn,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN 1 ELSE 0 END) AS ucs_outcup,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN v.income ELSE 0 END) AS ucs_outcup_income,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_outcup_inc_hd,
-                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND IF(vp.hospmain IS NOT NULL,'Y','N') = 'N' THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_outcup_inc_drug,
+                -- UCS IN-PROVINCE
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN v.hn END) AS ucs_inprov_hn,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN 1 ELSE 0 END) AS ucs_inprov,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN v.income ELSE 0 END) AS ucs_inprov_income,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_inprov_inc_hd,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND vp.hospmain IN ($ucs_inprov_str) THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_inprov_inc_drug,
+
+                -- UCS OUT-OF-PROVINCE
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN v.hn END) AS ucs_outprov_hn,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN 1 ELSE 0 END) AS ucs_outprov,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN v.income ELSE 0 END) AS ucs_outprov_income,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN IFNULL(o.hd_price, 0) ELSE 0 END) AS ucs_outprov_inc_hd,
+                SUM(CASE WHEN p.hipdata_code IN ('UCS','DIS') AND p.paidst NOT IN ('01','03') AND (vp.hospmain IS NULL OR (vp.hospmain NOT IN ($ucs_incup_str) AND vp.hospmain NOT IN ($ucs_inprov_str))) THEN IFNULL(o.drug_price, 0) ELSE 0 END) AS ucs_outprov_inc_drug,
 
                 -- OFC
                 COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('OFC','BKK','BMT') AND p.paidst NOT IN ('01','03') THEN v.hn END) AS ofc_hn,
@@ -589,7 +618,6 @@ class NcdController extends Controller
             LEFT JOIN clinicmember c ON c.hn = v.hn AND c.clinic = '013'
             LEFT JOIN pttype p ON p.pttype = v.pttype
             LEFT JOIN visit_pttype vp ON vp.vn = v.vn 
-              AND vp.hospmain IN ($ucs_hospcodes_str)
             INNER JOIN (
                 SELECT 
                     vn,

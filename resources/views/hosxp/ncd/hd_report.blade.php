@@ -90,6 +90,7 @@
         /* Soft Header Colors */
         .header-all { background-color: #f8fafc !important; color: #334155 !important; }
         .header-ucs-in { background-color: #e0f2fe !important; color: #0369a1 !important; }
+        .header-ucs-inprov { background-color: #ecfeff !important; color: #0891b2 !important; }
         .header-ucs-out { background-color: #fff7ed !important; color: #9a3412 !important; }
         .header-ofc { background-color: #f1f5f9 !important; color: #475569 !important; }
         .header-sss { background-color: #fee2e2 !important; color: #b91c1c !important; }
@@ -361,7 +362,8 @@
                                         <th rowspan="2" class="sticky-col-header">เดือน</th>
                                         <th colspan="3" class="header-group header-all border-end">ทั้งหมด</th>
                                         <th colspan="3" class="header-group header-ucs-in border-end">ประกันสุขภาพ ใน CUP</th>
-                                        <th colspan="3" class="header-group header-ucs-out border-end">ประกันสุขภาพ นอก CUP</th>
+                                        <th colspan="3" class="header-group header-ucs-inprov border-end">ประกันสุขภาพ ในจังหวัด</th>
+                                        <th colspan="3" class="header-group header-ucs-out border-end">ประกันสุขภาพ ต่างจังหวัด</th>
                                         <th colspan="3" class="header-group header-ofc border-end">ข้าราชการ</th>
                                         <th colspan="3" class="header-group header-sss border-end">ประกันสังคม</th>
                                         <th colspan="3" class="header-group header-lgo border-end">อปท.</th>
@@ -378,6 +380,10 @@
                                         <th class="col-visit bg-pastel-green">Visit</th>
                                         <th class="bg-pastel-green">ฟอกไต</th>
                                         <th class="bg-pastel-green border-end">ค่ายา</th>
+                                        <!-- UCS INPROV -->
+                                        <th class="col-visit bg-pastel-cyan">Visit</th>
+                                        <th class="bg-pastel-cyan">ฟอกไต</th>
+                                        <th class="bg-pastel-cyan border-end">ค่ายา</th>
                                         <!-- UCS OUT -->
                                         <th class="col-visit bg-pastel-amber">Visit</th>
                                         <th class="bg-pastel-amber">ฟอกไต</th>
@@ -423,10 +429,15 @@
                                             <td class="text-num bg-pastel-green text-teal">{{ number_format($row->ucs_incup_inc_hd, 2) }}</td>
                                             <td class="text-num bg-pastel-green border-end" style="color: #6f42c1;">{{ number_format($row->ucs_incup_inc_drug, 2) }}</td>
 
+                                            <!-- UCS INPROV -->
+                                            <td class="text-num bg-pastel-cyan">{{ number_format($row->ucs_inprov) }}</td>
+                                            <td class="text-num bg-pastel-cyan text-teal">{{ number_format($row->ucs_inprov_inc_hd, 2) }}</td>
+                                            <td class="text-num bg-pastel-cyan border-end" style="color: #6f42c1;">{{ number_format($row->ucs_inprov_inc_drug, 2) }}</td>
+
                                             <!-- UCS OUT -->
-                                            <td class="text-num bg-pastel-amber">{{ number_format($row->ucs_outcup) }}</td>
-                                            <td class="text-num bg-pastel-amber text-teal">{{ number_format($row->ucs_outcup_inc_hd, 2) }}</td>
-                                            <td class="text-num bg-pastel-amber border-end" style="color: #6f42c1;">{{ number_format($row->ucs_outcup_inc_drug, 2) }}</td>
+                                            <td class="text-num bg-pastel-amber">{{ number_format($row->ucs_outprov) }}</td>
+                                            <td class="text-num bg-pastel-amber text-teal">{{ number_format($row->ucs_outprov_inc_hd, 2) }}</td>
+                                            <td class="text-num bg-pastel-amber border-end" style="color: #6f42c1;">{{ number_format($row->ucs_outprov_inc_drug, 2) }}</td>
 
                                             <!-- OFC -->
                                             <td class="text-num bg-pastel-purple">{{ number_format($row->ofc) }}</td>
@@ -474,10 +485,15 @@
                                         <td class="text-num bg-pastel-green text-teal">{{ number_format(array_sum(array_column($visit_month, 'ucs_incup_inc_hd')), 2) }}</td>
                                         <td class="text-num bg-pastel-green border-end" style="color: #6f42c1;">{{ number_format(array_sum(array_column($visit_month, 'ucs_incup_inc_drug')), 2) }}</td>
 
+                                        <!-- UCS INPROV -->
+                                        <td class="text-num bg-pastel-cyan">{{ number_format(array_sum(array_column($visit_month, 'ucs_inprov'))) }}</td>
+                                        <td class="text-num bg-pastel-cyan text-teal">{{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_hd')), 2) }}</td>
+                                        <td class="text-num bg-pastel-cyan border-end" style="color: #6f42c1;">{{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_drug')), 2) }}</td>
+
                                         <!-- UCS OUT -->
-                                        <td class="text-num bg-pastel-amber">{{ number_format(array_sum(array_column($visit_month, 'ucs_outcup'))) }}</td>
-                                        <td class="text-num bg-pastel-amber text-teal">{{ number_format(array_sum(array_column($visit_month, 'ucs_outcup_inc_hd')), 2) }}</td>
-                                        <td class="text-num bg-pastel-amber border-end" style="color: #6f42c1;">{{ number_format(array_sum(array_column($visit_month, 'ucs_outcup_inc_drug')), 2) }}</td>
+                                        <td class="text-num bg-pastel-amber">{{ number_format(array_sum(array_column($visit_month, 'ucs_outprov'))) }}</td>
+                                        <td class="text-num bg-pastel-amber text-teal">{{ number_format(array_sum(array_column($visit_month, 'ucs_outprov_inc_hd')), 2) }}</td>
+                                        <td class="text-num bg-pastel-amber border-end" style="color: #6f42c1;">{{ number_format(array_sum(array_column($visit_month, 'ucs_outprov_inc_drug')), 2) }}</td>
 
                                         <!-- OFC -->
                                         <td class="text-num bg-pastel-purple">{{ number_format(array_sum(array_column($visit_month, 'ofc'))) }}</td>

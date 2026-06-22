@@ -17,11 +17,19 @@ class OpdController extends Controller
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        $ucs_hospcodes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
-        if (empty($ucs_hospcodes)) {
-            $ucs_hospcodes = ['10989'];
+        $ucs_incup_codes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
+        if (empty($ucs_incup_codes)) {
+            $ucs_incup_codes = ['10989'];
         }
-        $ucs_hospcodes_str = "'" . implode("','", $ucs_hospcodes) . "'";
+        $ucs_incup_str = "'" . implode("','", $ucs_incup_codes) . "'";
+
+        $ucs_inprov_codes = DB::table('lookup_hospcode')->where('in_province', 'Y')->where(function($q) {
+            $q->whereNull('hmain_ucs')->orWhere('hmain_ucs', '<>', 'Y');
+        })->pluck('hospcode')->toArray();
+        if (empty($ucs_inprov_codes)) {
+            $ucs_inprov_codes = ['10703', '10985', '10986', '10987', '10988', '10990'];
+        }
+        $ucs_inprov_str = "'" . implode("','", $ucs_inprov_codes) . "'";
 
         $pp_icd10s = DB::table('lookup_icd10')->where('pp', 'Y')->pluck('icd10')->toArray();
         if (empty($pp_icd10s)) {
@@ -47,14 +55,21 @@ class OpdController extends Controller
             SUM(CASE WHEN diagtype ="OP" THEN 1 ELSE 0 END) AS "visit_op",
             SUM(CASE WHEN diagtype ="PP" THEN 1 ELSE 0 END) AS "visit_pp",SUM(income) AS "income",
             SUM(inc12) AS "inc_drug",SUM(inc03) AS "inc_lab",
-            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "Y" THEN 1 ELSE 0 END) AS "ucs_incup",
-            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "Y" THEN income ELSE 0 END) AS "ucs_incup_income",  
-            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "Y" THEN inc12 ELSE 0 END) AS "ucs_incup_inc_drug",
-            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "Y" THEN inc03 ELSE 0 END) AS "ucs_incup_inc_lab",
-            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "N" THEN 1 ELSE 0 END) AS "ucs_outcup",
-            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "N" THEN income ELSE 0 END) AS "ucs_outcup_income",            
-            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "N" THEN inc12 ELSE 0 END) AS "ucs_outcup_inc_drug",
-            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND incup = "N" THEN inc03 ELSE 0 END) AS "ucs_outcup_inc_lab",
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND hospmain IN (' . $ucs_incup_str . ') THEN 1 ELSE 0 END) AS "ucs_incup",
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND hospmain IN (' . $ucs_incup_str . ') THEN income ELSE 0 END) AS "ucs_incup_income",  
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND hospmain IN (' . $ucs_incup_str . ') THEN inc12 ELSE 0 END) AS "ucs_incup_inc_drug",
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND hospmain IN (' . $ucs_incup_str . ') THEN inc03 ELSE 0 END) AS "ucs_incup_inc_lab",
+            
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND hospmain IN (' . $ucs_inprov_str . ') THEN 1 ELSE 0 END) AS "ucs_inprov",
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND hospmain IN (' . $ucs_inprov_str . ') THEN income ELSE 0 END) AS "ucs_inprov_income",            
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND hospmain IN (' . $ucs_inprov_str . ') THEN inc12 ELSE 0 END) AS "ucs_inprov_inc_drug",
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND hospmain IN (' . $ucs_inprov_str . ') THEN inc03 ELSE 0 END) AS "ucs_inprov_inc_lab",
+
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND (hospmain IS NULL OR (hospmain NOT IN (' . $ucs_incup_str . ') AND hospmain NOT IN (' . $ucs_inprov_str . '))) THEN 1 ELSE 0 END) AS "ucs_outprov",
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND (hospmain IS NULL OR (hospmain NOT IN (' . $ucs_incup_str . ') AND hospmain NOT IN (' . $ucs_inprov_str . '))) THEN income ELSE 0 END) AS "ucs_outprov_income",            
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND (hospmain IS NULL OR (hospmain NOT IN (' . $ucs_incup_str . ') AND hospmain NOT IN (' . $ucs_inprov_str . '))) THEN inc12 ELSE 0 END) AS "ucs_outprov_inc_drug",
+            SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") AND (hospmain IS NULL OR (hospmain NOT IN (' . $ucs_incup_str . ') AND hospmain NOT IN (' . $ucs_inprov_str . '))) THEN inc03 ELSE 0 END) AS "ucs_outprov_inc_lab",
+
             SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") THEN inc12 ELSE 0 END) AS "ucs_inc_drug",
             SUM(CASE WHEN hipdata_code IN ("UCS","DIS") AND paidst NOT IN ("01","03") THEN inc03 ELSE 0 END) AS "ucs_inc_lab",
             SUM(CASE WHEN hipdata_code IN ("OFC","BKK","BMT") AND paidst NOT IN ("01","03") THEN 1 ELSE 0 END) AS "ofc",
@@ -82,11 +97,10 @@ class OpdController extends Controller
             SUM(CASE WHEN (paidst IN ("01","03") OR hipdata_code IN ("A1","A9")) THEN inc12 ELSE 0 END) AS "pay_inc_drug",
             SUM(CASE WHEN (paidst IN ("01","03") OR hipdata_code IN ("A1","A9")) THEN inc03 ELSE 0 END) AS "pay_inc_lab"            
             FROM (SELECT v.vstdate,v.vn,v.hn,v.pttype,p.hipdata_code,p.paidst,v.income,v.inc03,v.inc12 ,v.pdx,
-            IF(v.pdx IN (' . $pp_icd10s_str . '),"PP","OP") AS diagtype,IF(vp.hospmain IS NOT NULL,"Y","N") AS incup
+            IF(v.pdx IN (' . $pp_icd10s_str . '),"PP","OP") AS diagtype,vp.hospmain
             FROM vn_stat v
             LEFT JOIN pttype p ON p.pttype=v.pttype
             LEFT JOIN visit_pttype vp ON vp.vn =v.vn 
-              AND vp.hospmain IN (' . $ucs_hospcodes_str . ')
             WHERE v.vstdate BETWEEN ? AND ? GROUP BY v.vn) AS a									
             GROUP BY YEAR(vstdate) , MONTH(vstdate)
             ORDER BY YEAR(vstdate) , MONTH(vstdate)', [$start_date, $end_date]);

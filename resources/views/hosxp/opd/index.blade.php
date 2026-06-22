@@ -116,6 +116,7 @@
         /* Soft Header Colors (Pastel) */
         .header-all { background-color: #f8fafc !important; color: #334155 !important; }
         .header-ucs-in { background-color: #e0f2fe !important; color: #0369a1 !important; }
+        .header-ucs-inprov { background-color: #ecfeff !important; color: #0891b2 !important; }
         .header-ucs-out { background-color: #fff7ed !important; color: #9a3412 !important; }
         .header-ofc { background-color: #f1f5f9 !important; color: #475569 !important; }
         .header-sss { background-color: #fee2e2 !important; color: #b91c1c !important; }
@@ -405,8 +406,10 @@
                                             ทั้งหมด</th>
                                         <th colspan="4" class="header-group header-ucs-in border-end">
                                             ประกันสุขภาพ ใน CUP</th>
+                                        <th colspan="4" class="header-group header-ucs-inprov border-end">
+                                            ประกันสุขภาพ ในจังหวัด</th>
                                         <th colspan="4" class="header-group header-ucs-out border-end">
-                                            ประกันสุขภาพ นอก CUP</th>
+                                            ประกันสุขภาพ ต่างจังหวัด</th>
                                         <th colspan="4" class="header-group header-ofc border-end">
                                             ข้าราชการ</th>
                                         <th colspan="4" class="header-group header-sss border-end">
@@ -430,6 +433,11 @@
                                         <th class="col-income bg-pastel-green">Income</th>
                                         <th class="bg-pastel-green">Drug</th>
                                         <th class="bg-pastel-green border-end">Lab</th>
+
+                                        <th class="col-visit bg-pastel-cyan">Visit</th>
+                                        <th class="col-income bg-pastel-cyan">Income</th>
+                                        <th class="bg-pastel-cyan">Drug</th>
+                                        <th class="bg-pastel-cyan border-end">Lab</th>
 
                                         <th class="col-visit bg-pastel-amber">Visit</th>
                                         <th class="col-income bg-pastel-amber">Income</th>
@@ -488,14 +496,22 @@
                                             <td class="text-num bg-pastel-green border-end">
                                                 {{ number_format($row->ucs_incup_inc_lab, 2) }}</td>
 
-                                            <td class="text-num bg-pastel-amber">{{ number_format($row->ucs_outcup) }}
+                                            <td class="text-num bg-pastel-cyan">{{ number_format($row->ucs_inprov) }}</td>
+                                            <td class="text-num bg-pastel-cyan text-success">
+                                                {{ number_format($row->ucs_inprov_income, 2) }}</td>
+                                            <td class="text-num bg-pastel-cyan">
+                                                {{ number_format($row->ucs_inprov_inc_drug, 2) }}</td>
+                                            <td class="text-num bg-pastel-cyan border-end">
+                                                {{ number_format($row->ucs_inprov_inc_lab, 2) }}</td>
+
+                                            <td class="text-num bg-pastel-amber">{{ number_format($row->ucs_outprov) }}
                                             </td>
                                             <td class="text-num bg-pastel-amber text-success">
-                                                {{ number_format($row->ucs_outcup_income, 2) }}</td>
+                                                {{ number_format($row->ucs_outprov_income, 2) }}</td>
                                             <td class="text-num bg-pastel-amber">
-                                                {{ number_format($row->ucs_outcup_inc_drug, 2) }}</td>
+                                                {{ number_format($row->ucs_outprov_inc_drug, 2) }}</td>
                                             <td class="text-num bg-pastel-amber border-end">
-                                                {{ number_format($row->ucs_outcup_inc_lab, 2) }}</td>
+                                                {{ number_format($row->ucs_outprov_inc_lab, 2) }}</td>
 
                                             <td class="text-num bg-pastel-purple">{{ number_format($row->ofc) }}</td>
                                             <td class="text-num bg-pastel-purple text-success">
@@ -571,16 +587,28 @@
                                             {{ number_format(array_sum(array_column($visit_month, 'ucs_incup_inc_lab')), 2) }}
                                         </td>
 
+                                        <td class="text-num bg-pastel-cyan">
+                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_inprov'))) }}</td>
+                                        <td class="text-num bg-pastel-cyan text-success">
+                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_income')), 2) }}
+                                        </td>
+                                        <td class="text-num bg-pastel-cyan">
+                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_drug')), 2) }}
+                                        </td>
+                                        <td class="text-num bg-pastel-cyan border-end">
+                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_lab')), 2) }}
+                                        </td>
+
                                         <td class="text-num bg-pastel-amber">
-                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_outcup'))) }}</td>
+                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_outprov'))) }}</td>
                                         <td class="text-num bg-pastel-amber text-success">
-                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_outcup_income')), 2) }}
+                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_outprov_income')), 2) }}
                                         </td>
                                         <td class="text-num bg-pastel-amber">
-                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_outcup_inc_drug')), 2) }}
+                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_outprov_inc_drug')), 2) }}
                                         </td>
                                         <td class="text-num bg-pastel-amber border-end">
-                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_outcup_inc_lab')), 2) }}
+                                            {{ number_format(array_sum(array_column($visit_month, 'ucs_outprov_inc_lab')), 2) }}
                                         </td>
 
                                         <td class="text-num bg-pastel-purple">
