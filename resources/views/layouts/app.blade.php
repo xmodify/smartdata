@@ -430,19 +430,15 @@
                         @endif
                     @endif
 
-                    @if(auth()->user()->hasAccessSkpcard() || auth()->user()->hasAccessLend())
                         <div class="sidebar-section-header">ระบบ SmartData</div>
-                        @if(auth()->user()->hasAccessSkpcard())
-                            <a href="{{ url('/skpcard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                                <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆะประชาร่วมใจ
-                            </a>
-                        @endif
+                        <a href="{{ url('/skpcard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆะประชาร่วมใจ
+                        </a>
                         @if(auth()->user()->hasAccessLend())
                             <a href="{{ route('lend.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-hand-holding-medical me-2" style="color: #0ea5e9;"></i> ศูนย์ยืม-คืน
                             </a>
                         @endif
-                    @endif
 
                     <div class="sidebar-section-header">ระบบ Dashboard</div>
                     <a href="{{ route('ipd.wait_dchsummary') }}" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">
@@ -455,7 +451,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-06-20 13:00
+                V. 69-06-22 20:00
             </div>
         </div>
         <!-- /#sidebar-wrapper -->

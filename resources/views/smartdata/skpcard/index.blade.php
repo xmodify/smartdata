@@ -238,11 +238,13 @@
                         <i class="fas fa-exclamation-circle me-2 text-danger"></i>หมดอายุ <span class="badge bg-danger ms-1">{{ $expired_count }}</span>
                     </button>
                 </li>
-            </ul>
+                </ul>
             </div>
+            @if(auth()->user()->hasAccessSkpcard())
             <button class="btn btn-warning shadow-sm rounded-pill px-4 text-dark fw-bold btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#addCardModal">
                 <i class="fas fa-plus-circle me-2"></i>เพิ่มข้อมูล
             </button>
+            @endif
         </div>
         <div class="table-responsive p-3">
             <table id="skpcard_table" class="table table-hover align-middle mb-0 w-100">
@@ -291,6 +293,7 @@
                         <td><span class="fw-bold {{ (float)$card->price >= 1500 ? 'text-success' : 'text-info' }}">{{ number_format((float)$card->price, 2) }}</span> ฿</td>
                         <td><code>{{ $card->rcpt ?: '-' }}</code></td>
                         <td class="text-center">
+                            @if(auth()->user()->hasAccessSkpcard())
                             <div class="btn-group shadow-sm">
                                 <button class="btn btn-white btn-sm edit-card" 
                                     data-bs-toggle="modal" 
@@ -306,6 +309,9 @@
                                     </button>
                                 </form>
                             </div>
+                            @else
+                                <span class="text-muted small">-</span>
+                            @endif
                         </td>
                     </tr>
                     @endforeach

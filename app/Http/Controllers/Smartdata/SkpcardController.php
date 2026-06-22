@@ -133,6 +133,10 @@ class SkpcardController extends Controller
 
     public function store(Request $request)
     {
+        if (!auth()->user()->hasAccessSkpcard()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'cid' => 'required|string|max:13',
             'name' => 'required|string',
@@ -160,6 +164,10 @@ class SkpcardController extends Controller
 
     public function update(Request $request, Skpcard $skpcard)
     {
+        if (!auth()->user()->hasAccessSkpcard()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'cid' => 'required|string|max:13',
             'name' => 'required|string',
@@ -187,6 +195,10 @@ class SkpcardController extends Controller
 
     public function destroy(Skpcard $skpcard)
     {
+        if (!auth()->user()->hasAccessSkpcard()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $skpcard->delete();
         return redirect()->back()->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
     }

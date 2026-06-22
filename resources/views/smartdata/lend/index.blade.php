@@ -267,7 +267,7 @@
                                         {{ DateThai($t->due_date) }}
                                     </span>
                                     @if($isOverdue)
-                                        <br><small class="text-danger"><i class="fas fa-exclamation-circle"></i> เกิน {{ $t->due_date->diffInDays(now()) }} วัน</small>
+                                        <br><small class="text-danger"><i class="fas fa-exclamation-circle"></i> เกิน {{ (int)$t->due_date->diffInDays(now()) }} วัน</small>
                                     @endif
                                 @else
                                     <span class="text-muted">-</span>

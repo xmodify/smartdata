@@ -69,7 +69,7 @@
                         @endphp
 
                         @foreach($supportItems as $item)
-                        @if(auth()->user()->{$item['permission']}())
+                        @if($item['url'] === '/skpcard' || auth()->user()->{$item['permission']}())
                         <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                             <a href="{{ url($item['url']) }}" class="text-decoration-none transition-hover h-100 d-block">
                                 <div class="card h-100 border-0 shadow text-center p-2" style="border-radius: 12px; background: #fff;">
