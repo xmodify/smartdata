@@ -90,7 +90,7 @@ class OpdController extends Controller
             WHERE v.vstdate BETWEEN ? AND ? GROUP BY v.vn) AS a									
             GROUP BY YEAR(vstdate) , MONTH(vstdate)
             ORDER BY YEAR(vstdate) , MONTH(vstdate)', [$start_date, $end_date]);
-
+            
         $months = array_column($visit_month, 'month');
         $visits = array_map('intval', array_column($visit_month, 'visit'));
         $hns = array_map('intval', array_column($visit_month, 'hn'));
