@@ -38,6 +38,7 @@
 
         .text-orange  { color: #f57c00; }
         .text-red     { color: #e53935; }
+        .text-rose    { color: #db2777; }
         .text-teal    { color: #00796b; }
         .text-indigo  { color: #3949ab; }
         .text-cyan    { color: #0097a7; }
@@ -73,18 +74,25 @@
                 'text_class' => 'text-orange',
             ],
             [
-                'code' => '007',
-                'name' => 'คลินิก CKD',
-                'icon' => 'fas fa-circle-nodes',
-                'bg_class' => 'bg-pastel-teal',
-                'text_class' => 'text-teal',
+                'code' => '029',
+                'name' => 'คลินิกโรคหัวใจล้มเหลว',
+                'icon' => 'fas fa-heart',
+                'bg_class' => 'bg-pastel-rose',
+                'text_class' => 'text-rose',
             ],
             [
-                'code' => '009',
-                'name' => 'คลินิกวัณโรค / Asthma',
-                'icon' => 'fas fa-lungs',
-                'bg_class' => 'bg-pastel-green',
-                'text_class' => 'text-green2',
+                'code' => '028',
+                'name' => 'คลินิกโรคหลอดเลือดสมอง',
+                'icon' => 'fas fa-head-side-virus',
+                'bg_class' => 'bg-pastel-brown',
+                'text_class' => 'text-brown',
+            ],
+            [
+                'code' => '020',
+                'name' => 'คลินิกบำบัดยาเสพติด',
+                'icon' => 'fas fa-capsules',
+                'bg_class' => 'bg-pastel-purple',
+                'text_class' => 'text-purple',
             ],
             [
                 'code' => '012',
@@ -92,6 +100,20 @@
                 'icon' => 'fas fa-brain',
                 'bg_class' => 'bg-pastel-cyan',
                 'text_class' => 'text-cyan',
+            ],
+            [
+                'code' => '007',
+                'name' => 'คลินิก CKD',
+                'icon' => 'fas fa-circle-nodes',
+                'bg_class' => 'bg-pastel-teal',
+                'text_class' => 'text-teal',
+            ],
+            [
+                'code' => '032',
+                'name' => 'คลินิกโรคไตเรื้อรังระยะ 4-5',
+                'icon' => 'fas fa-network-wired',
+                'bg_class' => 'bg-pastel-teal',
+                'text_class' => 'text-teal',
             ],
             [
                 'code' => '013',
@@ -108,11 +130,11 @@
                 'text_class' => 'text-indigo',
             ],
             [
-                'code' => '020',
-                'name' => 'คลินิกบำบัดยาเสพติด',
-                'icon' => 'fas fa-capsules',
-                'bg_class' => 'bg-pastel-purple',
-                'text_class' => 'text-purple',
+                'code' => '009',
+                'name' => 'คลินิกวัณโรค / Asthma',
+                'icon' => 'fas fa-lungs',
+                'bg_class' => 'bg-pastel-green',
+                'text_class' => 'text-green2',
             ],
             [
                 'code' => '021',
@@ -120,27 +142,6 @@
                 'icon' => 'fas fa-lungs',
                 'bg_class' => 'bg-pastel-yellow',
                 'text_class' => 'text-yellow',
-            ],
-            [
-                'code' => '028',
-                'name' => 'คลินิกโรคหลอดเลือดสมอง',
-                'icon' => 'fas fa-head-side-virus',
-                'bg_class' => 'bg-pastel-brown',
-                'text_class' => 'text-brown',
-            ],
-            [
-                'code' => '029',
-                'name' => 'คลินิกโรคหัวใจล้มเหลว',
-                'icon' => 'fas fa-heart',
-                'bg_class' => 'bg-pastel-red',
-                'text_class' => 'text-red',
-            ],
-            [
-                'code' => '032',
-                'name' => 'คลินิกโรคไตเรื้อรังระยะ 4-5',
-                'icon' => 'fas fa-network-wired',
-                'bg_class' => 'bg-pastel-teal',
-                'text_class' => 'text-teal',
             ],
         ];
     @endphp
