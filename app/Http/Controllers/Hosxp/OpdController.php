@@ -17,6 +17,12 @@ class OpdController extends Controller
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
+        $ucs_hospcodes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
+        if (empty($ucs_hospcodes)) {
+            $ucs_hospcodes = ['10989'];
+        }
+        $ucs_hospcodes_str = "'" . implode("','", $ucs_hospcodes) . "'";
+
         // Monthly Stats SQL (User's Query)
         $visit_month = DB::connection('hosxp')->select('
             SELECT CASE WHEN MONTH(vstdate)="10" THEN CONCAT("ต.ค. ",RIGHT(YEAR(vstdate)+543,2))
@@ -74,7 +80,7 @@ class OpdController extends Controller
             FROM vn_stat v
             LEFT JOIN pttype p ON p.pttype=v.pttype
             LEFT JOIN visit_pttype vp ON vp.vn =v.vn 
-              AND vp.hospmain IN (SELECT hospcode FROM smartdata.lookup_hospcode WHERE hmain_ucs = "Y")
+              AND vp.hospmain IN (' . $ucs_hospcodes_str . ')
             LEFT JOIN hrims.lookup_icd10 i ON i.icd10=v.pdx AND i.pp="Y"	
             WHERE v.vstdate BETWEEN ? AND ? GROUP BY v.vn) AS a									
             GROUP BY YEAR(vstdate) , MONTH(vstdate)

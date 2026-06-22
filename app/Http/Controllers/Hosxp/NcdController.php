@@ -357,6 +357,12 @@ class NcdController extends Controller
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
+        $ucs_hospcodes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
+        if (empty($ucs_hospcodes)) {
+            $ucs_hospcodes = ['10989'];
+        }
+        $ucs_hospcodes_str = "'" . implode("','", $ucs_hospcodes) . "'";
+
         $visit_month = DB::connection('hosxp')->select("
             SELECT 
                 CASE 
@@ -438,7 +444,7 @@ class NcdController extends Controller
             INNER JOIN vn_stat v ON v.hn = c.hn
             LEFT JOIN pttype p ON p.pttype = v.pttype
             LEFT JOIN visit_pttype vp ON vp.vn = v.vn 
-              AND vp.hospmain IN (SELECT hospcode FROM smartdata.lookup_hospcode WHERE hmain_ucs = 'Y')
+              AND vp.hospmain IN ($ucs_hospcodes_str)
             LEFT JOIN (
                 SELECT 
                     vn,
@@ -495,6 +501,12 @@ class NcdController extends Controller
         $end_date = $dates['end_date'];
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
+
+        $ucs_hospcodes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
+        if (empty($ucs_hospcodes)) {
+            $ucs_hospcodes = ['10989'];
+        }
+        $ucs_hospcodes_str = "'" . implode("','", $ucs_hospcodes) . "'";
 
         $visit_month = DB::connection('hosxp')->select("
             SELECT 
@@ -577,7 +589,7 @@ class NcdController extends Controller
             LEFT JOIN clinicmember c ON c.hn = v.hn AND c.clinic = '013'
             LEFT JOIN pttype p ON p.pttype = v.pttype
             LEFT JOIN visit_pttype vp ON vp.vn = v.vn 
-              AND vp.hospmain IN (SELECT hospcode FROM smartdata.lookup_hospcode WHERE hmain_ucs = 'Y')
+              AND vp.hospmain IN ($ucs_hospcodes_str)
             INNER JOIN (
                 SELECT 
                     vn,
