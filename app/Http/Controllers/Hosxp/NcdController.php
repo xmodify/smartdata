@@ -701,12 +701,6 @@ class NcdController extends Controller
         }
         $ucs_inprov_str = "'" . implode("','", $ucs_inprov_codes) . "'";
 
-        $pp_icd10s = DB::table('lookup_icd10')->where('pp', 'Y')->pluck('icd10')->toArray();
-        if (empty($pp_icd10s)) {
-            $pp_icd10s = ['Z000', 'Z001', 'Z008', 'Z010', 'Z011', 'Z012', 'Z013', 'Z020', 'Z021', 'Z022', 'Z023', 'Z024', 'Z025', 'Z026', 'Z027', 'Z028', 'Z029', 'Z100', 'Z108', 'Z113', 'Z133', 'Z134', 'Z135', 'Z138', 'Z300', 'Z304', 'Z321', 'Z391', 'Z392', 'Z713', 'Z762'];
-        }
-        $pp_icd10s_str = "'" . implode("','", $pp_icd10s) . "'";
-
         $visit_month = DB::connection('hosxp')->select("
             SELECT 
                 CASE 
@@ -725,8 +719,6 @@ class NcdController extends Controller
                 END AS month,
                 COUNT(a.vn) AS visit,
                 COUNT(DISTINCT a.hn) AS hn,
-                SUM(CASE WHEN diagtype = 'OP' THEN 1 ELSE 0 END) AS visit_op,
-                SUM(CASE WHEN diagtype = 'PP' THEN 1 ELSE 0 END) AS visit_pp,
                 SUM(income) AS income,
                 SUM(inc_drug) AS inc_drug,
                 SUM(inc_lab) AS inc_lab,
@@ -786,7 +778,7 @@ class NcdController extends Controller
                 SUM(CASE WHEN (paidst IN ('01','03') OR hipdata_code IN ('A1','A9')) THEN inc_lab ELSE 0 END) AS pay_inc_lab
             FROM (
                 SELECT v.vstdate, v.vn, v.hn, v.pttype, p.hipdata_code, p.paidst, v.income, v.inc03 AS inc_lab, v.inc12 AS inc_drug, v.pdx,
-                       IF(v.pdx IN ($pp_icd10s_str), 'PP', 'OP') AS diagtype, vp.hospmain
+                       vp.hospmain
                 FROM clinicmember c
                 INNER JOIN vn_stat v ON v.hn = c.hn
                 LEFT JOIN pttype p ON p.pttype = v.pttype
@@ -813,8 +805,6 @@ class NcdController extends Controller
         $incomes = array_map('floatval', array_column($visit_month, 'income'));
         $inc_drugs = array_map('floatval', array_column($visit_month, 'inc_drug'));
         $inc_labs = array_map('floatval', array_column($visit_month, 'inc_lab'));
-        $visit_ops = array_map('intval', array_column($visit_month, 'visit_op'));
-        $visit_pps = array_map('intval', array_column($visit_month, 'visit_pp'));
 
         return view('hosxp.ncd.clinic_report', compact(
             'title',
@@ -830,8 +820,6 @@ class NcdController extends Controller
             'incomes',
             'inc_drugs',
             'inc_labs',
-            'visit_ops',
-            'visit_pps',
             'total_register',
             'config',
             'clinic_code'

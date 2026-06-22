@@ -371,7 +371,7 @@
         <!-- Charts Section -->
         <div class="row g-4 mb-4">
             <!-- Monthly Visit & HN Chart -->
-            <div class="col-lg-6">
+            <div class="col-lg-12">
                 <div class="card border-0 shadow-sm" style="border-radius: 20px;">
                     <div class="card-header bg-transparent border-0 pt-4 px-4">
                         <h5 class="fw-bold mb-0">กราฟจำนวนผู้รับบริการรายเดือน (แยกข้อมูลรายคน/รายครั้ง)</h5>
@@ -379,19 +379,6 @@
                     </div>
                     <div class="card-body px-4 pb-4">
                         <div id="monthlyChart" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Monthly OP-PP Chart -->
-            <div class="col-lg-6">
-                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
-                    <div class="card-header bg-transparent border-0 pt-4 px-4">
-                        <h5 class="fw-bold mb-0">แยกประเภท OP-PP รายเดือน</h5>
-                        <p class="text-muted small">สัดส่วนผู้รับบริการทั่วไป (OP) และส่งเสริม (PP)</p>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div id="opPpChart" class="chart-container"></div>
                     </div>
                 </div>
             </div>
@@ -845,44 +832,7 @@
                 const monthlyChart = new ApexCharts(document.querySelector("#monthlyChart"), monthlyOptions);
                 monthlyChart.render();
 
-                // OP vs PP Chart
-                const opPpOptions = {
-                    series: [{
-                        name: 'ทั่วไป (OP)',
-                        data: @json($visit_ops)
-                    }, {
-                        name: 'ส่งเสริม (PP)',
-                        data: @json($visit_pps)
-                    }],
-                    chart: {
-                        type: 'bar',
-                        height: 350,
-                        stacked: true,
-                        toolbar: { show: false }
-                    },
-                    colors: ['#f97316', '#06b6d4'],
-                    plotOptions: {
-                        bar: {
-                            columnWidth: '70%',
-                            borderRadius: 4
-                        }
-                    },
-                    dataLabels: {
-                        enabled: true,
-                        style: { fontSize: '11px', fontWeight: 'bold', colors: ['#fff'] },
-                        formatter: val => val > 0 ? val.toLocaleString() : ''
-                    },
-                    xaxis: {
-                        categories: @json($months),
-                    },
-                    yaxis: {
-                        labels: { formatter: val => val.toLocaleString() }
-                    },
-                    legend: { position: 'top' }
-                };
 
-                const opPpChart = new ApexCharts(document.querySelector("#opPpChart"), opPpOptions);
-                opPpChart.render();
 
                 // Excel Export
                 $('.btn-export-excel').on('click', function() {
