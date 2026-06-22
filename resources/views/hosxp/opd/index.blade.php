@@ -101,14 +101,10 @@
             background-color: #ecfeff;
         }
 
-        .bg-pastel-indigo {
-            background-color: #eef2ff;
-        }
-
         .bg-pastel-teal {
             background-color: #f0fdfa;
         }
-        
+
         .bg-pastel-orange {
             background-color: #fff7ed;
         }
@@ -120,7 +116,7 @@
         /* Soft Header Colors (Pastel) */
         .header-all { background-color: #f8fafc !important; color: #334155 !important; }
         .header-ucs-in { background-color: #e0f2fe !important; color: #0369a1 !important; }
-        .header-ucs-inprov { background-color: #e0e7ff !important; color: #4338ca !important; }
+        .header-ucs-inprov { background-color: #ecfeff !important; color: #0891b2 !important; }
         .header-ucs-out { background-color: #fff7ed !important; color: #9a3412 !important; }
         .header-ofc { background-color: #f1f5f9 !important; color: #475569 !important; }
         .header-sss { background-color: #fee2e2 !important; color: #b91c1c !important; }
@@ -438,10 +434,10 @@
                                         <th class="bg-pastel-green">Drug</th>
                                         <th class="bg-pastel-green border-end">Lab</th>
 
-                                        <th class="col-visit bg-pastel-indigo">Visit</th>
-                                        <th class="col-income bg-pastel-indigo">Income</th>
-                                        <th class="bg-pastel-indigo">Drug</th>
-                                        <th class="bg-pastel-indigo border-end">Lab</th>
+                                        <th class="col-visit bg-pastel-cyan">Visit</th>
+                                        <th class="col-income bg-pastel-cyan">Income</th>
+                                        <th class="bg-pastel-cyan">Drug</th>
+                                        <th class="bg-pastel-cyan border-end">Lab</th>
 
                                         <th class="col-visit bg-pastel-amber">Visit</th>
                                         <th class="col-income bg-pastel-amber">Income</th>
@@ -500,12 +496,12 @@
                                             <td class="text-num bg-pastel-green border-end">
                                                 {{ number_format($row->ucs_incup_inc_lab, 2) }}</td>
 
-                                            <td class="text-num bg-pastel-indigo">{{ number_format($row->ucs_inprov) }}</td>
-                                            <td class="text-num bg-pastel-indigo text-success">
+                                            <td class="text-num bg-pastel-cyan">{{ number_format($row->ucs_inprov) }}</td>
+                                            <td class="text-num bg-pastel-cyan text-success">
                                                 {{ number_format($row->ucs_inprov_income, 2) }}</td>
-                                            <td class="text-num bg-pastel-indigo">
+                                            <td class="text-num bg-pastel-cyan">
                                                 {{ number_format($row->ucs_inprov_inc_drug, 2) }}</td>
-                                            <td class="text-num bg-pastel-indigo border-end">
+                                            <td class="text-num bg-pastel-cyan border-end">
                                                 {{ number_format($row->ucs_inprov_inc_lab, 2) }}</td>
 
                                             <td class="text-num bg-pastel-amber">{{ number_format($row->ucs_outprov) }}
@@ -591,15 +587,15 @@
                                             {{ number_format(array_sum(array_column($visit_month, 'ucs_incup_inc_lab')), 2) }}
                                         </td>
 
-                                        <td class="text-num bg-pastel-indigo">
+                                        <td class="text-num bg-pastel-cyan">
                                             {{ number_format(array_sum(array_column($visit_month, 'ucs_inprov'))) }}</td>
-                                        <td class="text-num bg-pastel-indigo text-success">
+                                        <td class="text-num bg-pastel-cyan text-success">
                                             {{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_income')), 2) }}
                                         </td>
-                                        <td class="text-num bg-pastel-indigo">
+                                        <td class="text-num bg-pastel-cyan">
                                             {{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_drug')), 2) }}
                                         </td>
-                                        <td class="text-num bg-pastel-indigo border-end">
+                                        <td class="text-num bg-pastel-cyan border-end">
                                             {{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_lab')), 2) }}
                                         </td>
 

@@ -31,6 +31,10 @@
         .bg-pastel-indigo  { background-color: #e8eaf6; }
         .bg-pastel-cyan    { background-color: #e0f7fa; }
         .bg-pastel-green   { background-color: #e8f5e9; }
+        .bg-pastel-purple  { background-color: #f3e5f5; }
+        .bg-pastel-blue    { background-color: #e3f2fd; }
+        .bg-pastel-yellow  { background-color: #fffde7; }
+        .bg-pastel-brown   { background-color: #efebe9; }
 
         .text-orange  { color: #f57c00; }
         .text-red     { color: #e53935; }
@@ -38,6 +42,10 @@
         .text-indigo  { color: #3949ab; }
         .text-cyan    { color: #0097a7; }
         .text-green2  { color: #388e3c; }
+        .text-purple  { color: #8e24aa; }
+        .text-blue    { color: #1e88e5; }
+        .text-yellow  { color: #fbc02d; }
+        .text-brown   { color: #6d4c41; }
 
         .list-group-item-action:hover {
             background-color: #f8fafc;
@@ -89,43 +97,43 @@
                 'code' => '013',
                 'name' => 'คลินิกฟอกไต HD',
                 'icon' => 'fas fa-procedures',
-                'bg_class' => 'bg-pastel-teal',
-                'text_class' => 'text-teal',
+                'bg_class' => 'bg-pastel-blue',
+                'text_class' => 'text-blue',
             ],
             [
                 'code' => '014',
                 'name' => 'คลินิกฟอกไต CAPD',
                 'icon' => 'fas fa-water',
-                'bg_class' => 'bg-pastel-cyan',
-                'text_class' => 'text-cyan',
+                'bg_class' => 'bg-pastel-indigo',
+                'text_class' => 'text-indigo',
             ],
             [
                 'code' => '020',
                 'name' => 'คลินิกบำบัดยาเสพติด',
                 'icon' => 'fas fa-capsules',
-                'bg_class' => 'bg-pastel-orange',
-                'text_class' => 'text-orange',
+                'bg_class' => 'bg-pastel-purple',
+                'text_class' => 'text-purple',
             ],
             [
                 'code' => '021',
                 'name' => 'คลินิก COPD',
                 'icon' => 'fas fa-lungs',
-                'bg_class' => 'bg-pastel-green',
-                'text_class' => 'text-green2',
+                'bg_class' => 'bg-pastel-yellow',
+                'text_class' => 'text-yellow',
             ],
             [
                 'code' => '028',
                 'name' => 'คลินิกโรคหลอดเลือดสมอง',
                 'icon' => 'fas fa-head-side-virus',
-                'bg_class' => 'bg-pastel-red',
-                'text_class' => 'text-red',
+                'bg_class' => 'bg-pastel-brown',
+                'text_class' => 'text-brown',
             ],
             [
                 'code' => '029',
                 'name' => 'คลินิกโรคหัวใจล้มเหลว',
                 'icon' => 'fas fa-heart',
-                'bg_class' => 'bg-pastel-indigo',
-                'text_class' => 'text-indigo',
+                'bg_class' => 'bg-pastel-red',
+                'text_class' => 'text-red',
             ],
             [
                 'code' => '032',
