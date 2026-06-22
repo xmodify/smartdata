@@ -83,6 +83,7 @@
         .bg-pastel-purple { background-color: #faf5ff; }
         .bg-pastel-rose   { background-color: #fff1f2; }
         .bg-pastel-cyan   { background-color: #ecfeff; }
+        .bg-pastel-indigo { background-color: #eef2ff; }
         .bg-pastel-teal   { background-color: #f0fdfa; }
         .bg-pastel-orange { background-color: #fff7ed; }
         .bg-pastel-gray   { background-color: #f8f9fa; }
@@ -90,7 +91,7 @@
         /* Soft Header Colors */
         .header-all { background-color: #f8fafc !important; color: #334155 !important; }
         .header-ucs-in { background-color: #e0f2fe !important; color: #0369a1 !important; }
-        .header-ucs-inprov { background-color: #ecfeff !important; color: #0891b2 !important; }
+        .header-ucs-inprov { background-color: #e0e7ff !important; color: #4338ca !important; }
         .header-ucs-out { background-color: #fff7ed !important; color: #9a3412 !important; }
         .header-ofc { background-color: #f1f5f9 !important; color: #475569 !important; }
         .header-sss { background-color: #fee2e2 !important; color: #b91c1c !important; }
@@ -381,9 +382,9 @@
                                         <th class="bg-pastel-green">ฟอกไต</th>
                                         <th class="bg-pastel-green border-end">ค่ายา</th>
                                         <!-- UCS INPROV -->
-                                        <th class="col-visit bg-pastel-cyan">Visit</th>
-                                        <th class="bg-pastel-cyan">ฟอกไต</th>
-                                        <th class="bg-pastel-cyan border-end">ค่ายา</th>
+                                        <th class="col-visit bg-pastel-indigo">Visit</th>
+                                        <th class="bg-pastel-indigo">ฟอกไต</th>
+                                        <th class="bg-pastel-indigo border-end">ค่ายา</th>
                                         <!-- UCS OUT -->
                                         <th class="col-visit bg-pastel-amber">Visit</th>
                                         <th class="bg-pastel-amber">ฟอกไต</th>
@@ -430,9 +431,9 @@
                                             <td class="text-num bg-pastel-green border-end" style="color: #6f42c1;">{{ number_format($row->ucs_incup_inc_drug, 2) }}</td>
 
                                             <!-- UCS INPROV -->
-                                            <td class="text-num bg-pastel-cyan">{{ number_format($row->ucs_inprov) }}</td>
-                                            <td class="text-num bg-pastel-cyan text-teal">{{ number_format($row->ucs_inprov_inc_hd, 2) }}</td>
-                                            <td class="text-num bg-pastel-cyan border-end" style="color: #6f42c1;">{{ number_format($row->ucs_inprov_inc_drug, 2) }}</td>
+                                            <td class="text-num bg-pastel-indigo">{{ number_format($row->ucs_inprov) }}</td>
+                                            <td class="text-num bg-pastel-indigo text-teal">{{ number_format($row->ucs_inprov_inc_hd, 2) }}</td>
+                                            <td class="text-num bg-pastel-indigo border-end" style="color: #6f42c1;">{{ number_format($row->ucs_inprov_inc_drug, 2) }}</td>
 
                                             <!-- UCS OUT -->
                                             <td class="text-num bg-pastel-amber">{{ number_format($row->ucs_outprov) }}</td>
@@ -486,9 +487,9 @@
                                         <td class="text-num bg-pastel-green border-end" style="color: #6f42c1;">{{ number_format(array_sum(array_column($visit_month, 'ucs_incup_inc_drug')), 2) }}</td>
 
                                         <!-- UCS INPROV -->
-                                        <td class="text-num bg-pastel-cyan">{{ number_format(array_sum(array_column($visit_month, 'ucs_inprov'))) }}</td>
-                                        <td class="text-num bg-pastel-cyan text-teal">{{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_hd')), 2) }}</td>
-                                        <td class="text-num bg-pastel-cyan border-end" style="color: #6f42c1;">{{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_drug')), 2) }}</td>
+                                        <td class="text-num bg-pastel-indigo">{{ number_format(array_sum(array_column($visit_month, 'ucs_inprov'))) }}</td>
+                                        <td class="text-num bg-pastel-indigo text-teal">{{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_hd')), 2) }}</td>
+                                        <td class="text-num bg-pastel-indigo border-end" style="color: #6f42c1;">{{ number_format(array_sum(array_column($visit_month, 'ucs_inprov_inc_drug')), 2) }}</td>
 
                                         <!-- UCS OUT -->
                                         <td class="text-num bg-pastel-amber">{{ number_format(array_sum(array_column($visit_month, 'ucs_outprov'))) }}</td>
