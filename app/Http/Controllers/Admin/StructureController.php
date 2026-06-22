@@ -69,121 +69,370 @@ class StructureController extends Controller
     /**
      * Upgrade database structure by running migrations.
      */
-    public function upgrade()
+    public function upgrade(Request $request)
     {
         if (auth()->user()->role !== 'admin') {
-            abort(403);
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
+
+        if ($request->input('action') === 'get_steps') {
+            $schemaFile = database_path('extracted_schemas.json');
+            $tables = [];
+            if (file_exists($schemaFile)) {
+                $schemas = json_decode(file_get_contents($schemaFile), true);
+                if (is_array($schemas)) {
+                    $tables = array_keys($schemas);
+                }
+            }
+
+            $steps = [
+                ['id' => 'run_migrations', 'name' => 'รันคำสั่ง Migration ฐานข้อมูลหลัก...']
+            ];
+
+            foreach ($tables as $table) {
+                $steps[] = [
+                    'id' => 'sync_table_' . $table,
+                    'name' => "ตรวจสอบและอัปเดตตาราง {$table}..."
+                ];
+            }
+
+            $steps[] = ['id' => 'sync_seed_data', 'name' => 'นำเข้าข้อมูลตั้งต้นระบบ...'];
+            $steps[] = ['id' => 'finalize', 'name' => 'เคลียร์ระบบแคชและออปติไมซ์...'];
+
+            return response()->json(['success' => true, 'steps' => $steps]);
+        }
+
+        $step = $request->input('step');
 
         try {
-            // Drop legacy sys_var table if it exists
-            if (Schema::hasTable('sys_var')) {
-                Schema::dropIfExists('sys_var');
+            if (strpos($step, 'sync_table_') === 0) {
+                $tableName = substr($step, 11);
+                $msg = $this->syncTableSchema($tableName);
+                return response()->json(['success' => true, 'message' => $msg]);
             }
 
-            // If tables were manually deleted, clear migration records to force recreate
-            if (!Schema::hasTable('moph_notify')) {
-                DB::table('migrations')->where('migration', 'like', '%create_moph_notifies_table%')->delete();
-            }
-            if (!Schema::hasTable('telegram_notify')) {
-                DB::table('migrations')->where('migration', 'like', '%create_telegram_notifies_table%')->delete();
-            }
+            switch ($step) {
+                case 'run_migrations':
+                    $output = new BufferedOutput();
+                    Artisan::call('migrate', [], $output);
+                    return response()->json(['success' => true, 'message' => 'Migrations completed. Output: ' . trim($output->fetch())]);
 
-            $output = new BufferedOutput();
-            Artisan::call('migrate', [], $output);
+                case 'sync_seed_data':
+                    $seedFile = database_path('default_seeds.json');
+                    if (!file_exists($seedFile)) {
+                        return response()->json(['success' => true, 'message' => 'ไม่พบไฟล์ข้อมูลตั้งต้น (default_seeds.json)']);
+                    }
 
-            // Ensure active column exists if the table was created before this update
-            if (Schema::hasTable('moph_notify') && !Schema::hasColumn('moph_notify', 'active')) {
-                Schema::table('moph_notify', function ($table) {
-                    $table->char('active', 1)->default('Y')->after('secret');
-                });
-            }
+                    $seeds = json_decode(file_get_contents($seedFile), true);
+                    if (!is_array($seeds)) {
+                        return response()->json(['success' => false, 'message' => 'รูปแบบไฟล์ default_seeds.json ไม่ถูกต้อง']);
+                    }
 
-            // Ensure patient_name column exists and borrower_type column is removed in lend_transactions table
-            if (Schema::hasTable('lend_transactions')) {
-                Schema::table('lend_transactions', function ($table) {
-                    if (Schema::hasColumn('lend_transactions', 'borrower_type')) {
-                        $table->dropColumn('borrower_type');
-                    }
-                    if (!Schema::hasColumn('lend_transactions', 'patient_name')) {
-                        $table->string('patient_name')->nullable()->after('borrower_name')->comment('ชื่อผู้ป่วย');
-                    }
-                    if (!Schema::hasColumn('lend_transactions', 'patient_address')) {
-                        $table->text('patient_address')->nullable()->after('patient_name')->comment('ที่อยู่ผู้ป่วย');
-                    }
-                    if (!Schema::hasColumn('lend_transactions', 'patient_phone')) {
-                        $table->string('patient_phone', 20)->nullable()->after('patient_address')->comment('เบอร์โทรผู้ป่วย');
-                    }
-                    if (!Schema::hasColumn('lend_transactions', 'returner_name')) {
-                        $table->string('returner_name')->nullable()->after('returned_by')->comment('ชื่อผู้คืน');
-                    }
-                    if (!Schema::hasColumn('lend_transactions', 'returner_address')) {
-                        $table->text('returner_address')->nullable()->after('returner_name')->comment('ที่อยู่ผู้คืน');
-                    }
-                    if (!Schema::hasColumn('lend_transactions', 'returner_phone')) {
-                        $table->string('returner_phone', 20)->nullable()->after('returner_address')->comment('เบอร์โทรผู้คืน');
-                    }
-                });
-            }
+                    $log = [];
+                    foreach ($seeds as $table => $records) {
+                        if (!Schema::hasTable($table)) {
+                            continue;
+                        }
 
-            // Sync Moph Notify Records (From User Screenshot)
-            if (Schema::hasTable('moph_notify')) {
-                $mophRecords = [
-                    ['name' => 'AuN HC10989'],
-                    ['name' => 'IT รพ.หัวตะพาน HC10989'],
-                    ['name' => 'หัวหน้าฝ่าย/งาน HC10989'],
-                ];
-                foreach ($mophRecords as $record) {
-                    MophNotify::firstOrCreate(['name' => $record['name']], [
-                        'client_id' => 'xxx',
-                        'secret' => 'xxx'
+                        $seededCount = 0;
+                        foreach ($records as $record) {
+                            $matchBy = $record['match_by'] ?? [];
+                            $data = $record['data'] ?? [];
+
+                            // Build query to check if record exists
+                            $query = DB::table($table);
+                            foreach ($matchBy as $key) {
+                                if (isset($data[$key])) {
+                                    $query->where($key, $data[$key]);
+                                }
+                            }
+
+                            if (!$query->exists()) {
+                                // Add timestamps if columns exist in the table
+                                if (Schema::hasColumn($table, 'created_at')) {
+                                    $data['created_at'] = now();
+                                }
+                                if (Schema::hasColumn($table, 'updated_at')) {
+                                    $data['updated_at'] = now();
+                                }
+
+                                DB::table($table)->insert($data);
+                                $seededCount++;
+                            }
+                        }
+
+                        if ($seededCount > 0) {
+                            $log[] = "ตาราง {$table} (เพิ่ม {$seededCount} รายการ)";
+                        }
+                    }
+
+                    return response()->json([
+                        'success' => true, 
+                        'message' => count($log) > 0 ? implode(', ', $log) : 'ข้อมูลตั้งต้นระบบเป็นปัจจุบันแล้ว'
                     ]);
-                }
+
+                case 'finalize':
+                    Artisan::call('optimize:clear');
+                    return response()->json(['success' => true, 'message' => 'Cache and optimization cleared. Upgrade successful!']);
+
+                default:
+                    return response()->json(['success' => false, 'message' => 'Invalid upgrade step.'], 400);
             }
-
-            // Sync Telegram Notify Records
-            if (Schema::hasTable('telegram_notify')) {
-                $telegramRecords = [
-                    ['name' => 'telegram_bot_token', 'name_th' => 'Telegram Bot Token'],
-                    ['name' => 'telegram_chat_id_register', 'name_th' => 'Telegram Chat ID Register'],
-                ];
-                foreach ($telegramRecords as $record) {
-                    TelegramNotify::firstOrCreate(['name' => $record['name']], [
-                        'name_th' => $record['name_th'],
-                        'value' => 'xxx'
-                    ]);
-                }
-            }
-
-            $result = $output->fetch();
-            $result .= "\nDatabase upgrade and notify records synced.";
-
-            // Seed default lend items
-            if (Schema::hasTable('lend_items')) {
-                $defaultItems = [
-                    ['name' => 'ชุดถังออกซิเจนพร้อมหัว', 'category' => 'equipment', 'sort_order' => 1],
-                    ['name' => 'เครื่องผลิตออกซิเจน',    'category' => 'equipment', 'sort_order' => 2],
-                    ['name' => 'เตียงผู้ป่วย',             'category' => 'equipment', 'sort_order' => 3],
-                    ['name' => 'ที่นอนลม',                 'category' => 'equipment', 'sort_order' => 4],
-                ];
-                foreach ($defaultItems as $item) {
-                    $exists = DB::table('lend_items')->where('name', $item['name'])->exists();
-                    if (!$exists) {
-                        DB::table('lend_items')->insert(array_merge($item, [
-                            'total_qty'  => 1,
-                            'active'     => 'Y',
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]));
-                    }
-                }
-                $result .= "\nLend items synced.";
-            }
-
-            return back()->with('success', 'อัปเกรดโครงสร้างฐานข้อมูลเสร็จสิ้น')->with('migrate_output', $result)->with('active_tab', 'system');
         } catch (\Exception $e) {
-            return back()->with('error', 'เกิดข้อผิดพลาดในการอัปเกรด: ' . $e->getMessage())->with('active_tab', 'system');
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Helper to sync table schema using database/extracted_schemas.json
+     */
+    private function syncTableSchema($tableName)
+    {
+        $schemaFile = database_path('extracted_schemas.json');
+        if (!file_exists($schemaFile)) {
+            return "Schema file not found.";
+        }
+
+        $schemas = json_decode(file_get_contents($schemaFile), true);
+        if (!isset($schemas[$tableName])) {
+            return "Schema for table {$tableName} not found in JSON.";
+        }
+
+        $tableSchema = $schemas[$tableName];
+        $expectedColumns = $tableSchema['columns'] ?? [];
+        $expectedIndexes = $tableSchema['indexes'] ?? [];
+
+        // Helper to define a column on Blueprint
+        $defineColumn = function($tableBlueprint, $column, $info, $change = false) {
+            $type = $info['type'];
+            $length = $info['length'] ?? null;
+            $nullable = $info['nullable'] ?? true;
+            $default = $info['default'] ?? null;
+            
+            $colObj = null;
+
+            if ($info['extra'] === 'auto_increment' && !$change) {
+                if ($type === 'bigint') {
+                    return $tableBlueprint->bigIncrements($column);
+                } else {
+                    return $tableBlueprint->increments($column);
+                }
+            }
+
+            if ($type === 'bigint') {
+                $colObj = $tableBlueprint->bigInteger($column);
+            } elseif ($type === 'int') {
+                $colObj = $tableBlueprint->integer($column);
+            } elseif ($type === 'char') {
+                $colObj = $tableBlueprint->char($column, $length ?: 1);
+            } elseif ($type === 'text') {
+                $colObj = $tableBlueprint->text($column);
+            } elseif ($type === 'timestamp') {
+                $colObj = $tableBlueprint->timestamp($column);
+            } elseif ($type === 'date') {
+                $colObj = $tableBlueprint->date($column);
+            } elseif ($type === 'time') {
+                $colObj = $tableBlueprint->time($column);
+            } elseif ($type === 'decimal') {
+                $precision = 10;
+                $scale = 2;
+                if ($length && strpos($length, ',') !== false) {
+                    list($precision, $scale) = explode(',', $length);
+                }
+                $colObj = $tableBlueprint->decimal($column, (int)$precision, (int)$scale);
+            } elseif ($type === 'enum') {
+                $allowed = [];
+                if ($length) {
+                    preg_match_all("/'([^']+)'/", $length, $matches);
+                    if (!empty($matches[1])) {
+                        $allowed = $matches[1];
+                    }
+                }
+                $colObj = $tableBlueprint->enum($column, $allowed);
+            } else {
+                $colObj = $tableBlueprint->string($column, $length ?: 191);
+            }
+
+            if ($nullable) {
+                $colObj->nullable();
+            } else {
+                $colObj->nullable(false);
+            }
+
+            if ($info['extra'] === 'auto_increment' && !$change) {
+                // Keep auto increment setup intact during creation
+            } else {
+                if ($default !== null) {
+                    $colObj->default($default);
+                } else {
+                    if ($nullable) {
+                        $colObj->default(null);
+                    }
+                }
+            }
+
+            if ($change) {
+                $colObj->change();
+            }
+
+            return $colObj;
+        };
+
+        // If table doesn't exist, create it completely from JSON definition
+        if (!Schema::hasTable($tableName)) {
+            Schema::create($tableName, function ($tableBlueprint) use ($expectedColumns, $expectedIndexes, $defineColumn) {
+                foreach ($expectedColumns as $column => $info) {
+                    $defineColumn($tableBlueprint, $column, $info, false);
+                }
+
+                foreach ($expectedIndexes as $keyName => $info) {
+                    $cols = $info['columns'];
+                    if ($keyName === 'PRIMARY') {
+                        $isAuto = false;
+                        foreach ($cols as $c) {
+                            if (($expectedColumns[$c]['extra'] ?? '') === 'auto_increment') {
+                                $isAuto = true;
+                            }
+                        }
+                        if (!$isAuto) {
+                            $tableBlueprint->primary($cols);
+                        }
+                        continue;
+                    }
+                    if ($info['unique']) {
+                        $tableBlueprint->unique($cols, $keyName);
+                    } else {
+                        $tableBlueprint->index($cols, $keyName);
+                    }
+                }
+            });
+            return "Created table successfully.";
+        }
+
+        // 1. Get current columns from DB
+        $currentCols = [];
+        $columnsInfo = DB::select("SHOW FULL COLUMNS FROM `{$tableName}`");
+        foreach ($columnsInfo as $col) {
+            $rawType = $col->Type;
+            $type = $rawType;
+            $length = null;
+            if (preg_match('/^(\w+)\((\d+)\)/', $rawType, $matches)) {
+                $type = $matches[1];
+                $length = (int)$matches[2];
+            } elseif (preg_match('/^(\w+)\((.+)\)/', $rawType, $matches)) {
+                $type = $matches[1];
+                $length = $matches[2];
+            }
+
+            $currentCols[$col->Field] = [
+                'type' => $type,
+                'length' => $length,
+                'nullable' => ($col->Null === 'YES'),
+                'default' => $col->Default,
+                'extra' => $col->Extra,
+            ];
+        }
+        // 2. Add, modify or drop columns
+        $addedColumns = [];
+        $updatedColumns = [];
+        $droppedCols = [];
+
+        Schema::table($tableName, function ($tableBlueprint) use ($expectedColumns, $currentCols, $defineColumn, &$addedColumns, &$updatedColumns, &$droppedCols) {
+            foreach ($expectedColumns as $column => $info) {
+                if (!isset($currentCols[$column])) {
+                    // Add column
+                    $defineColumn($tableBlueprint, $column, $info, false);
+                    $addedColumns[] = $column;
+                } else {
+                    // Check if modification is needed
+                    $current = $currentCols[$column];
+                    $changed = false;
+                    
+                    if ($current['type'] !== $info['type']) {
+                        $changed = true;
+                    }
+                    if ($current['nullable'] !== $info['nullable']) {
+                        $changed = true;
+                    }
+                    if (strval($current['default']) !== strval($info['default'])) {
+                        if ($current['extra'] !== 'auto_increment') {
+                            $changed = true;
+                        }
+                    }
+                    if ($info['length'] !== null && strval($current['length']) !== strval($info['length'])) {
+                        $changed = true;
+                    }
+
+                    if ($changed) {
+                        try {
+                            $defineColumn($tableBlueprint, $column, $info, true);
+                            $updatedColumns[] = $column;
+                        } catch (\Exception $e) {
+                            Log::warning("Failed to modify column {$column} on {$tableName}: " . $e->getMessage());
+                        }
+                    }
+                }
+            }
+
+            // Drop columns not present in expected columns list
+            foreach ($currentCols as $colName => $colInfo) {
+                if (!isset($expectedColumns[$colName])) {
+                    $tableBlueprint->dropColumn($colName);
+                    $droppedCols[] = $colName;
+                }
+            }
+        });
+
+        // 3. Sync Indexes
+        $currentIndexes = [];
+        $indexInfo = DB::select("SHOW INDEX FROM `{$tableName}`");
+        foreach ($indexInfo as $idx) {
+            $keyName = $idx->Key_name;
+            $currentIndexes[$keyName] = $keyName;
+        }
+
+        $addedIndexes = [];
+        $droppedIndexes = [];
+        Schema::table($tableName, function ($tableBlueprint) use ($expectedIndexes, $currentIndexes, &$addedIndexes, &$droppedIndexes) {
+            foreach ($expectedIndexes as $keyName => $info) {
+                if ($keyName === 'PRIMARY') {
+                    continue;
+                }
+                
+                if (!isset($currentIndexes[$keyName])) {
+                    $cols = $info['columns'];
+                    if ($info['unique']) {
+                        $tableBlueprint->unique($cols, $keyName);
+                    } else {
+                        $tableBlueprint->index($cols, $keyName);
+                    }
+                    $addedIndexes[] = $keyName;
+                }
+            }
+
+            foreach ($currentIndexes as $keyName) {
+                if ($keyName === 'PRIMARY') {
+                    continue;
+                }
+                if (strpos($keyName, '_foreign') !== false) {
+                    continue;
+                }
+
+                if (!isset($expectedIndexes[$keyName])) {
+                    $tableBlueprint->dropIndex($keyName);
+                    $droppedIndexes[] = $keyName;
+                }
+            }
+        });
+
+        $logMsg = [];
+        if (count($addedColumns) > 0) $logMsg[] = "Added: " . implode(', ', $addedColumns);
+        if (count($updatedColumns) > 0) $logMsg[] = "Modified: " . implode(', ', $updatedColumns);
+        if (count($droppedCols) > 0) $logMsg[] = "Dropped: " . implode(', ', $droppedCols);
+        if (count($addedIndexes) > 0) $logMsg[] = "Added indexes: " . implode(', ', $addedIndexes);
+        if (count($droppedIndexes) > 0) $logMsg[] = "Dropped indexes: " . implode(', ', $droppedIndexes);
+
+        return count($logMsg) > 0 ? "Synced: " . implode('; ', $logMsg) : "Schema is up-to-date.";
     }
 
 

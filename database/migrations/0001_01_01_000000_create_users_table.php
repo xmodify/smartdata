@@ -22,6 +22,13 @@ return new class extends Migration {
                 $table->string('role')->default('user');
                 $table->enum('active', ['Y', 'N'])->default('Y');
                 $table->rememberToken();
+                $table->char('allow_hosxp_report', 1)->default('N');
+                $table->char('allow_asset', 1)->default('N');
+                $table->char('allow_personnel', 1)->default('N');
+                $table->char('allow_incident', 1)->default('N');
+                $table->char('allow_skpcard', 1)->default('N');
+                $table->char('allow_lend', 1)->default('N');
+                $table->char('allow_mra', 1)->default('N');
                 $table->timestamps();
             });
         }

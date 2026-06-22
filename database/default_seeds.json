@@ -1,0 +1,72 @@
+{
+    "moph_notify": [
+        {
+            "match_by": ["id"],
+            "data": {
+                "id": 1,
+                "name": "AuN HC10989",
+                "client_id": "xxxxx",
+                "secret": "xxxxx",
+                "active": "Y"
+            }
+        },
+        {
+            "match_by": ["id"],
+            "data": {
+                "id": 2,
+                "name": "IT รพ.หัวตะพาน HC10989",
+                "client_id": "xxxxx",
+                "secret": "xxxxx",
+                "active": "Y"
+            }
+        },
+        {
+            "match_by": ["id"],
+            "data": {
+                "id": 3,
+                "name": "หัวหน้าฝ่าย/งาน HC10989",
+                "client_id": "xxxxx",
+                "secret": "xxxxx",
+                "active": "Y"
+            }
+        },
+        {
+            "match_by": ["id"],
+            "data": {
+                "id": 4,
+                "name": "PCT รพ.หัวตะพาน HC10989",
+                "client_id": "xxxxx",
+                "secret": "xxxxx",
+                "active": "Y"
+            }
+        },
+        {
+            "match_by": ["id"],
+            "data": {
+                "id": 5,
+                "name": "Audit EMR รพ.หัวตะพาน HC10989",
+                "client_id": "xxxxx",
+                "secret": "xxxxx",
+                "active": "Y"
+            }
+        }
+    ],
+    "telegram_notify": [
+        {
+            "match_by": ["name"],
+            "data": {
+                "name": "telegram_bot_token",
+                "name_th": "Telegram Bot Token",
+                "value": "xxxxx"
+            }
+        },
+        {
+            "match_by": ["name"],
+            "data": {
+                "name": "telegram_chat_id_register",
+                "name_th": "Telegram Chat ID Register",
+                "value": "xxxxx"
+            }
+        }
+    ]
+}

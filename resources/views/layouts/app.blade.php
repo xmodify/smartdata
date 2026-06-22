@@ -371,6 +371,8 @@
                         </a>
 
 
+
+
                         <!-- Major Disease Menu -->
                         <div class="sidebar-dropdown">
                             <a href="javascript:void(0)"
@@ -438,6 +440,28 @@
                             <a href="{{ route('lend.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-hand-holding-medical me-2" style="color: #0ea5e9;"></i> ศูนย์ยืม-คืน
                             </a>
+                        @endif
+
+                        @if(auth()->user()->hasAccessMra())
+                        <!-- MRA System Menu -->
+                        <div class="sidebar-dropdown">
+                            <a href="javascript:void(0)"
+                                class="list-group-item list-group-item-action bg-transparent text-dark dropdown-toggle"
+                                data-bs-toggle="collapse" data-bs-target="#mraSubmenu" aria-expanded="false">
+                                <i class="fas fa-folder-open" style="color: #20c997;"></i> Audit เวชระเบียน
+                            </a>
+                            <div class="collapse sidebar-submenu" id="mraSubmenu"
+                                style="background-color: #f8f9fc !important;">
+                                <a href="#"
+                                    class="list-group-item list-group-item-action bg-transparent text-dark py-2">
+                                    <i class="fas fa-hospital-user me-2" style="color: #4e73df;"></i> ผู้ป่วยนอก (OPD)
+                                </a>
+                                <a href="#"
+                                    class="list-group-item list-group-item-action bg-transparent text-dark">
+                                    <i class="fas fa-bed-pulse me-2" style="color: #1cc88a;"></i> ผู้ป่วยใน (IPD)
+                                </a>
+                            </div>
+                        </div>
                         @endif
 
                     <div class="sidebar-section-header">ระบบ Dashboard</div>

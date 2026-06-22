@@ -30,6 +30,7 @@ class User extends Authenticatable
         'allow_incident',
         'allow_skpcard',
         'allow_lend',
+        'allow_mra',
     ];
 
     /**
@@ -83,6 +84,11 @@ class User extends Authenticatable
     public function hasAccessLend()
     {
         return $this->role === 'admin' || $this->allow_lend === 'Y';
+    }
+
+    public function hasAccessMra()
+    {
+        return $this->role === 'admin' || $this->allow_mra === 'Y';
     }
 
     public function hasAccessRole($role)

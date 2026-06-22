@@ -14,10 +14,10 @@ return new class extends Migration
         if (!Schema::hasTable('skpcards')) {
             Schema::create('skpcards', function (Blueprint $table) {
                 $table->id();
-                $table->string('cid', 13);
+                $table->string('cid');
                 $table->string('name');
                 $table->date('birthday')->nullable();
-                $table->text('address')->nullable();
+                $table->string('address')->nullable();
                 $table->string('phone')->nullable();
                 $table->date('buy_date');
                 $table->date('ex_date');

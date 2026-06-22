@@ -324,15 +324,200 @@
         upgradeForm.addEventListener('submit', function(e) {
             e.preventDefault();
             Swal.fire({
-                title: 'ยืนยันการอัปเกรดฐานข้อมูล?',
-                text: "ระบบจะดำเนินการรัน Migration และ Sync ข้อมูล Notify",
+                title: 'ยืนยันการอัปเกรดโครงสร้างฐานข้อมูล?',
+                text: "ระบบจะดำเนินการตรวจสอบโครงสร้างตาราง อัปเดตคอลัมน์จากไฟล์ schema และซิงค์ข้อมูลเริ่มต้นระบบ",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0d6efd',
-                confirmButtonText: 'ตกลง, อัปเกรดเลย!',
+                confirmButtonText: 'ตกลง, เริ่มอัปเกรด!',
                 cancelButtonText: 'ยกเลิก'
-            }).then((result) => { if (result.isConfirmed) { Swal.showLoading(); this.submit(); } });
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    runUpgradeSteps();
+                }
+            });
         });
+    }
+
+    async function runUpgradeSteps() {
+        // Show Swal loading first while fetching steps
+        Swal.fire({
+            title: 'กำลังเตรียมการปรับปรุงระบบ...',
+            text: 'กรุณารอสักครู่ กำลังดึงข้อมูลขั้นตอนการทำงาน...',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            const stepsResponse = await fetch(`{{ route('admin.upgrade_structure') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ action: 'get_steps' })
+            });
+
+            const stepsData = await stepsResponse.json();
+            if (!stepsResponse.ok || !stepsData.success) {
+                throw new Error(stepsData.message || 'ไม่สามารถดึงขั้นตอนการทำงานได้');
+            }
+
+            const steps = stepsData.steps;
+
+            // Show Swal progress popup
+            Swal.fire({
+                title: 'กำลังดำเนินการปรับปรุงระบบ...',
+                html: `
+                    <div class="text-start mb-3 small text-muted" id="upgrade-step-name">เริ่มต้นการทำงาน...</div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div id="upgrade-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <pre id="upgrade-log-output" class="text-start bg-dark text-light p-2 rounded xsmall" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.7rem; white-space: pre-wrap;"></pre>
+                `,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                width: '600px',
+                didOpen: async () => {
+                    Swal.showLoading();
+                    const stepNameEl = document.getElementById('upgrade-step-name');
+                    const progressBarEl = document.getElementById('upgrade-progress-bar');
+                    const logEl = document.getElementById('upgrade-log-output');
+                    let changes = [];
+
+                    for (let i = 0; i < steps.length; i++) {
+                        const step = steps[i];
+                        const percent = Math.round((i / steps.length) * 100);
+
+                        // Update UI for current step
+                        stepNameEl.innerText = `ขั้นตอนที่ ${i + 1}/${steps.length}: ${step.name}`;
+                        progressBarEl.style.width = `${percent}%`;
+                        progressBarEl.innerText = `${percent}%`;
+                        progressBarEl.setAttribute('aria-valuenow', percent);
+
+                        logEl.innerText += `> กำลังทำ: ${step.name}\n`;
+                        logEl.scrollTop = logEl.scrollHeight;
+
+                        try {
+                            const response = await fetch(`{{ route('admin.upgrade_structure') }}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ step: step.id })
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok && data.success) {
+                                logEl.innerText += `> สำเร็จ: ${data.message}\n\n`;
+                                logEl.scrollTop = logEl.scrollHeight;
+
+                                // Collect changes
+                                if (step.id !== 'finalize') {
+                                    changes.push({
+                                        stepId: step.id,
+                                        stepName: step.name,
+                                        detail: data.message
+                                    });
+                                }
+                            } else {
+                                throw new Error(data.message || 'เกิดข้อผิดพลาดในการตอบสนอง');
+                            }
+                        } catch (err) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'การอัปเกรดล้มเหลว!',
+                                text: `เกิดข้อผิดพลาดในขั้นตอน: ${step.name} (${err.message})`,
+                                confirmButtonText: 'ตกลง'
+                            });
+                            return;
+                        }
+                    }
+
+                    // Finalize 100%
+                    progressBarEl.style.width = '100%';
+                    progressBarEl.innerText = '100%';
+                    progressBarEl.setAttribute('aria-valuenow', 100);
+                    stepNameEl.innerText = 'ปรับปรุงโครงสร้างเสร็จสมบูรณ์!';
+                    logEl.innerText += `> ปรับปรุงฐานข้อมูลเสร็จสิ้นเรียบร้อย!\n`;
+                    logEl.scrollTop = logEl.scrollHeight;
+
+                    // Build changes summary HTML (Group by Step 1 & Step 2)
+                    let step1Changes = [];
+                    let step2Changes = [];
+                    changes.forEach(c => {
+                        if (c.stepId === 'run_migrations' || c.stepId.startsWith('sync_table_')) {
+                            if (c.detail && c.detail !== 'Schema is up-to-date.' && !c.detail.includes('Nothing to migrate')) {
+                                step1Changes.push(c);
+                            }
+                        } else if (c.stepId === 'sync_seed_data') {
+                            if (c.detail && c.detail !== 'ข้อมูลตั้งต้นระบบเป็นปัจจุบันแล้ว') {
+                                step2Changes.push(c);
+                            }
+                        }
+                    });
+                    let changesHtml = '<div class="text-start mt-2">';
+                    
+                    // Group 1: Structure
+                    changesHtml += '<div class="mb-3"><strong>Step 1: โครงสร้างฐานข้อมูล</strong>';
+                    if (step1Changes.length > 0) {
+                        changesHtml += '<ul class="small mt-1 text-primary mb-0" style="list-style-type: square; padding-left: 20px; font-family: monospace;">';
+                        step1Changes.forEach(c => {
+                            const cleanedName = c.stepName.replace('ตรวจสอบและอัปเดตตาราง ', '').replace('...', '');
+                            changesHtml += `<li class="mb-1"><span class="badge bg-secondary me-1">${cleanedName}</span> ${c.detail}</li>`;
+                        });
+                        changesHtml += '</ul>';
+                    } else {
+                        changesHtml += '<div class="text-muted small ms-3 mt-1"><i class="fas fa-check-circle text-success me-1"></i>โครงสร้างฐานข้อมูลเป็นปัจจุบันอยู่แล้ว</div>';
+                    }
+                    changesHtml += '</div>';
+
+                    // Group 2: Seed Data
+                    changesHtml += '<div><strong>Step 2: นำเข้าข้อมูลตั้งต้น</strong>';
+                    if (step2Changes.length > 0) {
+                        changesHtml += '<ul class="small mt-1 text-success mb-0" style="list-style-type: square; padding-left: 20px;">';
+                        step2Changes.forEach(c => {
+                            changesHtml += `<li class="mb-1">${c.detail}</li>`;
+                        });
+                        changesHtml += '</ul>';
+                    } else {
+                        changesHtml += '<div class="text-muted small ms-3 mt-1"><i class="fas fa-check-circle text-success me-1"></i>ข้อมูลตั้งต้นระบบเป็นปัจจุบันแล้ว</div>';
+                    }
+                    changesHtml += '</div>';
+
+                    changesHtml += '</div>';
+
+                    setTimeout(() => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'เสร็จเรียบร้อย!',
+                            html: changesHtml,
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: '#198754',
+                            width: '550px'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    }, 1000);
+                }
+            });
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'ไม่สามารถเริ่มต้นการอัปเกรดได้!',
+                text: err.message,
+                confirmButtonText: 'ตกลง'
+            });
+        }
     }
 
     // Edit Moph Modal Population

@@ -13,9 +13,11 @@ return new class extends Migration
             $table->foreignId('lend_item_id')->constrained('lend_items')->comment('อุปกรณ์');
 
             // ข้อมูลผู้ยืม
-            $table->enum('borrower_type', ['patient', 'other'])->default('other')->comment('ผู้ป่วย/บุคคลทั่วไป');
             $table->string('hn', 20)->nullable()->comment('HN จาก HOSxP');
             $table->string('borrower_name')->comment('ชื่อผู้ยืม');
+            $table->string('patient_name')->nullable()->comment('ชื่อผู้ป่วย');
+            $table->text('patient_address')->nullable()->comment('ที่อยู่ผู้ป่วย');
+            $table->string('patient_phone', 20)->nullable()->comment('เบอร์โทรผู้ป่วย');
             $table->text('borrower_address')->nullable()->comment('ที่อยู่ผู้ยืม');
             $table->string('borrower_phone', 20)->nullable()->comment('เบอร์โทรผู้ยืม');
 
@@ -40,6 +42,9 @@ return new class extends Migration
 
             $table->unsignedBigInteger('returned_by')->nullable()->comment('ผู้รับคืน');
             $table->foreign('returned_by')->references('id')->on('users');
+            $table->string('returner_name')->nullable()->comment('ชื่อผู้คืน');
+            $table->text('returner_address')->nullable()->comment('ที่อยู่ผู้คืน');
+            $table->string('returner_phone', 20)->nullable()->comment('เบอร์โทรผู้คืน');
             $table->text('returned_note')->nullable()->comment('หมายเหตุการคืน');
 
             $table->unsignedBigInteger('cancelled_by')->nullable()->comment('ผู้ยกเลิก');

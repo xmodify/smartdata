@@ -37,6 +37,7 @@ class UserController extends Controller
             'allow_incident' => 'nullable|string|in:Y,N',
             'allow_skpcard' => 'nullable|string|in:Y,N',
             'allow_lend' => 'nullable|string|in:Y,N',
+            'allow_mra' => 'nullable|string|in:Y,N',
         ]);
 
         User::create([
@@ -52,6 +53,7 @@ class UserController extends Controller
             'allow_incident' => $request->has('allow_incident') ? 'Y' : 'N',
             'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
             'allow_lend' => $request->has('allow_lend') ? 'Y' : 'N',
+            'allow_mra' => $request->has('allow_mra') ? 'Y' : 'N',
         ]);
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
@@ -75,6 +77,7 @@ class UserController extends Controller
             'allow_incident' => 'nullable|string|in:Y,N',
             'allow_skpcard' => 'nullable|string|in:Y,N',
             'allow_lend' => 'nullable|string|in:Y,N',
+            'allow_mra' => 'nullable|string|in:Y,N',
         ]);
 
         $updateData = [
@@ -89,6 +92,7 @@ class UserController extends Controller
             'allow_incident' => $request->has('allow_incident') ? 'Y' : 'N',
             'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
             'allow_lend' => $request->has('allow_lend') ? 'Y' : 'N',
+            'allow_mra' => $request->has('allow_mra') ? 'Y' : 'N',
         ];
 
         if ($request->filled('password')) {

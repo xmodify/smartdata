@@ -1,0 +1,682 @@
+{
+    "users": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "email": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "email_verified_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "password": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "username": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "role": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": "user",
+                "extra": ""
+            },
+            "active": {
+                "type": "enum",
+                "length": "'Y','N'",
+                "nullable": false,
+                "default": "Y",
+                "extra": ""
+            },
+            "remember_token": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "allow_hosxp_report": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "N",
+                "extra": ""
+            },
+            "allow_asset": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "N",
+                "extra": ""
+            },
+            "allow_personnel": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "N",
+                "extra": ""
+            },
+            "allow_incident": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "N",
+                "extra": ""
+            },
+            "allow_skpcard": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "N",
+                "extra": ""
+            },
+            "allow_lend": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "N",
+                "extra": ""
+            },
+            "allow_mra": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "N",
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            },
+            "users_email_unique": {
+                "columns": [
+                    "email"
+                ],
+                "unique": true,
+                "primary": false
+            },
+            "users_username_unique": {
+                "columns": [
+                    "username"
+                ],
+                "unique": true,
+                "primary": false
+            }
+        }
+    },
+    "skpcards": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "cid": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "name": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "birthday": {
+                "type": "date",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "address": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "phone": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "buy_date": {
+                "type": "date",
+                "length": null,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "ex_date": {
+                "type": "date",
+                "length": null,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "price": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "rcpt": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "moph_notify": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "client_id": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "secret": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "active": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "Y",
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "telegram_notify": {
+        "columns": {
+            "name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "name_th": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "value": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "name"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "lend_items": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "category": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": false,
+                "default": "equipment",
+                "extra": ""
+            },
+            "description": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "total_qty": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": "1",
+                "extra": ""
+            },
+            "active": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "Y",
+                "extra": ""
+            },
+            "sort_order": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "lend_transactions": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "lend_item_id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "hn": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "borrower_name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "patient_name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "patient_address": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "patient_phone": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "borrower_address": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "borrower_phone": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "borrow_date": {
+                "type": "date",
+                "length": null,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "due_date": {
+                "type": "date",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "return_date": {
+                "type": "date",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "return_time": {
+                "type": "time",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "qty": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": "1",
+                "extra": ""
+            },
+            "deposit_amount": {
+                "type": "decimal",
+                "length": "10,2",
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "deposit_receipt_no": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "note": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "status": {
+                "type": "enum",
+                "length": "'borrowed','returned','cancelled'",
+                "nullable": false,
+                "default": "borrowed",
+                "extra": ""
+            },
+            "created_by": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "returned_by": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "returner_name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "returner_address": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "returner_phone": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "returned_note": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "cancelled_by": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "cancelled_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "cancelled_reason": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            },
+            "lend_transactions_lend_item_id_foreign": {
+                "columns": [
+                    "lend_item_id"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "lend_transactions_created_by_foreign": {
+                "columns": [
+                    "created_by"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "lend_transactions_returned_by_foreign": {
+                "columns": [
+                    "returned_by"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "lend_transactions_cancelled_by_foreign": {
+                "columns": [
+                    "cancelled_by"
+                ],
+                "unique": false,
+                "primary": false
+            }
+        }
+    }
+}
