@@ -128,6 +128,15 @@ class StructureController extends Controller
                         return response()->json(['success' => false, 'message' => 'รูปแบบไฟล์ default_seeds.json ไม่ถูกต้อง']);
                     }
 
+                    // Load extra seeds from icd10_seeds.json if exists
+                    $icd10SeedFile = database_path('icd10_seeds.json');
+                    if (file_exists($icd10SeedFile)) {
+                        $icd10Seeds = json_decode(file_get_contents($icd10SeedFile), true);
+                        if (is_array($icd10Seeds)) {
+                            $seeds = array_merge($seeds, $icd10Seeds);
+                        }
+                    }
+
                     $log = [];
                     foreach ($seeds as $table => $records) {
                         if (!Schema::hasTable($table)) {

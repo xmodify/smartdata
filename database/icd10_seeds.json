@@ -1,0 +1,7382 @@
+{
+    "lookup_icd10": [
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "1131",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "1132",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "1139",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4233",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4281",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4292",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4341",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4422",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4443",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4542",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4543",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4911",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4912",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4944",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4945",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4946",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4949",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4951",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4952",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "4959",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5185",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5186",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5187",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5188",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5293",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5294",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5297",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5298",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "53",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5301",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5302",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5303",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5304",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5305",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5306",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5307",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5308",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5309",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "531",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5311",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5312",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5313",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5314",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5315",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5316",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5317",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5321",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5329",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5331",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "5339",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "58",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "581",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "585",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "612",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "6629",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "6631",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "6639",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "6816",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "6821",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "6822",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "6823",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "6829",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "781",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "85",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "911",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "9802",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "9803",
+                "pp": null,
+                "ods": null,
+                "ods_p": "Y",
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A15",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A150",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A151",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A152",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A153",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A154",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A155",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A156",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A157",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A158",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A159",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A16",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A160",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A161",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A162",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A163",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A164",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A165",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A167",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A168",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "A169",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": "Y"
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B20",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B200",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B201",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B202",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B203",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B204",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B205",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B206",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B207",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B208",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B209",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B21",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B210",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B211",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B212",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B213",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B217",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B218",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B219",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B22",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B220",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B221",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B222",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B227",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B23",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B230",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B231",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B232",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B233",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B238",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "B24",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": "Y",
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "C15",
+                "pp": "",
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "C16",
+                "pp": "",
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "C221",
+                "pp": "",
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "C23",
+                "pp": "",
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "C24",
+                "pp": "",
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "C25",
+                "pp": "",
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "D126",
+                "pp": "",
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "H110",
+                "pp": "",
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K600",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K601",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K602",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K603",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K610",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K611",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K612",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K613",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K614",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K620",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K621",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K635",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K800",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K801",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K802",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K803",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K804",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K805",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K820",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K828",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K831",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K838",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K860",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K861",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K868",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "K918",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "l850",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "l859",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "l864",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "l982",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "l983",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "N185",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": "Y",
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "N189",
+                "pp": null,
+                "ods": null,
+                "ods_p": null,
+                "kidney": "Y",
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "N211",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "N350",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "N351",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "N358",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "N359",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "N61",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S421",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S422",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S423",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S424",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S427",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S428",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S429",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S520",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S521",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S522",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S523",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S524",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S525",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S526",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S527",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S528",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S529",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S620",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S621",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S624",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S627",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S820",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S821",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S822",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S823",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S824",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S825",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S826",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S827",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S828",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S829",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S920",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S921",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S922",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "S927",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "T181",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "T182",
+                "pp": null,
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z00",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z000",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z001",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z002",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z003",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z004",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z005",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z006",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z008",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z01",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z010",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z011",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z013",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z014",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z015",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z016",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z017",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z018",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z019",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z02",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z020",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z021",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z022",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z023",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z024",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z025",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z026",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z027",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z028",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z029",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z03",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z030",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z031",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z032",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z033",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z034",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z035",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z036",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z038",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z039",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z10",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z100",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z101",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z102",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z103",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z108",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z11",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z110",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z111",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z112",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z113",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z114",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z115",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z116",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z118",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z119",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z12",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z120",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z121",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z122",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z123",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z124",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z125",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z126",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z128",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z129",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z13",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z130",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z131",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z132",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z133",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z134",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z135",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z136",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z137",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z138",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z139",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z20",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z200",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z201",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z202",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z204",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z205",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z206",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z207",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z208",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z209",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z23",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z230",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z231",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z232",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z233",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z234",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z235",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z236",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z237",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z238",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z24",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z240",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z241",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z243",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z244",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z245",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z246",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z25",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z250",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z251",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z258",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z26",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z260",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z268",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z269",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z27",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z270",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z271",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z272",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z273",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z274",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z278",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z279",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z28",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z280",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z281",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z282",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z288",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z289",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z29",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z291",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z292",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z298",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z299",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z30",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z300",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z301",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z302",
+                "pp": "Y",
+                "ods": "Y",
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z303",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z304",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z305",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z308",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z309",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z32",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z320",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z321",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z34",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z340",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z348",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z349",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z35",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z350",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z351",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z352",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z353",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z354",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z355",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z356",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z357",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z358",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z359",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z36",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z360",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z361",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z362",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z363",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z364",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z365",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z368",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z369",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z39",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z390",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z391",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z392",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z55",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z550",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z551",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z552",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z553",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z554",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z558",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z559",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z56",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z560",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z561",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z562",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z563",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z564",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z565",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z566",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z567",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z57",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z570",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z571",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z572",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z573",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z574",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z575",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z576",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z577",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z578",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z579",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z58",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z580",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z581",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z582",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z583",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z584",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z585",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z586",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z587",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z588",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z589",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z59",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z590",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z591",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z592",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z593",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z594",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z595",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z596",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z597",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z598",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z599",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z60",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z600",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z601",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z602",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z603",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z604",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z605",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z608",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z609",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z61",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z610",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z611",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z612",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z613",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z614",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z615",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z616",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z617",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z618",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z619",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z62",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z620",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z621",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z622",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z623",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z624",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z625",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z626",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z628",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z629",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z63",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z630",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z631",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z632",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z633",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z634",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z635",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z636",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z637",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z638",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z639",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z64",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z640",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z641",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z642",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z643",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z644",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z65",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z650",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z651",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z652",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z653",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z654",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z655",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z658",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z659",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z70",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z700",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z701",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z702",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z703",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z708",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z709",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z71",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z710",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z711",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z712",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z713",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z714",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z715",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z716",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z717",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z718",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z719",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z72",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z720",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z721",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z722",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z723",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z724",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z725",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z726",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z728",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z729",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z73",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z730",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z731",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z732",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z733",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z734",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z735",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z736",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z738",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z739",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z75",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z750",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z751",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z752",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z753",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z754",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z755",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z758",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        },
+        {
+            "match_by": [
+                "icd10"
+            ],
+            "data": {
+                "icd10": "Z759",
+                "pp": "Y",
+                "ods": null,
+                "ods_p": null,
+                "kidney": null,
+                "hiv": null,
+                "tb": null
+            }
+        }
+    ]
+}
