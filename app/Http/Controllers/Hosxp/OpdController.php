@@ -23,6 +23,12 @@ class OpdController extends Controller
         }
         $ucs_hospcodes_str = "'" . implode("','", $ucs_hospcodes) . "'";
 
+        $pp_icd10s = DB::table('lookup_icd10')->where('pp', 'Y')->pluck('icd10')->toArray();
+        if (empty($pp_icd10s)) {
+            $pp_icd10s = ['Z00', 'Z000'];
+        }
+        $pp_icd10s_str = "'" . implode("','", $pp_icd10s) . "'";
+
         // Monthly Stats SQL (User's Query)
         $visit_month = DB::connection('hosxp')->select('
             SELECT CASE WHEN MONTH(vstdate)="10" THEN CONCAT("ต.ค. ",RIGHT(YEAR(vstdate)+543,2))
@@ -76,12 +82,11 @@ class OpdController extends Controller
             SUM(CASE WHEN (paidst IN ("01","03") OR hipdata_code IN ("A1","A9")) THEN inc12 ELSE 0 END) AS "pay_inc_drug",
             SUM(CASE WHEN (paidst IN ("01","03") OR hipdata_code IN ("A1","A9")) THEN inc03 ELSE 0 END) AS "pay_inc_lab"            
             FROM (SELECT v.vstdate,v.vn,v.hn,v.pttype,p.hipdata_code,p.paidst,v.income,v.inc03,v.inc12 ,v.pdx,
-            IF(i.icd10 IS NULL,"OP","PP") AS diagtype,IF(vp.hospmain IS NOT NULL,"Y","N") AS incup
+            IF(v.pdx IN (' . $pp_icd10s_str . '),"PP","OP") AS diagtype,IF(vp.hospmain IS NOT NULL,"Y","N") AS incup
             FROM vn_stat v
             LEFT JOIN pttype p ON p.pttype=v.pttype
             LEFT JOIN visit_pttype vp ON vp.vn =v.vn 
               AND vp.hospmain IN (' . $ucs_hospcodes_str . ')
-            LEFT JOIN hrims.lookup_icd10 i ON i.icd10=v.pdx AND i.pp="Y"	
             WHERE v.vstdate BETWEEN ? AND ? GROUP BY v.vn) AS a									
             GROUP BY YEAR(vstdate) , MONTH(vstdate)
             ORDER BY YEAR(vstdate) , MONTH(vstdate)', [$start_date, $end_date]);

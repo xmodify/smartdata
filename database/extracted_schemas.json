@@ -740,5 +740,81 @@
                 "primary": true
             }
         }
+    },
+    "lookup_icd10": {
+        "columns": {
+            "icd10": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "pp": {
+                "type": "varchar",
+                "length": 1,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "ods": {
+                "type": "varchar",
+                "length": 1,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "ods_p": {
+                "type": "varchar",
+                "length": 1,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "kidney": {
+                "type": "varchar",
+                "length": 1,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "hiv": {
+                "type": "varchar",
+                "length": 1,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "tb": {
+                "type": "varchar",
+                "length": 1,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "icd10"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
     }
 }
