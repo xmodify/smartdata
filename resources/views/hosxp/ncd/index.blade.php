@@ -166,8 +166,7 @@
                         <div class="card-body p-0">
                             <div class="list-group list-group-flush">
                                 <a href="{{ route('hosxp.ncd.clinic_register', ['clinic_code' => $c['code']]) }}" 
-                                   class="list-group-item list-group-item-action py-3 px-4 border-0"
-                                   style="{{ $c['code'] === '013' ? '' : 'border-radius: 0 0 15px 15px;' }}">
+                                   class="list-group-item list-group-item-action py-3 px-4 border-0">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="small fw-bold {{ $c['text_class'] }}">ทะเบียนผู้ป่วย{{ $c['name'] }}</span>
                                         <i class="fas fa-chevron-right {{ $c['text_class'] }}" style="font-size: 0.7rem;"></i>
@@ -186,6 +185,15 @@
                                        style="border-radius: 0 0 15px 15px;">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="small fw-bold {{ $c['text_class'] }}">รายงานรับบริการผู้ป่วยคลินิกฟอกไต HD เอกชน</span>
+                                            <i class="fas fa-chevron-right {{ $c['text_class'] }}" style="font-size: 0.7rem;"></i>
+                                        </div>
+                                    </a>
+                                @else
+                                    <a href="{{ route('hosxp.ncd.clinic_report', ['clinic_code' => $c['code']]) }}" 
+                                       class="list-group-item list-group-item-action py-3 px-4 border-top"
+                                       style="border-radius: 0 0 15px 15px;">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="small fw-bold {{ $c['text_class'] }}">รายงานรับบริการผู้ป่วย{{ $c['name'] }}</span>
                                             <i class="fas fa-chevron-right {{ $c['text_class'] }}" style="font-size: 0.7rem;"></i>
                                         </div>
                                     </a>

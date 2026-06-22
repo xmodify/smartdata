@@ -673,6 +673,171 @@ class NcdController extends Controller
         ));
     }
 
+    public function clinic_report(Request $request, $clinic_code)
+    {
+        if (!isset($this->clinics_config[$clinic_code])) {
+            abort(404);
+        }
+
+        $config = $this->clinics_config[$clinic_code];
+        $title = 'รายงานรับบริการผู้ป่วย' . $config['name'];
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        $ucs_incup_codes = DB::table('lookup_hospcode')->where('hmain_ucs', 'Y')->pluck('hospcode')->toArray();
+        if (empty($ucs_incup_codes)) {
+            $ucs_incup_codes = ['10989'];
+        }
+        $ucs_incup_str = "'" . implode("','", $ucs_incup_codes) . "'";
+
+        $ucs_inprov_codes = DB::table('lookup_hospcode')->where('in_province', 'Y')->where(function($q) {
+            $q->whereNull('hmain_ucs')->orWhere('hmain_ucs', '<>', 'Y');
+        })->pluck('hospcode')->toArray();
+        if (empty($ucs_inprov_codes)) {
+            $ucs_inprov_codes = ['10703', '10985', '10986', '10987', '10988', '10990'];
+        }
+        $ucs_inprov_str = "'" . implode("','", $ucs_inprov_codes) . "'";
+
+        $pp_icd10s = DB::table('lookup_icd10')->where('pp', 'Y')->pluck('icd10')->toArray();
+        if (empty($pp_icd10s)) {
+            $pp_icd10s = ['Z000', 'Z001', 'Z008', 'Z010', 'Z011', 'Z012', 'Z013', 'Z020', 'Z021', 'Z022', 'Z023', 'Z024', 'Z025', 'Z026', 'Z027', 'Z028', 'Z029', 'Z100', 'Z108', 'Z113', 'Z133', 'Z134', 'Z135', 'Z138', 'Z300', 'Z304', 'Z321', 'Z391', 'Z392', 'Z713', 'Z762'];
+        }
+        $pp_icd10s_str = "'" . implode("','", $pp_icd10s) . "'";
+
+        $visit_month = DB::connection('hosxp')->select("
+            SELECT 
+                CASE 
+                    WHEN MONTH(a.vstdate)=10 THEN CONCAT('ต.ค. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=11 THEN CONCAT('พ.ย. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=12 THEN CONCAT('ธ.ค. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=1  THEN CONCAT('ม.ค. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=2  THEN CONCAT('ก.พ. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=3  THEN CONCAT('มี.ค. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=4  THEN CONCAT('เม.ย. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=5  THEN CONCAT('พ.ค. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=6  THEN CONCAT('มิ.ย. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=7  THEN CONCAT('ก.ค. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=8  THEN CONCAT('ส.ค. ', RIGHT(YEAR(a.vstdate)+543,2))
+                    WHEN MONTH(a.vstdate)=9  THEN CONCAT('ก.ย. ', RIGHT(YEAR(a.vstdate)+543,2))
+                END AS month,
+                COUNT(a.vn) AS visit,
+                COUNT(DISTINCT a.hn) AS hn,
+                SUM(CASE WHEN diagtype = 'OP' THEN 1 ELSE 0 END) AS visit_op,
+                SUM(CASE WHEN diagtype = 'PP' THEN 1 ELSE 0 END) AS visit_pp,
+                SUM(income) AS income,
+                SUM(inc_drug) AS inc_drug,
+                SUM(inc_lab) AS inc_lab,
+                
+                -- UCS IN-CUP
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND hospmain IN ($ucs_incup_str) THEN 1 ELSE 0 END) AS ucs_incup,
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND hospmain IN ($ucs_incup_str) THEN income ELSE 0 END) AS ucs_incup_income,
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND hospmain IN ($ucs_incup_str) THEN inc_drug ELSE 0 END) AS ucs_incup_inc_drug,
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND hospmain IN ($ucs_incup_str) THEN inc_lab ELSE 0 END) AS ucs_incup_inc_lab,
+                
+                -- UCS IN-PROVINCE
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND hospmain IN ($ucs_inprov_str) THEN 1 ELSE 0 END) AS ucs_inprov,
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND hospmain IN ($ucs_inprov_str) THEN income ELSE 0 END) AS ucs_inprov_income,
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND hospmain IN ($ucs_inprov_str) THEN inc_drug ELSE 0 END) AS ucs_inprov_inc_drug,
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND hospmain IN ($ucs_inprov_str) THEN inc_lab ELSE 0 END) AS ucs_inprov_inc_lab,
+                
+                -- UCS OUT-OF-PROVINCE
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND (hospmain IS NULL OR (hospmain NOT IN ($ucs_incup_str) AND hospmain NOT IN ($ucs_inprov_str))) THEN 1 ELSE 0 END) AS ucs_outprov,
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND (hospmain IS NULL OR (hospmain NOT IN ($ucs_incup_str) AND hospmain NOT IN ($ucs_inprov_str))) THEN income ELSE 0 END) AS ucs_outprov_income,
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND (hospmain IS NULL OR (hospmain NOT IN ($ucs_incup_str) AND hospmain NOT IN ($ucs_inprov_str))) THEN inc_drug ELSE 0 END) AS ucs_outprov_inc_drug,
+                SUM(CASE WHEN hipdata_code IN ('UCS','DIS') AND paidst NOT IN ('01','03') AND (hospmain IS NULL OR (hospmain NOT IN ($ucs_incup_str) AND hospmain NOT IN ($ucs_inprov_str))) THEN inc_lab ELSE 0 END) AS ucs_outprov_inc_lab,
+
+                -- OFC
+                SUM(CASE WHEN hipdata_code IN ('OFC','BKK','BMT') AND paidst NOT IN ('01','03') THEN 1 ELSE 0 END) AS ofc,
+                SUM(CASE WHEN hipdata_code IN ('OFC','BKK','BMT') AND paidst NOT IN ('01','03') THEN income ELSE 0 END) AS ofc_income,
+                SUM(CASE WHEN hipdata_code IN ('OFC','BKK','BMT') AND paidst NOT IN ('01','03') THEN inc_drug ELSE 0 END) AS ofc_inc_drug,
+                SUM(CASE WHEN hipdata_code IN ('OFC','BKK','BMT') AND paidst NOT IN ('01','03') THEN inc_lab ELSE 0 END) AS ofc_inc_lab,
+                
+                -- SSS
+                SUM(CASE WHEN hipdata_code IN ('SSS','SSI') AND paidst NOT IN ('01','03') THEN 1 ELSE 0 END) AS sss,
+                SUM(CASE WHEN hipdata_code IN ('SSS','SSI') AND paidst NOT IN ('01','03') THEN income ELSE 0 END) AS sss_income,
+                SUM(CASE WHEN hipdata_code IN ('SSS','SSI') AND paidst NOT IN ('01','03') THEN inc_drug ELSE 0 END) AS sss_inc_drug,
+                SUM(CASE WHEN hipdata_code IN ('SSS','SSI') AND paidst NOT IN ('01','03') THEN inc_lab ELSE 0 END) AS sss_inc_lab,
+                
+                -- LGO
+                SUM(CASE WHEN hipdata_code IN ('LGO') AND paidst NOT IN ('01','03') THEN 1 ELSE 0 END) AS lgo,
+                SUM(CASE WHEN hipdata_code IN ('LGO') AND paidst NOT IN ('01','03') THEN income ELSE 0 END) AS lgo_income,
+                SUM(CASE WHEN hipdata_code IN ('LGO') AND paidst NOT IN ('01','03') THEN inc_drug ELSE 0 END) AS lgo_inc_drug,
+                SUM(CASE WHEN hipdata_code IN ('LGO') AND paidst NOT IN ('01','03') THEN inc_lab ELSE 0 END) AS lgo_inc_lab,
+                
+                -- FSS
+                SUM(CASE WHEN hipdata_code IN ('NRD','NRH') AND paidst NOT IN ('01','03') THEN 1 ELSE 0 END) AS fss,
+                SUM(CASE WHEN hipdata_code IN ('NRD','NRH') AND paidst NOT IN ('01','03') THEN income ELSE 0 END) AS fss_income,
+                SUM(CASE WHEN hipdata_code IN ('NRD','NRH') AND paidst NOT IN ('01','03') THEN inc_drug ELSE 0 END) AS fss_inc_drug,
+                SUM(CASE WHEN hipdata_code IN ('NRD','NRH') AND paidst NOT IN ('01','03') THEN inc_lab ELSE 0 END) AS fss_inc_lab,
+                
+                -- STP
+                SUM(CASE WHEN hipdata_code IN ('STP') AND paidst NOT IN ('01','03') THEN 1 ELSE 0 END) AS stp,
+                SUM(CASE WHEN hipdata_code IN ('STP') AND paidst NOT IN ('01','03') THEN income ELSE 0 END) AS stp_income,
+                SUM(CASE WHEN hipdata_code IN ('STP') AND paidst NOT IN ('01','03') THEN inc_drug ELSE 0 END) AS stp_inc_drug,
+                SUM(CASE WHEN hipdata_code IN ('STP') AND paidst NOT IN ('01','03') THEN inc_lab ELSE 0 END) AS stp_inc_lab,
+                
+                -- PAY
+                SUM(CASE WHEN (paidst IN ('01','03') OR hipdata_code IN ('A1','A9')) THEN 1 ELSE 0 END) AS pay,
+                SUM(CASE WHEN (paidst IN ('01','03') OR hipdata_code IN ('A1','A9')) THEN income ELSE 0 END) AS pay_income,
+                SUM(CASE WHEN (paidst IN ('01','03') OR hipdata_code IN ('A1','A9')) THEN inc_drug ELSE 0 END) AS pay_inc_drug,
+                SUM(CASE WHEN (paidst IN ('01','03') OR hipdata_code IN ('A1','A9')) THEN inc_lab ELSE 0 END) AS pay_inc_lab
+            FROM (
+                SELECT v.vstdate, v.vn, v.hn, v.pttype, p.hipdata_code, p.paidst, v.income, v.inc03 AS inc_lab, v.inc12 AS inc_drug, v.pdx,
+                       IF(v.pdx IN ($pp_icd10s_str), 'PP', 'OP') AS diagtype, vp.hospmain
+                FROM clinicmember c
+                INNER JOIN vn_stat v ON v.hn = c.hn
+                LEFT JOIN pttype p ON p.pttype = v.pttype
+                LEFT JOIN visit_pttype vp ON vp.vn = v.vn
+                WHERE c.clinic = ?
+                  AND v.vstdate BETWEEN ? AND ?
+                GROUP BY v.vn
+            ) AS a
+            GROUP BY YEAR(a.vstdate), MONTH(a.vstdate)
+            ORDER BY YEAR(a.vstdate), MONTH(a.vstdate)
+        ", [$clinic_code, $start_date, $end_date]);
+
+        $total_register = DB::connection('hosxp')
+            ->table('clinicmember')
+            ->where('clinic', $clinic_code)
+            ->count();
+
+        $months = array_column($visit_month, 'month');
+        $visits = array_map('intval', array_column($visit_month, 'visit'));
+        $hns = array_map('intval', array_column($visit_month, 'hn'));
+        $repeat_visits = array_map(function ($v, $h) {
+            return $v - $h;
+        }, $visits, $hns);
+        $incomes = array_map('floatval', array_column($visit_month, 'income'));
+        $inc_drugs = array_map('floatval', array_column($visit_month, 'inc_drug'));
+        $inc_labs = array_map('floatval', array_column($visit_month, 'inc_lab'));
+        $visit_ops = array_map('intval', array_column($visit_month, 'visit_op'));
+        $visit_pps = array_map('intval', array_column($visit_month, 'visit_pp'));
+
+        return view('hosxp.ncd.clinic_report', compact(
+            'title',
+            'budget_year_select',
+            'budget_year',
+            'start_date',
+            'end_date',
+            'visit_month',
+            'months',
+            'visits',
+            'hns',
+            'repeat_visits',
+            'incomes',
+            'inc_drugs',
+            'inc_labs',
+            'visit_ops',
+            'visit_pps',
+            'total_register',
+            'config',
+            'clinic_code'
+        ));
+    }
+
     private function resolveDateRange(Request $request)
     {
         $budget_year_select = DB::table('budget_year')->select('LEAVE_YEAR_ID', 'LEAVE_YEAR_NAME')->orderByDesc('LEAVE_YEAR_ID')->limit(7)->get();

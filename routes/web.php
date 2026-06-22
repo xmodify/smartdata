@@ -129,6 +129,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/hd-report', [App\Http\Controllers\Hosxp\NcdController::class, 'hd_report'])->name('hosxp.ncd.hd_report');
         Route::get('/hd-private-report', [App\Http\Controllers\Hosxp\NcdController::class, 'hd_private_report'])->name('hosxp.ncd.hd_private_report');
         Route::get('/register/{clinic_code}', [App\Http\Controllers\Hosxp\NcdController::class, 'clinic_register'])->name('hosxp.ncd.clinic_register');
+        Route::get('/report/{clinic_code}', [App\Http\Controllers\Hosxp\NcdController::class, 'clinic_report'])->name('hosxp.ncd.clinic_report');
         Route::get('/dm-register', function() {
             return redirect()->route('hosxp.ncd.clinic_register', ['clinic_code' => '001']);
         })->name('hosxp.ncd.dm_register');
