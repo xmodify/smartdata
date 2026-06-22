@@ -68,5 +68,77 @@
                 "value": "xxxxx"
             }
         }
+    ],
+    "lookup_hospcode": [
+        {
+            "match_by": ["hospcode"],
+            "data": {
+                "hospcode": "10703",
+                "hospcode_name": "โรงพยาบาลอำนาจเจริญ",
+                "hmain_ucs": null,
+                "hmain_sss": "Y",
+                "in_province": "Y"
+            }
+        },
+        {
+            "match_by": ["hospcode"],
+            "data": {
+                "hospcode": "10985",
+                "hospcode_name": "โรงพยาบาลชานุมาน",
+                "hmain_ucs": null,
+                "hmain_sss": null,
+                "in_province": "Y"
+            }
+        },
+        {
+            "match_by": ["hospcode"],
+            "data": {
+                "hospcode": "10986",
+                "hospcode_name": "โรงพยาบาลปทุมราชวงศา",
+                "hmain_ucs": null,
+                "hmain_sss": null,
+                "in_province": "Y"
+            }
+        },
+        {
+            "match_by": ["hospcode"],
+            "data": {
+                "hospcode": "10987",
+                "hospcode_name": "โรงพยาบาลพนา",
+                "hmain_ucs": null,
+                "hmain_sss": null,
+                "in_province": "Y"
+            }
+        },
+        {
+            "match_by": ["hospcode"],
+            "data": {
+                "hospcode": "10988",
+                "hospcode_name": "โรงพยาบาลเสนางคนิคม",
+                "hmain_ucs": null,
+                "hmain_sss": null,
+                "in_province": "Y"
+            }
+        },
+        {
+            "match_by": ["hospcode"],
+            "data": {
+                "hospcode": "10989",
+                "hospcode_name": "โรงพยาบาลหัวตะพาน",
+                "hmain_ucs": "Y",
+                "hmain_sss": null,
+                "in_province": "Y"
+            }
+        },
+        {
+            "match_by": ["hospcode"],
+            "data": {
+                "hospcode": "10990",
+                "hospcode_name": "โรงพยาบาลลืออำนาจ",
+                "hmain_ucs": null,
+                "hmain_sss": null,
+                "in_province": "Y"
+            }
+        }
     ]
 }

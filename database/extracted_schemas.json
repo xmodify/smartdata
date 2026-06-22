@@ -678,5 +678,67 @@
                 "primary": false
             }
         }
+    },
+    "lookup_hospcode": {
+        "columns": {
+            "hospcode": {
+                "type": "varchar",
+                "length": 5,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "hospcode_name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "hmain_ucs": {
+                "type": "varchar",
+                "length": 1,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "hmain_sss": {
+                "type": "varchar",
+                "length": 1,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "in_province": {
+                "type": "varchar",
+                "length": 1,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "hospcode"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
     }
 }

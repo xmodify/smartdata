@@ -74,7 +74,7 @@ class OpdController extends Controller
             FROM vn_stat v
             LEFT JOIN pttype p ON p.pttype=v.pttype
             LEFT JOIN visit_pttype vp ON vp.vn =v.vn 
-              AND vp.hospmain IN (SELECT hospcode FROM hrims.lookup_hospcode WHERE hmain_ucs = "Y")
+              AND vp.hospmain IN (SELECT hospcode FROM smartdata.lookup_hospcode WHERE hmain_ucs = "Y")
             LEFT JOIN hrims.lookup_icd10 i ON i.icd10=v.pdx AND i.pp="Y"	
             WHERE v.vstdate BETWEEN ? AND ? GROUP BY v.vn) AS a									
             GROUP BY YEAR(vstdate) , MONTH(vstdate)
