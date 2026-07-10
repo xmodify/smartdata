@@ -275,8 +275,8 @@
                                         <td>{{ $row->ward }}</td>
                                         <td class="text-center fw-bold text-primary">{{ $row->an }}</td>
                                         <td>{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}</td>
-                                        <td class="text-center">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
-                                        <td class="text-center">
+                                        <td class="text-center" data-order="{{ $row->dchdate }}">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
+                                        <td class="text-center" data-order="{{ $row->dch_day }}">
                                             <span class="badge bg-danger bg-opacity-10 text-danger px-2 fw-bold">
                                                 {{ $row->dch_day }} วัน
                                             </span>
@@ -314,8 +314,8 @@
                                         <td>{{ $row->ward }}</td>
                                         <td class="text-center fw-bold text-primary">{{ $row->an }}</td>
                                         <td>{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}</td>
-                                        <td class="text-center">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
-                                        <td class="text-center">
+                                        <td class="text-center" data-order="{{ $row->dchdate }}">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
+                                        <td class="text-center" data-order="{{ $row->dch_day }}">
                                             <span class="badge bg-primary bg-opacity-10 text-primary px-2 fw-bold">
                                                 {{ $row->dch_day }} วัน
                                             </span>
@@ -382,8 +382,8 @@
                                                 <td>{{ $row->ward }}</td>
                                                 <td class="text-center fw-bold text-primary">{{ $row->an }}</td>
                                                 <td>{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}</td>
-                                                <td class="text-center">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
-                                                <td class="text-center">
+                                                <td class="text-center" data-order="{{ $row->dchdate }}">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
+                                                <td class="text-center" data-order="{{ $row->dch_day }}">
                                                     <span class="badge bg-warning bg-opacity-10 text-warning px-2 fw-bold" style="color: #b07d0d !important;">
                                                         {{ $row->dch_day }} วัน
                                                     </span>
@@ -431,8 +431,8 @@
                                                 <td>{{ $row->ward }}</td>
                                                 <td class="text-center fw-bold text-primary">{{ $row->an }}</td>
                                                 <td>{{ $row->owner_doctor_name ?: 'ไม่ระบุแพทย์' }}</td>
-                                                <td class="text-center">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
-                                                <td class="text-center">
+                                                <td class="text-center" data-order="{{ $row->dchdate }}">{{ $row->dchdate ? DateThai($row->dchdate) : '-' }}</td>
+                                                <td class="text-center" data-order="{{ $row->dch_day }}">
                                                     <span class="badge bg-warning bg-opacity-10 text-warning px-2 fw-bold" style="color: #b07d0d !important;">
                                                         {{ $row->dch_day }} วัน
                                                     </span>
@@ -646,7 +646,8 @@
                     }
                 },
                 pageLength: 10,
-                responsive: true
+                responsive: true,
+                order: [[5, 'desc']]
             });
         }
 
