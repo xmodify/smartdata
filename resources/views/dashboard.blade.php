@@ -18,7 +18,7 @@
                             $services = [
                                 ['url' => '/hosxp/opd', 'label' => 'ผู้ป่วยนอก', 'icon' => 'fa-user-nurse', 'color' => '#4e73df'],
                                 ['url' => '/hosxp/ipd', 'label' => 'ผู้ป่วยใน', 'icon' => 'fa-bed-pulse', 'color' => '#1cc88a'],
-                                ['url' => '#', 'label' => 'ผู้คลอด (LR)', 'icon' => 'fa-baby-carriage', 'color' => '#ff758f'],
+                                ['url' => '/hosxp/lr', 'label' => 'ผู้คลอด LR', 'icon' => 'fa-baby-carriage', 'color' => '#ff758f'],
                                 ['url' => '/hosxp/icu', 'label' => 'ผู้ป่วย ICU', 'icon' => 'fa-hospital-user', 'color' => '#e74a3b'],
                                 ['url' => '/hosxp/er', 'label' => 'อุบัติเหตุ-ฉุกเฉิน', 'icon' => 'fa-truck-medical', 'color' => '#e74a3b'],
                                 ['url' => '/hosxp/phar', 'label' => 'เภสัชกรรม', 'icon' => 'fa-pills', 'color' => '#f6c23e'],

@@ -80,6 +80,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\IcuController::class, 'index'])->name('hosxp.icu.index');
     });
 
+    // LR Routes
+    Route::prefix('hosxp/lr')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\LrController::class, 'index'])->name('hosxp.lr.index');
+    });
+
     // Physic Routes
     Route::prefix('hosxp/physic')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\PhysicController::class, 'index'])->name('hosxp.physic.index');

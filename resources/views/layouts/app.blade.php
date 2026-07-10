@@ -468,9 +468,6 @@
                     <a href="{{ route('ipd.wait_dchsummary') }}" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">
                         <i class="fas fa-file-invoice me-2" style="color: #dc3545;"></i> ผู้ป่วยในรอสรุป Chart
                     </a>
-                    <a href="#" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">
-                        <i class="fas fa-baby-carriage me-2" style="color: #ff758f;"></i> ผู้คลอด (LR) รอสรุป Chart
-                    </a>
                     <a href="{{ route('dashboard.oapp') }}" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">
                         <i class="fa-solid fa-calendar-days me-2" style="color: #2563eb;"></i> ตารางนัดหมายผู้ป่วย
                     </a>
@@ -478,7 +475,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-06-22 20:00
+                V. 69-07-10 09:00
             </div>
         </div>
         <!-- /#sidebar-wrapper -->
