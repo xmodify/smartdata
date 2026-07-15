@@ -72,15 +72,45 @@ class LabController extends Controller
             GROUP BY YEAR(first_date), MONTH(first_date)
         ', [$start_date, $end_date]);
 
+        // Fetch Monthly New Cases by individual icode (first time ever receiving this specific test)
+        $new_cases_by_icode = DB::connection('hosxp')->select('
+            SELECT 
+                YEAR(first_date) AS y,
+                MONTH(first_date) AS m,
+                SUM(CASE WHEN icode = "3000533" THEN 1 ELSE 0 END) AS ft3_new,
+                SUM(CASE WHEN icode = "3000534" THEN 1 ELSE 0 END) AS ft4_new,
+                SUM(CASE WHEN icode = "3000535" THEN 1 ELSE 0 END) AS tsh_new
+            FROM (
+                SELECT hn, icode, MIN(vstdate) AS first_date
+                FROM opitemrece
+                WHERE icode IN (' . $icodes_str . ')
+                GROUP BY hn, icode
+            ) AS first_tests
+            WHERE first_date BETWEEN ? AND ?
+            GROUP BY YEAR(first_date), MONTH(first_date)
+        ', [$start_date, $end_date]);
+
         // Map new cases to monthly stats
         $new_cases_map = [];
         foreach ($new_cases_stats as $row) {
             $new_cases_map["{$row->y}-{$row->m}"] = (int) $row->new_cases;
         }
 
+        $new_cases_by_icode_map = [];
+        foreach ($new_cases_by_icode as $row) {
+            $new_cases_by_icode_map["{$row->y}-{$row->m}"] = [
+                'ft3_new' => (int) $row->ft3_new,
+                'ft4_new' => (int) $row->ft4_new,
+                'tsh_new' => (int) $row->tsh_new,
+            ];
+        }
+
         foreach ($monthly_stats as $row) {
             $key = "{$row->y}-{$row->m}";
             $row->new_cases = $new_cases_map[$key] ?? 0;
+            $row->ft3_new = $new_cases_by_icode_map[$key]['ft3_new'] ?? 0;
+            $row->ft4_new = $new_cases_by_icode_map[$key]['ft4_new'] ?? 0;
+            $row->tsh_new = $new_cases_by_icode_map[$key]['tsh_new'] ?? 0;
         }
 
         // Totals for Summary Cards
@@ -101,6 +131,9 @@ class LabController extends Controller
         $ft4_qtys = array_map('intval', array_column($monthly_stats, 'ft4_qty'));
         $tsh_qtys = array_map('intval', array_column($monthly_stats, 'tsh_qty'));
         $new_cases_series = array_map('intval', array_column($monthly_stats, 'new_cases'));
+        $ft3_new_series = array_map('intval', array_column($monthly_stats, 'ft3_new'));
+        $ft4_new_series = array_map('intval', array_column($monthly_stats, 'ft4_new'));
+        $tsh_new_series = array_map('intval', array_column($monthly_stats, 'tsh_new'));
 
         return view('hosxp.lab.thyroid', compact(
             'title',
@@ -114,6 +147,9 @@ class LabController extends Controller
             'ft4_qtys',
             'tsh_qtys',
             'new_cases_series',
+            'ft3_new_series',
+            'ft4_new_series',
+            'tsh_new_series',
             'total_visit',
             'total_hn',
             'total_new_cases',

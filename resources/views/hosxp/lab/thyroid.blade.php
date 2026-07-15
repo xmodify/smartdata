@@ -302,24 +302,27 @@
                                 <thead>
                                     <tr>
                                         <th rowspan="2" class="align-middle">เดือน</th>
-                                        <th colspan="2" class="bg-pastel-blue border-end">Free T3</th>
-                                        <th colspan="2" class="bg-pastel-green border-end">Free T4</th>
-                                        <th colspan="2" class="bg-pastel-amber border-end">TSH</th>
+                                        <th colspan="3" class="bg-pastel-blue border-end">Free T3</th>
+                                        <th colspan="3" class="bg-pastel-green border-end">Free T4</th>
+                                        <th colspan="3" class="bg-pastel-amber border-end">TSH</th>
                                         <th colspan="4" class="bg-pastel-purple">รวมทั้งหมดในกลุ่ม</th>
                                     </tr>
                                     <tr>
                                         <th class="bg-pastel-blue">จำนวนตรวจ</th>
+                                        <th class="bg-pastel-blue text-purple">รายใหม่ (คน)</th>
                                         <th class="bg-pastel-blue border-end">รายได้ (บาท)</th>
                                         
                                         <th class="bg-pastel-green">จำนวนตรวจ</th>
+                                        <th class="bg-pastel-green text-purple">รายใหม่ (คน)</th>
                                         <th class="bg-pastel-green border-end">รายได้ (บาท)</th>
 
                                         <th class="bg-pastel-amber">จำนวนตรวจ</th>
+                                        <th class="bg-pastel-amber text-purple">รายใหม่ (คน)</th>
                                         <th class="bg-pastel-amber border-end">รายได้ (บาท)</th>
 
                                         <th class="bg-pastel-purple">ผู้ป่วย (คน)</th>
                                         <th class="bg-pastel-purple">ส่งตรวจ (ครั้ง)</th>
-                                        <th class="bg-pastel-purple">รายใหม่ (คน)</th>
+                                        <th class="bg-pastel-purple">รายใหม่รวม (คน)</th>
                                         <th class="bg-pastel-purple">รายได้รวม (บาท)</th>
                                     </tr>
                                 </thead>
@@ -329,12 +332,15 @@
                                             <td class="text-center fw-bold">{{ $row->month }}</td>
                                             
                                             <td class="text-num">{{ number_format($row->ft3_qty) }}</td>
+                                            <td class="text-num text-purple">{{ number_format($row->ft3_new) }}</td>
                                             <td class="text-num border-end">{{ number_format($row->ft3_income, 2) }}</td>
 
                                             <td class="text-num">{{ number_format($row->ft4_qty) }}</td>
+                                            <td class="text-num text-purple">{{ number_format($row->ft4_new) }}</td>
                                             <td class="text-num border-end">{{ number_format($row->ft4_income, 2) }}</td>
 
                                             <td class="text-num">{{ number_format($row->tsh_qty) }}</td>
+                                            <td class="text-num text-purple">{{ number_format($row->tsh_new) }}</td>
                                             <td class="text-num border-end">{{ number_format($row->tsh_income, 2) }}</td>
 
                                             <td class="text-num fw-bold text-dark">{{ number_format($row->total_hn) }}</td>
@@ -348,12 +354,15 @@
                                     <tr>
                                         <td class="text-center">รวม</td>
                                         <td class="text-num">{{ number_format(array_sum(array_column($monthly_stats, 'ft3_qty'))) }}</td>
+                                        <td class="text-num text-purple">{{ number_format(array_sum(array_column($monthly_stats, 'ft3_new'))) }}</td>
                                         <td class="text-num border-end">{{ number_format(array_sum(array_column($monthly_stats, 'ft3_income')), 2) }}</td>
                                         
                                         <td class="text-num">{{ number_format(array_sum(array_column($monthly_stats, 'ft4_qty'))) }}</td>
+                                        <td class="text-num text-purple">{{ number_format(array_sum(array_column($monthly_stats, 'ft4_new'))) }}</td>
                                         <td class="text-num border-end">{{ number_format(array_sum(array_column($monthly_stats, 'ft4_income')), 2) }}</td>
                                         
                                         <td class="text-num">{{ number_format(array_sum(array_column($monthly_stats, 'tsh_qty'))) }}</td>
+                                        <td class="text-num text-purple">{{ number_format(array_sum(array_column($monthly_stats, 'tsh_new'))) }}</td>
                                         <td class="text-num border-end">{{ number_format(array_sum(array_column($monthly_stats, 'tsh_income')), 2) }}</td>
                                         
                                         <td class="text-num text-dark">{{ number_format($total_hn) }}</td>
@@ -510,8 +519,14 @@
                 // New Cases Trend Line Chart
                 const newCasesOptions = {
                     series: [{
-                        name: 'ผู้ป่วยรายใหม่',
-                        data: @json($new_cases_series)
+                        name: 'Free T3 รายใหม่',
+                        data: @json($ft3_new_series)
+                    }, {
+                        name: 'Free T4 รายใหม่',
+                        data: @json($ft4_new_series)
+                    }, {
+                        name: 'TSH รายใหม่',
+                        data: @json($tsh_new_series)
                     }],
                     chart: {
                         type: 'line',
@@ -522,7 +537,7 @@
                         curve: 'smooth',
                         width: 3
                     },
-                    colors: ['#8b5cf6'],
+                    colors: ['#3b82f6', '#10b981', '#f59e0b'],
                     dataLabels: {
                         enabled: true,
                         style: { fontSize: '11px' }
@@ -533,6 +548,7 @@
                     yaxis: {
                         labels: { formatter: val => Math.round(val).toLocaleString() }
                     },
+                    legend: { position: 'top' },
                     markers: { size: 5 }
                 };
 
