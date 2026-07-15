@@ -117,6 +117,13 @@ class OpdController extends Controller
         $inc_drugs = array_map('floatval', array_column($visit_month, 'inc_drug'));
         $inc_labs = array_map('floatval', array_column($visit_month, 'inc_lab'));
 
+        // Query true unique patients (HN) for the period
+        $total_hn = DB::connection('hosxp')
+            ->table('vn_stat')
+            ->whereBetween('vstdate', [$start_date, $end_date])
+            ->distinct()
+            ->count('hn');
+
         return view('hosxp.opd.index', compact(
             'title',
             'budget_year_select',
@@ -132,7 +139,8 @@ class OpdController extends Controller
             'visit_pps',
             'incomes',
             'inc_drugs',
-            'inc_labs'
+            'inc_labs',
+            'total_hn'
         ));
     }
 

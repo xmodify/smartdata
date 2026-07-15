@@ -68,6 +68,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/telehealth', [App\Http\Controllers\Hosxp\OpdController::class, 'telehealth'])->name('hosxp.opd.telehealth');
     });
 
+    // Lab Routes
+    Route::prefix('hosxp/lab')->group(function () {
+        Route::get('/thyroid', [App\Http\Controllers\Hosxp\LabController::class, 'thyroid'])->name('hosxp.lab.thyroid');
+    });
+
     // IPD Routes
     Route::prefix('hosxp/ipd')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\IpdController::class, 'index'])->name('hosxp.ipd.index');

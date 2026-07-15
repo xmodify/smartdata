@@ -318,8 +318,11 @@
                             <span class="trend-badge-up"><i class="fas fa-chart-line me-1"></i> +5.2%</span>
                         </div>
                         <div class="label-small mb-1">จำนวนผู้รับบริการทั้งหมด</div>
-                        <div class="stat-val text-dark">{{ number_format($total_visit) }} <span
-                                class="fs-6 fw-normal text-muted">ครั้ง</span></div>
+                        <div class="stat-val text-dark" style="font-size: 1.3rem;">
+                            {{ number_format($total_visit) }} <span class="fs-6 fw-normal text-muted">ครั้ง</span>
+                            <span class="text-muted mx-1">|</span>
+                            {{ number_format($total_hn) }} <span class="fs-6 fw-normal text-muted">คน</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -797,12 +800,12 @@
                         data: @json($hns)
                     }, {
                         name: 'จำนวนครั้ง (Visit)',
-                        data: @json($repeat_visits)
+                        data: @json($visits)
                     }],
                     chart: {
                         type: 'bar',
                         height: 350,
-                        stacked: true,
+                        stacked: false,
                         toolbar: { show: false }
                     },
                     colors: ['#6366f1', '#a855f7'],

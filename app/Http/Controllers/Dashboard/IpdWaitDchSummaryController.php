@@ -21,7 +21,6 @@ class IpdWaitDchSummaryController extends Controller
         $start_date = $year_data->DATE_BEGIN ?? null;
         $end_date = $year_data->DATE_END ?? null;
 
-        // 1. แท็บ รอแพทย์สรุป Chart
         $non_diagtext_list = DB::connection('hosxp')->select('
         SELECT w.`name` AS ward, i.hn, i.an, id.icd10, d.`name` AS owner_doctor_name, dd.`name` AS discharge_doctor_name,
         i.dchdate, TIMESTAMPDIFF(day, i.dchdate, DATE(NOW())) AS dch_day
@@ -31,9 +30,16 @@ class IpdWaitDchSummaryController extends Controller
         LEFT JOIN ipt_doctor_list il ON il.an = i.an AND il.ipt_doctor_type_id = 1 AND il.active_doctor = "Y"
         LEFT JOIN doctor d ON d.`code` = il.doctor
         LEFT JOIN doctor dd ON dd.`code` = i.dch_doctor
-        LEFT JOIN ipt_doctor_diag idd ON idd.an = i.an AND idd.diagtype = 1
         WHERE i.dchdate BETWEEN ? AND ?        
-        AND (idd.diag_text = "" OR idd.diag_text IS NULL)
+        AND NOT EXISTS (
+            SELECT 1 FROM ipt_doctor_diag idd 
+            WHERE idd.an = i.an 
+            AND (
+                (idd.diag_text <> "" AND idd.diag_text IS NOT NULL)
+                OR (idd.audit_diag_text <> "" AND idd.audit_diag_text IS NOT NULL)
+            )
+        )
+        AND (id.icd10 = "" OR id.icd10 IS NULL)
         AND i.ward IN ("01","02","03","10")
         GROUP BY i.an
         ORDER BY d.`name`, dch_day DESC', [$start_date, $end_date]);
@@ -95,10 +101,9 @@ class IpdWaitDchSummaryController extends Controller
             }
         }
 
-        // Summary by doctor for charts
         $summary_sql = '
             SELECT d.`name` AS owner_doctor_name, 
-            SUM(CASE WHEN (idd.diag_text = "" OR idd.diag_text IS NULL) THEN 1 ELSE 0 END) as non_diagtext_count,
+            SUM(CASE WHEN NOT EXISTS (SELECT 1 FROM ipt_doctor_diag idd2 WHERE idd2.an = i.an AND ((idd2.diag_text <> "" AND idd2.diag_text IS NOT NULL) OR (idd2.audit_diag_text <> "" AND idd2.audit_diag_text IS NOT NULL))) AND (id.icd10 = "" OR id.icd10 IS NULL) THEN 1 ELSE 0 END) as non_diagtext_count,
             SUM(CASE WHEN (idd.diag_text <> "" AND idd.diag_text IS NOT NULL) AND (id.icd10 = "" OR id.icd10 IS NULL) AND ((idd.audit_ok IS NULL OR idd.audit_ok <> "Y") AND (idd.audit_diag_text = "" OR idd.audit_diag_text IS NULL) AND i.an <> "690002193") THEN 1 ELSE 0 END) as wait_audit_count,
             SUM(CASE WHEN (idd.diag_text <> "" AND idd.diag_text IS NOT NULL) AND (id.icd10 = "" OR id.icd10 IS NULL) THEN 1 ELSE 0 END) as non_icd10_count
             FROM ipt i
@@ -109,12 +114,12 @@ class IpdWaitDchSummaryController extends Controller
             WHERE i.dchdate BETWEEN ? AND ?
             AND i.ward IN ("01","02","03","10")
             GROUP BY d.`name`
-            HAVING SUM(CASE WHEN (idd.diag_text = "" OR idd.diag_text IS NULL) THEN 1 ELSE 0 END) > 0 
+            HAVING SUM(CASE WHEN NOT EXISTS (SELECT 1 FROM ipt_doctor_diag idd2 WHERE idd2.an = i.an AND ((idd2.diag_text <> "" AND idd2.diag_text IS NOT NULL) OR (idd2.audit_diag_text <> "" AND idd2.audit_diag_text IS NOT NULL))) AND (id.icd10 = "" OR id.icd10 IS NULL) THEN 1 ELSE 0 END) > 0 
             OR SUM(CASE WHEN (idd.diag_text <> "" AND idd.diag_text IS NOT NULL) AND (id.icd10 = "" OR id.icd10 IS NULL) AND ((idd.audit_ok IS NULL OR idd.audit_ok <> "Y") AND (idd.audit_diag_text = "" OR idd.audit_diag_text IS NULL) AND i.an <> "690002193") THEN 1 ELSE 0 END) > 0
             OR SUM(CASE WHEN (idd.diag_text <> "" AND idd.diag_text IS NOT NULL) AND (id.icd10 = "" OR id.icd10 IS NULL) THEN 1 ELSE 0 END) > 0
             ORDER BY (
-                SUM(CASE WHEN (idd.diag_text = "" OR idd.diag_text IS NULL) THEN 1 ELSE 0 END) + 
-                SUM(CASE WHEN (idd.diag_text <> "" AND idd.diag_text IS NOT NULL) AND (id.icd10 = "" OR id.icd10 IS NULL) AND ((idd.audit_ok IS NULL OR idd.audit_ok <> "Y") AND (idd.audit_diag_text = "" OR idd.audit_diag_text IS NULL) AND i.an <> "690002193") THEN 1 ELSE 0 END) + 
+                SUM(CASE WHEN NOT EXISTS (SELECT 1 FROM ipt_doctor_diag idd2 WHERE idd2.an = i.an AND ((idd2.diag_text <> "" AND idd2.diag_text IS NOT NULL) OR (idd2.audit_diag_text <> "" AND idd2.audit_diag_text IS NOT NULL))) AND (id.icd10 = "" OR id.icd10 IS NULL) THEN 1 ELSE 0 END) + 
+                SUM(CASE WHEN (idd.audit_ok IS NULL OR idd.audit_ok <> "Y") AND (idd.audit_diag_text = "" OR idd.audit_diag_text IS NULL) AND i.an <> "690002193" AND (idd.diag_text <> "" AND idd.diag_text IS NOT NULL) AND (id.icd10 = "" OR id.icd10 IS NULL) THEN 1 ELSE 0 END) + 
                 SUM(CASE WHEN (idd.diag_text <> "" AND idd.diag_text IS NOT NULL) AND (id.icd10 = "" OR id.icd10 IS NULL) THEN 1 ELSE 0 END)
             ) DESC';
 
