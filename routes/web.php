@@ -28,6 +28,11 @@ Route::get('/dashboard/ipd_wait_dchsummary', [App\Http\Controllers\Dashboard\Ipd
 Route::get('/dashboard/ipd_wait_dchsummary/diags/{an}', [App\Http\Controllers\Dashboard\IpdWaitDchSummaryController::class, 'get_diags'])->name('ipd.wait_dchsummary.diags');
 Route::get('/dashboard/oapp', [App\Http\Controllers\Dashboard\OappController::class, 'index'])->name('dashboard.oapp');
 
+// Queue Routes (สาธารณะ คนไข้สแกน QR Code ดูได้เลย ไม่ต้อง Login)
+Route::get('/hosxp/queue/status/{vn}', [App\Http\Controllers\Hosxp\QueueController::class, 'showStatus'])->name('hosxp.queue.status');
+Route::get('/api/hosxp/queue/{vn}', [App\Http\Controllers\Hosxp\QueueController::class, 'getStatusApi'])->name('hosxp.queue.api');
+
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 
@@ -71,6 +76,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/wait-time', [App\Http\Controllers\Hosxp\OpdController::class, 'waitTime'])->name('hosxp.opd.wait_time');
         Route::get('/telehealth', [App\Http\Controllers\Hosxp\OpdController::class, 'telehealth'])->name('hosxp.opd.telehealth');
     });
+
+
 
     // Lab Routes
     Route::prefix('hosxp/lab')->group(function () {
