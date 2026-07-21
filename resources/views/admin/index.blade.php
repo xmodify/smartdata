@@ -56,6 +56,21 @@
                 </div>
             </a>
         </div>
+
+        <!-- System Monitor Card -->
+        <div class="col-md-5 col-lg-4">
+            <a href="{{ route('admin.monitor.index') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm glass-card border-hover-danger transition-all">
+                    <div class="card-body p-5 text-center">
+                        <div class="icon-shape bg-danger-subtle text-danger rounded-circle mb-4 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-desktop-alt fa-2x"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-3">System Monitor</h3>
+                        <p class="text-muted mb-0">ตรวจสอบสถานะการทำงานของบอทส่งรายงานอัตโนมัติ ฐานข้อมูล และล็อกของระบบ</p>
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
 </div>
 
@@ -78,6 +93,10 @@
     }
     .border-hover-info:hover {
         border: 1px solid #0dcaf0 !important;
+        transform: translateY(-10px);
+    }
+    .border-hover-danger:hover {
+        border: 1px solid #dc3545 !important;
         transform: translateY(-10px);
     }
     .icon-shape {

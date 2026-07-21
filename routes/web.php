@@ -35,6 +35,10 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+    // System Monitor Routes
+    Route::get('/admin/monitor', [App\Http\Controllers\Admin\MonitorController::class, 'index'])->name('admin.monitor.index');
+    Route::post('/admin/monitor/run-task/{task}', [App\Http\Controllers\Admin\MonitorController::class, 'runTask'])->name('admin.monitor.run_task');
+
     Route::get('/admin/system', [App\Http\Controllers\Admin\StructureController::class, 'index'])->name('admin.system.index');
     Route::post('/admin/git-pull', [App\Http\Controllers\Admin\StructureController::class, 'gitPull'])->name('admin.git_pull');
     Route::post('/admin/upgrade-structure', [App\Http\Controllers\Admin\StructureController::class, 'upgrade'])->name('admin.upgrade_structure');
