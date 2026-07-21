@@ -336,15 +336,15 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="modal-body p-4">
                 <div class="mb-4">
                     <h6 class="fw-bold text-dark"><i class="fas fa-terminal me-2 text-danger"></i>1. ตรวจสอบและตั้งค่า Crontab บน Server (AlmaLinux)</h6>
-                    <p class="text-muted small mb-2">รันคำสั่งแก้ไข Crontab ของ User ที่ต้องการรันงาน (แนะนำให้ใช้สิทธิ์เดียวกับ Web Server เช่น `nginx` หรือ `apache`):</p>
-                    <pre class="bg-dark text-light p-3 rounded-3 font-monospace small">sudo crontab -u nginx -e</pre>
+                    <p class="text-muted small mb-2">รันคำสั่งแก้ไข Crontab ของ User ที่ต้องการรันงาน (สำหรับ Web Server เช่น `apache` หรือ `www-data`):</p>
+                    <pre class="bg-dark text-light p-3 rounded-3 font-monospace small">sudo crontab -u apache -e</pre>
                     <p class="text-muted small mb-2">จากนั้นเพิ่มบรรทัดคำสั่งตั้งค่าดักรันทุก 1 นาที (ปรับแต่งพาธ php และโฟลเดอร์โปรเจกต์ให้ถูกต้อง):</p>
                     <pre class="bg-dark text-light p-3 rounded-3 font-monospace small">* * * * * /usr/bin/php {{ base_path() }}/artisan schedule:run >> {{ storage_path('logs/cron.log') }} 2>&1</pre>
                 </div>
 
                 <div class="mb-4">
                     <h6 class="fw-bold text-dark"><i class="fas fa-server me-2 text-danger"></i>2. ตรวจสอบการทำงานของ Service Cron Daemon</h6>
-                    <p class="text-muted small mb-2">ตรวจสอบสถานะของ `crond` บนเซิร์ฟเวอร์ AlmaLinux:</p>
+                    <p class="text-muted small mb-2">ตรวจสอบสถานะของ `crond` บนเซิร์ฟเวอร์ AlmaLinux / CentOS:</p>
                     <pre class="bg-dark text-light p-3 rounded-3 font-monospace small">sudo systemctl status crond</pre>
                     <p class="text-muted small mb-2">หากสถานะปิดอยู่ให้สั่งเริ่มทำงานใหม่:</p>
                     <pre class="bg-dark text-light p-3 rounded-3 font-monospace small">sudo systemctl enable crond && sudo systemctl restart crond</pre>
@@ -352,9 +352,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <div class="mb-0">
                     <h6 class="fw-bold text-dark"><i class="fas fa-folder-open me-2 text-danger"></i>3. ตรวจสอบ Permission ของโฟลเดอร์ในโปรเจกต์</h6>
-                    <p class="text-muted small mb-2">หาก Cron ทำงานแต่ไม่สามารถบันทึก Log ลงในระบบได้ ให้เคลียร์สิทธิ์ของโฟลเดอร์ `storage`:</p>
+                    <p class="text-muted small mb-2">หาก Cron ทำงานแต่ไม่สามารถบันทึก Log ลงในระบบได้ ให้เคลียร์สิทธิ์ของโฟลเดอร์ `storage` ให้แก่ `apache`:</p>
                     <pre class="bg-dark text-light p-3 rounded-3 font-monospace small">sudo chmod -R 775 {{ storage_path() }}
-sudo chown -R nginx:nginx {{ storage_path() }}</pre>
+sudo chown -R apache:apache {{ storage_path() }}</pre>
                 </div>
             </div>
             <div class="modal-footer border-0 p-4 pt-0">

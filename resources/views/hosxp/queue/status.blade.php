@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>คิวผู้ป่วย - โรงพยาบาลหัวตะพาน</title>
     
-    <!-- Local Assets (Favicon Icons) -->
+    <!-- Local Assets (Favicon Icons) --> 
     <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
     
     <link rel="apple-touch-icon" href="{{ asset('images/logo_hospital.jpg') }}">
