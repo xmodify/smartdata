@@ -32,6 +32,11 @@ Route::get('/dashboard/oapp', [App\Http\Controllers\Dashboard\OappController::cl
 Route::get('/hosxp/queue/status/{vn}', [App\Http\Controllers\Hosxp\QueueController::class, 'showStatus'])->name('hosxp.queue.status');
 Route::get('/api/hosxp/queue/{vn}', [App\Http\Controllers\Hosxp\QueueController::class, 'getStatusApi'])->name('hosxp.queue.api');
 
+// Customer Complain Routes (สาธารณะ ประชาชนใช้งานโดยไม่ต้อง Login)
+Route::get('/customer-complain', [App\Http\Controllers\Smartdata\CustomerComplainController::class, 'create'])->name('customer_complain.create');
+Route::post('/customer-complain', [App\Http\Controllers\Smartdata\CustomerComplainController::class, 'store'])->name('customer_complain.store');
+Route::get('/customer-complain/qrcode', [App\Http\Controllers\Smartdata\CustomerComplainController::class, 'qrcode'])->name('customer_complain.qrcode');
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
@@ -198,6 +203,9 @@ Route::middleware(['auth'])->group(function () {
         'update' => 'skpcard.update',
         'destroy' => 'skpcard.destroy',
     ]);
+
+    // Customer Complain - Index (รายการ, ต้อง Login)
+    Route::get('/customer-complain/index', [App\Http\Controllers\Smartdata\CustomerComplainController::class, 'index'])->name('customer_complain.index');
 
     // ─── ศูนย์ยืม-คืน ────────────────────────────────────────────────
     Route::prefix('lend')->group(function () {

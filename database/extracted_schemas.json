@@ -781,5 +781,109 @@
                 "primary": true
             }
         }
+    },
+    "customer_complains": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "type": {
+                "type": "enum",
+                "length": "'คำชมเชย','ข้อเสนอแนะ','ข้อร้องเรียน','อื่น ๆ'",
+                "nullable": false,
+                "default": "คำชมเชย",
+                "extra": ""
+            },
+            "name": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "detail": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "call_back": {
+                "type": "enum",
+                "length": "'ต้องการ','ไม่ต้องการ'",
+                "nullable": false,
+                "default": "ไม่ต้องการ",
+                "extra": ""
+            },
+            "phone": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "email": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "status": {
+                "type": "enum",
+                "length": "'รอดำเนินการ','กำลังดำเนินการ','เสร็จสิ้น'",
+                "nullable": false,
+                "default": "รอดำเนินการ",
+                "extra": ""
+            },
+            "responded_by": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "response_note": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "responded_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
     }
 }

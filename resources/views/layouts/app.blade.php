@@ -441,6 +441,9 @@
                                 <i class="fas fa-hand-holding-medical me-2" style="color: #0ea5e9;"></i> ศูนย์ยืม-คืน
                             </a>
                         @endif
+                        <a href="{{ route('customer_complain.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <i class="fas fa-comment-dots me-2" style="color: #00897b;"></i> รายการความคิดเห็น
+                        </a>
 
                         @if(auth()->user()->hasAccessMra())
                         <!-- MRA System Menu -->
