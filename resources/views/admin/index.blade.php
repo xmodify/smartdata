@@ -71,6 +71,23 @@
                 </div>
             </a>
         </div>
+
+        @if (auth()->user()->username === '1341800003078')
+        <!-- License System Card -->
+        <div class="col-md-5 col-lg-4">
+            <a href="{{ route('license.index') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm glass-card border-hover-success transition-all" style="border-left: 4px solid #198754 !important;">
+                    <div class="card-body p-5 text-center">
+                        <div class="icon-shape bg-success-subtle text-success rounded-circle mb-4 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-key fa-2x"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-3">License System</h3>
+                        <p class="text-muted mb-0">ระบบออกสิทธิ์ใช้งานคีย์ลิขสิทธิ์โปรแกรมและล็อก Hardware/รหัสโรงพยาบาล</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endif
     </div>
 </div>
 

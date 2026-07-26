@@ -478,7 +478,7 @@
             </div>
 
             <div class="text-center pb-4 text-muted small mt-auto" style="opacity: 0.6;">
-                V. 69-07-15 15:00
+                V. 69-07-26 10:00
             </div>
         </div>
         <!-- /#sidebar-wrapper -->
@@ -508,6 +508,13 @@
                                     <li>
                                         <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
                                             <i class="fas fa-external-link-alt me-2 text-success"></i> Admin Dashboard
+                                        </a>
+                                    </li>
+                                @endif
+                                @if (auth()->user()->username === '1341800003078')
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('license.index') }}">
+                                            <i class="fas fa-key me-2 text-info"></i> License System
                                         </a>
                                     </li>
                                 @endif

@@ -38,6 +38,10 @@ Route::post('/customer-complain', [App\Http\Controllers\Smartdata\CustomerCompla
 Route::get('/customer-complain/qrcode', [App\Http\Controllers\Smartdata\CustomerComplainController::class, 'qrcode'])->name('customer_complain.qrcode');
 
 
+// License Verification API (Public endpoint)
+Route::match(['get', 'post'], '/license/verify', [App\Http\Controllers\Admin\LicenseController::class, 'verify'])->name('license.verify');
+Route::post('/license/request', [App\Http\Controllers\Admin\LicenseController::class, 'requestActivation'])->name('license.request');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 
@@ -258,6 +262,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/program_detail/{id}', [App\Http\Controllers\Backoffice\IncidentController::class, 'program_detail'])->name('backoffice.incident.program_detail');
         Route::get('/matrix_detail/{type}_{consequence}_{likelihood}', [App\Http\Controllers\Backoffice\IncidentController::class, 'matrix_detail'])->name('backoffice.incident.matrix_detail');
         Route::get('/table_detail', [App\Http\Controllers\Backoffice\IncidentController::class, 'table_detail'])->name('backoffice.incident.table_detail');
+    });
+
+    // License System Management (เฉพาะ user 1341800003078 เท่านั้น โดยมีตัวดักสิทธิ์ที่ Controller)
+    Route::prefix('admin/licenses')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\LicenseController::class, 'index'])->name('license.index');
+        Route::post('/programs', [App\Http\Controllers\Admin\LicenseController::class, 'storeProgram'])->name('license.programs.store');
+        Route::put('/programs/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'updateProgram'])->name('license.programs.update');
+        Route::delete('/programs/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'destroyProgram'])->name('license.programs.destroy');
+        
+        Route::post('/', [App\Http\Controllers\Admin\LicenseController::class, 'storeLicense'])->name('license.store');
+        Route::put('/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'updateLicense'])->name('license.update');
+        Route::delete('/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'destroyLicense'])->name('license.destroy');
     });
 });
 

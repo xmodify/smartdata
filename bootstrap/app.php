@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->validateCsrfTokens(except: [
             '/moph-notify/*',
+            '/license/verify',
+            '/license/request',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
