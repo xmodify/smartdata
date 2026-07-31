@@ -227,6 +227,14 @@ class LicenseController extends Controller
             ], 404);
         }
 
+        // Check if pending
+        if ($license->status === 'pending') {
+            return response()->json([
+                'status' => 'pending',
+                'message' => 'This license is pending activation.'
+            ], 403);
+        }
+
         // Check if suspended
         if ($license->status === 'suspended') {
             return response()->json([
@@ -267,14 +275,18 @@ class LicenseController extends Controller
             if (!empty($hardwareId)) {
                 $license->update([
                     'hardware_id' => $hardwareId,
-                    'activated_at' => Carbon::now()
+                    'activated_at' => Carbon::now(),
+                    'status' => 'active'
                 ]);
             }
         }
 
-        // Update activated_at if empty
-        if (is_null($license->activated_at)) {
-            $license->update(['activated_at' => Carbon::now()]);
+        // Update activated_at and status if empty or pending
+        if (is_null($license->activated_at) || $license->status === 'pending') {
+            $license->update([
+                'activated_at' => $license->activated_at ?: Carbon::now(),
+                'status' => 'active'
+            ]);
         }
 
         // Generate tamper-proof Digital Signature
@@ -291,7 +303,7 @@ class LicenseController extends Controller
         $signature = hash_hmac('sha256', $signaturePayload, config('app.key') ?: 'smartdata-secret-key-fallback');
 
         return response()->json([
-            'status' => 'active',
+            'status' => $license->status,
             'license_key' => $license->license_key,
             'program_name' => $program->name,
             'customer_name' => $license->customer_name,
