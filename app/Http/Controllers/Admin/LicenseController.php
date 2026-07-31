@@ -21,6 +21,12 @@ class LicenseController extends Controller
             abort(403, 'Unauthorized.');
         }
 
+        // Auto Sync: อัปเดตสถานะคีย์ที่หมดอายุแล้วในฐานข้อมูลเป็น expired
+        License::whereIn('status', ['active', 'pending'])
+            ->whereNotNull('expired_at')
+            ->where('expired_at', '<', Carbon::now())
+            ->update(['status' => 'expired']);
+
         $programs = LicenseProgram::withCount('licenses')->get();
         $licenses = License::with('program')
             ->when($request->filled('search'), function ($query) use ($request) {
@@ -127,14 +133,25 @@ class LicenseController extends Controller
 
         $licenseKey = License::generateKey($prefix);
 
+        $status = $request->status;
+        $expiredAt = $request->expired_at ? Carbon::parse($request->expired_at)->endOfDay() : null;
+
+        if ($expiredAt) {
+            if ($expiredAt->isPast()) {
+                $status = 'expired';
+            } elseif ($status === 'expired') {
+                $status = 'active';
+            }
+        }
+
         License::create([
             'program_id' => $request->program_id,
             'license_key' => $licenseKey,
             'customer_name' => $request->customer_name,
             'hcode' => $request->hcode,
             'hardware_id' => $request->hardware_id,
-            'status' => $request->status,
-            'expired_at' => $request->expired_at ? Carbon::parse($request->expired_at)->endOfDay() : null,
+            'status' => $status,
+            'expired_at' => $expiredAt,
             'notes' => $request->notes,
         ]);
 
@@ -161,12 +178,23 @@ class LicenseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $status = $request->status;
+        $expiredAt = $request->expired_at ? Carbon::parse($request->expired_at)->endOfDay() : null;
+
+        if ($expiredAt) {
+            if ($expiredAt->isPast()) {
+                $status = 'expired';
+            } elseif ($status === 'expired') {
+                $status = 'active';
+            }
+        }
+
         $license->update([
             'customer_name' => $request->customer_name,
             'hcode' => $request->hcode,
             'hardware_id' => $request->hardware_id,
-            'status' => $request->status,
-            'expired_at' => $request->expired_at ? Carbon::parse($request->expired_at)->endOfDay() : null,
+            'status' => $status,
+            'expired_at' => $expiredAt,
             'notes' => $request->notes,
         ]);
 
