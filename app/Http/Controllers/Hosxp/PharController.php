@@ -1876,11 +1876,15 @@ class PharController extends Controller
         $query = '
             SELECT 
                 o.hn,
+                o.vn,
+                o.an,
                 p.cid,
                 CONCAT(p.pname, p.fname, " ", p.lname) AS patient_name,
                 DATE_FORMAT(o.rxdate, "%Y-%m-%d") AS rx_date,
                 o.rxtime AS rx_time,
                 o.qty,
+                DATE_FORMAT(ipt.regdate, "%Y-%m-%d") AS admit_date,
+                DATE_FORMAT(ipt.dchdate, "%Y-%m-%d") AS dc_date,
                 CASE 
                     WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370601") THEN "รพ.สต.หัวตะพาน" 
                     WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370602" AND p.moopart IN ("4","5","6","10","11")) THEN "รพ.สต.โนนหนามแท่ง"   
@@ -1898,6 +1902,7 @@ class PharController extends Controller
                 END AS hosp_name
             FROM opitemrece o
             INNER JOIN patient p ON p.hn = o.hn
+            LEFT JOIN ipt ipt ON ipt.an = o.an
             WHERE o.icode = ?
               AND o.rxdate BETWEEN ? AND ?
               AND ' . $type_condition . '

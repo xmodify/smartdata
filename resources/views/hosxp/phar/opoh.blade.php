@@ -634,22 +634,22 @@
                                                                     <th colspan="3" class="th-other">สิทธิ อื่นๆ</th>
                                                                 </tr>
                                                                 <tr>
-                                                                    <th class="th-total">Visit</th>
+                                                                    <th class="th-total">AN</th>
                                                                     <th class="th-total">Qty</th>
                                                                     <th class="th-total">มูลค่า (บาท)</th>
-                                                                    <th class="th-ucs">Visit</th>
+                                                                    <th class="th-ucs">AN</th>
                                                                     <th class="th-ucs">Qty</th>
                                                                     <th class="th-ucs">มูลค่า (บาท)</th>
-                                                                    <th class="th-ofc">Visit</th>
+                                                                    <th class="th-ofc">AN</th>
                                                                     <th class="th-ofc">Qty</th>
                                                                     <th class="th-ofc">มูลค่า (บาท)</th>
-                                                                    <th class="th-lgo">Visit</th>
+                                                                    <th class="th-lgo">AN</th>
                                                                     <th class="th-lgo">Qty</th>
                                                                     <th class="th-lgo">มูลค่า (บาท)</th>
-                                                                    <th class="th-sss">Visit</th>
+                                                                    <th class="th-sss">AN</th>
                                                                     <th class="th-sss">Qty</th>
                                                                     <th class="th-sss">มูลค่า (บาท)</th>
-                                                                    <th class="th-other">Visit</th>
+                                                                    <th class="th-other">AN</th>
                                                                     <th class="th-other">Qty</th>
                                                                     <th class="th-other">มูลค่า (บาท)</th>
                                                                 </tr>
@@ -730,22 +730,22 @@
                                                                         <th colspan="3" class="th-other">สิทธิ อื่นๆ</th>
                                                                     </tr>
                                                                     <tr>
-                                                                        <th class="th-total">Visit</th>
+                                                                        <th class="th-total">AN</th>
                                                                         <th class="th-total">Qty</th>
                                                                         <th class="th-total">มูลค่า (บาท)</th>
-                                                                        <th class="th-ucs">Visit</th>
+                                                                        <th class="th-ucs">AN</th>
                                                                         <th class="th-ucs">Qty</th>
                                                                         <th class="th-ucs">มูลค่า (บาท)</th>
-                                                                        <th class="th-ofc">Visit</th>
+                                                                        <th class="th-ofc">AN</th>
                                                                         <th class="th-ofc">Qty</th>
                                                                         <th class="th-ofc">มูลค่า (บาท)</th>
-                                                                        <th class="th-lgo">Visit</th>
+                                                                        <th class="th-lgo">AN</th>
                                                                         <th class="th-lgo">Qty</th>
                                                                         <th class="th-lgo">มูลค่า (บาท)</th>
-                                                                        <th class="th-sss">Visit</th>
+                                                                        <th class="th-sss">AN</th>
                                                                         <th class="th-sss">Qty</th>
                                                                         <th class="th-sss">มูลค่า (บาท)</th>
-                                                                        <th class="th-other">Visit</th>
+                                                                        <th class="th-other">AN</th>
                                                                         <th class="th-other">Qty</th>
                                                                         <th class="th-other">มูลค่า (บาท)</th>
                                                                     </tr>
@@ -1085,6 +1085,41 @@
                 // Set modal title
                 $('#patientDetailsModalLabel').html(`<i class="fas fa-prescription-bottle-medical text-primary me-2"></i>รายชื่อผู้รับยา: <span class="text-primary">${drugName}</span> (${type})`);
 
+                // Reset/Rewrite table headers dynamically
+                let headerHtml = '';
+                if (type === 'IPD') {
+                    headerHtml = `
+                        <tr>
+                            <th class="text-center" style="width: 60px;">ลำดับที่</th>
+                            <th class="text-center" style="width: 100px;">HN</th>
+                            <th class="text-center" style="width: 100px;">AN</th>
+                            <th class="text-center" style="width: 140px;">CID</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th class="text-center" style="width: 110px;">วันที่ Admit</th>
+                            <th class="text-center" style="width: 110px;">วันที่ DC</th>
+                            <th class="text-center" style="width: 110px;">วันที่ได้รับยา</th>
+                            <th class="text-center" style="width: 90px;">เวลา</th>
+                            <th class="text-center" style="width: 80px;">จำนวน</th>
+                            <th>รพ.สต. (หน่วยบริการปฐมภูมิ)</th>
+                        </tr>
+                    `;
+                } else {
+                    headerHtml = `
+                        <tr>
+                            <th class="text-center" style="width: 60px;">ลำดับที่</th>
+                            <th class="text-center" style="width: 100px;">HN</th>
+                            <th class="text-center" style="width: 100px;">VN</th>
+                            <th class="text-center" style="width: 140px;">CID</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th class="text-center" style="width: 110px;">วันที่ได้รับยา</th>
+                            <th class="text-center" style="width: 90px;">เวลา</th>
+                            <th class="text-center" style="width: 80px;">จำนวน</th>
+                            <th>รพ.สต. (หน่วยบริการปฐมภูมิ)</th>
+                        </tr>
+                    `;
+                }
+                $('#table-patient-details thead').html(headerHtml);
+
                 // Show modal
                 const modal = new bootstrap.Modal(document.getElementById('patientDetailsModal'));
                 modal.show();
@@ -1114,32 +1149,53 @@
                         let html = '';
                         if (response.patients && response.patients.length > 0) {
                             response.patients.forEach((patient, index) => {
-                                let displayDate = patient.rx_date;
-                                if (displayDate) {
-                                    const d = new Date(displayDate);
-                                    if (!isNaN(d.getTime())) {
-                                        const monthsTh = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-                                        const day = d.getDate();
-                                        const month = monthsTh[d.getMonth()];
-                                        const year = d.getFullYear() + 543;
-                                        displayDate = `${day} ${month} ${year}`;
-                                    }
+                                const formatThaiDate = function(dateStr) {
+                                    if (!dateStr) return '';
+                                    const d = new Date(dateStr);
+                                    if (isNaN(d.getTime())) return dateStr;
+                                    const monthsTh = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+                                    return `${d.getDate()} ${monthsTh[d.getMonth()]} ${d.getFullYear() + 543}`;
+                                };
+
+                                const displayDate = formatThaiDate(patient.rx_date);
+                                const admitDate = formatThaiDate(patient.admit_date);
+                                const dcDate = formatThaiDate(patient.dc_date);
+
+                                if (type === 'IPD') {
+                                    html += `
+                                        <tr>
+                                            <td class="text-center font-monospace">${index + 1}</td>
+                                            <td class="text-center font-monospace fw-bold">${patient.hn || ''}</td>
+                                            <td class="text-center font-monospace text-primary fw-bold">${patient.an || ''}</td>
+                                            <td class="text-center font-monospace">${patient.cid || ''}</td>
+                                            <td>${patient.patient_name || ''}</td>
+                                            <td class="text-center">${admitDate || '<span class="text-muted small">-</span>'}</td>
+                                            <td class="text-center">${dcDate || '<span class="text-muted small">ยังไม่จำหน่าย</span>'}</td>
+                                            <td class="text-center">${displayDate || ''}</td>
+                                            <td class="text-center font-monospace">${patient.rx_time || ''}</td>
+                                            <td class="text-center font-monospace fw-bold text-success">${Number(patient.qty).toLocaleString()}</td>
+                                            <td>${patient.hosp_name || '<span class="text-muted small">นอกเขตอำเภอหัวตะพาน</span>'}</td>
+                                        </tr>
+                                    `;
+                                } else {
+                                    html += `
+                                        <tr>
+                                            <td class="text-center font-monospace">${index + 1}</td>
+                                            <td class="text-center font-monospace fw-bold">${patient.hn || ''}</td>
+                                            <td class="text-center font-monospace text-secondary fw-bold">${patient.vn || ''}</td>
+                                            <td class="text-center font-monospace">${patient.cid || ''}</td>
+                                            <td>${patient.patient_name || ''}</td>
+                                            <td class="text-center">${displayDate || ''}</td>
+                                            <td class="text-center font-monospace">${patient.rx_time || ''}</td>
+                                            <td class="text-center font-monospace fw-bold text-success">${Number(patient.qty).toLocaleString()}</td>
+                                            <td>${patient.hosp_name || '<span class="text-muted small">นอกเขตอำเภอหัวตะพาน</span>'}</td>
+                                        </tr>
+                                    `;
                                 }
-                                html += `
-                                    <tr>
-                                        <td class="text-center font-monospace">${index + 1}</td>
-                                        <td class="text-center font-monospace fw-bold">${patient.hn || ''}</td>
-                                        <td class="text-center font-monospace">${patient.cid || ''}</td>
-                                        <td>${patient.patient_name || ''}</td>
-                                        <td class="text-center">${displayDate || ''}</td>
-                                        <td class="text-center font-monospace">${patient.rx_time || ''}</td>
-                                        <td class="text-center font-monospace fw-bold text-success">${Number(patient.qty).toLocaleString()}</td>
-                                        <td>${patient.hosp_name || '<span class="text-muted small">ไม่ระบุ</span>'}</td>
-                                    </tr>
-                                `;
                             });
                         } else {
-                            html = '<tr><td colspan="8" class="text-center text-muted py-4">ไม่พบรายชื่อคนไข้ได้รับยาตัวนี้ในช่วงเวลาดังกล่าว</td></tr>';
+                            const colCount = (type === 'IPD') ? 11 : 9;
+                            html = `<tr><td colspan="${colCount}" class="text-center text-muted py-4">ไม่พบรายชื่อคนไข้ได้รับยาตัวนี้ในช่วงเวลาดังกล่าว</td></tr>`;
                         }
                         
                         $('#patientDetailsBody').html(html);
@@ -1169,7 +1225,8 @@
                         }
                     },
                     error: function(xhr) {
-                        $('#patientDetailsBody').html('<tr><td colspan="8" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>');
+                        const colCount = (type === 'IPD') ? 11 : 9;
+                        $('#patientDetailsBody').html(`<tr><td colspan="${colCount}" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`);
                         $('#patientDetailsLoading').addClass('d-none');
                         $('#patientDetailsContent').removeClass('d-none');
                     }
