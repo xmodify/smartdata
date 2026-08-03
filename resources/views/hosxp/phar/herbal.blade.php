@@ -80,6 +80,32 @@
             background: #ef4444;
         }
 
+        .nav-tabs-months {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 5px;
+            gap: 5px;
+        }
+        .nav-tabs-months .nav-link {
+            border-radius: 8px !important;
+            font-size: 0.82rem !important;
+            padding: 6px 14px !important;
+            color: #64748b;
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s;
+        }
+        .nav-tabs-months .nav-link.active {
+            background: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        .tab-pane-months-opd .nav-link.active {
+            color: #10b981 !important;
+        }
+        .tab-pane-months-ipd .nav-link.active {
+            color: #ef4444 !important;
+        }
+
         .card-custom {
             border-radius: 20px;
             border: none;
@@ -132,7 +158,7 @@
             color: #059669;
         }
 
-        /* DataTables Custom Styling to match Image 2 */
+        /* DataTables Custom Styling */
         .dataTables_wrapper .dataTables_length select,
         .dataTables_wrapper .dataTables_filter input,
         .dataTables_filter input {
@@ -173,7 +199,7 @@
         /* Pagination Styling */
         .dataTables_wrapper .dataTables_paginate .paginate_button.current,
         .page-item.active .page-link {
-            background: #4f46e5 !important; /* Royal blue / Indigo */
+            background: #4f46e5 !important;
             color: white !important;
             border-color: #4f46e5 !important;
             border-radius: 0.4rem !important;
@@ -293,140 +319,166 @@
                         </div>
                     </div>
                     <!-- Table -->
-                    <div class="col-12">
-                        <div class="card card-custom">
-                            <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยาสมุนไพร (OPD)</h6>
-                            </div>
-                            <div class="card-body px-4 pb-4">
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle table-pivot" id="opdTable">
-                                        <thead>
-                                            <tr>
-                                                <th rowspan="2" style="width: 80px;">รหัสยา</th>
-                                                <th rowspan="2" style="min-width: 150px;">ชื่อยา</th>
-                                                <th rowspan="2" style="min-width: 120px;">ชื่อสามัญ</th>
-                                                <th colspan="4" class="th-total">TOTAL</th>
-                                                <th colspan="4" class="th-ucs">UCS</th>
-                                                <th colspan="4" class="th-ofc">OFC</th>
-                                                <th colspan="4" class="th-lgo">LGO</th>
-                                                <th colspan="4" class="th-sss">SSS</th>
-                                                <th colspan="4" class="th-other">Other</th>
-                                            </tr>
-                                            <tr>
-                                                <!-- TOTAL -->
-                                                <th class="th-total">VISIT</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
-                                                <!-- UCS -->
-                                                <th class="th-ucs">VISIT</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
-                                                <!-- OFC -->
-                                                <th class="th-ofc">VISIT</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
-                                                <!-- LGO -->
-                                                <th class="th-lgo">VISIT</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
-                                                <!-- SSS -->
-                                                <th class="th-sss">VISIT</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
-                                                <!-- Other -->
-                                                <th class="th-other">VISIT</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @php
-                                                $t_v = 0; $t_q = 0; $t_c = 0; $t_p = 0;
-                                                $u_v = 0; $u_q = 0; $u_c = 0; $u_p = 0;
-                                                $o_v = 0; $o_q = 0; $o_c = 0; $o_p = 0;
-                                                $l_v = 0; $l_q = 0; $l_c = 0; $l_p = 0;
-                                                $s_v = 0; $s_q = 0; $s_c = 0; $s_p = 0;
-                                                $ot_v = 0; $ot_q = 0; $ot_c = 0; $ot_p = 0;
-                                            @endphp
-                                            @foreach ($herbal_opd as $row)
-                                                <tr>
-                                                    <td class="text-center font-monospace">{{ $row->icode }}</td>
-                                                    <td class="fw-bold text-dark">{{ $row->drug_name }}</td>
-                                                    <td>{{ $row->generic_name ?? '-' }}</td>
-                                                    
-                                                    <!-- TOTAL -->
-                                                    <td class="text-center">{{ number_format($row->total_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->total_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->total_cost, 2) }}</td>
-                                                    <td class="text-end fw-bold text-dark">{{ number_format($row->total_price, 2) }}</td>
-                                                    
-                                                    <!-- UCS -->
-                                                    <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
+                    <div class="col-12 tab-pane-months-opd">
+                        <ul class="nav nav-pills nav-tabs-months mb-3" id="opd-months-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="opd-total-tab" data-bs-toggle="tab" data-bs-target="#opd-total-content" type="button" role="tab">รวมทั้งปี</button>
+                            </li>
+                            @foreach($months_list as $month)
+                                @php
+                                    $month_id = str_replace('-', '_', $month['key']);
+                                @endphp
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="opd-month-{{ $month_id }}-tab" data-bs-toggle="tab" data-bs-target="#opd-month-{{ $month_id }}-content" type="button" role="tab">{{ $month['label'] }}</button>
+                                </li>
+                            @endforeach
+                        </ul>
 
-                                                    <!-- OFC -->
-                                                    <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
-
-                                                    <!-- LGO -->
-                                                    <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
-
-                                                    <!-- SSS -->
-                                                    <td class="text-center">{{ number_format($row->sss_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->sss_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
-
-                                                    <!-- Other -->
-                                                    <td class="text-center">{{ number_format($row->other_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->other_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
-                                                </tr>
-                                                @php
-                                                    $t_v += $row->total_visit; $t_q += $row->total_qty; $t_c += $row->total_cost; $t_p += $row->total_price;
-                                                    $u_v += $row->ucs_visit; $u_q += $row->ucs_qty; $u_c += $row->ucs_cost; $u_p += $row->ucs_price;
-                                                    $o_v += $row->ofc_visit; $o_q += $row->ofc_qty; $o_c += $row->ofc_cost; $o_p += $row->ofc_price;
-                                                    $l_v += $row->lgo_visit; $l_q += $row->lgo_qty; $l_c += $row->lgo_cost; $l_p += $row->lgo_price;
-                                                    $s_v += $row->sss_visit; $s_q += $row->sss_qty; $s_c += $row->sss_cost; $s_p += $row->sss_price;
-                                                    $ot_v += $row->other_visit; $ot_q += $row->other_qty; $ot_c += $row->other_cost; $ot_p += $row->other_price;
-                                                @endphp
-                                            @endforeach
-                                        </tbody>
-                                        <tfoot>
-                                            <tr class="fw-bold bg-light">
-                                                <td colspan="3" class="text-center">รวมทั้งหมด</td>
-                                                <!-- TOTAL -->
-                                                <td class="text-center">{{ number_format($t_v) }}</td>
-                                                <td class="text-center">{{ number_format($t_q) }}</td>
-                                                <td class="text-end">{{ number_format($t_c, 2) }}</td>
-                                                <td class="text-end">{{ number_format($t_p, 2) }}</td>
-                                                <!-- UCS -->
-                                                <td class="text-center">{{ number_format($u_v) }}</td>
-                                                <td class="text-center">{{ number_format($u_q) }}</td>
-                                                <td class="text-end">{{ number_format($u_c, 2) }}</td>
-                                                <td class="text-end">{{ number_format($u_p, 2) }}</td>
-                                                <!-- OFC -->
-                                                <td class="text-center">{{ number_format($o_v) }}</td>
-                                                <td class="text-center">{{ number_format($o_q) }}</td>
-                                                <td class="text-end">{{ number_format($o_c, 2) }}</td>
-                                                <td class="text-end">{{ number_format($o_p, 2) }}</td>
-                                                <!-- LGO -->
-                                                <td class="text-center">{{ number_format($l_v) }}</td>
-                                                <td class="text-center">{{ number_format($l_q) }}</td>
-                                                <td class="text-end">{{ number_format($l_c, 2) }}</td>
-                                                <td class="text-end">{{ number_format($l_p, 2) }}</td>
-                                                <!-- SSS -->
-                                                <td class="text-center">{{ number_format($s_v) }}</td>
-                                                <td class="text-center">{{ number_format($s_q) }}</td>
-                                                <td class="text-end">{{ number_format($s_c, 2) }}</td>
-                                                <td class="text-end">{{ number_format($s_p, 2) }}</td>
-                                                <!-- Other -->
-                                                <td class="text-center">{{ number_format($ot_v) }}</td>
-                                                <td class="text-center">{{ number_format($ot_q) }}</td>
-                                                <td class="text-end">{{ number_format($ot_c, 2) }}</td>
-                                                <td class="text-end">{{ number_format($ot_p, 2) }}</td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                        <div class="tab-content" id="opdMonthsTabContent">
+                            <!-- Overall Table -->
+                            <div class="tab-pane fade show active" id="opd-total-content" role="tabpanel">
+                                <div class="card card-custom">
+                                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                        <h6 class="fw-bold mb-0 text-green"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยาสมุนไพร (OPD) - ยอดรวมทั้งปี</h6>
+                                    </div>
+                                    <div class="card-body px-4 pb-4">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle table-pivot w-100" id="opdTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th rowspan="2" style="width: 80px; background-color: #f8fafc;">รหัสยา</th>
+                                                        <th rowspan="2" style="min-width: 150px; background-color: #f8fafc;">ชื่อยา</th>
+                                                        <th rowspan="2" style="min-width: 120px; background-color: #f8fafc;">ชื่อสามัญ</th>
+                                                        <th colspan="4" class="th-total">TOTAL</th>
+                                                        <th colspan="4" class="th-ucs">UCS</th>
+                                                        <th colspan="4" class="th-ofc">OFC</th>
+                                                        <th colspan="4" class="th-lgo">LGO</th>
+                                                        <th colspan="4" class="th-sss">SSS</th>
+                                                        <th colspan="4" class="th-other">Other</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="th-total">VISIT</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
+                                                        <th class="th-ucs">VISIT</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
+                                                        <th class="th-ofc">VISIT</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
+                                                        <th class="th-lgo">VISIT</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
+                                                        <th class="th-sss">VISIT</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
+                                                        <th class="th-other">VISIT</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($herbal_opd as $row)
+                                                        <tr>
+                                                            <td class="text-center font-monospace">{{ $row->icode }}</td>
+                                                            <td class="fw-bold text-dark">{{ $row->drug_name }}</td>
+                                                            <td>{{ $row->generic_name ?? '-' }}</td>
+                                                            <td class="text-center">{{ number_format($row->total_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->total_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->total_cost, 2) }}</td>
+                                                            <td class="text-end fw-bold text-dark">{{ number_format($row->total_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->sss_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->sss_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->other_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->other_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Monthly Tables -->
+                            @foreach($months_list as $month)
+                                @php
+                                    $month_key = $month['key'];
+                                    $month_id = str_replace('-', '_', $month_key);
+                                    $monthly_data = isset($herbal_opd_monthly[$month_key]) ? $herbal_opd_monthly[$month_key] : [];
+                                @endphp
+                                <div class="tab-pane fade" id="opd-month-{{ $month_id }}-content" role="tabpanel">
+                                    <div class="card card-custom">
+                                        <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                            <h6 class="fw-bold mb-0 text-green"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยาสมุนไพร (OPD) - {{ $month['label'] }}</h6>
+                                        </div>
+                                        <div class="card-body px-4 pb-4">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle table-pivot w-100" id="table-opd-{{ $month_id }}">
+                                                    <thead>
+                                                        <tr>
+                                                            <th rowspan="2" style="width: 80px; background-color: #f8fafc;">รหัสยา</th>
+                                                            <th rowspan="2" style="min-width: 150px; background-color: #f8fafc;">ชื่อยา</th>
+                                                            <th rowspan="2" style="min-width: 120px; background-color: #f8fafc;">ชื่อสามัญ</th>
+                                                            <th colspan="4" class="th-total">TOTAL</th>
+                                                            <th colspan="4" class="th-ucs">UCS</th>
+                                                            <th colspan="4" class="th-ofc">OFC</th>
+                                                            <th colspan="4" class="th-lgo">LGO</th>
+                                                            <th colspan="4" class="th-sss">SSS</th>
+                                                            <th colspan="4" class="th-other">Other</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <th class="th-total">VISIT</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
+                                                            <th class="th-ucs">VISIT</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
+                                                            <th class="th-ofc">VISIT</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
+                                                            <th class="th-lgo">VISIT</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
+                                                            <th class="th-sss">VISIT</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
+                                                            <th class="th-other">VISIT</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($monthly_data as $row)
+                                                            <tr>
+                                                                <td class="text-center font-monospace">{{ $row->icode }}</td>
+                                                                <td class="fw-bold text-dark">{{ $row->drug_name }}</td>
+                                                                <td>{{ $row->generic_name ?? '-' }}</td>
+                                                                <td class="text-center">{{ number_format($row->total_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->total_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->total_cost, 2) }}</td>
+                                                                <td class="text-end fw-bold text-dark">{{ number_format($row->total_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->sss_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->sss_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->other_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->other_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -451,140 +503,166 @@
                         </div>
                     </div>
                     <!-- Table -->
-                    <div class="col-12">
-                        <div class="card card-custom">
-                            <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                <h6 class="fw-bold mb-0 text-red"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยาสมุนไพร (IPD)</h6>
-                            </div>
-                            <div class="card-body px-4 pb-4">
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle table-pivot" id="ipdTable">
-                                        <thead>
-                                            <tr>
-                                                <th rowspan="2" style="width: 80px;">รหัสยา</th>
-                                                <th rowspan="2" style="min-width: 150px;">ชื่อยา</th>
-                                                <th rowspan="2" style="min-width: 120px;">ชื่อสามัญ</th>
-                                                <th colspan="4" class="th-total">TOTAL</th>
-                                                <th colspan="4" class="th-ucs">UCS</th>
-                                                <th colspan="4" class="th-ofc">OFC</th>
-                                                <th colspan="4" class="th-lgo">LGO</th>
-                                                <th colspan="4" class="th-sss">SSS</th>
-                                                <th colspan="4" class="th-other">Other</th>
-                                            </tr>
-                                            <tr>
-                                                <!-- TOTAL -->
-                                                <th class="th-total">VISIT</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
-                                                <!-- UCS -->
-                                                <th class="th-ucs">VISIT</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
-                                                <!-- OFC -->
-                                                <th class="th-ofc">VISIT</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
-                                                <!-- LGO -->
-                                                <th class="th-lgo">VISIT</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
-                                                <!-- SSS -->
-                                                <th class="th-sss">VISIT</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
-                                                <!-- Other -->
-                                                <th class="th-other">VISIT</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @php
-                                                $t_v_ipd = 0; $t_q_ipd = 0; $t_c_ipd = 0; $t_p_ipd = 0;
-                                                $u_v_ipd = 0; $u_q_ipd = 0; $u_c_ipd = 0; $u_p_ipd = 0;
-                                                $o_v_ipd = 0; $o_q_ipd = 0; $o_c_ipd = 0; $o_p_ipd = 0;
-                                                $l_v_ipd = 0; $l_q_ipd = 0; $l_c_ipd = 0; $l_p_ipd = 0;
-                                                $s_v_ipd = 0; $s_q_ipd = 0; $s_c_ipd = 0; $s_p_ipd = 0;
-                                                $ot_v_ipd = 0; $ot_q_ipd = 0; $ot_c_ipd = 0; $ot_p_ipd = 0;
-                                            @endphp
-                                            @foreach ($herbal_ipd as $row)
-                                                <tr>
-                                                    <td class="text-center font-monospace">{{ $row->icode }}</td>
-                                                    <td class="fw-bold text-dark">{{ $row->drug_name }}</td>
-                                                    <td>{{ $row->generic_name ?? '-' }}</td>
-                                                    
-                                                    <!-- TOTAL -->
-                                                    <td class="text-center">{{ number_format($row->total_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->total_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->total_cost, 2) }}</td>
-                                                    <td class="text-end fw-bold text-dark">{{ number_format($row->total_price, 2) }}</td>
-                                                    
-                                                    <!-- UCS -->
-                                                    <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
+                    <div class="col-12 tab-pane-months-ipd">
+                        <ul class="nav nav-pills nav-tabs-months mb-3" id="ipd-months-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="ipd-total-tab" data-bs-toggle="tab" data-bs-target="#ipd-total-content" type="button" role="tab">รวมทั้งปี</button>
+                            </li>
+                            @foreach($months_list as $month)
+                                @php
+                                    $month_id = str_replace('-', '_', $month['key']);
+                                @endphp
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="ipd-month-{{ $month_id }}-tab" data-bs-toggle="tab" data-bs-target="#ipd-month-{{ $month_id }}-content" type="button" role="tab">{{ $month['label'] }}</button>
+                                </li>
+                            @endforeach
+                        </ul>
 
-                                                    <!-- OFC -->
-                                                    <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
-
-                                                    <!-- LGO -->
-                                                    <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
-
-                                                    <!-- SSS -->
-                                                    <td class="text-center">{{ number_format($row->sss_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->sss_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
-
-                                                    <!-- Other -->
-                                                    <td class="text-center">{{ number_format($row->other_visit) }}</td>
-                                                    <td class="text-center">{{ number_format($row->other_qty) }}</td>
-                                                    <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
-                                                </tr>
-                                                @php
-                                                    $t_v_ipd += $row->total_visit; $t_q_ipd += $row->total_qty; $t_c_ipd += $row->total_cost; $t_p_ipd += $row->total_price;
-                                                    $u_v_ipd += $row->ucs_visit; $u_q_ipd += $row->ucs_qty; $u_c_ipd += $row->ucs_cost; $u_p_ipd += $row->ucs_price;
-                                                    $o_v_ipd += $row->ofc_visit; $o_q_ipd += $row->ofc_qty; $o_c_ipd += $row->ofc_cost; $o_p_ipd += $row->ofc_price;
-                                                    $l_v_ipd += $row->lgo_visit; $l_q_ipd += $row->lgo_qty; $l_c_ipd += $row->lgo_cost; $l_p_ipd += $row->lgo_price;
-                                                    $s_v_ipd += $row->sss_visit; $s_q_ipd += $row->sss_qty; $s_c_ipd += $row->sss_cost; $s_p_ipd += $row->sss_price;
-                                                    $ot_v_ipd += $row->other_visit; $ot_q_ipd += $row->other_qty; $ot_c_ipd += $row->other_cost; $ot_p_ipd += $row->other_price;
-                                                @endphp
-                                            @endforeach
-                                        </tbody>
-                                        <tfoot>
-                                            <tr class="fw-bold bg-light">
-                                                <td colspan="3" class="text-center">รวมทั้งหมด</td>
-                                                <!-- TOTAL -->
-                                                <td class="text-center">{{ number_format($t_v_ipd) }}</td>
-                                                <td class="text-center">{{ number_format($t_q_ipd) }}</td>
-                                                <td class="text-end">{{ number_format($t_c_ipd, 2) }}</td>
-                                                <td class="text-end">{{ number_format($t_p_ipd, 2) }}</td>
-                                                <!-- UCS -->
-                                                <td class="text-center">{{ number_format($u_v_ipd) }}</td>
-                                                <td class="text-center">{{ number_format($u_q_ipd) }}</td>
-                                                <td class="text-end">{{ number_format($u_c_ipd, 2) }}</td>
-                                                <td class="text-end">{{ number_format($u_p_ipd, 2) }}</td>
-                                                <!-- OFC -->
-                                                <td class="text-center">{{ number_format($o_v_ipd) }}</td>
-                                                <td class="text-center">{{ number_format($o_q_ipd) }}</td>
-                                                <td class="text-end">{{ number_format($o_c_ipd, 2) }}</td>
-                                                <td class="text-end">{{ number_format($o_p_ipd, 2) }}</td>
-                                                <!-- LGO -->
-                                                <td class="text-center">{{ number_format($l_v_ipd) }}</td>
-                                                <td class="text-center">{{ number_format($l_q_ipd) }}</td>
-                                                <td class="text-end">{{ number_format($l_c_ipd, 2) }}</td>
-                                                <td class="text-end">{{ number_format($l_p_ipd, 2) }}</td>
-                                                <!-- SSS -->
-                                                <td class="text-center">{{ number_format($s_v_ipd) }}</td>
-                                                <td class="text-center">{{ number_format($s_q_ipd) }}</td>
-                                                <td class="text-end">{{ number_format($s_c_ipd, 2) }}</td>
-                                                <td class="text-end">{{ number_format($s_p_ipd, 2) }}</td>
-                                                <!-- Other -->
-                                                <td class="text-center">{{ number_format($ot_v_ipd) }}</td>
-                                                <td class="text-center">{{ number_format($ot_q_ipd) }}</td>
-                                                <td class="text-end">{{ number_format($ot_c_ipd, 2) }}</td>
-                                                <td class="text-end">{{ number_format($ot_p_ipd, 2) }}</td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                        <div class="tab-content" id="ipdMonthsTabContent">
+                            <!-- Overall Table -->
+                            <div class="tab-pane fade show active" id="ipd-total-content" role="tabpanel">
+                                <div class="card card-custom">
+                                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                        <h6 class="fw-bold mb-0 text-red"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยาสมุนไพร (IPD) - ยอดรวมทั้งปี</h6>
+                                    </div>
+                                    <div class="card-body px-4 pb-4">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle table-pivot w-100" id="ipdTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th rowspan="2" style="width: 80px; background-color: #f8fafc;">รหัสยา</th>
+                                                        <th rowspan="2" style="min-width: 150px; background-color: #f8fafc;">ชื่อยา</th>
+                                                        <th rowspan="2" style="min-width: 120px; background-color: #f8fafc;">ชื่อสามัญ</th>
+                                                        <th colspan="4" class="th-total">TOTAL</th>
+                                                        <th colspan="4" class="th-ucs">UCS</th>
+                                                        <th colspan="4" class="th-ofc">OFC</th>
+                                                        <th colspan="4" class="th-lgo">LGO</th>
+                                                        <th colspan="4" class="th-sss">SSS</th>
+                                                        <th colspan="4" class="th-other">Other</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="th-total">AN</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
+                                                        <th class="th-ucs">AN</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
+                                                        <th class="th-ofc">AN</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
+                                                        <th class="th-lgo">AN</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
+                                                        <th class="th-sss">AN</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
+                                                        <th class="th-other">AN</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($herbal_ipd as $row)
+                                                        <tr>
+                                                            <td class="text-center font-monospace">{{ $row->icode }}</td>
+                                                            <td class="fw-bold text-dark">{{ $row->drug_name }}</td>
+                                                            <td>{{ $row->generic_name ?? '-' }}</td>
+                                                            <td class="text-center">{{ number_format($row->total_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->total_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->total_cost, 2) }}</td>
+                                                            <td class="text-end fw-bold text-dark">{{ number_format($row->total_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->sss_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->sss_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
+                                                            <td class="text-center">{{ number_format($row->other_visit) }}</td>
+                                                            <td class="text-center">{{ number_format($row->other_qty) }}</td>
+                                                            <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
+                                                            <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Monthly Tables -->
+                            @foreach($months_list as $month)
+                                @php
+                                    $month_key = $month['key'];
+                                    $month_id = str_replace('-', '_', $month_key);
+                                    $monthly_data = isset($herbal_ipd_monthly[$month_key]) ? $herbal_ipd_monthly[$month_key] : [];
+                                @endphp
+                                <div class="tab-pane fade" id="ipd-month-{{ $month_id }}-content" role="tabpanel">
+                                    <div class="card card-custom">
+                                        <div class="card-header bg-transparent border-0 pt-4 px-4">
+                                            <h6 class="fw-bold mb-0 text-red"><i class="fas fa-table me-2"></i>ตารางสถิติข้อมูลการใช้ยาสมุนไพร (IPD) - {{ $month['label'] }}</h6>
+                                        </div>
+                                        <div class="card-body px-4 pb-4">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle table-pivot w-100" id="table-ipd-{{ $month_id }}">
+                                                    <thead>
+                                                        <tr>
+                                                            <th rowspan="2" style="width: 80px; background-color: #f8fafc;">รหัสยา</th>
+                                                            <th rowspan="2" style="min-width: 150px; background-color: #f8fafc;">ชื่อยา</th>
+                                                            <th rowspan="2" style="min-width: 120px; background-color: #f8fafc;">ชื่อสามัญ</th>
+                                                            <th colspan="4" class="th-total">TOTAL</th>
+                                                            <th colspan="4" class="th-ucs">UCS</th>
+                                                            <th colspan="4" class="th-ofc">OFC</th>
+                                                            <th colspan="4" class="th-lgo">LGO</th>
+                                                            <th colspan="4" class="th-sss">SSS</th>
+                                                            <th colspan="4" class="th-other">Other</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <th class="th-total">AN</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
+                                                            <th class="th-ucs">AN</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
+                                                            <th class="th-ofc">AN</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
+                                                            <th class="th-lgo">AN</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
+                                                            <th class="th-sss">AN</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
+                                                            <th class="th-other">AN</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($monthly_data as $row)
+                                                            <tr>
+                                                                <td class="text-center font-monospace">{{ $row->icode }}</td>
+                                                                <td class="fw-bold text-dark">{{ $row->drug_name }}</td>
+                                                                <td>{{ $row->generic_name ?? '-' }}</td>
+                                                                <td class="text-center">{{ number_format($row->total_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->total_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->total_cost, 2) }}</td>
+                                                                <td class="text-end fw-bold text-dark">{{ number_format($row->total_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->sss_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->sss_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
+                                                                <td class="text-center">{{ number_format($row->other_visit) }}</td>
+                                                                <td class="text-center">{{ number_format($row->other_qty) }}</td>
+                                                                <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
+                                                                <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -631,6 +709,22 @@
                 ipdChart.render();
                 @endif
 
+                // Custom Header Formatter for Excel Export (4 columns per group)
+                const getExportHeaderFormatter = function() {
+                    return function(data, columnIdx) {
+                        const prefixes = [
+                            "", "", "", // icode, ชื่อยา, ชื่อสามัญ
+                            "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", // VISIT, QTY, COST, PRICE
+                            "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ",
+                            "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ",
+                            "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ",
+                            "สิทธิ ประกันสังคม (SSS) - ", "สิทธิ ประกันสังคม (SSS) - ", "สิทธิ ประกันสังคม (SSS) - ", "สิทธิ ประกันสังคม (SSS) - ",
+                            "สิทธิ อื่นๆ - ", "สิทธิ อื่นๆ - ", "สิทธิ อื่นๆ - ", "สิทธิ อื่นๆ - "
+                        ];
+                        return (prefixes[columnIdx] || "") + data;
+                    };
+                };
+
                 // DataTables Configuration
                 const dataTableConfig = {
                     pageLength: 10,
@@ -646,27 +740,75 @@
                     }
                 };
 
-                var opdTable = $('#opdTable').DataTable({
+                // Initialize Overall OPD Table
+                $('#opdTable').DataTable({
                     ...dataTableConfig,
                     buttons: [{
                         extend: 'excelHtml5',
                         text: '<i class="fas fa-file-excel me-1"></i> Excel',
                         className: 'btn btn-success btn-sm',
-                        title: 'รายงานสรุปการใช้ยาสมุนไพร (OPD) แยกตามสิทธิ',
-                        exportOptions: { columns: ':visible' }
+                        title: 'รายงานสรุปการใช้ยาสมุนไพร (OPD) - ยอดรวมทั้งปี',
+                        exportOptions: {
+                            columns: ':visible',
+                            format: { header: getExportHeaderFormatter() }
+                        }
                     }]
                 });
 
-                var ipdTable = $('#ipdTable').DataTable({
+                // Initialize Monthly OPD Tables
+                @foreach($months_list as $month)
+                    @php
+                        $month_id = str_replace('-', '_', $month['key']);
+                    @endphp
+                    $('#table-opd-{{ $month_id }}').DataTable({
+                        ...dataTableConfig,
+                        buttons: [{
+                            extend: 'excelHtml5',
+                            text: '<i class="fas fa-file-excel me-1"></i> Excel',
+                            className: 'btn btn-success btn-sm',
+                            title: 'รายงานสรุปการใช้ยาสมุนไพร (OPD) - {{ $month['label'] }}',
+                            exportOptions: {
+                                columns: ':visible',
+                                format: { header: getExportHeaderFormatter() }
+                            }
+                        }]
+                    });
+                @endforeach
+
+                // Initialize Overall IPD Table
+                $('#ipdTable').DataTable({
                     ...dataTableConfig,
                     buttons: [{
                         extend: 'excelHtml5',
                         text: '<i class="fas fa-file-excel me-1"></i> Excel',
                         className: 'btn btn-success btn-sm',
-                        title: 'รายงานสรุปการใช้ยาสมุนไพร (IPD) แยกตามสิทธิ',
-                        exportOptions: { columns: ':visible' }
+                        title: 'รายงานสรุปการใช้ยาสมุนไพร (IPD) - ยอดรวมทั้งปี',
+                        exportOptions: {
+                            columns: ':visible',
+                            format: { header: getExportHeaderFormatter() }
+                        }
                     }]
                 });
+
+                // Initialize Monthly IPD Tables
+                @foreach($months_list as $month)
+                    @php
+                        $month_id = str_replace('-', '_', $month['key']);
+                    @endphp
+                    $('#table-ipd-{{ $month_id }}').DataTable({
+                        ...dataTableConfig,
+                        buttons: [{
+                            extend: 'excelHtml5',
+                            text: '<i class="fas fa-file-excel me-1"></i> Excel',
+                            className: 'btn btn-success btn-sm',
+                            title: 'รายงานสรุปการใช้ยาสมุนไพร (IPD) - {{ $month['label'] }}',
+                            exportOptions: {
+                                columns: ':visible',
+                                format: { header: getExportHeaderFormatter() }
+                            }
+                        }]
+                    });
+                @endforeach
 
                 // Flatpickr setup
                 if (typeof flatpickr !== 'undefined') {
@@ -735,7 +877,7 @@
                 }
 
                 // Fix chart and table render sizes on tab switch
-                $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                $('button[data-bs-toggle="tab"], button[data-bs-toggle="pill"]').on('shown.bs.tab shown.bs.pill', function (e) {
                     window.dispatchEvent(new Event('resize'));
                     $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
                 });
