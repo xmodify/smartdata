@@ -1435,6 +1435,7 @@ class PharController extends Controller
                 
                 COUNT(DISTINCT CASE WHEN p.hipdata_code = "UCS" THEN o.an END) AS ucs_visit,
                 SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
                 SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.sum_price ELSE 0 END) AS ucs_price,
                 
                 COUNT(DISTINCT CASE WHEN p.hipdata_code = "OFC" THEN o.an END) AS ofc_visit,
