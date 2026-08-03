@@ -406,27 +406,27 @@
                                                                 <tr>
                                                                     <th class="th-total">Visit</th>
                                                                     <th class="th-total">Qty</th>
-                                                                    <th class="th-total">ราคาทุน</th>
+                                                                    <th class="th-total">ทุน (บาท)</th>
                                                                     <th class="th-total">มูลค่า (บาท)</th>
                                                                     <th class="th-ucs">Visit</th>
                                                                     <th class="th-ucs">Qty</th>
-                                                                    <th class="th-ucs">ราคาทุน</th>
+                                                                    <th class="th-ucs">ทุน (บาท)</th>
                                                                     <th class="th-ucs">มูลค่า (บาท)</th>
                                                                     <th class="th-ofc">Visit</th>
                                                                     <th class="th-ofc">Qty</th>
-                                                                    <th class="th-ofc">ราคาทุน</th>
+                                                                    <th class="th-ofc">ทุน (บาท)</th>
                                                                     <th class="th-ofc">มูลค่า (บาท)</th>
                                                                     <th class="th-lgo">Visit</th>
                                                                     <th class="th-lgo">Qty</th>
-                                                                    <th class="th-lgo">ราคาทุน</th>
+                                                                    <th class="th-lgo">ทุน (บาท)</th>
                                                                     <th class="th-lgo">มูลค่า (บาท)</th>
                                                                     <th class="th-sss">Visit</th>
                                                                     <th class="th-sss">Qty</th>
-                                                                    <th class="th-sss">ราคาทุน</th>
+                                                                    <th class="th-sss">ทุน (บาท)</th>
                                                                     <th class="th-sss">มูลค่า (บาท)</th>
                                                                     <th class="th-other">Visit</th>
                                                                     <th class="th-other">Qty</th>
-                                                                    <th class="th-other">ราคาทุน</th>
+                                                                    <th class="th-other">ทุน (บาท)</th>
                                                                     <th class="th-other">มูลค่า (บาท)</th>
                                                                 </tr>
                                                             </thead>
@@ -648,27 +648,27 @@
                                                                 <tr>
                                                                     <th class="th-total">AN</th>
                                                                     <th class="th-total">Qty</th>
-                                                                    <th class="th-total">ราคาทุน</th>
+                                                                    <th class="th-total">ทุน (บาท)</th>
                                                                     <th class="th-total">มูลค่า (บาท)</th>
                                                                     <th class="th-ucs">AN</th>
                                                                     <th class="th-ucs">Qty</th>
-                                                                    <th class="th-ucs">ราคาทุน</th>
+                                                                    <th class="th-ucs">ทุน (บาท)</th>
                                                                     <th class="th-ucs">มูลค่า (บาท)</th>
                                                                     <th class="th-ofc">AN</th>
                                                                     <th class="th-ofc">Qty</th>
-                                                                    <th class="th-ofc">ราคาทุน</th>
+                                                                    <th class="th-ofc">ทุน (บาท)</th>
                                                                     <th class="th-ofc">มูลค่า (บาท)</th>
                                                                     <th class="th-lgo">AN</th>
                                                                     <th class="th-lgo">Qty</th>
-                                                                    <th class="th-lgo">ราคาทุน</th>
+                                                                    <th class="th-lgo">ทุน (บาท)</th>
                                                                     <th class="th-lgo">มูลค่า (บาท)</th>
                                                                     <th class="th-sss">AN</th>
                                                                     <th class="th-sss">Qty</th>
-                                                                    <th class="th-sss">ราคาทุน</th>
+                                                                    <th class="th-sss">ทุน (บาท)</th>
                                                                     <th class="th-sss">มูลค่า (บาท)</th>
                                                                     <th class="th-other">AN</th>
                                                                     <th class="th-other">Qty</th>
-                                                                    <th class="th-other">ราคาทุน</th>
+                                                                    <th class="th-other">ทุน (บาท)</th>
                                                                     <th class="th-other">มูลค่า (บาท)</th>
                                                                 </tr>
                                                             </thead>
@@ -913,7 +913,7 @@
                 return function(data, columnIdx) {
                     const prefixes = [
                         "", "", "", // icode, ชื่อยา, ชื่อสามัญ
-                        "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", // Visit, Qty, ราคาทุน, มูลค่า
+                        "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", // Visit, Qty, ทุน (บาท), มูลค่า
                         "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ",
                         "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ",
                         "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ",
