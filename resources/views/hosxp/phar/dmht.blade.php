@@ -307,7 +307,7 @@
                     <div class="col-12">
                         <div class="card card-custom">
                             <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-chart-line me-2"></i>ปริมาณการใช้ยา DM-HT (QTY) รายเดือน แยกตามตัวยา (OPD) <span class="text-muted small fw-normal">(แสดงข้อมูล Top 10)</span></h6>
+                                <h6 class="fw-bold mb-0 text-green"><i class="fas fa-chart-line me-2"></i>ปริมาณการใช้ยา DM-HT (Qty) รายเดือน แยกตามตัวยา (OPD) <span class="text-muted small fw-normal">(แสดงข้อมูล Top 10)</span></h6>
                             </div>
                             <div class="card-body px-4 pb-4">
                                 @if(count($chart_series_opd) > 0)
@@ -357,12 +357,12 @@
                                                         <th colspan="4" class="th-other">Other</th>
                                                     </tr>
                                                     <tr>
-                                                        <th class="th-total">VISIT</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
-                                                        <th class="th-ucs">VISIT</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
-                                                        <th class="th-ofc">VISIT</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
-                                                        <th class="th-lgo">VISIT</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
-                                                        <th class="th-sss">VISIT</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
-                                                        <th class="th-other">VISIT</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
+                                                        <th class="th-total">Visit</th><th class="th-total">Qty</th><th class="th-total">ราคาทุน</th><th class="th-total">ราคาขาย</th>
+                                                        <th class="th-ucs">Visit</th><th class="th-ucs">Qty</th><th class="th-ucs">ราคาทุน</th><th class="th-ucs">ราคาขาย</th>
+                                                        <th class="th-ofc">Visit</th><th class="th-ofc">Qty</th><th class="th-ofc">ราคาทุน</th><th class="th-ofc">ราคาขาย</th>
+                                                        <th class="th-lgo">Visit</th><th class="th-lgo">Qty</th><th class="th-lgo">ราคาทุน</th><th class="th-lgo">ราคาขาย</th>
+                                                        <th class="th-sss">Visit</th><th class="th-sss">Qty</th><th class="th-sss">ราคาทุน</th><th class="th-sss">ราคาขาย</th>
+                                                        <th class="th-other">Visit</th><th class="th-other">Qty</th><th class="th-other">ราคาทุน</th><th class="th-other">ราคาขาย</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -432,12 +432,12 @@
                                                             <th colspan="4" class="th-other">Other</th>
                                                         </tr>
                                                         <tr>
-                                                            <th class="th-total">VISIT</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
-                                                            <th class="th-ucs">VISIT</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
-                                                            <th class="th-ofc">VISIT</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
-                                                            <th class="th-lgo">VISIT</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
-                                                            <th class="th-sss">VISIT</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
-                                                            <th class="th-other">VISIT</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
+                                                            <th class="th-total">Visit</th><th class="th-total">Qty</th><th class="th-total">ราคาทุน</th><th class="th-total">ราคาขาย</th>
+                                                            <th class="th-ucs">Visit</th><th class="th-ucs">Qty</th><th class="th-ucs">ราคาทุน</th><th class="th-ucs">ราคาขาย</th>
+                                                            <th class="th-ofc">Visit</th><th class="th-ofc">Qty</th><th class="th-ofc">ราคาทุน</th><th class="th-ofc">ราคาขาย</th>
+                                                            <th class="th-lgo">Visit</th><th class="th-lgo">Qty</th><th class="th-lgo">ราคาทุน</th><th class="th-lgo">ราคาขาย</th>
+                                                            <th class="th-sss">Visit</th><th class="th-sss">Qty</th><th class="th-sss">ราคาทุน</th><th class="th-sss">ราคาขาย</th>
+                                                            <th class="th-other">Visit</th><th class="th-other">Qty</th><th class="th-other">ราคาทุน</th><th class="th-other">ราคาขาย</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -491,7 +491,7 @@
                     <div class="col-12">
                         <div class="card card-custom">
                             <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                <h6 class="fw-bold mb-0 text-red"><i class="fas fa-chart-line me-2"></i>ปริมาณการใช้ยา DM-HT (QTY) รายเดือน แยกตามตัวยา (IPD) <span class="text-muted small fw-normal">(แสดงข้อมูล Top 10)</span></h6>
+                                <h6 class="fw-bold mb-0 text-red"><i class="fas fa-chart-line me-2"></i>ปริมาณการใช้ยา DM-HT (Qty) รายเดือน แยกตามตัวยา (IPD) <span class="text-muted small fw-normal">(แสดงข้อมูล Top 10)</span></h6>
                             </div>
                             <div class="card-body px-4 pb-4">
                                 @if(count($chart_series_ipd) > 0)
@@ -541,12 +541,12 @@
                                                         <th colspan="4" class="th-other">Other</th>
                                                     </tr>
                                                     <tr>
-                                                        <th class="th-total">AN</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
-                                                        <th class="th-ucs">AN</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
-                                                        <th class="th-ofc">AN</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
-                                                        <th class="th-lgo">AN</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
-                                                        <th class="th-sss">AN</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
-                                                        <th class="th-other">AN</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
+                                                        <th class="th-total">AN</th><th class="th-total">Qty</th><th class="th-total">ราคาทุน</th><th class="th-total">ราคาขาย</th>
+                                                        <th class="th-ucs">AN</th><th class="th-ucs">Qty</th><th class="th-ucs">ราคาทุน</th><th class="th-ucs">ราคาขาย</th>
+                                                        <th class="th-ofc">AN</th><th class="th-ofc">Qty</th><th class="th-ofc">ราคาทุน</th><th class="th-ofc">ราคาขาย</th>
+                                                        <th class="th-lgo">AN</th><th class="th-lgo">Qty</th><th class="th-lgo">ราคาทุน</th><th class="th-lgo">ราคาขาย</th>
+                                                        <th class="th-sss">AN</th><th class="th-sss">Qty</th><th class="th-sss">ราคาทุน</th><th class="th-sss">ราคาขาย</th>
+                                                        <th class="th-other">AN</th><th class="th-other">Qty</th><th class="th-other">ราคาทุน</th><th class="th-other">ราคาขาย</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -616,12 +616,12 @@
                                                             <th colspan="4" class="th-other">Other</th>
                                                         </tr>
                                                         <tr>
-                                                            <th class="th-total">AN</th><th class="th-total">QTY</th><th class="th-total">COST</th><th class="th-total">PRICE</th>
-                                                            <th class="th-ucs">AN</th><th class="th-ucs">QTY</th><th class="th-ucs">COST</th><th class="th-ucs">PRICE</th>
-                                                            <th class="th-ofc">AN</th><th class="th-ofc">QTY</th><th class="th-ofc">COST</th><th class="th-ofc">PRICE</th>
-                                                            <th class="th-lgo">AN</th><th class="th-lgo">QTY</th><th class="th-lgo">COST</th><th class="th-lgo">PRICE</th>
-                                                            <th class="th-sss">AN</th><th class="th-sss">QTY</th><th class="th-sss">COST</th><th class="th-sss">PRICE</th>
-                                                            <th class="th-other">AN</th><th class="th-other">QTY</th><th class="th-other">COST</th><th class="th-other">PRICE</th>
+                                                            <th class="th-total">AN</th><th class="th-total">Qty</th><th class="th-total">ราคาทุน</th><th class="th-total">ราคาขาย</th>
+                                                            <th class="th-ucs">AN</th><th class="th-ucs">Qty</th><th class="th-ucs">ราคาทุน</th><th class="th-ucs">ราคาขาย</th>
+                                                            <th class="th-ofc">AN</th><th class="th-ofc">Qty</th><th class="th-ofc">ราคาทุน</th><th class="th-ofc">ราคาขาย</th>
+                                                            <th class="th-lgo">AN</th><th class="th-lgo">Qty</th><th class="th-lgo">ราคาทุน</th><th class="th-lgo">ราคาขาย</th>
+                                                            <th class="th-sss">AN</th><th class="th-sss">Qty</th><th class="th-sss">ราคาทุน</th><th class="th-sss">ราคาขาย</th>
+                                                            <th class="th-other">AN</th><th class="th-other">Qty</th><th class="th-other">ราคาทุน</th><th class="th-other">ราคาขาย</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -714,7 +714,7 @@
                     return function(data, columnIdx) {
                         const prefixes = [
                             "", "", "", // icode, ชื่อยา, ชื่อสามัญ
-                            "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", // VISIT, QTY, COST, PRICE
+                            "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", // Visit, Qty, ราคาทุน, ราคาขาย
                             "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ",
                             "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ",
                             "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ",
