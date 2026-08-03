@@ -157,6 +157,12 @@
                                     <span class="small text-dark fw-bold">ข้อมูลการใช้ยาต้านไวรัส</span>
                                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
                                 </div>
+                            </a>
+                            <a href="{{ route('hosxp.phar.opoh') }}" class="list-group-item list-group-item-action py-2 px-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-dark fw-bold">ข้อมูลการใช้ยา OPOH</span>
+                                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                                </div>
                             </a>                        
                         </div>
                     </div>
