@@ -117,8 +117,8 @@
             font-size: 0.8rem;
         }
         .table-pivot th {
-            text-align: center;
-            vertical-align: middle;
+            text-align: center !important;
+            vertical-align: middle !important;
             border: 1px solid #dee2e6 !important;
             font-weight: bold;
             padding: 6px 4px;
