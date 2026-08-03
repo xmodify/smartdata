@@ -396,31 +396,37 @@
                                                                     <th rowspan="2" style="background-color: #f8fafc;">icode</th>
                                                                     <th rowspan="2" style="background-color: #f8fafc;">ชื่อยา</th>
                                                                     <th rowspan="2" style="background-color: #f8fafc;">ชื่อสามัญ</th>
-                                                                    <th colspan="3" class="th-total">รวมทั้งหมด</th>
-                                                                    <th colspan="3" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
-                                                                    <th colspan="3" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
-                                                                    <th colspan="3" class="th-lgo">สิทธิ อปท. (LGO)</th>
-                                                                    <th colspan="3" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
-                                                                    <th colspan="3" class="th-other">สิทธิ อื่นๆ</th>
+                                                                    <th colspan="4" class="th-total">รวมทั้งหมด</th>
+                                                                    <th colspan="4" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
+                                                                    <th colspan="4" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
+                                                                    <th colspan="4" class="th-lgo">สิทธิ อปท. (LGO)</th>
+                                                                    <th colspan="4" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
+                                                                    <th colspan="4" class="th-other">สิทธิ อื่นๆ</th>
                                                                 </tr>
                                                                 <tr>
                                                                     <th class="th-total">Visit</th>
                                                                     <th class="th-total">Qty</th>
+                                                                    <th class="th-total">ราคาทุน</th>
                                                                     <th class="th-total">มูลค่า (บาท)</th>
                                                                     <th class="th-ucs">Visit</th>
                                                                     <th class="th-ucs">Qty</th>
+                                                                    <th class="th-ucs">ราคาทุน</th>
                                                                     <th class="th-ucs">มูลค่า (บาท)</th>
                                                                     <th class="th-ofc">Visit</th>
                                                                     <th class="th-ofc">Qty</th>
+                                                                    <th class="th-ofc">ราคาทุน</th>
                                                                     <th class="th-ofc">มูลค่า (บาท)</th>
                                                                     <th class="th-lgo">Visit</th>
                                                                     <th class="th-lgo">Qty</th>
+                                                                    <th class="th-lgo">ราคาทุน</th>
                                                                     <th class="th-lgo">มูลค่า (บาท)</th>
                                                                     <th class="th-sss">Visit</th>
                                                                     <th class="th-sss">Qty</th>
+                                                                    <th class="th-sss">ราคาทุน</th>
                                                                     <th class="th-sss">มูลค่า (บาท)</th>
                                                                     <th class="th-other">Visit</th>
                                                                     <th class="th-other">Qty</th>
+                                                                    <th class="th-other">ราคาทุน</th>
                                                                     <th class="th-other">มูลค่า (บาท)</th>
                                                                 </tr>
                                                             </thead>
@@ -442,26 +448,32 @@
                                                                         <td>{{ $row->generic_name }}</td>
                                                                         <td class="text-center bg-pastel-green fw-bold">{{ number_format($row->total_visit) }}</td>
                                                                         <td class="text-center bg-pastel-green fw-bold">{{ number_format($row->total_qty) }}</td>
+                                                                        <td class="text-end bg-pastel-green text-muted">{{ number_format($row->total_cost, 2) }}</td>
                                                                         <td class="text-end bg-pastel-green fw-bold">{{ number_format($row->total_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->sss_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->sss_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->other_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->other_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
                                                                     </tr>
                                                                 @endforeach
@@ -492,12 +504,12 @@
                                                                         <th rowspan="2" style="background-color: #f8fafc;">icode</th>
                                                                         <th rowspan="2" style="background-color: #f8fafc;">ชื่อยา</th>
                                                                         <th rowspan="2" style="background-color: #f8fafc;">ชื่อสามัญ</th>
-                                                                        <th colspan="3" class="th-total">รวมทั้งหมด</th>
-                                                                        <th colspan="3" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
-                                                                        <th colspan="3" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
-                                                                        <th colspan="3" class="th-lgo">สิทธิ อปท. (LGO)</th>
-                                                                        <th colspan="3" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
-                                                                        <th colspan="3" class="th-other">สิทธิ อื่นๆ</th>
+                                                                        <th colspan="4" class="th-total">รวมทั้งหมด</th>
+                                                                        <th colspan="4" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
+                                                                        <th colspan="4" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
+                                                                        <th colspan="4" class="th-lgo">สิทธิ อปท. (LGO)</th>
+                                                                        <th colspan="4" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
+                                                                        <th colspan="4" class="th-other">สิทธิ อื่นๆ</th>
                                                                     </tr>
                                                                     <tr>
                                                                         <th class="th-total">Visit</th>
@@ -626,31 +638,37 @@
                                                                     <th rowspan="2" style="background-color: #f8fafc;">icode</th>
                                                                     <th rowspan="2" style="background-color: #f8fafc;">ชื่อยา</th>
                                                                     <th rowspan="2" style="background-color: #f8fafc;">ชื่อสามัญ</th>
-                                                                    <th colspan="3" class="th-total">รวมทั้งหมด</th>
-                                                                    <th colspan="3" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
-                                                                    <th colspan="3" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
-                                                                    <th colspan="3" class="th-lgo">สิทธิ อปท. (LGO)</th>
-                                                                    <th colspan="3" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
-                                                                    <th colspan="3" class="th-other">สิทธิ อื่นๆ</th>
+                                                                    <th colspan="4" class="th-total">รวมทั้งหมด</th>
+                                                                    <th colspan="4" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
+                                                                    <th colspan="4" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
+                                                                    <th colspan="4" class="th-lgo">สิทธิ อปท. (LGO)</th>
+                                                                    <th colspan="4" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
+                                                                    <th colspan="4" class="th-other">สิทธิ อื่นๆ</th>
                                                                 </tr>
                                                                 <tr>
                                                                     <th class="th-total">AN</th>
                                                                     <th class="th-total">Qty</th>
+                                                                    <th class="th-total">ราคาทุน</th>
                                                                     <th class="th-total">มูลค่า (บาท)</th>
                                                                     <th class="th-ucs">AN</th>
                                                                     <th class="th-ucs">Qty</th>
+                                                                    <th class="th-ucs">ราคาทุน</th>
                                                                     <th class="th-ucs">มูลค่า (บาท)</th>
                                                                     <th class="th-ofc">AN</th>
                                                                     <th class="th-ofc">Qty</th>
+                                                                    <th class="th-ofc">ราคาทุน</th>
                                                                     <th class="th-ofc">มูลค่า (บาท)</th>
                                                                     <th class="th-lgo">AN</th>
                                                                     <th class="th-lgo">Qty</th>
+                                                                    <th class="th-lgo">ราคาทุน</th>
                                                                     <th class="th-lgo">มูลค่า (บาท)</th>
                                                                     <th class="th-sss">AN</th>
                                                                     <th class="th-sss">Qty</th>
+                                                                    <th class="th-sss">ราคาทุน</th>
                                                                     <th class="th-sss">มูลค่า (บาท)</th>
                                                                     <th class="th-other">AN</th>
                                                                     <th class="th-other">Qty</th>
+                                                                    <th class="th-other">ราคาทุน</th>
                                                                     <th class="th-other">มูลค่า (บาท)</th>
                                                                 </tr>
                                                             </thead>
@@ -672,26 +690,32 @@
                                                                         <td>{{ $row->generic_name }}</td>
                                                                         <td class="text-center bg-pastel-red fw-bold">{{ number_format($row->total_visit) }}</td>
                                                                         <td class="text-center bg-pastel-red fw-bold">{{ number_format($row->total_qty) }}</td>
+                                                                        <td class="text-end bg-pastel-red text-muted">{{ number_format($row->total_cost, 2) }}</td>
                                                                         <td class="text-end bg-pastel-red fw-bold">{{ number_format($row->total_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->sss_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->sss_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
                                                                         
                                                                         <td class="text-center">{{ number_format($row->other_visit) }}</td>
                                                                         <td class="text-center">{{ number_format($row->other_qty) }}</td>
+                                                                        <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
                                                                         <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
                                                                     </tr>
                                                                 @endforeach
@@ -722,12 +746,12 @@
                                                                         <th rowspan="2" style="background-color: #f8fafc;">icode</th>
                                                                         <th rowspan="2" style="background-color: #f8fafc;">ชื่อยา</th>
                                                                         <th rowspan="2" style="background-color: #f8fafc;">ชื่อสามัญ</th>
-                                                                        <th colspan="3" class="th-total">รวมทั้งหมด</th>
-                                                                        <th colspan="3" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
-                                                                        <th colspan="3" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
-                                                                        <th colspan="3" class="th-lgo">สิทธิ อปท. (LGO)</th>
-                                                                        <th colspan="3" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
-                                                                        <th colspan="3" class="th-other">สิทธิ อื่นๆ</th>
+                                                                        <th colspan="4" class="th-total">รวมทั้งหมด</th>
+                                                                        <th colspan="4" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
+                                                                        <th colspan="4" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
+                                                                        <th colspan="4" class="th-lgo">สิทธิ อปท. (LGO)</th>
+                                                                        <th colspan="4" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
+                                                                        <th colspan="4" class="th-other">สิทธิ อื่นๆ</th>
                                                                     </tr>
                                                                     <tr>
                                                                         <th class="th-total">AN</th>
@@ -889,12 +913,12 @@
                 return function(data, columnIdx) {
                     const prefixes = [
                         "", "", "", // icode, ชื่อยา, ชื่อสามัญ
-                        "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", // Visit, Qty, มูลค่า
-                        "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ",
-                        "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ",
-                        "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ",
-                        "สิทธิ ประกันสังคม (SSS) - ", "สิทธิ ประกันสังคม (SSS) - ", "สิทธิ ประกันสังคม (SSS) - ",
-                        "สิทธิ อื่นๆ - ", "สิทธิ อื่นๆ - ", "สิทธิ อื่นๆ - "
+                        "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", "รวมทั้งหมด - ", // Visit, Qty, ราคาทุน, มูลค่า
+                        "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ", "สิทธิ บัตรทอง (UCS) - ",
+                        "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ", "สิทธิ ข้าราชการ (OFC) - ",
+                        "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ", "สิทธิ อปท. (LGO) - ",
+                        "สิทธิ ประกันสังคม (SSS) - ", "สิทธิ ประกันสังคม (SSS) - ", "สิทธิ ประกันสังคม (SSS) - ", "สิทธิ ประกันสังคม (SSS) - ",
+                        "สิทธิ อื่นๆ - ", "สิทธิ อื่นๆ - ", "สิทธิ อื่นๆ - ", "สิทธิ อื่นๆ - "
                     ];
                     return (prefixes[columnIdx] || "") + data;
                 };
