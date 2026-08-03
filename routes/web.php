@@ -149,6 +149,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/esrd', [App\Http\Controllers\Hosxp\PharController::class, 'esrd'])->name('hosxp.phar.esrd');
         Route::get('/herbal', [App\Http\Controllers\Hosxp\PharController::class, 'herbal'])->name('hosxp.phar.herbal');
         Route::get('/opoh', [App\Http\Controllers\Hosxp\PharController::class, 'opoh'])->name('hosxp.phar.opoh');
+        Route::get('/opoh/patients', [App\Http\Controllers\Hosxp\PharController::class, 'opoh_patients'])->name('hosxp.phar.opoh.patients');
         Route::get('/dmht', [App\Http\Controllers\Hosxp\PharController::class, 'dmht'])->name('hosxp.phar.dmht');
         Route::get('/allergy-pcu', [App\Http\Controllers\Hosxp\PharController::class, 'allergyPcu'])->name('hosxp.phar.allergy_pcu');
         Route::get('/night-shift', [App\Http\Controllers\Hosxp\PharController::class, 'nightShift'])->name('hosxp.phar.night_shift');

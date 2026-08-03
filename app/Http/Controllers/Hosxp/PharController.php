@@ -1558,12 +1558,18 @@ class PharController extends Controller
         
         $month_keys = [];
         $month_categories = [];
+        $months_list = [];
         foreach ($period as $dt) {
             $ym = $dt->format('Y-m');
             $month_keys[] = $ym;
             list($y, $m) = explode('-', $ym);
             $thai_year = ($y + 543) % 100;
-            $month_categories[] = $thai_months[$m] . ' ' . $thai_year;
+            $label = $thai_months[$m] . ' ' . $thai_year;
+            $month_categories[] = $label;
+            $months_list[] = [
+                'key' => $ym,
+                'label' => $label
+            ];
         }
 
         // Format chart helper
@@ -1642,6 +1648,57 @@ class PharController extends Controller
                 ORDER BY total_price DESC
             ', [$prop_id, $start_date, $end_date]);
 
+            // OPD Monthly Query
+            $opd_monthly_raw = DB::connection('hosxp')->select('
+                SELECT 
+                    DATE_FORMAT(o.rxdate, "%Y-%m") AS month_key,
+                    o.icode,
+                    d.name AS drug_name,
+                    d.generic_name AS generic_name,
+                    COUNT(DISTINCT o.vn) AS total_visit,
+                    SUM(o.qty) AS total_qty,
+                    SUM(o.qty * o.cost) AS total_cost,
+                    SUM(o.sum_price) AS total_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code = "UCS" THEN o.vn END) AS ucs_visit,
+                    SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty ELSE 0 END) AS ucs_qty,
+                    SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                    SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.sum_price ELSE 0 END) AS ucs_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code = "OFC" THEN o.vn END) AS ofc_visit,
+                    SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty ELSE 0 END) AS ofc_qty,
+                    SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                    SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.sum_price ELSE 0 END) AS ofc_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code = "LGO" THEN o.vn END) AS lgo_visit,
+                    SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty ELSE 0 END) AS lgo_qty,
+                    SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                    SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.sum_price ELSE 0 END) AS lgo_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.vn END) AS sss_visit,
+                    SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty ELSE 0 END) AS sss_qty,
+                    SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                    SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.sum_price ELSE 0 END) AS sss_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.vn END) AS other_visit,
+                    SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                    SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                    SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+                FROM opitemrece o
+                INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = ?
+                LEFT JOIN pttype p ON p.pttype = o.pttype
+                LEFT JOIN drugitems d ON d.icode = o.icode								
+                WHERE o.rxdate BETWEEN ? AND ?
+                  AND (o.vn IS NOT NULL AND o.vn <> "")
+                GROUP BY month_key, o.icode
+                ORDER BY total_price DESC
+            ', [$prop_id, $start_date, $end_date]);
+
+            $opd_monthly = [];
+            foreach ($opd_monthly_raw as $row) {
+                $opd_monthly[$row->month_key][] = $row;
+            }
+
             // IPD Query
             $ipd = DB::connection('hosxp')->select('
                 SELECT 
@@ -1687,6 +1744,57 @@ class PharController extends Controller
                 ORDER BY total_price DESC
             ', [$prop_id, $start_date, $end_date]);
 
+            // IPD Monthly Query
+            $ipd_monthly_raw = DB::connection('hosxp')->select('
+                SELECT 
+                    DATE_FORMAT(o.rxdate, "%Y-%m") AS month_key,
+                    o.icode,
+                    d.name AS drug_name,
+                    d.generic_name AS generic_name,
+                    COUNT(DISTINCT o.an) AS total_visit,
+                    SUM(o.qty) AS total_qty,
+                    SUM(o.qty * o.cost) AS total_cost,
+                    SUM(o.sum_price) AS total_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code = "UCS" THEN o.an END) AS ucs_visit,
+                    SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty ELSE 0 END) AS ucs_qty,
+                    SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                    SUM(CASE WHEN p.hipdata_code = "UCS" THEN o.sum_price ELSE 0 END) AS ucs_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code = "OFC" THEN o.an END) AS ofc_visit,
+                    SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty ELSE 0 END) AS ofc_qty,
+                    SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                    SUM(CASE WHEN p.hipdata_code = "OFC" THEN o.sum_price ELSE 0 END) AS ofc_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code = "LGO" THEN o.an END) AS lgo_visit,
+                    SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty ELSE 0 END) AS lgo_qty,
+                    SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                    SUM(CASE WHEN p.hipdata_code = "LGO" THEN o.sum_price ELSE 0 END) AS lgo_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.an END) AS sss_visit,
+                    SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty ELSE 0 END) AS sss_qty,
+                    SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                    SUM(CASE WHEN p.hipdata_code IN ("SSS", "SSI") THEN o.sum_price ELSE 0 END) AS sss_price,
+                    
+                    COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.an END) AS other_visit,
+                    SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                    SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                    SUM(CASE WHEN p.hipdata_code NOT IN ("UCS", "OFC", "LGO", "SSS", "SSI") OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+                FROM opitemrece o
+                INNER JOIN drugitems_property_list dpl ON dpl.icode = o.icode AND dpl.drugitems_property_id = ?
+                LEFT JOIN pttype p ON p.pttype = o.pttype
+                LEFT JOIN drugitems d ON d.icode = o.icode								
+                WHERE o.rxdate BETWEEN ? AND ?
+                  AND (o.an IS NOT NULL AND o.an <> "")
+                GROUP BY month_key, o.icode
+                ORDER BY total_price DESC
+            ', [$prop_id, $start_date, $end_date]);
+
+            $ipd_monthly = [];
+            foreach ($ipd_monthly_raw as $row) {
+                $ipd_monthly[$row->month_key][] = $row;
+            }
+
             // Monthly Qty for Chart
             $monthly_raw_opd = DB::connection('hosxp')->select('
                 SELECT 
@@ -1724,7 +1832,9 @@ class PharController extends Controller
             $opoh_data[$prop_id] = [
                 'name' => $prop_name,
                 'opd' => $opd,
+                'opd_monthly' => $opd_monthly,
                 'ipd' => $ipd,
+                'ipd_monthly' => $ipd_monthly,
                 'chart_series_opd' => $chart_series_opd,
                 'chart_series_ipd' => $chart_series_ipd,
             ];
@@ -1737,8 +1847,68 @@ class PharController extends Controller
             'start_date',
             'end_date',
             'opoh_data',
-            'month_categories'
+            'month_categories',
+            'months_list'
         ));
+    }
+
+    public function opoh_patients(Request $request)
+    {
+        $icode = $request->input('icode');
+        $type = strtoupper($request->input('type'));
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+        $month_key = $request->input('month_key');
+
+        if (empty($icode) || empty($start_date) || empty($end_date)) {
+            return response()->json(['error' => 'Missing parameters'], 400);
+        }
+
+        $q_start = $start_date;
+        $q_end = $end_date;
+        if (!empty($month_key)) {
+            $q_start = $month_key . '-01';
+            $q_end = date('Y-m-t', strtotime($q_start));
+        }
+
+        $type_condition = ($type === 'IPD') ? '(o.an IS NOT NULL AND o.an <> "")' : '(o.vn IS NOT NULL AND o.vn <> "")';
+
+        $query = '
+            SELECT 
+                o.hn,
+                p.cid,
+                CONCAT(p.pname, p.fname, " ", p.lname) AS patient_name,
+                DATE_FORMAT(o.rxdate, "%Y-%m-%d") AS rx_date,
+                o.rxtime AS rx_time,
+                o.qty,
+                CASE 
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370601") THEN "รพ.สต.หัวตะพาน" 
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370602" AND p.moopart IN ("4","5","6","10","11")) THEN "รพ.สต.โนนหนามแท่ง"   
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370602" AND p.moopart IN ("1","2","3","7","8","9","12")) THEN "รพ.สต.คำพระ"  
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370603") THEN "รพ.สต.เค็งใหญ่"  
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370604") THEN "รพ.สต.โคกเลาะ"   
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370605" AND p.moopart IN ("2","5","6","7","8","9")) THEN "รพ.สต.ขุมเหล็ก" 
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370605" AND p.moopart IN ("1","3","4","10","11","12")) THEN "รพ.สต.โพนเมืองน้อย" 
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370606" AND p.moopart IN ("1","3","7","10","11","12","13")) THEN "รพ.สต.สร้างถ่อน้อย" 
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370606" AND p.moopart IN ("2","4","5","6","8","9")) THEN "รพ.สต.นาคู" 
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370607" AND p.moopart IN ("3","6","7","8","9")) THEN "รพ.สต.หนองยอ"  
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370607" AND p.moopart IN ("1","2","4","5","10","11","12")) THEN "รพ.สต.จิกดู่"   
+                    WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = "370608") THEN "PCU รัตนวารี" 
+                    ELSE "นอกเขตอำเภอหัวตะพาน" 
+                END AS hosp_name
+            FROM opitemrece o
+            INNER JOIN patient p ON p.hn = o.hn
+            WHERE o.icode = ?
+              AND o.rxdate BETWEEN ? AND ?
+              AND ' . $type_condition . '
+            ORDER BY o.rxdate DESC, o.rxtime DESC
+        ';
+
+        $patients = DB::connection('hosxp')->select($query, [$icode, $q_start, $q_end]);
+
+        return response()->json([
+            'patients' => $patients
+        ]);
     }
 
     public function dmht(Request $request)
