@@ -349,12 +349,12 @@
                                                         <th rowspan="2" style="width: 80px; background-color: #f8fafc;">รหัสยา</th>
                                                         <th rowspan="2" style="min-width: 150px; background-color: #f8fafc;">ชื่อยา</th>
                                                         <th rowspan="2" style="min-width: 120px; background-color: #f8fafc;">ชื่อสามัญ</th>
-                                                        <th colspan="4" class="th-total">TOTAL</th>
-                                                        <th colspan="4" class="th-ucs">UCS</th>
-                                                        <th colspan="4" class="th-ofc">OFC</th>
-                                                        <th colspan="4" class="th-lgo">LGO</th>
-                                                        <th colspan="4" class="th-sss">SSS</th>
-                                                        <th colspan="4" class="th-other">Other</th>
+                                                        <th colspan="4" class="th-total">รวมทั้งหมด</th>
+                                                        <th colspan="4" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
+                                                        <th colspan="4" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
+                                                        <th colspan="4" class="th-lgo">สิทธิ อปท. (LGO)</th>
+                                                        <th colspan="4" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
+                                                        <th colspan="4" class="th-other">สิทธิ อื่นๆ</th>
                                                     </tr>
                                                     <tr>
                                                         <th class="th-total">Visit</th><th class="th-total">Qty</th><th class="th-total">ราคาทุน</th><th class="th-total">ราคาขาย</th>
@@ -424,12 +424,12 @@
                                                             <th rowspan="2" style="width: 80px; background-color: #f8fafc;">รหัสยา</th>
                                                             <th rowspan="2" style="min-width: 150px; background-color: #f8fafc;">ชื่อยา</th>
                                                             <th rowspan="2" style="min-width: 120px; background-color: #f8fafc;">ชื่อสามัญ</th>
-                                                            <th colspan="4" class="th-total">TOTAL</th>
-                                                            <th colspan="4" class="th-ucs">UCS</th>
-                                                            <th colspan="4" class="th-ofc">OFC</th>
-                                                            <th colspan="4" class="th-lgo">LGO</th>
-                                                            <th colspan="4" class="th-sss">SSS</th>
-                                                            <th colspan="4" class="th-other">Other</th>
+                                                            <th colspan="4" class="th-total">รวมทั้งหมด</th>
+                                                            <th colspan="4" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
+                                                            <th colspan="4" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
+                                                            <th colspan="4" class="th-lgo">สิทธิ อปท. (LGO)</th>
+                                                            <th colspan="4" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
+                                                            <th colspan="4" class="th-other">สิทธิ อื่นๆ</th>
                                                         </tr>
                                                         <tr>
                                                             <th class="th-total">Visit</th><th class="th-total">Qty</th><th class="th-total">ราคาทุน</th><th class="th-total">ราคาขาย</th>
@@ -533,12 +533,12 @@
                                                         <th rowspan="2" style="width: 80px; background-color: #f8fafc;">รหัสยา</th>
                                                         <th rowspan="2" style="min-width: 150px; background-color: #f8fafc;">ชื่อยา</th>
                                                         <th rowspan="2" style="min-width: 120px; background-color: #f8fafc;">ชื่อสามัญ</th>
-                                                        <th colspan="4" class="th-total">TOTAL</th>
-                                                        <th colspan="4" class="th-ucs">UCS</th>
-                                                        <th colspan="4" class="th-ofc">OFC</th>
-                                                        <th colspan="4" class="th-lgo">LGO</th>
-                                                        <th colspan="4" class="th-sss">SSS</th>
-                                                        <th colspan="4" class="th-other">Other</th>
+                                                        <th colspan="4" class="th-total">รวมทั้งหมด</th>
+                                                        <th colspan="4" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
+                                                        <th colspan="4" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
+                                                        <th colspan="4" class="th-lgo">สิทธิ อปท. (LGO)</th>
+                                                        <th colspan="4" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
+                                                        <th colspan="4" class="th-other">สิทธิ อื่นๆ</th>
                                                     </tr>
                                                     <tr>
                                                         <th class="th-total">AN</th><th class="th-total">Qty</th><th class="th-total">ราคาทุน</th><th class="th-total">ราคาขาย</th>
@@ -608,12 +608,12 @@
                                                             <th rowspan="2" style="width: 80px; background-color: #f8fafc;">รหัสยา</th>
                                                             <th rowspan="2" style="min-width: 150px; background-color: #f8fafc;">ชื่อยา</th>
                                                             <th rowspan="2" style="min-width: 120px; background-color: #f8fafc;">ชื่อสามัญ</th>
-                                                            <th colspan="4" class="th-total">TOTAL</th>
-                                                            <th colspan="4" class="th-ucs">UCS</th>
-                                                            <th colspan="4" class="th-ofc">OFC</th>
-                                                            <th colspan="4" class="th-lgo">LGO</th>
-                                                            <th colspan="4" class="th-sss">SSS</th>
-                                                            <th colspan="4" class="th-other">Other</th>
+                                                            <th colspan="4" class="th-total">รวมทั้งหมด</th>
+                                                            <th colspan="4" class="th-ucs">สิทธิ บัตรทอง (UCS)</th>
+                                                            <th colspan="4" class="th-ofc">สิทธิ ข้าราชการ (OFC)</th>
+                                                            <th colspan="4" class="th-lgo">สิทธิ อปท. (LGO)</th>
+                                                            <th colspan="4" class="th-sss">สิทธิ ประกันสังคม (SSS)</th>
+                                                            <th colspan="4" class="th-other">สิทธิ อื่นๆ</th>
                                                         </tr>
                                                         <tr>
                                                             <th class="th-total">AN</th><th class="th-total">Qty</th><th class="th-total">ราคาทุน</th><th class="th-total">ราคาขาย</th>
