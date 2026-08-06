@@ -419,14 +419,33 @@
                             <div class="program-modules-list d-none" id="add_program_modules_{{ $p->id }}">
                                 @if($p->modules->count() > 0)
                                     @foreach($p->modules as $mod)
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" name="modules[]" value="{{ $mod->id }}" id="add_mod_{{ $mod->id }}">
-                                            <label class="form-check-label text-dark small" for="add_mod_{{ $mod->id }}">
-                                                <strong>{{ $mod->name }}</strong> (<code class="small text-danger">{{ $mod->code }}</code>)
-                                                @if($mod->description)
-                                                    <span class="text-muted d-block small" style="font-size:0.75rem;">{{ $mod->description }}</span>
-                                                @endif
-                                            </label>
+                                        <div class="row align-items-center mb-3 g-2 py-2 border-bottom">
+                                            <div class="col-lg-5 col-md-12">
+                                                <div class="form-check">
+                                                    <input class="form-check-input module-checkbox" type="checkbox" name="modules[{{ $mod->id }}][active]" value="1" id="add_mod_{{ $mod->id }}" onchange="toggleModuleFields('add', 0, {{ $mod->id }})">
+                                                    <label class="form-check-label text-dark small fw-bold" for="add_mod_{{ $mod->id }}">
+                                                        {{ $mod->name }}
+                                                    </label>
+                                                </div>
+                                                <div class="ps-4"><code class="small text-danger" style="font-size:0.75rem;">{{ $mod->code }}</code></div>
+                                            </div>
+                                            <div class="col-lg-7 col-md-12">
+                                                <div class="d-flex align-items-center gap-2 ps-4 ps-lg-0 d-none" id="add_settings_0_{{ $mod->id }}">
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <span class="small text-muted" style="font-size:0.75rem;">สถานะ:</span>
+                                                        <select name="modules[{{ $mod->id }}][status]" class="form-select form-select-sm border shadow-xs" style="font-size:0.8rem; width:110px;">
+                                                            <option value="active" selected>Active</option>
+                                                            <option value="suspended">Suspended</option>
+                                                            <option value="expired">Expired</option>
+                                                            <option value="pending">Pending</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-1 flex-grow-1">
+                                                        <span class="small text-muted" style="font-size:0.75rem;">หมดอายุ:</span>
+                                                        <input type="date" name="modules[{{ $mod->id }}][expired_at]" class="form-control form-control-sm border shadow-xs" style="font-size:0.8rem;">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     @endforeach
                                 @else
@@ -556,14 +575,38 @@
                             
                             @if($license->program->modules->count() > 0)
                                 @foreach($license->program->modules as $mod)
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" name="modules[]" value="{{ $mod->id }}" id="edit_mod_{{ $license->id }}_{{ $mod->id }}" {{ $license->activatedModules->contains($mod->id) ? 'checked' : '' }}>
-                                        <label class="form-check-label text-dark small" for="edit_mod_{{ $license->id }}_{{ $mod->id }}">
-                                            <strong>{{ $mod->name }}</strong> (<code class="small text-danger">{{ $mod->code }}</code>)
-                                            @if($mod->description)
-                                                <span class="text-muted d-block small" style="font-size:0.75rem;">{{ $mod->description }}</span>
-                                            @endif
-                                        </label>
+                                    <div class="row align-items-center mb-3 g-2 py-2 border-bottom">
+                                        <div class="col-lg-5 col-md-12">
+                                            <div class="form-check">
+                                                <input class="form-check-input module-checkbox" type="checkbox" name="modules[{{ $mod->id }}][active]" value="1" id="edit_mod_{{ $license->id }}_{{ $mod->id }}" {{ $license->activatedModules->contains($mod->id) ? 'checked' : '' }} onchange="toggleModuleFields('edit', {{ $license->id }}, {{ $mod->id }})">
+                                                <label class="form-check-label text-dark small fw-bold" for="edit_mod_{{ $license->id }}_{{ $mod->id }}">
+                                                    {{ $mod->name }}
+                                                </label>
+                                            </div>
+                                            <div class="ps-4"><code class="small text-danger" style="font-size:0.75rem;">{{ $mod->code }}</code></div>
+                                        </div>
+                                        <div class="col-lg-7 col-md-12">
+                                            @php
+                                                $pivot = $license->activatedModules->find($mod->id)?->pivot;
+                                                $pivotStatus = $pivot ? $pivot->status : 'active';
+                                                $pivotExpired = $pivot && $pivot->expired_at ? $pivot->expired_at->format('Y-m-d') : '';
+                                            @endphp
+                                            <div class="d-flex align-items-center gap-2 ps-4 ps-lg-0 {{ $license->activatedModules->contains($mod->id) ? '' : 'd-none' }}" id="edit_settings_{{ $license->id }}_{{ $mod->id }}">
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <span class="small text-muted" style="font-size:0.75rem;">สถานะ:</span>
+                                                    <select name="modules[{{ $mod->id }}][status]" class="form-select form-select-sm border shadow-xs" style="font-size:0.8rem; width:110px;">
+                                                        <option value="active" {{ $pivotStatus === 'active' ? 'selected' : '' }}>Active</option>
+                                                        <option value="suspended" {{ $pivotStatus === 'suspended' ? 'selected' : '' }}>Suspended</option>
+                                                        <option value="expired" {{ $pivotStatus === 'expired' ? 'selected' : '' }}>Expired</option>
+                                                        <option value="pending" {{ $pivotStatus === 'pending' ? 'selected' : '' }}>Pending</option>
+                                                    </select>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-1 flex-grow-1">
+                                                    <span class="small text-muted" style="font-size:0.75rem;">หมดอายุ:</span>
+                                                    <input type="date" name="modules[{{ $mod->id }}][expired_at]" class="form-control form-control-sm border shadow-xs" value="{{ $pivotExpired }}" style="font-size:0.8rem;">
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 @endforeach
                             @else
@@ -973,6 +1016,20 @@
                         const year = date.getFullYear() + yearOffset;
                         instance.altInput.value = `${day} ${month} ${year}`;
                     }, 10);
+                }
+            }
+        };
+
+        // Toggle settings fields for a single module checkbox
+        window.toggleModuleFields = function(mode, licenseId, moduleId) {
+            const prefix = mode === 'add' ? 'add_mod_' : `edit_mod_${licenseId}_`;
+            const checkbox = document.getElementById(prefix + moduleId);
+            const settingsDiv = document.getElementById(`${mode}_settings_${licenseId}_${moduleId}`);
+            if (checkbox && settingsDiv) {
+                if (checkbox.checked) {
+                    settingsDiv.classList.remove('d-none');
+                } else {
+                    settingsDiv.classList.add('d-none');
                 }
             }
         };

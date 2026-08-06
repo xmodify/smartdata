@@ -129,7 +129,9 @@ class LicenseController extends Controller
             'expired_at' => 'nullable|date',
             'notes' => 'nullable|string',
             'modules' => 'nullable|array',
-            'modules.*' => 'exists:license_modules,id',
+            'modules.*.active' => 'nullable|in:1',
+            'modules.*.status' => 'nullable|in:active,suspended,expired,pending',
+            'modules.*.expired_at' => 'nullable|date',
         ]);
 
         $program = LicenseProgram::findOrFail($request->program_id);
@@ -162,12 +164,16 @@ class LicenseController extends Controller
         ]);
 
         if ($license->license_type === 'module' && $request->has('modules')) {
-            foreach ($request->input('modules') as $moduleId) {
-                LicenseModuleActivation::create([
-                    'license_id' => $license->id,
-                    'module_id' => $moduleId,
-                    'status' => 'active',
-                ]);
+            foreach ($request->input('modules') as $moduleId => $moduleData) {
+                if (isset($moduleData['active']) && $moduleData['active'] == '1') {
+                    $modExpiredAt = !empty($moduleData['expired_at']) ? Carbon::parse($moduleData['expired_at'])->endOfDay() : null;
+                    LicenseModuleActivation::create([
+                        'license_id' => $license->id,
+                        'module_id' => $moduleId,
+                        'status' => $moduleData['status'] ?? 'active',
+                        'expired_at' => $modExpiredAt,
+                    ]);
+                }
             }
         }
 
@@ -194,7 +200,9 @@ class LicenseController extends Controller
             'expired_at' => 'nullable|date',
             'notes' => 'nullable|string',
             'modules' => 'nullable|array',
-            'modules.*' => 'exists:license_modules,id',
+            'modules.*.active' => 'nullable|in:1',
+            'modules.*.status' => 'nullable|in:active,suspended,expired,pending',
+            'modules.*.expired_at' => 'nullable|date',
         ]);
 
         $status = $request->status;
@@ -221,12 +229,16 @@ class LicenseController extends Controller
         // Sync modules
         LicenseModuleActivation::where('license_id', $license->id)->delete();
         if ($license->license_type === 'module' && $request->has('modules')) {
-            foreach ($request->input('modules') as $moduleId) {
-                LicenseModuleActivation::create([
-                    'license_id' => $license->id,
-                    'module_id' => $moduleId,
-                    'status' => 'active',
-                ]);
+            foreach ($request->input('modules') as $moduleId => $moduleData) {
+                if (isset($moduleData['active']) && $moduleData['active'] == '1') {
+                    $modExpiredAt = !empty($moduleData['expired_at']) ? Carbon::parse($moduleData['expired_at'])->endOfDay() : null;
+                    LicenseModuleActivation::create([
+                        'license_id' => $license->id,
+                        'module_id' => $moduleId,
+                        'status' => $moduleData['status'] ?? 'active',
+                        'expired_at' => $modExpiredAt,
+                    ]);
+                }
             }
         }
 
@@ -410,6 +422,10 @@ class LicenseController extends Controller
         } else {
             $modules = $license->activatedModules()
                 ->where('license_module_activations.status', 'active')
+                ->where(function($query) {
+                    $query->whereNull('license_module_activations.expired_at')
+                          ->orWhere('license_module_activations.expired_at', '>', Carbon::now());
+                })
                 ->pluck('code')
                 ->toArray();
         }
