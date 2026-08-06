@@ -364,32 +364,46 @@
             <form action="{{ route('license.store') }}" method="POST">
                 @csrf
                 <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">เลือกระบบ / โปรแกรม <span class="text-danger">*</span></label>
-                        <select name="program_id" class="form-select border shadow-xs" required>
-                            <option value="">-- โปรดเลือกโปรแกรม --</option>
-                            @foreach($programs as $p)
-                                <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->code }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">ชื่อลูกค้า / โรงพยาบาลปลายทาง <span class="text-danger">*</span></label>
-                        <input type="text" name="customer_name" class="form-control border shadow-xs" placeholder="เช่น รพ.ตัวอย่างการแพทย์" required>
-                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold small text-muted">รหัสโรงพยาบาล (HCODE)</label>
-                            <input type="text" name="hcode" class="form-control border shadow-xs" placeholder="กรณีล็อกสิทธิ์ รพ. 5 หลัก">
+                            <label class="form-label fw-bold small text-muted">เลือกระบบ / โปรแกรม <span class="text-danger">*</span></label>
+                            <select name="program_id" class="form-select border shadow-xs" required>
+                                <option value="">-- โปรดเลือกโปรแกรม --</option>
+                                @foreach($programs as $p)
+                                    <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->code }})</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold small text-muted">Hardware ID</label>
-                            <input type="text" name="hardware_id" class="form-control border shadow-xs" placeholder="กรณียึดติดเครื่อง (หรือเว้นว่างให้ล็อคเครื่องแรก)">
+                            <label class="form-label fw-bold small text-muted">ประเภทลิขสิทธิ์</label>
+                            <select name="license_type" id="add_license_type" class="form-select border shadow-xs" onchange="toggleAddModules()">
+                                <option value="full">Full License (เข้าถึงทุกโมดูล)</option>
+                                <option value="module">Module License (เลือกเฉพาะบางโมดูล)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted">ชื่อลูกค้า / โรงพยาบาลปลายทาง <span class="text-danger">*</span></label>
+                            <input type="text" name="customer_name" class="form-control border shadow-xs" placeholder="เช่น รพ.ตัวอย่างการแพทย์" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted">วันหมดอายุ (เว้นว่าง = ตลอดชีพ)</label>
+                            <input type="text" name="expired_at" id="add_expired_at" class="form-control border shadow-xs bg-white" placeholder="เลือกวันหมดอายุ" readonly>
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold small text-muted">รหัสโรงพยาบาล (HCODE)</label>
+                            <input type="text" name="hcode" class="form-control border shadow-xs" placeholder="เช่น 10702">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold small text-muted">Hardware ID</label>
+                            <input type="text" name="hardware_id" class="form-control border shadow-xs" placeholder="ยึดติดเครื่อง (เว้นว่าง = ล็อคเครื่องแรก)">
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold small text-muted">สถานะเริ่มต้น</label>
                             <select name="status" class="form-select border shadow-xs">
                                 <option value="active">Active</option>
@@ -398,17 +412,6 @@
                                 <option value="expired">Expired</option>
                             </select>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold small text-muted">วันหมดอายุ (เว้นว่าง = ตลอดชีพ)</label>
-                            <input type="text" name="expired_at" id="add_expired_at" class="form-control border shadow-xs bg-white" placeholder="เลือกวันหมดอายุ" readonly>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">ประเภทลิขสิทธิ์</label>
-                        <select name="license_type" id="add_license_type" class="form-select border shadow-xs" onchange="toggleAddModules()">
-                            <option value="full">Full License (เข้าถึงทุกโมดูล)</option>
-                            <option value="module">Module License (เลือกเฉพาะบางโมดูล)</option>
-                        </select>
                     </div>
 
                     <!-- Dynamic program modules list container -->
@@ -442,7 +445,7 @@
                                                     </div>
                                                     <div class="d-flex align-items-center gap-1 flex-grow-1">
                                                         <span class="small text-muted" style="font-size:0.75rem;">หมดอายุ:</span>
-                                                        <input type="date" name="modules[{{ $mod->id }}][expired_at]" class="form-control form-control-sm border shadow-xs" style="font-size:0.8rem;">
+                                                        <input type="text" name="modules[{{ $mod->id }}][expired_at]" class="form-control form-control-sm border shadow-xs bg-white license-module-expired-at" style="font-size:0.8rem;" placeholder="วันหมดอายุย่อย" readonly>
                                                     </div>
                                                 </div>
                                             </div>
@@ -524,31 +527,41 @@
                     @csrf
                     @method('PUT')
                     <div class="modal-body p-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">ระบบ / โปรแกรม</label>
-                            <input type="text" class="form-control bg-light border-0" value="{{ $license->program->name }} ({{ $license->program->code }})" disabled>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">รหัสคีย์ (License Key)</label>
-                            <code class="d-block bg-light p-2 rounded fw-bold text-center text-success border">{{ $license->license_key }}</code>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">ชื่อลูกค้า / หน่วยงาน <span class="text-danger">*</span></label>
-                            <input type="text" name="customer_name" class="form-control border shadow-xs" value="{{ $license->customer_name }}" required>
-                        </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold small text-muted">รหัสโรงพยาบาล (HCODE)</label>
-                                <input type="text" name="hcode" class="form-control border shadow-xs" placeholder="เช่น 10702" value="{{ $license->hcode }}">
+                                <label class="form-label fw-bold small text-muted">ระบบ / โปรแกรม</label>
+                                <input type="text" class="form-control bg-light border-0" value="{{ $license->program->name }} ({{ $license->program->code }})" disabled>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold small text-muted">Hardware ID</label>
-                                <input type="text" name="hardware_id" class="form-control border shadow-xs" placeholder="ยึดกับตัวเครื่อง" value="{{ $license->hardware_id }}">
+                                <label class="form-label fw-bold small text-muted">ประเภทลิขสิทธิ์</label>
+                                <select name="license_type" id="edit_license_type_{{ $license->id }}" class="form-select border shadow-xs" onchange="toggleEditModules({{ $license->id }})">
+                                    <option value="full" {{ ($license->license_type ?? 'full') === 'full' ? 'selected' : '' }}>Full License (เข้าถึงทุกโมดูล)</option>
+                                    <option value="module" {{ ($license->license_type ?? 'full') === 'module' ? 'selected' : '' }}>Module License (เลือกเฉพาะบางโมดูล)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted">รหัสคีย์ (License Key)</label>
+                                <code class="d-block bg-light p-2 rounded fw-bold text-center text-success border" style="line-height: 24px;">{{ $license->license_key }}</code>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted">ชื่อลูกค้า / หน่วยงาน <span class="text-danger">*</span></label>
+                                <input type="text" name="customer_name" class="form-control border shadow-xs" value="{{ $license->customer_name }}" required>
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold small text-muted">รหัสโรงพยาบาล (HCODE)</label>
+                                <input type="text" name="hcode" class="form-control border shadow-xs" placeholder="เช่น 10702" value="{{ $license->hcode }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold small text-muted">Hardware ID</label>
+                                <input type="text" name="hardware_id" class="form-control border shadow-xs" placeholder="ยึดกับตัวเครื่อง" value="{{ $license->hardware_id }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label fw-bold small text-muted">สถานะใช้งาน</label>
                                 <select name="status" class="form-select border shadow-xs">
                                     <option value="active" {{ $license->status === 'active' ? 'selected' : '' }}>Active</option>
@@ -557,17 +570,10 @@
                                     <option value="expired" {{ $license->status === 'expired' ? 'selected' : '' }}>Expired</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label fw-bold small text-muted">วันหมดอายุ (เว้นว่าง = ตลอดชีพ)</label>
                                 <input type="text" name="expired_at" class="form-control border shadow-xs bg-white license-edit-expired-at" data-value="{{ $license->expired_at ? $license->expired_at->format('Y-m-d') : '' }}" value="{{ $license->expired_at ? $license->expired_at->format('Y-m-d') : '' }}" placeholder="เลือกวันหมดอายุ" readonly>
                             </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">ประเภทลิขสิทธิ์</label>
-                            <select name="license_type" id="edit_license_type_{{ $license->id }}" class="form-select border shadow-xs" onchange="toggleEditModules({{ $license->id }})">
-                                <option value="full" {{ ($license->license_type ?? 'full') === 'full' ? 'selected' : '' }}>Full License (เข้าถึงทุกโมดูล)</option>
-                                <option value="module" {{ ($license->license_type ?? 'full') === 'module' ? 'selected' : '' }}>Module License (เลือกเฉพาะบางโมดูล)</option>
-                            </select>
                         </div>
 
                         <div id="edit_modules_section_{{ $license->id }}" class="mb-3 {{ ($license->license_type ?? 'full') === 'module' ? '' : 'd-none' }} border rounded p-3 bg-light" style="max-height: 280px; overflow-y: auto;">
@@ -603,7 +609,7 @@
                                                 </div>
                                                 <div class="d-flex align-items-center gap-1 flex-grow-1">
                                                     <span class="small text-muted" style="font-size:0.75rem;">หมดอายุ:</span>
-                                                    <input type="date" name="modules[{{ $mod->id }}][expired_at]" class="form-control form-control-sm border shadow-xs" value="{{ $pivotExpired }}" style="font-size:0.8rem;">
+                                                    <input type="text" name="modules[{{ $mod->id }}][expired_at]" class="form-control form-control-sm border shadow-xs bg-white license-module-expired-at" data-value="{{ $pivotExpired }}" value="{{ $pivotExpired }}" style="font-size:0.8rem;" placeholder="วันหมดอายุย่อย" readonly>
                                                 </div>
                                             </div>
                                         </div>
@@ -1079,6 +1085,16 @@
 
         // Initialize flatpickr on Edit Expired At inputs
         document.querySelectorAll('.license-edit-expired-at').forEach(function(input) {
+            const defaultVal = input.getAttribute('data-value');
+            const config = { ...commonConfig };
+            if (defaultVal) {
+                config.defaultDate = defaultVal;
+            }
+            flatpickr(input, config);
+        });
+
+        // Initialize flatpickr on Module Expired At inputs
+        document.querySelectorAll('.license-module-expired-at').forEach(function(input) {
             const defaultVal = input.getAttribute('data-value');
             const config = { ...commonConfig };
             if (defaultVal) {
