@@ -133,6 +133,148 @@
         .chart-container {
             min-height: 350px;
         }
+
+        .btn-view-patients-detail {
+            text-decoration: underline !important;
+        }
+
+        /* Premium Modal Styling */
+        #patientDetailsModal .modal-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            border-bottom: none;
+            border-radius: 16px 16px 0 0;
+            padding: 1.25rem 1.5rem;
+        }
+        #patientDetailsModal .modal-title {
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
+            font-weight: 700;
+        }
+        #patientDetailsModal .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        #patientDetailsModal .btn-close:hover {
+            opacity: 1;
+        }
+        .modal-table-container {
+            border-radius: 12px;
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+        #table-patient-details {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        #table-patient-details th {
+            background-color: #f8fafc !important;
+            color: #475569 !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+            padding: 6px 10px;
+            border-bottom: 2px solid #e2e8f0 !important;
+            border-top: none !important;
+        }
+        #table-patient-details td {
+            padding: 6px 10px;
+            color: #334155;
+            font-size: 0.82rem;
+            border-bottom: 1px solid #f1f5f9 !important;
+        }
+        .scrollable-cell-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .scrollable-cell-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollable-cell-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .scrollable-cell-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        #table-patient-details tbody tr:hover {
+            background-color: #f8fafc !important;
+        }
+        .badge-pdx {
+            background-color: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            font-family: 'Inter', 'SFMono-Regular', Consolas, monospace;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+            box-shadow: 0 1px 2px rgba(30,64,175,0.05);
+        }
+        .badge-sdx {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            font-family: 'Inter', 'SFMono-Regular', Consolas, monospace;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin: 1px;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .badge-icd9 {
+            background-color: #f5f3ff;
+            color: #5b21b6;
+            border: 1px solid #ddd6fe;
+            font-family: 'Inter', 'SFMono-Regular', Consolas, monospace;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin: 1px;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .patient-hn {
+            font-family: 'Inter', monospace;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .patient-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        /* Customize DataTable Search and Buttons */
+        #patientDetailsContent .dt-buttons .btn {
+            background-color: #198754 !important;
+            border: 1px solid #198754 !important;
+            color: white !important;
+            border-radius: 4px !important;
+            font-size: 0.75rem !important;
+            padding: 4px 10px !important;
+            font-weight: normal !important;
+            box-shadow: none !important;
+            transition: all 0.2s;
+        }
+        #patientDetailsContent .dt-buttons .btn:hover {
+            background-color: #157347 !important;
+            border-color: #146c43 !important;
+        }
+        #table-patient-details_filter input {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            outline: none;
+            transition: all 0.2s;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+        }
+        #table-patient-details_filter input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
     </style>
 @endpush
 
@@ -284,6 +426,35 @@
             </div>
         </div>
 
+        <!-- Top Doctors & Diagnoses Charts Row -->
+        <div class="row g-4 mb-4">
+            <!-- Top Ordering Doctors -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h5 class="fw-bold mb-0">แพทย์ผู้ส่งตรวจจำแนกตามประเภทแล็บ (10 อันดับแรก)</h5>
+                        <p class="text-muted small">จำนวนรายการสั่งตรวจแล็บสะสมในช่วงเวลาที่เลือก แยกตามแพทย์/ผู้ส่งตรวจและประเภทการตรวจ</p>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="topDoctorsChart" class="chart-container" style="min-height: 380px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top 10 Diagnoses for New Cases -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h5 class="fw-bold mb-0">10 อันดับโรคที่ส่งตรวจ (รายใหม่)</h5>
+                        <p class="text-muted small">รหัสโรคและการวินิจฉัยหลัก (PDX) ที่มีการสั่งตรวจแล็บไทรอยด์รายใหม่สูงสุด</p>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="topDiagsChart" class="chart-container" style="min-height: 380px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Detailed Statistics Table -->
         <div class="row">
             <div class="col-12">
@@ -331,21 +502,69 @@
                                         <tr>
                                             <td class="text-center fw-bold">{{ $row->month }}</td>
                                             
-                                            <td class="text-num">{{ number_format($row->ft3_qty) }}</td>
-                                            <td class="text-num text-purple">{{ number_format($row->ft3_new) }}</td>
+                                            <td class="text-num">
+                                                <a href="javascript:void(0)" class="btn-view-patients-detail text-decoration-none" 
+                                                    data-month-key="{{ $row->y }}-{{ $row->m }}" data-month-label="{{ $row->month }}" 
+                                                    data-icode="3000533" data-is-new="0" data-label="Free T3 (จำนวนตรวจ)">
+                                                    {{ number_format($row->ft3_qty) }}
+                                                </a>
+                                            </td>
+                                            <td class="text-num text-purple">
+                                                <a href="javascript:void(0)" class="btn-view-patients-detail text-purple text-decoration-none fw-bold" 
+                                                    data-month-key="{{ $row->y }}-{{ $row->m }}" data-month-label="{{ $row->month }}" 
+                                                    data-icode="3000533" data-is-new="1" data-label="Free T3 (รายใหม่)">
+                                                    {{ number_format($row->ft3_new) }}
+                                                </a>
+                                            </td>
                                             <td class="text-num border-end">{{ number_format($row->ft3_income, 2) }}</td>
 
-                                            <td class="text-num">{{ number_format($row->ft4_qty) }}</td>
-                                            <td class="text-num text-purple">{{ number_format($row->ft4_new) }}</td>
+                                            <td class="text-num">
+                                                <a href="javascript:void(0)" class="btn-view-patients-detail text-decoration-none" 
+                                                    data-month-key="{{ $row->y }}-{{ $row->m }}" data-month-label="{{ $row->month }}" 
+                                                    data-icode="3000534" data-is-new="0" data-label="Free T4 (จำนวนตรวจ)">
+                                                    {{ number_format($row->ft4_qty) }}
+                                                </a>
+                                            </td>
+                                            <td class="text-num text-purple">
+                                                <a href="javascript:void(0)" class="btn-view-patients-detail text-purple text-decoration-none fw-bold" 
+                                                    data-month-key="{{ $row->y }}-{{ $row->m }}" data-month-label="{{ $row->month }}" 
+                                                    data-icode="3000534" data-is-new="1" data-label="Free T4 (รายใหม่)">
+                                                    {{ number_format($row->ft4_new) }}
+                                                </a>
+                                            </td>
                                             <td class="text-num border-end">{{ number_format($row->ft4_income, 2) }}</td>
 
-                                            <td class="text-num">{{ number_format($row->tsh_qty) }}</td>
-                                            <td class="text-num text-purple">{{ number_format($row->tsh_new) }}</td>
+                                            <td class="text-num">
+                                                <a href="javascript:void(0)" class="btn-view-patients-detail text-decoration-none" 
+                                                    data-month-key="{{ $row->y }}-{{ $row->m }}" data-month-label="{{ $row->month }}" 
+                                                    data-icode="3000535" data-is-new="0" data-label="TSH (จำนวนตรวจ)">
+                                                    {{ number_format($row->tsh_qty) }}
+                                                </a>
+                                            </td>
+                                            <td class="text-num text-purple">
+                                                <a href="javascript:void(0)" class="btn-view-patients-detail text-purple text-decoration-none fw-bold" 
+                                                    data-month-key="{{ $row->y }}-{{ $row->m }}" data-month-label="{{ $row->month }}" 
+                                                    data-icode="3000535" data-is-new="1" data-label="TSH (รายใหม่)">
+                                                    {{ number_format($row->tsh_new) }}
+                                                </a>
+                                            </td>
                                             <td class="text-num border-end">{{ number_format($row->tsh_income, 2) }}</td>
 
                                             <td class="text-num fw-bold text-dark">{{ number_format($row->total_hn) }}</td>
-                                            <td class="text-num fw-bold text-primary">{{ number_format($row->total_visit) }}</td>
-                                            <td class="text-num fw-bold text-purple">{{ number_format($row->new_cases) }}</td>
+                                            <td class="text-num fw-bold text-primary">
+                                                <a href="javascript:void(0)" class="btn-view-patients-detail text-primary text-decoration-none" 
+                                                    data-month-key="{{ $row->y }}-{{ $row->m }}" data-month-label="{{ $row->month }}" 
+                                                    data-icode="all" data-is-new="0" data-label="ส่งตรวจทั้งหมดในกลุ่ม (ครั้ง)">
+                                                    {{ number_format($row->total_visit) }}
+                                                </a>
+                                            </td>
+                                            <td class="text-num fw-bold text-purple">
+                                                <a href="javascript:void(0)" class="btn-view-patients-detail text-purple text-decoration-none" 
+                                                    data-month-key="{{ $row->y }}-{{ $row->m }}" data-month-label="{{ $row->month }}" 
+                                                    data-icode="all" data-is-new="1" data-label="รายใหม่รวมในกลุ่ม (คน)">
+                                                    {{ number_format($row->new_cases) }}
+                                                </a>
+                                            </td>
                                             <td class="text-num fw-bold text-success">{{ number_format($row->total_income, 2) }}</td>
                                         </tr>
                                     @endforeach
@@ -353,27 +572,122 @@
                                 <tfoot class="bg-light fw-bold border-top-2">
                                     <tr>
                                         <td class="text-center">รวม</td>
-                                        <td class="text-num">{{ number_format(array_sum(array_column($monthly_stats, 'ft3_qty'))) }}</td>
-                                        <td class="text-num text-purple">{{ number_format(array_sum(array_column($monthly_stats, 'ft3_new'))) }}</td>
+                                        <td class="text-num">
+                                            <a href="javascript:void(0)" class="btn-view-patients-detail text-decoration-none" 
+                                                data-month-key="all" data-month-label="ทั้งหมด" 
+                                                data-icode="3000533" data-is-new="0" data-label="Free T3 (จำนวนตรวจทั้งหมด)">
+                                                {{ number_format(array_sum(array_column($monthly_stats, 'ft3_qty'))) }}
+                                            </a>
+                                        </td>
+                                        <td class="text-num text-purple">
+                                            <a href="javascript:void(0)" class="btn-view-patients-detail text-purple text-decoration-none fw-bold" 
+                                                data-month-key="all" data-month-label="ทั้งหมด" 
+                                                data-icode="3000533" data-is-new="1" data-label="Free T3 (รายใหม่ทั้งหมด)">
+                                                {{ number_format(array_sum(array_column($monthly_stats, 'ft3_new'))) }}
+                                            </a>
+                                        </td>
                                         <td class="text-num border-end">{{ number_format(array_sum(array_column($monthly_stats, 'ft3_income')), 2) }}</td>
                                         
-                                        <td class="text-num">{{ number_format(array_sum(array_column($monthly_stats, 'ft4_qty'))) }}</td>
-                                        <td class="text-num text-purple">{{ number_format(array_sum(array_column($monthly_stats, 'ft4_new'))) }}</td>
+                                        <td class="text-num">
+                                            <a href="javascript:void(0)" class="btn-view-patients-detail text-decoration-none" 
+                                                data-month-key="all" data-month-label="ทั้งหมด" 
+                                                data-icode="3000534" data-is-new="0" data-label="Free T4 (จำนวนตรวจทั้งหมด)">
+                                                {{ number_format(array_sum(array_column($monthly_stats, 'ft4_qty'))) }}
+                                            </a>
+                                        </td>
+                                        <td class="text-num text-purple">
+                                            <a href="javascript:void(0)" class="btn-view-patients-detail text-purple text-decoration-none fw-bold" 
+                                                data-month-key="all" data-month-label="ทั้งหมด" 
+                                                data-icode="3000534" data-is-new="1" data-label="Free T4 (รายใหม่ทั้งหมด)">
+                                                {{ number_format(array_sum(array_column($monthly_stats, 'ft4_new'))) }}
+                                            </a>
+                                        </td>
                                         <td class="text-num border-end">{{ number_format(array_sum(array_column($monthly_stats, 'ft4_income')), 2) }}</td>
                                         
-                                        <td class="text-num">{{ number_format(array_sum(array_column($monthly_stats, 'tsh_qty'))) }}</td>
-                                        <td class="text-num text-purple">{{ number_format(array_sum(array_column($monthly_stats, 'tsh_new'))) }}</td>
+                                        <td class="text-num">
+                                            <a href="javascript:void(0)" class="btn-view-patients-detail text-decoration-none" 
+                                                data-month-key="all" data-month-label="ทั้งหมด" 
+                                                data-icode="3000535" data-is-new="0" data-label="TSH (จำนวนตรวจทั้งหมด)">
+                                                {{ number_format(array_sum(array_column($monthly_stats, 'tsh_qty'))) }}
+                                            </a>
+                                        </td>
+                                        <td class="text-num text-purple">
+                                            <a href="javascript:void(0)" class="btn-view-patients-detail text-purple text-decoration-none fw-bold" 
+                                                data-month-key="all" data-month-label="ทั้งหมด" 
+                                                data-icode="3000535" data-is-new="1" data-label="TSH (รายใหม่ทั้งหมด)">
+                                                {{ number_format(array_sum(array_column($monthly_stats, 'tsh_new'))) }}
+                                            </a>
+                                        </td>
                                         <td class="text-num border-end">{{ number_format(array_sum(array_column($monthly_stats, 'tsh_income')), 2) }}</td>
                                         
                                         <td class="text-num text-dark">{{ number_format($total_hn) }}</td>
-                                        <td class="text-num text-primary">{{ number_format($total_visit) }}</td>
-                                        <td class="text-num text-purple">{{ number_format($total_new_cases) }}</td>
+                                        <td class="text-num text-primary">
+                                            <a href="javascript:void(0)" class="btn-view-patients-detail text-primary text-decoration-none" 
+                                                data-month-key="all" data-month-label="ทั้งหมด" 
+                                                data-icode="all" data-is-new="0" data-label="ส่งตรวจทั้งหมดในกลุ่ม (ครั้ง)">
+                                                {{ number_format($total_visit) }}
+                                            </a>
+                                        </td>
+                                        <td class="text-num text-purple">
+                                            <a href="javascript:void(0)" class="btn-view-patients-detail text-purple text-decoration-none" 
+                                                data-month-key="all" data-month-label="ทั้งหมด" 
+                                                data-icode="all" data-is-new="1" data-label="รายใหม่รวมในกลุ่ม (คน)">
+                                                {{ number_format($total_new_cases) }}
+                                            </a>
+                                        </td>
                                         <td class="text-num text-success">{{ number_format($total_income, 2) }}</td>
                                     </tr>
                                 </tfoot>
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Details Modal -->
+    <div class="modal fade" id="patientDetailsModal" tabindex="-1" aria-labelledby="patientDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header bg-light border-0 py-3">
+                    <h5 class="modal-title fw-bold text-white mb-0" id="patientDetailsModalLabel">
+                        <i class="fas fa-flask text-white me-2"></i>รายชื่อผู้รับบริการตรวจแล็บไทรอยด์
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="patientDetailsLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">กำลังโหลด...</span>
+                        </div>
+                        <p class="text-muted mt-2 mb-0">กำลังดึงข้อมูลรายชื่อผู้ป่วย...</p>
+                    </div>
+
+                    <div id="patientDetailsContent" class="d-none">
+                        <div class="modal-table-container">
+                            <table class="table table-hover align-middle w-100 mb-0" id="table-patient-details" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 50px;">#</th>
+                                        <th class="text-center" style="width: 100px;">วันที่ตรวจ</th>
+                                        <th class="text-center" style="width: 90px;">HN</th>
+                                        <th>ชื่อ-นามสกุล</th>
+                                        <th class="text-center" style="width: 80px;">PDX</th>
+                                        <th>SDX</th>
+                                        <th class="text-center" style="width: 120px;">ICD9</th>
+                                        <th>แพทย์ผู้สั่ง</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patientDetailsBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0 py-2">
+                    <button type="button" class="btn btn-secondary btn-sm px-3" style="border-radius: 8px;" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
                 </div>
             </div>
         </div>
@@ -554,6 +868,250 @@
 
                 const newCasesChart = new ApexCharts(document.querySelector("#newCasesChart"), newCasesOptions);
                 newCasesChart.render();
+
+                // Top Doctors Horizontal Grouped Bar Chart
+                const topDoctorsOptions = {
+                    series: [{
+                        name: 'Free T3',
+                        data: @json($top_doctors_ft3)
+                    }, {
+                        name: 'Free T4',
+                        data: @json($top_doctors_ft4)
+                    }, {
+                        name: 'TSH',
+                        data: @json($top_doctors_tsh)
+                    }],
+                    chart: {
+                        type: 'bar',
+                        height: 420,
+                        toolbar: { show: false }
+                    },
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 4,
+                            horizontal: true,
+                            barHeight: '75%',
+                            dataLabels: {
+                                position: 'top'
+                            }
+                        }
+                    },
+                    colors: ['#3b82f6', '#10b981', '#f59e0b'],
+                    dataLabels: {
+                        enabled: true,
+                        offsetX: 18,
+                        style: {
+                            fontSize: '9px',
+                            colors: ['#475569']
+                        },
+                        formatter: function (val) {
+                            return val > 0 ? val.toLocaleString() : '';
+                        }
+                    },
+                    xaxis: {
+                        categories: @json($top_doctors_names),
+                        labels: {
+                            formatter: val => Math.round(val).toLocaleString(),
+                            style: {
+                                fontSize: '10px'
+                            }
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: {
+                                fontSize: '10px'
+                            }
+                        }
+                    },
+                    grid: {
+                        borderColor: '#f1f5f9',
+                        padding: {
+                            right: 65
+                        }
+                    },
+                    legend: { 
+                        position: 'top',
+                        horizontalAlign: 'center',
+                        fontSize: '11px',
+                        markers: { radius: 12 }
+                    }
+                };
+
+                const topDoctorsChart = new ApexCharts(document.querySelector("#topDoctorsChart"), topDoctorsOptions);
+                topDoctorsChart.render();
+
+                // Top 10 Diagnoses for New Cases Horizontal Bar Chart
+                const topDiagsOptions = {
+                    series: [{
+                        name: 'ผู้ป่วยรายใหม่ (คน)',
+                        data: @json($top_diags_counts)
+                    }],
+                    chart: {
+                        type: 'bar',
+                        height: 420,
+                        toolbar: { show: false }
+                    },
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 4,
+                            horizontal: true,
+                            barHeight: '65%',
+                            distributed: true,
+                            dataLabels: {
+                                position: 'top'
+                            }
+                        }
+                    },
+                    colors: ['#4f46e5', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#f97316', '#64748b', '#a855f7'],
+                    dataLabels: {
+                        enabled: true,
+                        offsetX: 18,
+                        style: {
+                            fontSize: '10px',
+                            colors: ['#475569']
+                        },
+                        formatter: function (val) {
+                            return val.toLocaleString() + ' คน';
+                        }
+                    },
+                    xaxis: {
+                        categories: @json($top_diags_names),
+                        labels: {
+                            formatter: val => Math.round(val).toLocaleString(),
+                            style: {
+                                fontSize: '10px'
+                            }
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: {
+                                fontSize: '10px'
+                            }
+                        }
+                    },
+                    grid: {
+                        borderColor: '#f1f5f9',
+                        padding: {
+                            right: 65
+                        }
+                    },
+                    legend: { show: false }
+                };
+
+                const topDiagsChart = new ApexCharts(document.querySelector("#topDiagsChart"), topDiagsOptions);
+                topDiagsChart.render();
+
+                // Patient Details Modal Handler
+                $('.btn-view-patients-detail').on('click', function() {
+                    const monthKey = $(this).data('month-key');
+                    const monthLabel = $(this).data('month-label');
+                    const icode = $(this).data('icode');
+                    const isNew = $(this).data('is-new');
+                    const label = $(this).data('label');
+
+                    $('#patientDetailsModalLabel').html(`<i class="fas fa-flask text-white me-2"></i>รายชื่อผู้รับบริการ: <span class="text-warning">${label}</span> (${monthLabel})`);
+
+                    const modal = new bootstrap.Modal(document.getElementById('patientDetailsModal'));
+                    modal.show();
+
+                    $('#patientDetailsLoading').removeClass('d-none');
+                    $('#patientDetailsContent').addClass('d-none');
+                    $('#patientDetailsBody').html('');
+
+                    if ($.fn.DataTable.isDataTable('#table-patient-details')) {
+                        $('#table-patient-details').DataTable().destroy();
+                    }
+
+                    $.ajax({
+                        url: '{{ route("hosxp.lab.thyroid.patients") }}',
+                        method: 'GET',
+                        data: {
+                            start_date: '{{ $start_date }}',
+                            end_date: '{{ $end_date }}',
+                            month_key: monthKey,
+                            icode: icode,
+                            is_new: isNew
+                        },
+                        success: function(response) {
+                            let html = '';
+                            if (response.patients && response.patients.length > 0) {
+                                response.patients.forEach((patient, index) => {
+                                    // Format PDX Badge
+                                    const pdxBadge = patient.pdx ? `<span class="badge-pdx">${patient.pdx}</span>` : '<span class="text-muted">-</span>';
+                                    
+                                    // Format SDX Badges
+                                    let sdxBadges = '<span class="text-muted">-</span>';
+                                    if (patient.sdx) {
+                                        const badges = patient.sdx.split(',')
+                                            .map(code => code.trim())
+                                            .filter(code => code !== '')
+                                            .map(code => `<span class="badge-sdx">${code}</span>`)
+                                            .join(' ');
+                                        sdxBadges = `<div class="scrollable-cell-content" style="max-height: 52px; overflow-y: auto; max-width: 250px;">${badges}</div>`;
+                                    }
+                                    
+                                    // Format ICD9 Badges
+                                    let icd9Badges = '<span class="text-muted">-</span>';
+                                    if (patient.icd9) {
+                                        const badges = patient.icd9.split(',')
+                                            .map(code => code.trim())
+                                            .filter(code => code !== '')
+                                            .map(code => `<span class="badge-icd9">${code}</span>`)
+                                            .join(' ');
+                                        icd9Badges = `<div class="scrollable-cell-content" style="max-height: 52px; overflow-y: auto; max-width: 220px;">${badges}</div>`;
+                                    }
+
+                                    html += `
+                                        <tr>
+                                            <td class="text-center text-muted font-monospace">${index + 1}</td>
+                                            <td class="text-center text-secondary">${patient.test_date || ''}</td>
+                                            <td class="text-center patient-hn">${patient.hn || ''}</td>
+                                            <td class="patient-name">${patient.patient_name || ''}</td>
+                                            <td class="text-center">${pdxBadge}</td>
+                                            <td>${sdxBadges}</td>
+                                            <td class="text-center">${icd9Badges}</td>
+                                            <td class="text-secondary">${patient.doctor_name || ''}</td>
+                                        </tr>
+                                    `;
+                                });
+                            } else {
+                                html = `<tr><td colspan="8" class="text-center text-muted py-4">ไม่พบข้อมูลรายชื่อคนไข้ในช่วงเวลาดังกล่าว</td></tr>`;
+                            }
+                            
+                            $('#patientDetailsBody').html(html);
+                            $('#patientDetailsLoading').addClass('d-none');
+                            $('#patientDetailsContent').removeClass('d-none');
+
+                            if (response.patients && response.patients.length > 0) {
+                                $('#table-patient-details').DataTable({
+                                    pageLength: 10,
+                                    lengthMenu: [10, 25, 50, 100, 500],
+                                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+                                    buttons: [{
+                                        extend: 'excelHtml5',
+                                        text: '<i class="fas fa-file-excel me-1"></i> Excel',
+                                        className: 'btn btn-success btn-sm',
+                                        title: `รายชื่อผู้รับบริการ - ${label} (${monthLabel})`,
+                                        exportOptions: { columns: ':visible' }
+                                    }],
+                                    language: {
+                                        search: "ค้นหา:",
+                                        lengthMenu: "แสดง _MENU_ รายการ",
+                                        info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                                        paginate: { previous: "ก่อนหน้า", next: "ถัดไป" }
+                                    }
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            $('#patientDetailsBody').html(`<tr><td colspan="8" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`);
+                            $('#patientDetailsLoading').addClass('d-none');
+                            $('#patientDetailsContent').removeClass('d-none');
+                        }
+                    });
+                });
             });
         </script>
     @endpush

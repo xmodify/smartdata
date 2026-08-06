@@ -135,6 +135,60 @@ class LabController extends Controller
         $ft4_new_series = array_map('intval', array_column($monthly_stats, 'ft4_new'));
         $tsh_new_series = array_map('intval', array_column($monthly_stats, 'tsh_new'));
 
+        // 3. Fetch Top 10 Ordering Doctors with separated lab types
+        $top_doctors = DB::connection('hosxp')->select("
+            SELECT 
+                COALESCE(d.name, d_op.name, 'ไม่ระบุแพทย์/ผู้สั่ง') AS doctor_name,
+                SUM(CASE WHEN o.icode = '3000533' THEN o.qty ELSE 0 END) AS ft3_qty,
+                SUM(CASE WHEN o.icode = '3000534' THEN o.qty ELSE 0 END) AS ft4_qty,
+                SUM(CASE WHEN o.icode = '3000535' THEN o.qty ELSE 0 END) AS tsh_qty,
+                COUNT(o.vn) AS total_orders
+            FROM opitemrece o
+            LEFT JOIN lab_head lh ON lh.vn = o.vn
+            LEFT JOIN doctor d ON d.code = lh.doctor_code
+            LEFT JOIN doctor d_op ON d_op.code = o.doctor
+            WHERE o.vstdate BETWEEN ? AND ?
+              AND o.icode IN ('3000533', '3000534', '3000535')
+            GROUP BY COALESCE(d.name, d_op.name, 'ไม่ระบุแพทย์/ผู้สั่ง')
+            ORDER BY total_orders DESC
+            LIMIT 10
+        ", [$start_date, $end_date]);
+
+        $top_doctors_names = array_column($top_doctors, 'doctor_name');
+        $top_doctors_ft3 = array_map('intval', array_column($top_doctors, 'ft3_qty'));
+        $top_doctors_ft4 = array_map('intval', array_column($top_doctors, 'ft4_qty'));
+        $top_doctors_tsh = array_map('intval', array_column($top_doctors, 'tsh_qty'));
+
+        // 4. Fetch Top 10 Diagnoses for New Cases
+        $top_diags = DB::connection('hosxp')->select("
+            SELECT 
+                diag.diag_code,
+                CONCAT(diag.diag_code, ': ', COALESCE(i.name, '')) AS diag_name,
+                diag.total_cases
+            FROM (
+                SELECT 
+                    IF(o.an IS NOT NULL AND o.an <> '', 
+                        COALESCE((SELECT icd10 FROM iptdiag WHERE an = o.an AND diagtype = 1 LIMIT 1), a.pdx),
+                        COALESCE((SELECT icd10 FROM ovstdiag WHERE vn = o.vn AND diagtype = 1 LIMIT 1), v.pdx)
+                    ) AS diag_code,
+                    COUNT(o.vn) AS total_cases
+                FROM opitemrece o
+                LEFT JOIN vn_stat v ON v.vn = o.vn
+                LEFT JOIN an_stat a ON a.an = o.an
+                WHERE o.vstdate BETWEEN ? AND ?
+                  AND o.icode IN ('3000533', '3000534', '3000535')
+                  AND o.vstdate = (SELECT MIN(vstdate) FROM opitemrece WHERE hn = o.hn AND icode IN ('3000533', '3000534', '3000535'))
+                GROUP BY diag_code
+            ) diag
+            LEFT JOIN icd101 i ON i.code = diag.diag_code
+            WHERE diag.diag_code IS NOT NULL AND diag.diag_code <> ''
+            ORDER BY diag.total_cases DESC
+            LIMIT 10
+        ", [$start_date, $end_date]);
+
+        $top_diags_names = array_column($top_diags, 'diag_name');
+        $top_diags_counts = array_map('intval', array_column($top_diags, 'total_cases'));
+
         return view('hosxp.lab.thyroid', compact(
             'title',
             'budget_year_select',
@@ -153,8 +207,110 @@ class LabController extends Controller
             'total_visit',
             'total_hn',
             'total_new_cases',
-            'total_income'
+            'total_income',
+            'top_doctors_names',
+            'top_doctors_ft3',
+            'top_doctors_ft4',
+            'top_doctors_tsh',
+            'top_diags_names',
+            'top_diags_counts'
         ));
+    }
+
+    public function thyroid_patients(Request $request)
+    {
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+        $month_key = $request->input('month_key');
+        $icode = $request->input('icode');
+        $is_new = (int) $request->input('is_new', 0);
+
+        if (empty($start_date) || empty($end_date)) {
+            return response()->json(['error' => 'Missing date parameters'], 400);
+        }
+
+        $q_start = $start_date;
+        $q_end = $end_date;
+
+        if (!empty($month_key) && $month_key !== 'all') {
+            $q_start = $month_key . '-01';
+            $q_end = date('Y-m-t', strtotime($q_start));
+        }
+
+        $icode_condition = "o.icode IN ('3000533', '3000534', '3000535')";
+        $bindings = [$q_start, $q_end];
+
+        if (!empty($icode) && $icode !== 'all') {
+            $icode_condition = "o.icode = ?";
+            $bindings = [$icode, $q_start, $q_end];
+        }
+
+        $new_condition = "";
+        if ($is_new === 1) {
+            if (!empty($icode) && $icode !== 'all') {
+                $new_condition = "AND o.vstdate = (SELECT MIN(vstdate) FROM opitemrece WHERE hn = o.hn AND icode = o.icode)";
+            } else {
+                $new_condition = "AND o.vstdate = (SELECT MIN(vstdate) FROM opitemrece WHERE hn = o.hn AND icode IN ('3000533', '3000534', '3000535'))";
+            }
+        }
+
+        $query = "
+            SELECT DISTINCT
+                DATE_FORMAT(o.vstdate, '%Y-%m-%d') AS test_date,
+                p.hn,
+                CONCAT(p.pname, p.fname, ' ', p.lname) AS patient_name,
+                IF(o.an IS NOT NULL AND o.an <> '', 
+                    COALESCE((SELECT icd10 FROM iptdiag WHERE an = o.an AND diagtype = 1 LIMIT 1), a.pdx),
+                    COALESCE((SELECT icd10 FROM ovstdiag WHERE vn = o.vn AND diagtype = 1 LIMIT 1), v.pdx)
+                ) AS pdx,
+                IF(o.an IS NOT NULL AND o.an <> '', 
+                    (SELECT GROUP_CONCAT(DISTINCT icd10) FROM iptdiag WHERE an = o.an AND diagtype NOT IN (1) AND icd10 REGEXP '^[A-Za-z]'),
+                    (SELECT GROUP_CONCAT(DISTINCT icd10) FROM ovstdiag WHERE vn = o.vn AND diagtype NOT IN (1) AND icd10 REGEXP '^[A-Za-z]')
+                ) AS sdx,
+                IF(o.an IS NOT NULL AND o.an <> '', 
+                    (SELECT GROUP_CONCAT(DISTINCT icd9) FROM iptoprt WHERE an = o.an),
+                    (SELECT GROUP_CONCAT(DISTINCT icd9) FROM doctor_operation WHERE vn = o.vn)
+                ) AS icd9,
+                COALESCE(d.name, d_op.name) AS doctor_name
+            FROM opitemrece o
+            INNER JOIN patient p ON p.hn = o.hn
+            LEFT JOIN vn_stat v ON v.vn = o.vn
+            LEFT JOIN an_stat a ON a.an = o.an
+            LEFT JOIN lab_head lh ON lh.vn = o.vn
+            LEFT JOIN doctor d ON d.code = lh.doctor_code
+            LEFT JOIN doctor d_op ON d_op.code = o.doctor
+            WHERE o.vstdate BETWEEN ? AND ?
+              AND {$icode_condition}
+              {$new_condition}
+            ORDER BY o.vstdate DESC
+        ";
+
+        if (!empty($icode) && $icode !== 'all') {
+            $bindings = [$q_start, $q_end, $icode];
+        } else {
+            $bindings = [$q_start, $q_end];
+        }
+
+        $patients = DB::connection('hosxp')->select($query, $bindings);
+
+        foreach ($patients as $p) {
+            if ($p->test_date) {
+                $thaiFull = DateThai($p->test_date); // e.g. "29 พ.ย. 2568"
+                $parts = explode(' ', $thaiFull);
+                if (count($parts) === 3) {
+                    $parts[2] = substr($parts[2], 2); // "2568" -> "68"
+                    $p->test_date = implode(' ', $parts);
+                } else {
+                    $p->test_date = $thaiFull;
+                }
+            } else {
+                $p->test_date = '-';
+            }
+        }
+
+        return response()->json([
+            'patients' => $patients
+        ]);
     }
 
     private function resolveDateRange(Request $request)

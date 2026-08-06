@@ -91,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
     // Lab Routes
     Route::prefix('hosxp/lab')->group(function () {
         Route::get('/thyroid', [App\Http\Controllers\Hosxp\LabController::class, 'thyroid'])->name('hosxp.lab.thyroid');
+        Route::get('/thyroid/patients', [App\Http\Controllers\Hosxp\LabController::class, 'thyroid_patients'])->name('hosxp.lab.thyroid.patients');
     });
 
     // IPD Routes
