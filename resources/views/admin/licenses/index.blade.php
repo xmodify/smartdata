@@ -412,7 +412,7 @@
                     </div>
 
                     <!-- Dynamic program modules list container -->
-                    <div id="add_modules_section" class="mb-3 d-none border rounded p-3 bg-light">
+                    <div id="add_modules_section" class="mb-3 d-none border rounded p-3 bg-light" style="max-height: 280px; overflow-y: auto;">
                         <label class="form-label fw-bold small text-muted mb-2">เลือกโมดูลย่อยที่เปิดสิทธิ์การใช้งาน</label>
                         
                         @foreach($programs as $p)
@@ -514,7 +514,7 @@
 <!-- Edit License Modals (Rendered outside to avoid table layout overflow issues) -->
 @foreach($licenses as $license)
     <div class="modal fade" id="editLicenseModal{{ $license->id }}" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
                 <div class="modal-header bg-success text-white border-0" style="border-radius: 15px 15px 0 0;">
                     <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>แก้ไข License</h5>
@@ -570,7 +570,7 @@
                             </select>
                         </div>
 
-                        <div id="edit_modules_section_{{ $license->id }}" class="mb-3 {{ ($license->license_type ?? 'full') === 'module' ? '' : 'd-none' }} border rounded p-3 bg-light">
+                        <div id="edit_modules_section_{{ $license->id }}" class="mb-3 {{ ($license->license_type ?? 'full') === 'module' ? '' : 'd-none' }} border rounded p-3 bg-light" style="max-height: 280px; overflow-y: auto;">
                             <label class="form-label fw-bold small text-muted mb-2">เลือกโมดูลย่อยที่เปิดสิทธิ์การใช้งาน</label>
                             
                             @if($license->program->modules->count() > 0)
