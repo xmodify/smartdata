@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\License;
 use App\Models\LicenseProgram;
+use App\Models\LicenseModule;
+use App\Models\LicenseModuleActivation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
@@ -27,8 +29,8 @@ class LicenseController extends Controller
             ->where('expired_at', '<', Carbon::now())
             ->update(['status' => 'expired']);
 
-        $programs = LicenseProgram::withCount('licenses')->get();
-        $licenses = License::with('program')
+        $programs = LicenseProgram::withCount('licenses')->with('modules')->get();
+        $licenses = License::with(['program', 'activatedModules'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->input('search');
                 $query->where('license_key', 'like', "%{$search}%")
@@ -122,9 +124,12 @@ class LicenseController extends Controller
             'customer_name' => 'required|string|max:191',
             'hcode' => 'nullable|string|max:50',
             'hardware_id' => 'nullable|string|max:191',
+            'license_type' => 'required|in:full,module',
             'status' => 'required|in:active,suspended,expired,pending',
             'expired_at' => 'nullable|date',
             'notes' => 'nullable|string',
+            'modules' => 'nullable|array',
+            'modules.*' => 'exists:license_modules,id',
         ]);
 
         $program = LicenseProgram::findOrFail($request->program_id);
@@ -144,16 +149,27 @@ class LicenseController extends Controller
             }
         }
 
-        License::create([
+        $license = License::create([
             'program_id' => $request->program_id,
             'license_key' => $licenseKey,
             'customer_name' => $request->customer_name,
             'hcode' => $request->hcode,
             'hardware_id' => $request->hardware_id,
+            'license_type' => $request->license_type,
             'status' => $status,
             'expired_at' => $expiredAt,
             'notes' => $request->notes,
         ]);
+
+        if ($license->license_type === 'module' && $request->has('modules')) {
+            foreach ($request->input('modules') as $moduleId) {
+                LicenseModuleActivation::create([
+                    'license_id' => $license->id,
+                    'module_id' => $moduleId,
+                    'status' => 'active',
+                ]);
+            }
+        }
 
         return redirect()->back()->with('success', 'สร้าง License Key สำเร็จ: ' . $licenseKey);
     }
@@ -173,9 +189,12 @@ class LicenseController extends Controller
             'customer_name' => 'required|string|max:191',
             'hcode' => 'nullable|string|max:50',
             'hardware_id' => 'nullable|string|max:191',
+            'license_type' => 'required|in:full,module',
             'status' => 'required|in:active,suspended,expired,pending',
             'expired_at' => 'nullable|date',
             'notes' => 'nullable|string',
+            'modules' => 'nullable|array',
+            'modules.*' => 'exists:license_modules,id',
         ]);
 
         $status = $request->status;
@@ -193,12 +212,79 @@ class LicenseController extends Controller
             'customer_name' => $request->customer_name,
             'hcode' => $request->hcode,
             'hardware_id' => $request->hardware_id,
+            'license_type' => $request->license_type,
             'status' => $status,
             'expired_at' => $expiredAt,
             'notes' => $request->notes,
         ]);
 
+        // Sync modules
+        LicenseModuleActivation::where('license_id', $license->id)->delete();
+        if ($license->license_type === 'module' && $request->has('modules')) {
+            foreach ($request->input('modules') as $moduleId) {
+                LicenseModuleActivation::create([
+                    'license_id' => $license->id,
+                    'module_id' => $moduleId,
+                    'status' => 'active',
+                ]);
+            }
+        }
+
         return redirect()->back()->with('success', 'อัปเดต License สำเร็จ');
+    }
+
+    /**
+     * Store program module
+     */
+    public function storeModule(Request $request, $program_id)
+    {
+        if (auth()->user()->username !== '1341800003078') {
+            abort(403);
+        }
+
+        $request->validate([
+            'code' => 'required|string|max:191',
+            'name' => 'required|string|max:191',
+            'description' => 'nullable|string',
+        ]);
+
+        $program = LicenseProgram::findOrFail($program_id);
+
+        $exists = LicenseModule::where('program_id', $program->id)
+            ->where('code', $request->code)
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()->with('error', 'มีรหัสโมดูลนี้ในระบบนี้อยู่แล้ว');
+        }
+
+        LicenseModule::create([
+            'program_id' => $program->id,
+            'code' => $request->code,
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->back()->with('success', 'เพิ่มโมดูลใหม่สำเร็จ');
+    }
+
+    /**
+     * Destroy program module
+     */
+    public function destroyModule($id)
+    {
+        if (auth()->user()->username !== '1341800003078') {
+            abort(403);
+        }
+
+        $module = LicenseModule::findOrFail($id);
+        
+        // Remove activations
+        LicenseModuleActivation::where('module_id', $module->id)->delete();
+        
+        $module->delete();
+
+        return redirect()->back()->with('success', 'ลบโมดูลสำเร็จ');
     }
 
     /**
@@ -317,21 +403,37 @@ class LicenseController extends Controller
             ]);
         }
 
+        // Fetch modules depending on license type
+        $modules = [];
+        if (($license->license_type ?? 'full') === 'full') {
+            $modules = $program->modules()->pluck('code')->toArray();
+        } else {
+            $modules = $license->activatedModules()
+                ->where('license_module_activations.status', 'active')
+                ->pluck('code')
+                ->toArray();
+        }
+
         // Generate tamper-proof Digital Signature
         $expiryStr = $license->expired_at ? $license->expired_at->toIso8601String() : 'never';
+        $modulesStr = implode(',', $modules);
         $signaturePayload = implode('|', [
             $license->license_key,
             $program->code,
             $license->status,
             $expiryStr,
             $license->hardware_id ?? 'any',
-            $license->hcode ?? 'any'
+            $license->hcode ?? 'any',
+            $license->license_type ?? 'full',
+            $modulesStr
         ]);
 
         $signature = hash_hmac('sha256', $signaturePayload, config('app.key') ?: 'smartdata-secret-key-fallback');
 
         return response()->json([
             'status' => $license->status,
+            'license_type' => $license->license_type ?? 'full',
+            'modules' => $modules,
             'license_key' => $license->license_key,
             'program_name' => $program->name,
             'customer_name' => $license->customer_name,

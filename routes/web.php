@@ -274,6 +274,10 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/programs/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'updateProgram'])->name('license.programs.update');
         Route::delete('/programs/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'destroyProgram'])->name('license.programs.destroy');
         
+        // Program Modules CRUD
+        Route::post('/programs/{program_id}/modules', [App\Http\Controllers\Admin\LicenseController::class, 'storeModule'])->name('license.programs.modules.store');
+        Route::delete('/modules/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'destroyModule'])->name('license.modules.destroy');
+
         Route::post('/', [App\Http\Controllers\Admin\LicenseController::class, 'storeLicense'])->name('license.store');
         Route::put('/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'updateLicense'])->name('license.update');
         Route::delete('/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'destroyLicense'])->name('license.destroy');

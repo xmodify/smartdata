@@ -304,6 +304,12 @@
                                                 </button>
                                                 <button class="btn btn-sm btn-light border shadow-xs" 
                                                     data-bs-toggle="modal" 
+                                                    data-bs-target="#programModulesModal{{ $program->id }}"
+                                                    title="จัดการโมดูลย่อย">
+                                                    <i class="fas fa-puzzle-piece text-warning"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-light border shadow-xs" 
+                                                    data-bs-toggle="modal" 
                                                     data-bs-target="#editProgramModal{{ $program->id }}">
                                                     <i class="fas fa-edit text-primary"></i>
                                                 </button>
@@ -385,6 +391,39 @@
                             <input type="text" name="expired_at" id="add_expired_at" class="form-control border shadow-xs bg-white" placeholder="เลือกวันหมดอายุ" readonly>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">ประเภทลิขสิทธิ์</label>
+                        <select name="license_type" id="add_license_type" class="form-select border shadow-xs" onchange="toggleAddModules()">
+                            <option value="full">Full License (เข้าถึงทุกโมดูล)</option>
+                            <option value="module">Module License (เลือกเฉพาะบางโมดูล)</option>
+                        </select>
+                    </div>
+
+                    <!-- Dynamic program modules list container -->
+                    <div id="add_modules_section" class="mb-3 d-none border rounded p-3 bg-light">
+                        <label class="form-label fw-bold small text-muted mb-2">เลือกโมดูลย่อยที่เปิดสิทธิ์การใช้งาน</label>
+                        
+                        @foreach($programs as $p)
+                            <div class="program-modules-list d-none" id="add_program_modules_{{ $p->id }}">
+                                @if($p->modules->count() > 0)
+                                    @foreach($p->modules as $mod)
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="modules[]" value="{{ $mod->id }}" id="add_mod_{{ $mod->id }}">
+                                            <label class="form-check-label text-dark small" for="add_mod_{{ $mod->id }}">
+                                                <strong>{{ $mod->name }}</strong> (<code class="small text-danger">{{ $mod->code }}</code>)
+                                                @if($mod->description)
+                                                    <span class="text-muted d-block small" style="font-size:0.75rem;">{{ $mod->description }}</span>
+                                                @endif
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <span class="text-muted small d-block"><i class="fas fa-info-circle me-1"></i>ไม่มีโมดูลย่อยสำหรับโปรแกรมนี้ (ใช้สิทธิ์ Full เสมอ)</span>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted">หมายเหตุรายละเอียดเพิ่มเติม</label>
                         <textarea name="notes" class="form-control border shadow-xs" rows="2" placeholder="รายละเอียดดีล รายละเอียดการติดต่อ หรือข้อตกลง..."></textarea>
@@ -493,6 +532,34 @@
                             </div>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">ประเภทลิขสิทธิ์</label>
+                            <select name="license_type" id="edit_license_type_{{ $license->id }}" class="form-select border shadow-xs" onchange="toggleEditModules({{ $license->id }})">
+                                <option value="full" {{ ($license->license_type ?? 'full') === 'full' ? 'selected' : '' }}>Full License (เข้าถึงทุกโมดูล)</option>
+                                <option value="module" {{ ($license->license_type ?? 'full') === 'module' ? 'selected' : '' }}>Module License (เลือกเฉพาะบางโมดูล)</option>
+                            </select>
+                        </div>
+
+                        <div id="edit_modules_section_{{ $license->id }}" class="mb-3 {{ ($license->license_type ?? 'full') === 'module' ? '' : 'd-none' }} border rounded p-3 bg-light">
+                            <label class="form-label fw-bold small text-muted mb-2">เลือกโมดูลย่อยที่เปิดสิทธิ์การใช้งาน</label>
+                            
+                            @if($license->program->modules->count() > 0)
+                                @foreach($license->program->modules as $mod)
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="modules[]" value="{{ $mod->id }}" id="edit_mod_{{ $license->id }}_{{ $mod->id }}" {{ $license->activatedModules->contains($mod->id) ? 'checked' : '' }}>
+                                        <label class="form-check-label text-dark small" for="edit_mod_{{ $license->id }}_{{ $mod->id }}">
+                                            <strong>{{ $mod->name }}</strong> (<code class="small text-danger">{{ $mod->code }}</code>)
+                                            @if($mod->description)
+                                                <span class="text-muted d-block small" style="font-size:0.75rem;">{{ $mod->description }}</span>
+                                            @endif
+                                        </label>
+                                    </div>
+                                @endforeach
+                            @else
+                                <span class="text-muted small d-block"><i class="fas fa-info-circle me-1"></i>ไม่มีโมดูลย่อยสำหรับโปรแกรมนี้ (ใช้สิทธิ์ Full เสมอ)</span>
+                            @endif
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">หมายเหตุ / ข้อมูลเพิ่มเติม</label>
                             <textarea name="notes" class="form-control border shadow-xs" rows="2" placeholder="เช่น ช่องทางติดต่อลูกค้า รายละเอียดดีล">{{ $license->notes }}</textarea>
                         </div>
@@ -509,6 +576,84 @@
 
 <!-- Edit Program Modals (Rendered outside to avoid table layout overflow issues) -->
 @foreach($programs as $program)
+    <!-- Modal: Manage Program Modules -->
+    <div class="modal fade" id="programModulesModal{{ $program->id }}" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-header bg-gradient-success-custom text-white border-0" style="border-radius: 15px 15px 0 0;">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-puzzle-piece me-2"></i>จัดการโมดูลย่อยสำหรับโปรแกรม: {{ $program->name }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Current modules table -->
+                    <h6 class="fw-bold text-dark mb-3"><i class="fas fa-list me-2"></i>โมดูลย่อยทั้งหมดของโปรแกรมนี้ ({{ $program->modules->count() }})</h6>
+                    <div class="table-responsive mb-4 border rounded bg-white" style="max-height: 250px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>รหัสโมดูล (Module Code)</th>
+                                    <th>ชื่อโมดูล (Module Name)</th>
+                                    <th>คำอธิบาย</th>
+                                    <th class="text-end" style="width: 80px;">ลบ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($program->modules as $mod)
+                                    <tr>
+                                        <td><code class="bg-secondary-subtle text-secondary-emphasis px-2 py-1 rounded">{{ $mod->code }}</code></td>
+                                        <td class="fw-bold text-dark">{{ $mod->name }}</td>
+                                        <td class="text-muted small">{{ $mod->description ?: '-' }}</td>
+                                        <td class="text-end">
+                                            <form action="{{ route('license.modules.destroy', $mod->id) }}" method="POST" onsubmit="return confirm('ยืนยันลบโมดูลนี้? (สิทธิ์ที่เชื่อมกับลูกค้าจะถูกลบออกไปด้วย)')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-light border">
+                                                    <i class="fas fa-trash-alt text-danger"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted small">
+                                            <i class="fas fa-info-circle me-1"></i>ยังไม่มีโมดูลย่อยถูกเพิ่มเข้ามา
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Form to add new module -->
+                    <h6 class="fw-bold text-dark mb-3"><i class="fas fa-plus-circle me-2"></i>ลงทะเบียนโมดูลย่อยใหม่</h6>
+                    <form action="{{ route('license.programs.modules.store', $program->id) }}" method="POST">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted">รหัสโมดูล (Module Code) <span class="text-danger">*</span></label>
+                                <input type="text" name="code" class="form-control border shadow-xs" placeholder="เช่น export_ssop" required>
+                                <small class="text-muted" style="font-size: 0.75rem;">ภาษาอังกฤษพิมพ์เล็ก ไม่มีเว้นวรรค (ใช้สำหรับ API ตรวจสอบ)</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted">ชื่อโมดูล (Module Name) <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control border shadow-xs" placeholder="เช่น ระบบส่งออกข้อมูลประกันสังคม (SSOP)" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">รายละเอียด / คำอธิบาย</label>
+                            <textarea name="description" class="form-control border shadow-xs" rows="2" placeholder="ระบุรายละเอียดลักษณะงานหรือขอบเขตของโมดูลย่อยนี้..."></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success px-4 fw-bold"><i class="fas fa-save me-2"></i>บันทึกโมดูล</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="editProgramModal{{ $program->id }}" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
@@ -597,7 +742,10 @@
    แนบ JSON: license_key: [รหัสคีย์], program_code: "{{ $program->code }}", hcode: [ค่ารหัสโรงพยาบาล HCODE]
    - หากสถานะเป็น "active" ให้เก็บผลการตรวจสอบลิขสิทธิ์ลงใน Laravel Cache เพื่อป้องกันการ bypass/ดักแก้ผลลัพธ์
 4. การทำ Offline Cache: ตรวจสอบสถานะผ่าน Laravel Cache ก่อนเสมอกลางโปรแกรม เพื่อป้องกันความเร็วตก และตั้งเวลาดึงข้อมูลใหม่จาก API เซิร์ฟเวอร์ทุกๆ 7 วัน
-5. สร้าง Laravel Middleware (เช่น CheckLicense) สำหรับคัดกรอง Routes ทั้งหมด หากลิขสิทธิ์ถูกยกเลิก หมดอายุ หรือถูกระงับ ให้แสดงหน้าจอแจ้งเตือนลิขสิทธิ์ผิดพลาดอย่างสวยงาม</textarea>
+5. สร้าง Laravel Middleware (เช่น CheckLicense) สำหรับคัดกรอง Routes ทั้งหมด หากลิขสิทธิ์ถูกยกเลิก หมดอายุ หรือถูกระงับ ให้แสดงหน้าจอแจ้งเตือนลิขสิทธิ์ผิดพลาดอย่างสวยงาม
+6. การเช็กสิทธิ์ฟังก์ชันย่อย (Module Check): ตรวจเช็กตัวแปร license_type ใน JSON ผลลัพธ์:
+   - หาก license_type เท่ากับ "full" ให้ผ่านเข้าใช้งานได้ทุกฟังก์ชัน
+   - หาก license_type เท่ากับ "module" ให้เช็กว่ารหัสโมดูลที่ต้องการใช้งาน (เช่น export_ssop) มีระบุอยู่ในอาเรย์ modules ของ JSON หรือไม่ หากไม่มีให้ปิดการเข้าถึงฟังก์ชันนั้น</textarea>
                             <button class="btn btn-sm btn-success position-absolute end-0 bottom-0 m-3" onclick="copyPrompt('prompt_text_{{ $program->id }}')">
                                 <i class="far fa-copy me-1"></i> คัดลอก Prompt สั่งงาน AI
                             </button>
@@ -615,7 +763,10 @@
    - หากสถานะเป็น "active" ให้เก็บข้อมูลลิขสิทธิ์และ signature ลงในแคชท้องถิ่นในรูปแบบไฟล์ที่เข้ารหัส (เช่น เข้ารหัสด้วย cryptography หรือเซฟเป็น hashed json)
    - ตรวจสอบ signature เพื่อยืนยันว่าผลตอบกลับจริงมาจากเซิร์ฟเวอร์ของเรา
 4. การทำงานออฟไลน์ (Offline Cache): ตรวจสอบความถูกต้องจากไฟล์แคชก่อน และจะทำการเชื่อมต่อเพื่อซิงก์ข้อมูลกับเซิร์ฟเวอร์ออนไลน์ทุกๆ 7 วัน
-5. เขียนคลาสหรือโมดูลตรวจสิทธิ์ใช้งาน และเชื่อมต่อกับอินเทอร์เฟซโปรแกรมของคุณ หากพบว่าสิทธิ์ไม่ผ่าน ให้แสดงหน้าจอปิดกั้นการใช้งานระบบ</textarea>
+5. เขียนคลาสหรือโมดูลตรวจสิทธิ์ใช้งาน และเชื่อมต่อกับอินเทอร์เฟซโปรแกรมของคุณ หากพบว่าสิทธิ์ไม่ผ่าน ให้แสดงหน้าจอปิดกั้นการใช้งานระบบ
+6. ตรวจสอบระดับโมดูลย่อย: ใน JSON ตรวจสอบตัวแปร license_type:
+   - หากมีค่าเป็น "full" ให้สิทธิ์การใช้งานผ่านทุกโมดูล
+   - หากมีค่าเป็น "module" ให้เช็กสิทธิ์เฉพาะเจาะจงว่าชื่อรหัสโมดูลที่ต้องการใช้งาน (เช่น export_ssop) มีอยู่ภายในลิสต์ modules หรือไม่ เพื่อใช้ล็อกสิทธิ์ฟีเจอร์ย่อยของโปรเจกต์</textarea>
                             <button class="btn btn-sm btn-success position-absolute end-0 bottom-0 m-3" onclick="copyPrompt('prompt_text_{{ $program->id }}')">
                                 <i class="far fa-copy me-1"></i> คัดลอก Prompt สั่งงาน AI
                             </button>
@@ -634,7 +785,10 @@
    - หากสถานะเป็น "active" ให้บันทึกข้อมูลสิทธิ์ที่ตรวจสอบแล้วและลายเซ็น (signature) ลงใน local cache ที่เข้ารหัส (Encrypted File) ในเครื่อง
    - หากสถานะเป็น "pending", "suspended" หรือ "expired" ให้อธิบายสถานะและล็อกไม่ให้ใช้งานโปรแกรม
 4. ทำการเช็คสิทธิ์แบบ Offline Cache: ทุกครั้งที่เปิดโปรแกรม ให้อ่านไฟล์แคชในเครื่องก่อนเพื่อให้ทำงานออฟไลน์ได้ และค่อยส่งคำขอเช็คออนไลน์ซ้ำเมื่อพบการเชื่อมต่ออินเทอร์เน็ตทุกๆ 7 วัน
-5. สร้างหน้าเมนู Console หรือหน้าต่างให้ป้อนคีย์ลิขสิทธิ์และแสดงสถานะให้สวยงาม</textarea>
+5. สร้างหน้าเมนู Console หรือหน้าต่างให้ป้อนคีย์ลิขสิทธิ์และแสดงสถานะให้สวยงาม
+6. ตรวจสอบรหัสโมดูลย่อย (Module Checking): นำข้อมูล license_type และอาเรย์ modules จาก JSON ผลลัพธ์:
+   - หาก license_type เป็น "full" ถือว่าได้สิทธิ์ครบทุกฟังก์ชันของโปรแกรม
+   - หาก license_type เป็น "module" ให้ทำการเช็คว่ารหัสโมดูลที่ใช้ (เช่น export_ssop) มีระบุอยู่ใน slice/array modules หรือไม่เพื่ออนุญาตการทำงาน</textarea>
                             <button class="btn btn-sm btn-success position-absolute end-0 bottom-0 m-3" onclick="copyPrompt('prompt_text_{{ $program->id }}')">
                                 <i class="far fa-copy me-1"></i> คัดลอก Prompt สั่งงาน AI
                             </button>
@@ -787,6 +941,46 @@
                         instance.altInput.value = `${day} ${month} ${year}`;
                     }, 10);
                 }
+            }
+        };
+
+        // Toggle modules section in Add License Modal
+        window.toggleAddModules = function() {
+            const type = document.getElementById('add_license_type').value;
+            const programSelect = document.querySelector('select[name="program_id"]');
+            const programId = programSelect ? programSelect.value : null;
+            const section = document.getElementById('add_modules_section');
+            
+            // Hide all lists first
+            document.querySelectorAll('.program-modules-list').forEach(div => {
+                div.classList.add('d-none');
+            });
+            
+            if (type === 'module' && programId) {
+                if (section) section.classList.remove('d-none');
+                const targetList = document.getElementById('add_program_modules_' + programId);
+                if (targetList) {
+                    targetList.classList.remove('d-none');
+                }
+            } else {
+                if (section) section.classList.add('d-none');
+            }
+        };
+        
+        // Bind program select change
+        const programSelect = document.querySelector('select[name="program_id"]');
+        if (programSelect) {
+            programSelect.addEventListener('change', window.toggleAddModules);
+        }
+
+        // Toggle modules section in Edit License Modal
+        window.toggleEditModules = function(licenseId) {
+            const type = document.getElementById('edit_license_type_' + licenseId).value;
+            const section = document.getElementById('edit_modules_section_' + licenseId);
+            if (type === 'module') {
+                if (section) section.classList.remove('d-none');
+            } else {
+                if (section) section.classList.add('d-none');
             }
         };
 

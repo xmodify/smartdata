@@ -18,6 +18,7 @@ class License extends Model
         'customer_name',
         'hcode',
         'hardware_id',
+        'license_type',
         'status',
         'activated_at',
         'expired_at',
@@ -35,6 +36,24 @@ class License extends Model
     public function program()
     {
         return $this->belongsTo(LicenseProgram::class, 'program_id');
+    }
+
+    /**
+     * Get the module activations for the license.
+     */
+    public function moduleActivations()
+    {
+        return $this->hasMany(LicenseModuleActivation::class, 'license_id');
+    }
+
+    /**
+     * Get the activated modules for the license.
+     */
+    public function activatedModules()
+    {
+        return $this->belongsToMany(LicenseModule::class, 'license_module_activations', 'license_id', 'module_id')
+            ->withPivot('status', 'expired_at')
+            ->withTimestamps();
     }
 
     /**

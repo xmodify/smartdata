@@ -999,7 +999,13 @@
                 "default": null,
                 "extra": ""
             },
-
+            "license_type": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "full",
+                "extra": ""
+            },
             "status": {
                 "type": "varchar",
                 "length": 20,
@@ -1057,6 +1063,130 @@
                 ],
                 "unique": true,
                 "primary": false
+            }
+        }
+    },
+    "license_modules": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "program_id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "code": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "description": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "license_module_activations": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "license_id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "module_id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "status": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "active",
+                "extra": ""
+            },
+            "expired_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
             }
         }
     }
