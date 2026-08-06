@@ -530,7 +530,7 @@
                     <div class="mb-3 text-muted small">
                         <i class="fas fa-info-circle me-1"></i> สิทธิ์โมดูลย่อยที่เปิดให้เข้าใช้งานร่วมกับคีย์หลัก: <code class="text-success fw-bold">{{ $license->license_key }}</code>
                     </div>
-                    <div class="list-group border rounded shadow-xs overflow-hidden" style="max-height: 300px; overflow-y: auto;">
+                    <div class="list-group border rounded shadow-xs" style="max-height: 320px; overflow-y: auto; padding: 2px;">
                         @forelse($license->activatedModules as $mod)
                             @php
                                 $pivot = $mod->pivot;
