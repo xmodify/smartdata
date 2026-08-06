@@ -268,6 +268,25 @@
                     <i class="fas fa-table me-2"></i>รายชื่อผู้ป่วย
                     <span class="badge bg-danger ms-2" id="countBadge" style="display: none;"></span>
                 </h6>
+                <div class="d-flex align-items-center gap-2">
+                    <label for="pcu_filter" class="small fw-bold text-secondary mb-0">กรองตาม รพ.สต.:</label>
+                    <select id="pcu_filter" class="form-select form-select-sm shadow-sm" style="border-radius: 8px; width: 220px; font-size: 0.8rem;">
+                        <option value="">ทั้งหมด (ทุก รพ.สต.)</option>
+                        <option value="รพ.สต.หัวตะพาน">รพ.สต.หัวตะพาน</option>
+                        <option value="รพ.สต.โนนหนามแท่ง">รพ.สต.โนนหนามแท่ง</option>
+                        <option value="รพ.สต.คำพระ">รพ.สต.คำพระ</option>
+                        <option value="รพ.สต.เค็งใหญ่">รพ.สต.เค็งใหญ่</option>
+                        <option value="รพ.สต.โคกเลาะ">รพ.สต.โคกเลาะ</option>
+                        <option value="รพ.สต.ขุมเหล็ก">รพ.สต.ขุมเหล็ก</option>
+                        <option value="รพ.สต.โพนเมืองน้อย">รพ.สต.โพนเมืองน้อย</option>
+                        <option value="รพ.สต.สร้างถ่อน้อย">รพ.สต.สร้างถ่อน้อย</option>
+                        <option value="รพ.สต.นาคู">รพ.สต.นาคู</option>
+                        <option value="รพ.สต.หนองยอ">รพ.สต.หนองยอ</option>
+                        <option value="รพ.สต.จิกดู่">รพ.สต.จิกดู่</option>
+                        <option value="PCU รัตนวารี">PCU รัตนวารี</option>
+                        <option value="นอกเขตอำเภอหัวตะพาน">นอกเขตอำเภอหัวตะพาน</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="card-body px-4 pb-4">
@@ -401,7 +420,10 @@ window.monthValues  = @json(array_column($new_by_month, 'total'));
             serverSide: true,
             ajax: {
                 url: window.location.href,
-                type: 'GET'
+                type: 'GET',
+                data: function(d) {
+                    d.pcu = $('#pcu_filter').val();
+                }
             },
             columns: [
                 { data: 'index', name: 'index', orderable: false, searchable: false, className: 'text-center text-muted small' },
@@ -440,11 +462,15 @@ window.monthValues  = @json(array_column($new_by_month, 'total'));
                     next: "ถัดไป"
                 }
             },
-            order: [[6, 'desc']],
+            order: [[14, 'asc']],
             scrollX: true,
             drawCallback: function(settings) {
                 updateCountBadge(this.api());
             }
+        });
+
+        $('#pcu_filter').on('change', function() {
+            dtInstance.ajax.reload();
         });
 
         function updateCountBadge(api) {

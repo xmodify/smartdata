@@ -151,10 +151,11 @@ class NcdController extends Controller
             $start = $request->get('start', 0);
             $length = $request->get('length', 10);
             $searchValue = $request->get('search')['value'] ?? '';
+            $pcu = $request->get('pcu', '');
 
             // Map columns for ordering
-            $orderColumnIndex = $request->get('order')[0]['column'] ?? 6;
-            $orderDir = $request->get('order')[0]['dir'] ?? 'desc';
+            $orderColumnIndex = $request->get('order')[0]['column'] ?? 14;
+            $orderDir = $request->get('order')[0]['dir'] ?? 'asc';
 
             $columnsMap = [
                 1 => 'c.hn',
@@ -170,10 +171,35 @@ class NcdController extends Controller
                 11 => 'c.last_bp_bps_value',
                 12 => 'd.name',
                 13 => 'c.clinic_member_status_id',
-                14 => 'ph.name'
+                14 => 'send_pcu_hospital_name'
             ];
 
-            $orderBy = $columnsMap[$orderColumnIndex] ?? 'c.regdate';
+            $orderBy = $columnsMap[$orderColumnIndex] ?? 'send_pcu_hospital_name';
+
+            $pcuSql = "";
+            $bindings = ['clinic' => $clinic_code];
+            if (!empty($pcu)) {
+                $pcuSql = "
+                    AND (
+                        CASE 
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370601') THEN 'รพ.สต.หัวตะพาน' 
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370602' AND p.moopart IN ('4','5','6','10','11')) THEN 'รพ.สต.โนนหนามแท่ง'   
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370602' AND p.moopart IN ('1','2','3','7','8','9','12')) THEN 'รพ.สต.คำพระ'  
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370603') THEN 'รพ.สต.เค็งใหญ่'  
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370604') THEN 'รพ.สต.โคกเลาะ'   
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370605' AND p.moopart IN ('2','5','6','7','8','9')) THEN 'รพ.สต.ขุมเหล็ก' 
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370605' AND p.moopart IN ('1','3','4','10','11','12')) THEN 'รพ.สต.โพนเมืองน้อย' 
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370606' AND p.moopart IN ('1','3','7','10','11','12','13')) THEN 'รพ.สต.สร้างถ่อน้อย' 
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370606' AND p.moopart IN ('2','4','5','6','8','9')) THEN 'รพ.สต.นาคู' 
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370607' AND p.moopart IN ('3','6','7','8','9')) THEN 'รพ.สต.หนองยอ'  
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370607' AND p.moopart IN ('1','2','4','5','10','11','12')) THEN 'รพ.สต.จิกดู่'   
+                            WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370608') THEN 'PCU รัตนวารี' 
+                            ELSE COALESCE(CONCAT(ph_reg.hosptype, SPACE(1), ph_reg.NAME), CONCAT(ph.hosptype, SPACE(1), ph.NAME), 'นอกเขตอำเภอหัวตะพาน')
+                        END = :pcu
+                    )
+                ";
+                $bindings['pcu'] = $pcu;
+            }
 
             $baseSql = "
                 FROM clinicmember c
@@ -184,15 +210,16 @@ class NcdController extends Controller
                 LEFT OUTER JOIN doctor d ON d.CODE = c.doctor
                 LEFT OUTER JOIN clinic_member_status cm ON cm.clinic_member_status_id = c.clinic_member_status_id
                 LEFT OUTER JOIN hospcode ph ON ph.hospcode = c.send_to_pcu_hcode
+                LEFT OUTER JOIN hospcode ph_reg ON ph_reg.hospcode = p.hcode
                 WHERE c.clinic = :clinic
+                $pcuSql
             ";
 
             // Total records
-            $totalCountRow = DB::connection('hosxp')->selectOne("SELECT COUNT(DISTINCT c.hn) AS total " . str_replace(':clinic', '?', $baseSql), [$clinic_code]);
+            $totalCountRow = DB::connection('hosxp')->selectOne("SELECT COUNT(DISTINCT c.hn) AS total " . $baseSql, $bindings);
             $recordsTotal = $totalCountRow ? $totalCountRow->total : 0;
 
             // Search filter
-            $bindings = ['clinic' => $clinic_code];
             $searchSql = "";
             if (!empty($searchValue)) {
                 $searchSql = "
@@ -204,6 +231,7 @@ class NcdController extends Controller
                         OR y.NAME LIKE :search
                         OR d.NAME LIKE :search
                         OR ph.NAME LIKE :search
+                        OR ph_reg.NAME LIKE :search
                     )
                 ";
                 $bindings['search'] = '%' . $searchValue . '%';
@@ -245,7 +273,21 @@ class NcdController extends Controller
                     d.NAME AS doctor_name,
                     cm.clinic_member_status_name,
                     c.clinic_member_status_id,
-                    CONCAT(ph.hosptype, SPACE(1), ph.NAME) AS send_pcu_hospital_name
+                    CASE 
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370601') THEN 'รพ.สต.หัวตะพาน' 
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370602' AND p.moopart IN ('4','5','6','10','11')) THEN 'รพ.สต.โนนหนามแท่ง'   
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370602' AND p.moopart IN ('1','2','3','7','8','9','12')) THEN 'รพ.สต.คำพระ'  
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370603') THEN 'รพ.สต.เค็งใหญ่'  
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370604') THEN 'รพ.สต.โคกเลาะ'   
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370605' AND p.moopart IN ('2','5','6','7','8','9')) THEN 'รพ.สต.ขุมเหล็ก' 
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370605' AND p.moopart IN ('1','3','4','10','11','12')) THEN 'รพ.สต.โพนเมืองน้อย' 
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370606' AND p.moopart IN ('1','3','7','10','11','12','13')) THEN 'รพ.สต.สร้างถ่อน้อย' 
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370606' AND p.moopart IN ('2','4','5','6','8','9')) THEN 'รพ.สต.นาคู' 
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370607' AND p.moopart IN ('3','6','7','8','9')) THEN 'รพ.สต.หนองยอ'  
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370607' AND p.moopart IN ('1','2','4','5','10','11','12')) THEN 'รพ.สต.จิกดู่'   
+                        WHEN (CONCAT(p.chwpart, p.amppart, p.tmbpart) = '370608') THEN 'PCU รัตนวารี' 
+                        ELSE COALESCE(CONCAT(ph_reg.hosptype, SPACE(1), ph_reg.NAME), CONCAT(ph.hosptype, SPACE(1), ph.NAME), 'นอกเขตอำเภอหัวตะพาน')
+                    END AS send_pcu_hospital_name
                 $baseSql
                 $searchSql
                 ORDER BY $orderBy $orderDir
@@ -303,9 +345,11 @@ class NcdController extends Controller
                 $statusName = $row->clinic_member_status_name ?? 'ไม่ระบุ';
                 $badgeColor = match((string)$statusId) {
                     '1' => 'success',
-                    '2' => 'warning',
+                    '2' => 'danger',
                     '3' => 'secondary',
-                    default => 'light'
+                    '4' => 'warning text-dark',
+                    '5' => 'info text-dark',
+                    default => 'light text-dark'
                 };
                 $status_badge = '<span class="badge bg-'.$badgeColor.' badge-status">'.$statusName.'</span>';
 

@@ -107,9 +107,20 @@
             color: #f97316;
             background: #f8f9fa;
         }
-        .flatpickr-today-button:hover {
-            background: #fff7ed;
-        }
+        /* Pastel Colors for Right Groups */
+        table.dataTable thead th.th-total { background-color: #e0f2fe !important; color: #0369a1 !important; }
+        table.dataTable thead th.th-ucs { background-color: #ecfdf5 !important; color: #047857 !important; }
+        table.dataTable thead th.th-ofc { background-color: #fef2f2 !important; color: #b91c1c !important; }
+        table.dataTable thead th.th-lgo { background-color: #fef3c7 !important; color: #b45309 !important; }
+        table.dataTable thead th.th-sss { background-color: #faf5ff !important; color: #6b21a8 !important; }
+        table.dataTable thead th.th-other { background-color: #f3f4f6 !important; color: #374151 !important; }
+
+        .bg-pastel-total { background-color: #f0f9ff !important; }
+        .bg-pastel-ucs { background-color: #f0fdf4 !important; }
+        .bg-pastel-ofc { background-color: #fff5f5 !important; }
+        .bg-pastel-lgo { background-color: #fffbeb !important; }
+        .bg-pastel-sss { background-color: #fbf7ff !important; }
+        .bg-pastel-other { background-color: #f9fafb !important; }
     </style>
 @endpush
 
@@ -167,6 +178,11 @@
                     </button>
                 </li>
                 <li class="nav-item">
+                    <button class="nav-link" id="inst_all-tab" data-bs-toggle="tab" data-bs-target="#inst_all" type="button" role="tab">
+                        <i class="fas fa-hospital me-1"></i> ค่า Instrument (ทั้งหมด)
+                    </button>
+                </li>
+                <li class="nav-item">
                     <button class="nav-link" id="other-tab" data-bs-toggle="tab" data-bs-target="#other" type="button" role="tab">
                         <i class="fas fa-box-open me-1"></i> รายการอื่น ๆ
                     </button>
@@ -180,6 +196,7 @@
                 $tabs = [
                     ['id' => 'pt', 'data' => $data_pt, 'color' => '#f97316', 'icon' => 'fa-walking', 'title' => 'กายภาพบำบัด'],
                     ['id' => 'inst', 'data' => $data_inst, 'color' => '#3b82f6', 'icon' => 'fa-tools', 'title' => 'Instrument'],
+                    ['id' => 'inst_all', 'data' => $data_inst_all, 'color' => '#6366f1', 'icon' => 'fa-hospital', 'title' => 'Instrument (ทั้งหมด)'],
                     ['id' => 'other', 'data' => $data_other, 'color' => '#10b981', 'icon' => 'fa-box-open', 'title' => 'อื่น ๆ']
                 ];
             @endphp
@@ -221,7 +238,7 @@
                     </div>
 
                     <!-- Chart and Table -->
-                    <div class="row g-4">
+                    <div class="row g-4 mb-4">
                         <div class="col-xl-6">
                             <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
                                 <div class="card-header bg-white py-3 border-0">
@@ -237,11 +254,11 @@
                         <div class="col-xl-6">
                             <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
                                 <div class="card-header bg-white py-3 border-0">
-                                    <h6 class="fw-bold mb-0" style="color: {{ $tab['color'] }}"><i class="fas fa-list me-2"></i>รายการบริการทั้งหมด</h6>
+                                    <h6 class="fw-bold mb-0" style="color: {{ $tab['color'] }}"><i class="fas fa-list me-2"></i>รายการบริการ Top 20 มูลค่าสูงสุด</h6>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive p-3">
-                                        <table class="table table-hover align-middle datatable-value" id="table-{{ $tab['id'] }}" style="width:100%">
+                                        <table class="table table-hover align-middle datatable-original" id="table-orig-{{ $tab['id'] }}" style="width:100%">
                                             <thead>
                                                 <tr>
                                                     <th class="text-center">อันดับ</th>
@@ -255,7 +272,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($tab['data'] as $index => $row)
+                                                @foreach (collect($tab['data'])->slice(0, 20) as $index => $row)
                                                     <tr>
                                                         <td class="text-center">
                                                             @if ($index === 0)
@@ -294,10 +311,84 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Pivot Table -->
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                                <div class="card-header bg-white py-3 border-0">
+                                    <h6 class="fw-bold mb-0" style="color: {{ $tab['color'] }}"><i class="fas fa-list-ul me-2"></i>รายการบริการทั้งหมดแยกตามสิทธิ</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive p-3">
+                                        <table class="table table-hover table-bordered align-middle datatable-value" id="table-pivot-{{ $tab['id'] }}" style="width:100%; font-size: 0.75rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th rowspan="2" class="text-center" style="vertical-align: middle; background-color: #f8fafc;">icode</th>
+                                                    <th rowspan="2" style="vertical-align: middle; background-color: #f8fafc;">ชื่อรายการ</th>
+                                                    <th rowspan="2" class="text-end" style="vertical-align: middle; background-color: #f8fafc;">ราคา/หน่วย</th>
+                                                    <th colspan="2" class="th-total text-center">รวมทั้งหมด</th>
+                                                    <th colspan="2" class="th-ucs text-center">สิทธิ บัตรทอง (UCS)</th>
+                                                    <th colspan="2" class="th-ofc text-center">สิทธิ ข้าราชการ (OFC)</th>
+                                                    <th colspan="2" class="th-lgo text-center">สิทธิ อปท. (LGO)</th>
+                                                    <th colspan="2" class="th-sss text-center">สิทธิ ประกันสังคม (SSS)</th>
+                                                    <th colspan="2" class="th-other text-center">สิทธิ อื่นๆ</th>
+                                                </tr>
+                                                <tr>
+                                                    <th class="th-total text-center">Qty</th>
+                                                    <th class="th-total text-end">มูลค่า (บาท)</th>
+                                                    <th class="th-ucs text-center">Qty</th>
+                                                    <th class="th-ucs text-end">มูลค่า (บาท)</th>
+                                                    <th class="th-ofc text-center">Qty</th>
+                                                    <th class="th-ofc text-end">มูลค่า (บาท)</th>
+                                                    <th class="th-lgo text-center">Qty</th>
+                                                    <th class="th-lgo text-end">มูลค่า (บาท)</th>
+                                                    <th class="th-sss text-center">Qty</th>
+                                                    <th class="th-sss text-end">มูลค่า (บาท)</th>
+                                                    <th class="th-other text-center">Qty</th>
+                                                    <th class="th-other text-end">มูลค่า (บาท)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($tab['data'] as $row)
+                                                    <tr>
+                                                        <td class="text-center">
+                                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1" style="font-size: 0.75rem;">
+                                                                {{ $row->icode }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="fw-bold small text-dark">{{ $row->name }}</td>
+                                                        <td class="text-end small">฿{{ number_format($row->unitprice, 2) }}</td>
+                                                        
+                                                        <td class="text-center fw-bold bg-pastel-total">{{ number_format($row->total_qty) }}</td>
+                                                        <td class="text-end fw-bold bg-pastel-total" data-order="{{ $row->total_price }}">฿{{ number_format($row->total_price, 2) }}</td>
+                                                        
+                                                        <td class="text-center bg-pastel-ucs">{{ number_format($row->ucs_qty) }}</td>
+                                                        <td class="text-end bg-pastel-ucs" data-order="{{ $row->ucs_price }}">฿{{ number_format($row->ucs_price, 2) }}</td>
+                                                        
+                                                        <td class="text-center bg-pastel-ofc">{{ number_format($row->ofc_qty) }}</td>
+                                                        <td class="text-end bg-pastel-ofc" data-order="{{ $row->ofc_price }}">฿{{ number_format($row->ofc_price, 2) }}</td>
+                                                        
+                                                        <td class="text-center bg-pastel-lgo">{{ number_format($row->lgo_qty) }}</td>
+                                                        <td class="text-end bg-pastel-lgo" data-order="{{ $row->lgo_price }}">฿{{ number_format($row->lgo_price, 2) }}</td>
+                                                        
+                                                        <td class="text-center bg-pastel-sss">{{ number_format($row->sss_qty) }}</td>
+                                                        <td class="text-end bg-pastel-sss" data-order="{{ $row->sss_price }}">฿{{ number_format($row->sss_price, 2) }}</td>
+                                                        
+                                                        <td class="text-center bg-pastel-other">{{ number_format($row->other_qty) }}</td>
+                                                        <td class="text-end bg-pastel-other" data-order="{{ $row->other_price }}">฿{{ number_format($row->other_price, 2) }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             @endforeach
         </div>
-    </div>
 
     @push('styles')
         <style>
@@ -374,10 +465,11 @@
                 const tabsData = {
                     pt: @json($data_pt),
                     inst: @json($data_inst),
+                    inst_all: @json($data_inst_all),
                     other: @json($data_other)
                 };
 
-                const colors = { pt: '#f97316', inst: '#3b82f6', other: '#10b981' };
+                const colors = { pt: '#f97316', inst: '#3b82f6', inst_all: '#6366f1', other: '#10b981' };
 
                 // Initialize Charts
                 Object.keys(tabsData).forEach(key => {
@@ -416,6 +508,26 @@
                 });
 
                 // Initialize Tables
+                $('.datatable-original').each(function() {
+                    $(this).DataTable({
+                        dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-2"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+                        buttons: [{
+                            extend: 'excelHtml5',
+                            text: '<i class="fas fa-file-excel me-1"></i> Excel',
+                            className: 'btn btn-success',
+                            title: 'รายการบริการทั้งหมด'
+                        }],
+                        pageLength: 10,
+                        order: [[7, 'desc']],
+                        language: {
+                            search: "ค้นหา:",
+                            lengthMenu: "แสดง _MENU_ รายการ",
+                            info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                            paginate: { previous: "ก่อนหน้า", next: "ถัดไป" }
+                        }
+                    });
+                });
+
                 $('.datatable-value').each(function() {
                     $(this).DataTable({
                         dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-2"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
@@ -423,10 +535,10 @@
                             extend: 'excelHtml5',
                             text: '<i class="fas fa-file-excel me-1"></i> Excel',
                             className: 'btn btn-success',
-                            title: 'มูลค่าการให้บริการ'
+                            title: 'รายการบริการทั้งหมดแยกตามสิทธิ'
                         }],
                         pageLength: 10,
-                        order: [[7, 'desc']],
+                        order: [[4, 'desc']],
                         language: {
                             search: "ค้นหา:",
                             lengthMenu: "แสดง _MENU_ รายการ",

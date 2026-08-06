@@ -242,11 +242,28 @@ class PhysicController extends Controller
                 ot.unitprice,
                 SUM(ot.sum_price) AS sum_price,
                 SUM(CASE WHEN p.sex = "1" THEN 1 ELSE 0 END) as male,
-                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female
+                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female,
+                
+                SUM(ot.qty) AS total_qty,
+                SUM(ot.sum_price) AS total_price,
+                SUM(CASE WHEN pt.hipdata_code = "UCS" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN pt.hipdata_code = "UCS" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS ucs_price,
+                SUM(CASE WHEN pt.hipdata_code = "OFC" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN pt.hipdata_code = "OFC" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS ofc_price,
+                SUM(CASE WHEN pt.hipdata_code = "LGO" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN pt.hipdata_code = "LGO" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS lgo_price,
+                SUM(CASE WHEN pt.hipdata_code IN ("SSS", "SSI") AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN pt.hipdata_code IN ("SSS", "SSI") AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS sss_price,
+                SUM(CASE WHEN (pt.paidst IN ("01","03") OR pt.hipdata_code IN ("A1","A9") OR pt.hipdata_code NOT IN ("UCS","OFC","LGO","SSS","SSI") OR pt.hipdata_code IS NULL) THEN ot.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN (pt.paidst IN ("01","03") OR pt.hipdata_code IN ("A1","A9") OR pt.hipdata_code NOT IN ("UCS","OFC","LGO","SSS","SSI") OR pt.hipdata_code IS NULL) THEN ot.sum_price ELSE 0 END) AS other_price
             FROM ovst o
             INNER JOIN opitemrece ot ON ot.vn = o.vn
             INNER JOIN nondrugitems n ON n.icode = ot.icode
             INNER JOIN patient p ON p.hn = o.hn
+            LEFT JOIN (
+                SELECT vn, pttype FROM visit_pttype GROUP BY vn, pttype
+            ) vp ON vp.vn = o.vn
+            LEFT JOIN pttype pt ON pt.pttype = COALESCE(vp.pttype, o.pttype)
             WHERE o.vstdate BETWEEN ? AND ?
               AND ot.rxdate BETWEEN ? AND ?
               AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = o.vn)
@@ -264,11 +281,28 @@ class PhysicController extends Controller
                 ot.unitprice,
                 SUM(ot.sum_price) AS sum_price,
                 SUM(CASE WHEN p.sex = "1" THEN 1 ELSE 0 END) as male,
-                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female
+                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female,
+                
+                SUM(ot.qty) AS total_qty,
+                SUM(ot.sum_price) AS total_price,
+                SUM(CASE WHEN pt.hipdata_code = "UCS" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN pt.hipdata_code = "UCS" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS ucs_price,
+                SUM(CASE WHEN pt.hipdata_code = "OFC" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN pt.hipdata_code = "OFC" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS ofc_price,
+                SUM(CASE WHEN pt.hipdata_code = "LGO" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN pt.hipdata_code = "LGO" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS lgo_price,
+                SUM(CASE WHEN pt.hipdata_code IN ("SSS", "SSI") AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN pt.hipdata_code IN ("SSS", "SSI") AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS sss_price,
+                SUM(CASE WHEN (pt.paidst IN ("01","03") OR pt.hipdata_code IN ("A1","A9") OR pt.hipdata_code NOT IN ("UCS","OFC","LGO","SSS","SSI") OR pt.hipdata_code IS NULL) THEN ot.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN (pt.paidst IN ("01","03") OR pt.hipdata_code IN ("A1","A9") OR pt.hipdata_code NOT IN ("UCS","OFC","LGO","SSS","SSI") OR pt.hipdata_code IS NULL) THEN ot.sum_price ELSE 0 END) AS other_price
             FROM ovst o
             INNER JOIN opitemrece ot ON ot.vn = o.vn
             INNER JOIN nondrugitems n ON n.icode = ot.icode
             INNER JOIN patient p ON p.hn = o.hn
+            LEFT JOIN (
+                SELECT vn, pttype FROM visit_pttype GROUP BY vn, pttype
+            ) vp ON vp.vn = o.vn
+            LEFT JOIN pttype pt ON pt.pttype = COALESCE(vp.pttype, o.pttype)
             WHERE o.vstdate BETWEEN ? AND ?
               AND ot.rxdate BETWEEN ? AND ?
               AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = o.vn)
@@ -286,23 +320,77 @@ class PhysicController extends Controller
                 ot.unitprice,
                 SUM(ot.sum_price) AS sum_price,
                 SUM(CASE WHEN p.sex = "1" THEN 1 ELSE 0 END) as male,
-                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female
+                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female,
+                
+                SUM(ot.qty) AS total_qty,
+                SUM(ot.sum_price) AS total_price,
+                SUM(CASE WHEN pt.hipdata_code = "UCS" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN pt.hipdata_code = "UCS" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS ucs_price,
+                SUM(CASE WHEN pt.hipdata_code = "OFC" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN pt.hipdata_code = "OFC" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS ofc_price,
+                SUM(CASE WHEN pt.hipdata_code = "LGO" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN pt.hipdata_code = "LGO" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS lgo_price,
+                SUM(CASE WHEN pt.hipdata_code IN ("SSS", "SSI") AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN pt.hipdata_code IN ("SSS", "SSI") AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS sss_price,
+                SUM(CASE WHEN (pt.paidst IN ("01","03") OR pt.hipdata_code IN ("A1","A9") OR pt.hipdata_code NOT IN ("UCS","OFC","LGO","SSS","SSI") OR pt.hipdata_code IS NULL) THEN ot.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN (pt.paidst IN ("01","03") OR pt.hipdata_code IN ("A1","A9") OR pt.hipdata_code NOT IN ("UCS","OFC","LGO","SSS","SSI") OR pt.hipdata_code IS NULL) THEN ot.sum_price ELSE 0 END) AS other_price
             FROM ovst o
             INNER JOIN opitemrece ot ON ot.vn = o.vn
             INNER JOIN nondrugitems n ON n.icode = ot.icode
             INNER JOIN patient p ON p.hn = o.hn
+            LEFT JOIN (
+                SELECT vn, pttype FROM visit_pttype GROUP BY vn, pttype
+            ) vp ON vp.vn = o.vn
+            LEFT JOIN pttype pt ON pt.pttype = COALESCE(vp.pttype, o.pttype)
             WHERE o.vstdate BETWEEN ? AND ?
               AND ot.rxdate BETWEEN ? AND ?
               AND EXISTS (SELECT 1 FROM physic_list pl WHERE pl.vn = o.vn)
               AND n.income NOT IN ("02", "14")
             GROUP BY ot.icode
             ORDER BY sum_price DESC
-            LIMIT 100
+        ', [$start_date, $end_date, $start_date, $end_date]);
+
+        // 4. ค่า Instrument (ทั้งหมดใน รพ. - ไม่จำกัดว่าผ่านงานกายภาพหรือไม่)
+        $data_inst_all = DB::connection('hosxp')->select('
+            SELECT 
+                n.`name`,
+                ot.icode,
+                SUM(ot.qty) AS qty,
+                ot.unitprice,
+                SUM(ot.sum_price) AS sum_price,
+                SUM(CASE WHEN p.sex = "1" THEN 1 ELSE 0 END) as male,
+                SUM(CASE WHEN p.sex = "2" THEN 1 ELSE 0 END) as female,
+                
+                SUM(ot.qty) AS total_qty,
+                SUM(ot.sum_price) AS total_price,
+                SUM(CASE WHEN pt.hipdata_code = "UCS" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN pt.hipdata_code = "UCS" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS ucs_price,
+                SUM(CASE WHEN pt.hipdata_code = "OFC" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN pt.hipdata_code = "OFC" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS ofc_price,
+                SUM(CASE WHEN pt.hipdata_code = "LGO" AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN pt.hipdata_code = "LGO" AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS lgo_price,
+                SUM(CASE WHEN pt.hipdata_code IN ("SSS", "SSI") AND pt.paidst NOT IN ("01","03") THEN ot.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN pt.hipdata_code IN ("SSS", "SSI") AND pt.paidst NOT IN ("01","03") THEN ot.sum_price ELSE 0 END) AS sss_price,
+                SUM(CASE WHEN (pt.paidst IN ("01","03") OR pt.hipdata_code IN ("A1","A9") OR pt.hipdata_code NOT IN ("UCS","OFC","LGO","SSS","SSI") OR pt.hipdata_code IS NULL) THEN ot.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN (pt.paidst IN ("01","03") OR pt.hipdata_code IN ("A1","A9") OR pt.hipdata_code NOT IN ("UCS","OFC","LGO","SSS","SSI") OR pt.hipdata_code IS NULL) THEN ot.sum_price ELSE 0 END) AS other_price
+            FROM ovst o
+            INNER JOIN opitemrece ot ON ot.vn = o.vn
+            INNER JOIN nondrugitems n ON n.icode = ot.icode
+            INNER JOIN patient p ON p.hn = o.hn
+            LEFT JOIN (
+                SELECT vn, pttype FROM visit_pttype GROUP BY vn, pttype
+            ) vp ON vp.vn = o.vn
+            LEFT JOIN pttype pt ON pt.pttype = COALESCE(vp.pttype, o.pttype)
+            WHERE o.vstdate BETWEEN ? AND ?
+              AND ot.rxdate BETWEEN ? AND ?
+              AND n.income IN ("02")
+            GROUP BY ot.icode
+            ORDER BY sum_price DESC
         ', [$start_date, $end_date, $start_date, $end_date]);
 
         return view('hosxp.physic.service_value', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
-            'data_pt', 'data_inst', 'data_other'
+            'data_pt', 'data_inst', 'data_other', 'data_inst_all'
         ));
     }
 

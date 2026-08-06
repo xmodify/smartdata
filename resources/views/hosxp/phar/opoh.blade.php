@@ -514,21 +514,27 @@
                                                                     <tr>
                                                                         <th class="th-total">Visit</th>
                                                                         <th class="th-total">Qty</th>
+                                                                        <th class="th-total">ทุน (บาท)</th>
                                                                         <th class="th-total">มูลค่า (บาท)</th>
                                                                         <th class="th-ucs">Visit</th>
                                                                         <th class="th-ucs">Qty</th>
+                                                                        <th class="th-ucs">ทุน (บาท)</th>
                                                                         <th class="th-ucs">มูลค่า (บาท)</th>
                                                                         <th class="th-ofc">Visit</th>
                                                                         <th class="th-ofc">Qty</th>
+                                                                        <th class="th-ofc">ทุน (บาท)</th>
                                                                         <th class="th-ofc">มูลค่า (บาท)</th>
                                                                         <th class="th-lgo">Visit</th>
                                                                         <th class="th-lgo">Qty</th>
+                                                                        <th class="th-lgo">ทุน (บาท)</th>
                                                                         <th class="th-lgo">มูลค่า (บาท)</th>
                                                                         <th class="th-sss">Visit</th>
                                                                         <th class="th-sss">Qty</th>
+                                                                        <th class="th-sss">ทุน (บาท)</th>
                                                                         <th class="th-sss">มูลค่า (บาท)</th>
                                                                         <th class="th-other">Visit</th>
                                                                         <th class="th-other">Qty</th>
+                                                                        <th class="th-other">ทุน (บาท)</th>
                                                                         <th class="th-other">มูลค่า (บาท)</th>
                                                                     </tr>
                                                                 </thead>
@@ -550,26 +556,32 @@
                                                                             <td>{{ $row->generic_name }}</td>
                                                                             <td class="text-center bg-pastel-green fw-bold">{{ number_format($row->total_visit) }}</td>
                                                                             <td class="text-center bg-pastel-green fw-bold">{{ number_format($row->total_qty) }}</td>
+                                                                            <td class="text-end bg-pastel-green text-muted">{{ number_format($row->total_cost, 2) }}</td>
                                                                             <td class="text-end bg-pastel-green fw-bold">{{ number_format($row->total_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->sss_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->sss_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->other_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->other_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
                                                                         </tr>
                                                                     @endforeach
@@ -756,21 +768,27 @@
                                                                     <tr>
                                                                         <th class="th-total">AN</th>
                                                                         <th class="th-total">Qty</th>
+                                                                        <th class="th-total">ทุน (บาท)</th>
                                                                         <th class="th-total">มูลค่า (บาท)</th>
                                                                         <th class="th-ucs">AN</th>
                                                                         <th class="th-ucs">Qty</th>
+                                                                        <th class="th-ucs">ทุน (บาท)</th>
                                                                         <th class="th-ucs">มูลค่า (บาท)</th>
                                                                         <th class="th-ofc">AN</th>
                                                                         <th class="th-ofc">Qty</th>
+                                                                        <th class="th-ofc">ทุน (บาท)</th>
                                                                         <th class="th-ofc">มูลค่า (บาท)</th>
                                                                         <th class="th-lgo">AN</th>
                                                                         <th class="th-lgo">Qty</th>
+                                                                        <th class="th-lgo">ทุน (บาท)</th>
                                                                         <th class="th-lgo">มูลค่า (บาท)</th>
                                                                         <th class="th-sss">AN</th>
                                                                         <th class="th-sss">Qty</th>
+                                                                        <th class="th-sss">ทุน (บาท)</th>
                                                                         <th class="th-sss">มูลค่า (บาท)</th>
                                                                         <th class="th-other">AN</th>
                                                                         <th class="th-other">Qty</th>
+                                                                        <th class="th-other">ทุน (บาท)</th>
                                                                         <th class="th-other">มูลค่า (บาท)</th>
                                                                     </tr>
                                                                 </thead>
@@ -792,26 +810,32 @@
                                                                             <td>{{ $row->generic_name }}</td>
                                                                             <td class="text-center bg-pastel-red fw-bold">{{ number_format($row->total_visit) }}</td>
                                                                             <td class="text-center bg-pastel-red fw-bold">{{ number_format($row->total_qty) }}</td>
+                                                                            <td class="text-end bg-pastel-red text-muted">{{ number_format($row->total_cost, 2) }}</td>
                                                                             <td class="text-end bg-pastel-red fw-bold">{{ number_format($row->total_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->ucs_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->ucs_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->ucs_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->ucs_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->ofc_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->ofc_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->ofc_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->ofc_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->lgo_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->lgo_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->lgo_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->lgo_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->sss_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->sss_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->sss_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->sss_price, 2) }}</td>
                                                                             
                                                                             <td class="text-center">{{ number_format($row->other_visit) }}</td>
                                                                             <td class="text-center">{{ number_format($row->other_qty) }}</td>
+                                                                            <td class="text-end text-muted">{{ number_format($row->other_cost, 2) }}</td>
                                                                             <td class="text-end">{{ number_format($row->other_price, 2) }}</td>
                                                                         </tr>
                                                                     @endforeach
