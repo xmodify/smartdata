@@ -550,8 +550,8 @@
                                 <div>
                                     <div class="fw-bold text-dark" style="font-size:0.85rem;">{{ $mod->name }}</div>
                                     <code class="small text-danger" style="font-size:0.75rem;">{{ $mod->code }}</code>
-                                    @if($expired)
-                                        <div class="text-muted mt-1" style="font-size:0.75rem;"><i class="far fa-calendar-alt me-1"></i>หมดอายุ: {{ $expired }}</div>
+                                    @if($pivot && $pivot->expired_at)
+                                        <div class="text-muted mt-1" style="font-size:0.75rem;"><i class="far fa-calendar-alt me-1"></i>หมดอายุ: {{ DateThai($pivot->expired_at) }}</div>
                                     @else
                                         <div class="text-muted mt-1" style="font-size:0.75rem;"><i class="far fa-calendar-alt me-1"></i>หมดอายุ: Lifetime (ตามคีย์หลัก)</div>
                                     @endif
