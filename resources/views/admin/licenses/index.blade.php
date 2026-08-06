@@ -733,6 +733,13 @@
                         <p class="text-muted small mb-2">คัดลอกคำสั่งด้านล่างไปส่งให้ **Google Antigravity** ในโฟลเดอร์โปรเจกต์ Laravel ของคุณ เพื่อให้ AI เขียนระบบลิขสิทธิ์ฝั่ง Client ให้โดยอัตโนมัติ:</p>
                         <div class="position-relative bg-light rounded p-3 border">
                             <textarea class="form-control border-0 bg-transparent font-monospace small text-dark" id="prompt_text_{{ $program->id }}" rows="12" readonly style="resize: none; font-size:0.85rem;">คุณคือ Antigravity AI ช่วยเขียนระบบตรวจสอบคีย์ลิขสิทธิ์ (License Verification) ด้วยภาษา PHP (Laravel) สำหรับระบบ "{{ $program->name }}" (รหัสโปรแกรม: {{ $program->code }}) โดยมีแนวทางดังนี้:
+@if($program->modules->count() > 0)
+(ข้อมูลเพิ่มเติม - รหัสโมดูลย่อยที่ระบบนี้มีให้เลือกใช้งานในปัจจุบัน:
+@foreach($program->modules as $mod)
+- {{ $mod->code }} (ชื่อ: {{ $mod->name }})
+@endforeach
+)
+@endif
 
 1. ดึงรหัสโรงพยาบาล: เขียนโค้ดดึงค่ารหัสโรงพยาบาล 5 หลัก (HCODE) จากฐานข้อมูลหรือการตั้งค่าของระบบ (เช่น ดึงจากตาราง opdconfig หรือไฟล์ Config ของแอปพลิเคชัน)
 2. การลงทะเบียนคีย์ลิขสิทธิ์ (Request Activation): เขียน Service class ส่ง HTTP POST (โดยใช้ Laravel Http Client) ไปที่ URL: {{ url('/license/request') }}
@@ -754,6 +761,13 @@
                         <p class="text-muted small mb-2">คัดลอกคำสั่งด้านล่างไปส่งให้ **Google Antigravity** ในโฟลเดอร์โปรเจกต์ Python ของคุณ เพื่อให้ AI เขียนระบบลิขสิทธิ์ฝั่ง Client ให้โดยอัตโนมัติ:</p>
                         <div class="position-relative bg-light rounded p-3 border">
                             <textarea class="form-control border-0 bg-transparent font-monospace small text-dark" id="prompt_text_{{ $program->id }}" rows="12" readonly style="resize: none; font-size:0.85rem;">คุณคือ Antigravity AI ช่วยเขียนระบบตรวจสอบคีย์ลิขสิทธิ์ (License Verification) ด้วยภาษา Python สำหรับโปรแกรม "{{ $program->name }}" (รหัสโปรแกรม: {{ $program->code }}) โดยมีแนวทางดังนี้:
+@if($program->modules->count() > 0)
+(ข้อมูลเพิ่มเติม - รหัสโมดูลย่อยที่ระบบนี้มีให้เลือกใช้งานในปัจจุบัน:
+@foreach($program->modules as $mod)
+- {{ $mod->code }} (ชื่อ: {{ $mod->name }})
+@endforeach
+)
+@endif
 
 1. ฟังก์ชันดึง Machine Signature: เขียนฟังก์ชันดึงค่า Hardware ID ของเครื่องผู้ใช้งาน (เช่น ดึง CPU ID หรือ Motherboard UUID) ด้วย Python ที่รันได้ทั้งบน Windows และ Linux
 2. การลงทะเบียนคีย์ลิขสิทธิ์ (Request Activation): ส่ง HTTP POST (โดยใช้ไลบรารี requests) ไปที่ URL: {{ url('/license/request') }}
@@ -775,6 +789,13 @@
                         <p class="text-muted small mb-2">คัดลอกคำสั่งด้านล่างไปส่งให้ **Google Antigravity** ในโฟลเดอร์โปรเจกต์ Go ของคุณ เพื่อให้ AI เขียนโค้ดระบบลิขสิทธิ์ฝั่ง Client ให้โดยอัตโนมัติ:</p>
                         <div class="position-relative bg-light rounded p-3 border">
                             <textarea class="form-control border-0 bg-transparent font-monospace small text-dark" id="prompt_text_{{ $program->id }}" rows="12" readonly style="resize: none; font-size:0.85rem;">คุณคือ Antigravity AI ช่วยเขียนระบบตรวจสอบคีย์ลิขสิทธิ์ (License Verification) ด้วยภาษา Go (Golang) สำหรับโปรแกรม "{{ $program->name }}" (รหัส: {{ $program->code }}) โดยให้ปฏิบัติดังนี้:
+@if($program->modules->count() > 0)
+(ข้อมูลเพิ่มเติม - รหัสโมดูลย่อยที่ระบบนี้มีให้เลือกใช้งานในปัจจุบัน:
+@foreach($program->modules as $mod)
+- {{ $mod->code }} (ชื่อ: {{ $mod->name }})
+@endforeach
+)
+@endif
 
 1. เขียนฟังก์ชันดึง Hardware ID (เช่น disk serial number, cpu id หรือ mac address) ที่ทำงานได้เสถียรทั้งบน Windows และ Linux
 2. เขียนฟังก์ชันลงทะเบียน (Request Activation): ส่ง HTTP POST ไปที่ URL: {{ url('/license/request') }} 
