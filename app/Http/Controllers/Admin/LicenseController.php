@@ -441,7 +441,7 @@ class LicenseController extends Controller
                     'code' => $mod->code,
                     'name' => $mod->name,
                     'status' => $mod->pivot->status,
-                    'expired_at' => $mod->pivot->expired_at ? $mod->pivot->expired_at->toDateString() : null,
+                    'expired_at' => $mod->pivot->expired_at ? Carbon::parse($mod->pivot->expired_at)->toDateString() : null,
                 ];
 
                 // Only put in active modules list if active and not expired
