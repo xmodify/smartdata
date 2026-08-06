@@ -175,7 +175,19 @@
                                     <tr>
                                         <td>
                                             <div class="fw-bold">{{ $license->program->name }}</div>
-                                            <small class="badge bg-secondary-subtle text-secondary">{{ $license->program->code }}</small>
+                                            <small class="badge bg-secondary-subtle text-secondary mb-1">{{ $license->program->code }}</small>
+                                            
+                                            <!-- License Type and Modules Badges -->
+                                            <div class="mt-1 d-flex flex-wrap gap-1" style="max-width: 250px;">
+                                                @if(($license->license_type ?? 'full') === 'full')
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.7rem;"><i class="fas fa-gem me-1"></i>Full Access</span>
+                                                @else
+                                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.7rem;"><i class="fas fa-cubes me-1"></i>Modules: {{ $license->activatedModules->count() }}</span>
+                                                    @foreach($license->activatedModules as $mod)
+                                                        <span class="badge bg-light text-secondary border" style="font-size: 0.65rem;" title="{{ $mod->code }}">{{ $mod->name }}</span>
+                                                    @endforeach
+                                                @endif
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
