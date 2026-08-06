@@ -182,10 +182,12 @@
                                                 @if(($license->license_type ?? 'full') === 'full')
                                                     <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.7rem;"><i class="fas fa-gem me-1"></i>Full Access</span>
                                                 @else
-                                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.7rem;"><i class="fas fa-cubes me-1"></i>Modules: {{ $license->activatedModules->count() }}</span>
-                                                    @foreach($license->activatedModules as $mod)
-                                                        <span class="badge bg-light text-secondary border" style="font-size: 0.65rem;" title="{{ $mod->code }}">{{ $mod->name }}</span>
-                                                    @endforeach
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.7rem;"><i class="fas fa-cubes me-1"></i>Modules: {{ $license->activatedModules->count() }}</span>
+                                                        <button class="btn btn-sm btn-link text-info p-0 ms-1" data-bs-toggle="modal" data-bs-target="#viewModulesModal{{ $license->id }}" title="ดูรายละเอียดโมดูลย่อย">
+                                                            <i class="far fa-eye" style="font-size: 0.9rem;"></i>
+                                                        </button>
+                                                    </div>
                                                 @endif
                                             </div>
                                         </td>
@@ -516,7 +518,73 @@
 
 <!-- Edit License Modals (Rendered outside to avoid table layout overflow issues) -->
 @foreach($licenses as $license)
+    <!-- Modal: View Active Modules Details -->
+    <div class="modal fade" id="viewModulesModal{{ $license->id }}" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-header bg-gradient-success-custom text-white border-0" style="border-radius: 15px 15px 0 0;">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-cubes me-2"></i>รายละเอียดโมดูลย่อย: {{ $license->customer_name }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-start">
+                    <div class="mb-3 text-muted small">
+                        <i class="fas fa-info-circle me-1"></i> สิทธิ์โมดูลย่อยที่เปิดให้เข้าใช้งานร่วมกับคีย์หลัก: <code class="text-success fw-bold">{{ $license->license_key }}</code>
+                    </div>
+                    <div class="list-group border rounded shadow-xs overflow-hidden" style="max-height: 300px; overflow-y: auto;">
+                        @forelse($license->activatedModules as $mod)
+                            @php
+                                $pivot = $mod->pivot;
+                                $status = $pivot ? $pivot->status : 'active';
+                                $expired = '';
+                                if ($pivot && $pivot->expired_at) {
+                                    try {
+                                        $expired = $pivot->expired_at instanceof \Carbon\Carbon 
+                                            ? $pivot->expired_at->format('d/m/Y') 
+                                            : \Carbon\Carbon::parse($pivot->expired_at)->format('d/m/Y');
+                                    } catch (\Exception $e) {
+                                        $expired = '';
+                                    }
+                                }
+                            @endphp
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size:0.85rem;">{{ $mod->name }}</div>
+                                    <code class="small text-danger" style="font-size:0.75rem;">{{ $mod->code }}</code>
+                                    @if($expired)
+                                        <div class="text-muted mt-1" style="font-size:0.75rem;"><i class="far fa-calendar-alt me-1"></i>หมดอายุ: {{ $expired }}</div>
+                                    @else
+                                        <div class="text-muted mt-1" style="font-size:0.75rem;"><i class="far fa-calendar-alt me-1"></i>หมดอายุ: Lifetime (ตามคีย์หลัก)</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    @if($status === 'active')
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill" style="font-size:0.7rem;">Active</span>
+                                    @elseif($status === 'suspended')
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill" style="font-size:0.7rem;">Suspended</span>
+                                    @elseif($status === 'expired')
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill" style="font-size:0.7rem;">Expired</span>
+                                    @else
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-pill" style="font-size:0.7rem;">Pending</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="list-group-item text-center py-4 text-muted small">
+                                <i class="fas fa-info-circle me-1"></i>ไม่มีโมดูลย่อยที่เปิดสิทธิ์
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">ปิดหน้าจอ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Edit License -->
     <div class="modal fade" id="editLicenseModal{{ $license->id }}" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
                 <div class="modal-header bg-success text-white border-0" style="border-radius: 15px 15px 0 0;">
