@@ -595,7 +595,16 @@
                                             @php
                                                 $pivot = $license->activatedModules->find($mod->id)?->pivot;
                                                 $pivotStatus = $pivot ? $pivot->status : 'active';
-                                                $pivotExpired = $pivot && $pivot->expired_at ? $pivot->expired_at->format('Y-m-d') : '';
+                                                $pivotExpired = '';
+                                                if ($pivot && $pivot->expired_at) {
+                                                    try {
+                                                        $pivotExpired = $pivot->expired_at instanceof \Carbon\Carbon 
+                                                            ? $pivot->expired_at->format('Y-m-d') 
+                                                            : \Carbon\Carbon::parse($pivot->expired_at)->format('Y-m-d');
+                                                    } catch (\Exception $e) {
+                                                        $pivotExpired = '';
+                                                    }
+                                                }
                                             @endphp
                                             <div class="d-flex align-items-center gap-2 ps-4 ps-lg-0 {{ $license->activatedModules->contains($mod->id) ? '' : 'd-none' }}" id="edit_settings_{{ $license->id }}_{{ $mod->id }}">
                                                 <div class="d-flex align-items-center gap-1">
