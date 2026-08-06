@@ -36,13 +36,57 @@ class IcuController extends Controller
                 END AS 'admit_shift',
                 i.dchdate,
                 i.dchtime,
-                -- วันนอนรวมที่ ICU: จากวันที่เข้าเตียง ICU ถึงวันจำหน่าย
-                DATEDIFF(i.dchdate, icu.movedate) AS 'icu_los_days',
-                -- คำนวณชั่วโมงอย่างละเอียด
-                ROUND(TIMESTAMPDIFF(HOUR,
-                    CONCAT(icu.movedate, ' ', icu.movetime),
-                    CONCAT(i.dchdate, ' ', i.dchtime)
-                ) / 24, 1) AS 'icu_los_exact',
+                -- วันนอนรวมที่ ICU: คำนวณเฉพาะช่วงที่นอนใน ICU จริง
+                (
+                    SELECT COALESCE(SUM(DATEDIFF(
+                        COALESCE(
+                            (SELECT MIN(next_m.movedate) 
+                             FROM iptbedmove next_m 
+                             WHERE next_m.an = ib.an 
+                               AND (next_m.movedate > ib.movedate OR (next_m.movedate = ib.movedate AND next_m.movetime > ib.movetime))
+                            ),
+                            i.dchdate
+                        ),
+                        ib.movedate
+                    )), 0)
+                    FROM iptbedmove ib
+                    WHERE ib.an = i.an 
+                      AND ib.nbedno LIKE 'ICU%'
+                ) AS 'icu_los_days',
+                -- คำนวณชั่วโมงอย่างละเอียดเฉพาะช่วงที่นอน ICU จริง
+                (
+                    SELECT ROUND(COALESCE(SUM(TIMESTAMPDIFF(HOUR,
+                        CONCAT(ib.movedate, ' ', ib.movetime),
+                        CONCAT(
+                            COALESCE(
+                                (SELECT MIN(next_m.movedate) 
+                                 FROM iptbedmove next_m 
+                                 WHERE next_m.an = ib.an 
+                                   AND (next_m.movedate > ib.movedate OR (next_m.movedate = ib.movedate AND next_m.movetime > ib.movetime))
+                                ),
+                                i.dchdate
+                            ),
+                            ' ',
+                            COALESCE(
+                                (SELECT SUBSTRING_INDEX(GROUP_CONCAT(next_m.movetime ORDER BY next_m.movedate ASC, next_m.movetime ASC), ',', 1)
+                                 FROM iptbedmove next_m 
+                                 WHERE next_m.an = ib.an 
+                                   AND next_m.movedate = (
+                                       SELECT MIN(m2.movedate) 
+                                       FROM iptbedmove m2 
+                                       WHERE m2.an = ib.an 
+                                         AND (m2.movedate > ib.movedate OR (m2.movedate = ib.movedate AND m2.movetime > ib.movetime))
+                                   )
+                                   AND (next_m.movedate > ib.movedate OR (next_m.movedate = ib.movedate AND next_m.movetime > ib.movetime))
+                                ),
+                                i.dchtime
+                            )
+                        )
+                    )), 0) / 24, 1)
+                    FROM iptbedmove ib
+                    WHERE ib.an = i.an 
+                      AND ib.nbedno LIKE 'ICU%'
+                ) AS 'icu_los_exact',
                 -- วันนอนรวมทั้งหมด (admit โรงพยาบาล ถึงจำหน่าย)
                 DATEDIFF(i.dchdate, i.regdate) AS 'total_los_days',
                 ds.name AS 'dch_status',
@@ -130,8 +174,23 @@ class IcuController extends Controller
                     i.an, 
                     i.dchdate,
                     i.adjrw,
-                    -- วันนอน ICU จริง: ตั้งแต่เข้าเตียง ICU (iptbedmove) ถึงจำหน่าย
-                    DATEDIFF(i.dchdate, icu.movedate) AS icu_los_days,
+                    -- วันนอน ICU จริง: คำนวณเฉพาะช่วงที่นอนใน ICU จริง
+                    (
+                    SELECT COALESCE(SUM(DATEDIFF(
+                        COALESCE(
+                            (SELECT MIN(next_m.movedate) 
+                             FROM iptbedmove next_m 
+                             WHERE next_m.an = ib.an 
+                               AND (next_m.movedate > ib.movedate OR (next_m.movedate = ib.movedate AND next_m.movetime > ib.movetime))
+                            ),
+                            i.dchdate
+                        ),
+                        ib.movedate
+                    )), 0)
+                    FROM iptbedmove ib
+                    WHERE ib.an = i.an 
+                      AND ib.nbedno LIKE 'ICU%'
+                ) AS icu_los_days,
                     -- วันนอนโรงพยาบาลทั้งหมด
                     DATEDIFF(i.dchdate, i.regdate) AS total_los_days,
                     -- ดึงเวลาเข้าเตียง ICU ครั้งแรกสุดจาก iptbedmove
@@ -238,7 +297,23 @@ class IcuController extends Controller
             FROM (
                 SELECT 
                     i.an, i.regtime, i.adjrw, 
-                    DATEDIFF(i.dchdate, icu.movedate) AS icu_los_days,
+                    -- วันนอน ICU จริง: คำนวณเฉพาะช่วงที่นอนใน ICU จริง
+                    (
+                    SELECT COALESCE(SUM(DATEDIFF(
+                        COALESCE(
+                            (SELECT MIN(next_m.movedate) 
+                             FROM iptbedmove next_m 
+                             WHERE next_m.an = ib.an 
+                               AND (next_m.movedate > ib.movedate OR (next_m.movedate = ib.movedate AND next_m.movetime > ib.movetime))
+                            ),
+                            i.dchdate
+                        ),
+                        ib.movedate
+                    )), 0)
+                    FROM iptbedmove ib
+                    WHERE ib.an = i.an 
+                      AND ib.nbedno LIKE 'ICU%'
+                ) AS icu_los_days,
                     DATEDIFF(i.dchdate, i.regdate) AS total_los_days,
                     icu.movetime AS icu_movetime,
                     a.inc12, a.inc03,
@@ -272,7 +347,23 @@ class IcuController extends Controller
                 icu.movetime AS 'icu_movetime',
                 i.dchdate,
                 i.dchtime,
-                DATEDIFF(i.dchdate, icu.movedate) AS 'icu_los_days',
+                -- วันนอน ICU จริง: คำนวณเฉพาะช่วงที่นอนใน ICU จริง
+                (
+                    SELECT COALESCE(SUM(DATEDIFF(
+                        COALESCE(
+                            (SELECT MIN(next_m.movedate) 
+                             FROM iptbedmove next_m 
+                             WHERE next_m.an = ib.an 
+                               AND (next_m.movedate > ib.movedate OR (next_m.movedate = ib.movedate AND next_m.movetime > ib.movetime))
+                            ),
+                            i.dchdate
+                        ),
+                        ib.movedate
+                    )), 0)
+                    FROM iptbedmove ib
+                    WHERE ib.an = i.an 
+                      AND ib.nbedno LIKE 'ICU%'
+                ) AS 'icu_los_days',
                 op.icd9,
                 io.name AS 'proc_name',
                 op.opdate,
