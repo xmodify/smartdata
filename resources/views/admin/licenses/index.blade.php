@@ -585,7 +585,6 @@
     <!-- Modal: Edit License -->
     <div class="modal fade" id="editLicenseModal{{ $license->id }}" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
                 <div class="modal-header bg-success text-white border-0" style="border-radius: 15px 15px 0 0;">
                     <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>แก้ไข License</h5>
