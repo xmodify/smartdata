@@ -357,7 +357,8 @@ class LicenseController extends Controller
         if ($license->status === 'pending') {
             return response()->json([
                 'status' => 'pending',
-                'message' => 'This license is pending activation.'
+                'message' => 'This license is pending activation.',
+                'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
             ], 403);
         }
 
@@ -365,7 +366,8 @@ class LicenseController extends Controller
         if ($license->status === 'suspended') {
             return response()->json([
                 'status' => 'suspended',
-                'message' => 'This license has been suspended.'
+                'message' => 'This license has been suspended.',
+                'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
             ], 403);
         }
 
@@ -376,7 +378,8 @@ class LicenseController extends Controller
             }
             return response()->json([
                 'status' => 'expired',
-                'message' => 'This license has expired.'
+                'message' => 'This license has expired.',
+                'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
             ], 403);
         }
 
@@ -384,7 +387,8 @@ class LicenseController extends Controller
         if (!empty($license->hcode) && !empty($hcode) && $license->hcode !== $hcode) {
             return response()->json([
                 'status' => 'invalid_hcode',
-                'message' => 'This license is registered to another organization code.'
+                'message' => 'This license is registered to another organization code.',
+                'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
             ], 403);
         }
 
@@ -393,7 +397,8 @@ class LicenseController extends Controller
             if (!empty($hardwareId) && $license->hardware_id !== $hardwareId) {
                 return response()->json([
                     'status' => 'invalid_hardware',
-                    'message' => 'This license is bound to a different machine.'
+                    'message' => 'This license is bound to a different machine.',
+                    'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
                 ], 403);
             }
         } else {
@@ -417,17 +422,34 @@ class LicenseController extends Controller
 
         // Fetch modules depending on license type
         $modules = [];
+        $moduleDetails = [];
         if (($license->license_type ?? 'full') === 'full') {
-            $modules = $program->modules()->pluck('code')->toArray();
+            $programModules = $program->modules()->get();
+            $modules = $programModules->pluck('code')->toArray();
+            foreach ($programModules as $mod) {
+                $moduleDetails[] = [
+                    'code' => $mod->code,
+                    'name' => $mod->name,
+                    'status' => 'active',
+                    'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
+                ];
+            }
         } else {
-            $modules = $license->activatedModules()
-                ->where('license_module_activations.status', 'active')
-                ->where(function($query) {
-                    $query->whereNull('license_module_activations.expired_at')
-                          ->orWhere('license_module_activations.expired_at', '>', Carbon::now());
-                })
-                ->pluck('code')
-                ->toArray();
+            $activated = $license->activatedModules()->withPivot('status', 'expired_at')->get();
+            foreach ($activated as $mod) {
+                $moduleDetails[] = [
+                    'code' => $mod->code,
+                    'name' => $mod->name,
+                    'status' => $mod->pivot->status,
+                    'expired_at' => $mod->pivot->expired_at ? $mod->pivot->expired_at->toDateString() : null,
+                ];
+
+                // Only put in active modules list if active and not expired
+                $isExpired = $mod->pivot->expired_at && Carbon::parse($mod->pivot->expired_at)->isPast();
+                if ($mod->pivot->status === 'active' && !$isExpired) {
+                    $modules[] = $mod->code;
+                }
+            }
         }
 
         // Generate tamper-proof Digital Signature
@@ -450,12 +472,13 @@ class LicenseController extends Controller
             'status' => $license->status,
             'license_type' => $license->license_type ?? 'full',
             'modules' => $modules,
+            'module_details' => $moduleDetails,
             'license_key' => $license->license_key,
             'program_name' => $program->name,
             'customer_name' => $license->customer_name,
             'hcode' => $license->hcode,
             'hardware_id' => $license->hardware_id,
-            'activated_at' => $license->activated_at->toIso8601String(),
+            'activated_at' => $license->activated_at ? $license->activated_at->toIso8601String() : null,
             'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
             'expires_in_days' => $license->expired_at ? Carbon::now()->diffInDays($license->expired_at, false) : null,
             'signature' => $signature,
