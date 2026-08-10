@@ -1,332 +1,332 @@
 {
-	"info": {
-		"_postman_id": "cc534619-d328-4569-bf5d-bb7b7e254569",
-		"name": "API MOPH Alert Template V3.1",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "20159153",
-		"_collection_link": "https://yellow-idea.postman.co/workspace/CMS-MOPH~7a1231c0-d334-4807-8023-50351b906b1e/collection/20159153-cc534619-d328-4569-bf5d-bb7b7e254569?action=share&source=collection_link&creator=20159153"
-	},
-	"item": [
-		{
-			"name": "api 1 ยินดีต้อนรับ",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "client-key",
-						"value": "d849eaf2240c8d1a683280c73234fce075e2c6d9",
-						"type": "text"
-					},
-					{
-						"key": "secret-key",
-						"value": "QALRPFAANQESLIQRJKYNYE4LP6SI",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"cid\": \"1209700461501\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"ยินดีต้อนรับ\",\n    \"header\": \"ยินดีต้อนรับ\",\n    \"text\": \"สวัสดีครับ ยินดีต้อนรับสู่สำนักสุขภาพดิจิทัล เราใส่ใจในสุขภาพและความสบายใจของคุณทุกขั้น ตอน หากมีข้อสงสัยหรือสิ่งใดที่เราสามารถช่วยเหลือได้ กรุณาแจ้งเจ้าหน้าที่ได้เลยนะครับ\",\n    \"message_title\": \"ยินดีต้อนรับ\",\n    \"message_html\": \"<div ><strong>สวัสดีครับ ยินดีต้อนรับสู่สำนักสุขภาพดิจิทัล เราใส่ใจในสุขภาพและความสบายใจของคุณทุกขั้น ตอน หากมีข้อสงสัยหรือสิ่งใดที่เราสามารถช่วยเหลือได้ กรุณาแจ้งเจ้าหน้าที่ได้เลยนะครับ</strong></div>\",\n    \"message_text\": \"ยินดีต้อนรับ\",\n    \"message_type\": \"HPT\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{local}}/alert/v3.1/template",
-					"host": [
-						"{{local}}"
-					],
-					"path": [
-						"alert",
-						"v3.1",
-						"template"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "api 2 แจ้งเตือนคิว",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjU3MGFlYjA1N2Y1Y2Q0NWY3YTdlZmFkYTU4MzlmY2FlMzViMjA1ZDE4YTZkYjNhYzdjYTI3NTZmMTMxZGUxOTFhYTY0NzYwNzI3MDE0NGQxIn0.eyJhdWQiOiI1MDMiLCJqdGkiOiI1NzBhZWIwNTdmNWNkNDVmN2E3ZWZhZGE1ODM5ZmNhZTM1YjIwNWQxOGE2ZGIzYWM3Y2EyNzU2ZjEzMWRlMTkxYWE2NDc2MDcyNzAxNDRkMSIsImlhdCI6MTc0MjI2NDI2NSwibmJmIjoxNzQyMjY0MjY1LCJleHAiOjE3NDIzNTA2NjUsInN1YiI6IjE3MDcyODA1MjA3NDU4MiIsInNjb3BlcyI6W119.W6xaIuKSH4aehdNg-VNBm2sj9wuT7jti5bPxQXTkF0QQMxFLposj_rAoCMrksydSTskCOeDIYMbU5jPD8F0T1qnJL9tc6tUQPs_e_RK_-2tZlt9Bb1ij-Y0U6YHwJHUMiBuspNzMyTcw47TPvint7fhH20jyfto9AHeFytzZMaszTndouZPTzEnyeZy2x3r0YtQyJYKSsHSdeYaVyB3_X2S7XL_tIxj676iJj0d_zIfziHgChz47e0jzq75_jRuXidWJv7vBaBzw_1fYgzFIKXzdllcNima-MvSfBOhYkcVwCL-R_OP2Q0_h3C_KPrMhhCO9X6ea-9k53Bo91RkHPyG4PzdkBOneYqKkTYxCWlFirvz5DTUVo_sMnpisEk3D1Jdu4tZaPoHU5Igp15sb34DaTbzjgcSZ04nLNtPr5nn6Z-w2u6ohS1IymvV9JPl8juCGQ3wHFyuiTftWGr_qm96VW20DECgowAV_HQ63tCrVld0Z2MxdA34HkA15Zx9vW7Q-l8xOgsa6Jh5R6LB5u4gFQe1D1aGuJbeTrM4tpt3dTc_s4h1__KSR8rrnrk8Gb20LPwrQhOsj-78SxtvVBeVPMNCvvj9O9zzBlrVpluFweASDmBH3Y08jgzlbI8fUM4inc2iOe9IHSvZ_xSFhFkElk5ugHXJQZPq1EX_9T5Y",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "client-key",
-						"value": "37bb9cce99080fc889b9a3ae10388f9b6508acf2",
-						"type": "text"
-					},
-					{
-						"key": "secret-key",
-						"value": "VKFSW3I6TEUJ5QS3FSLEQX4OFHJI",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"cid\": \"120970046xxx\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"แจ้งเตือนคิว\",\n    \"header\": \"แจ้งเตือนคิว\",\n    \"queue_no\": \"01-A001\",\n    \"hn_no\": \"065-0886xx\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"url\": \"\",\n    \"message_title\": \"แจ้งเตือนคิว\",\n    \"message_html\": \"<div ><strong>คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1</strong></div>\",\n    \"message_text\": \"แจ้งเตือนคิว\",\n    \"message_type\": \"HPT\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{prod}}/alert/v3.1/template",
-					"host": [
-						"{{prod}}"
-					],
-					"path": [
-						"alert",
-						"v3.1",
-						"template"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "api 3 แจ้งเตือนคิว แบบมี url",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjU3MGFlYjA1N2Y1Y2Q0NWY3YTdlZmFkYTU4MzlmY2FlMzViMjA1ZDE4YTZkYjNhYzdjYTI3NTZmMTMxZGUxOTFhYTY0NzYwNzI3MDE0NGQxIn0.eyJhdWQiOiI1MDMiLCJqdGkiOiI1NzBhZWIwNTdmNWNkNDVmN2E3ZWZhZGE1ODM5ZmNhZTM1YjIwNWQxOGE2ZGIzYWM3Y2EyNzU2ZjEzMWRlMTkxYWE2NDc2MDcyNzAxNDRkMSIsImlhdCI6MTc0MjI2NDI2NSwibmJmIjoxNzQyMjY0MjY1LCJleHAiOjE3NDIzNTA2NjUsInN1YiI6IjE3MDcyODA1MjA3NDU4MiIsInNjb3BlcyI6W119.W6xaIuKSH4aehdNg-VNBm2sj9wuT7jti5bPxQXTkF0QQMxFLposj_rAoCMrksydSTskCOeDIYMbU5jPD8F0T1qnJL9tc6tUQPs_e_RK_-2tZlt9Bb1ij-Y0U6YHwJHUMiBuspNzMyTcw47TPvint7fhH20jyfto9AHeFytzZMaszTndouZPTzEnyeZy2x3r0YtQyJYKSsHSdeYaVyB3_X2S7XL_tIxj676iJj0d_zIfziHgChz47e0jzq75_jRuXidWJv7vBaBzw_1fYgzFIKXzdllcNima-MvSfBOhYkcVwCL-R_OP2Q0_h3C_KPrMhhCO9X6ea-9k53Bo91RkHPyG4PzdkBOneYqKkTYxCWlFirvz5DTUVo_sMnpisEk3D1Jdu4tZaPoHU5Igp15sb34DaTbzjgcSZ04nLNtPr5nn6Z-w2u6ohS1IymvV9JPl8juCGQ3wHFyuiTftWGr_qm96VW20DECgowAV_HQ63tCrVld0Z2MxdA34HkA15Zx9vW7Q-l8xOgsa6Jh5R6LB5u4gFQe1D1aGuJbeTrM4tpt3dTc_s4h1__KSR8rrnrk8Gb20LPwrQhOsj-78SxtvVBeVPMNCvvj9O9zzBlrVpluFweASDmBH3Y08jgzlbI8fUM4inc2iOe9IHSvZ_xSFhFkElk5ugHXJQZPq1EX_9T5Y",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "client-key",
-						"value": "37bb9cce99080fc889b9a3ae10388f9b6508acf2",
-						"type": "text"
-					},
-					{
-						"key": "secret-key",
-						"value": "VKFSW3I6TEUJ5QS3FSLEQX4OFHJI",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"cid\": \"1529900337739\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"แจ้งเตือนคิว\",\n    \"header\": \"แจ้งเตือนคิว\",\n    \"queue_no\": \"01-A001\",\n    \"hn_no\": \"065-088698\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"url\": \"https://www.google.com/\",\n    \"message_title\": \"แจ้งเตือนคิว\",\n    \"message_html\": \"<div ><strong>คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1 ตรวจสอบคิวที่ https://www.google.com/</strong></div>\",\n    \"message_text\": \"แจ้งเตือนคิว\",\n    \"message_confirm_url\": \"\",\n    \"message_datetime\": \"2025-02-10T10:53:09.000Z\",\n    \"message_type\": \"HPT\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{prod}}/alert/v3.1/template",
-					"host": [
-						"{{prod}}"
-					],
-					"path": [
-						"alert",
-						"v3.1",
-						"template"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "api 4 ใกล้ถึงคิวของคุณแล้ว",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjU3MGFlYjA1N2Y1Y2Q0NWY3YTdlZmFkYTU4MzlmY2FlMzViMjA1ZDE4YTZkYjNhYzdjYTI3NTZmMTMxZGUxOTFhYTY0NzYwNzI3MDE0NGQxIn0.eyJhdWQiOiI1MDMiLCJqdGkiOiI1NzBhZWIwNTdmNWNkNDVmN2E3ZWZhZGE1ODM5ZmNhZTM1YjIwNWQxOGE2ZGIzYWM3Y2EyNzU2ZjEzMWRlMTkxYWE2NDc2MDcyNzAxNDRkMSIsImlhdCI6MTc0MjI2NDI2NSwibmJmIjoxNzQyMjY0MjY1LCJleHAiOjE3NDIzNTA2NjUsInN1YiI6IjE3MDcyODA1MjA3NDU4MiIsInNjb3BlcyI6W119.W6xaIuKSH4aehdNg-VNBm2sj9wuT7jti5bPxQXTkF0QQMxFLposj_rAoCMrksydSTskCOeDIYMbU5jPD8F0T1qnJL9tc6tUQPs_e_RK_-2tZlt9Bb1ij-Y0U6YHwJHUMiBuspNzMyTcw47TPvint7fhH20jyfto9AHeFytzZMaszTndouZPTzEnyeZy2x3r0YtQyJYKSsHSdeYaVyB3_X2S7XL_tIxj676iJj0d_zIfziHgChz47e0jzq75_jRuXidWJv7vBaBzw_1fYgzFIKXzdllcNima-MvSfBOhYkcVwCL-R_OP2Q0_h3C_KPrMhhCO9X6ea-9k53Bo91RkHPyG4PzdkBOneYqKkTYxCWlFirvz5DTUVo_sMnpisEk3D1Jdu4tZaPoHU5Igp15sb34DaTbzjgcSZ04nLNtPr5nn6Z-w2u6ohS1IymvV9JPl8juCGQ3wHFyuiTftWGr_qm96VW20DECgowAV_HQ63tCrVld0Z2MxdA34HkA15Zx9vW7Q-l8xOgsa6Jh5R6LB5u4gFQe1D1aGuJbeTrM4tpt3dTc_s4h1__KSR8rrnrk8Gb20LPwrQhOsj-78SxtvVBeVPMNCvvj9O9zzBlrVpluFweASDmBH3Y08jgzlbI8fUM4inc2iOe9IHSvZ_xSFhFkElk5ugHXJQZPq1EX_9T5Y",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "client-key",
-						"value": "37bb9cce99080fc889b9a3ae10388f9b6508acf2",
-						"type": "text"
-					},
-					{
-						"key": "secret-key",
-						"value": "VKFSW3I6TEUJ5QS3FSLEQX4OFHJI",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"cid\": \"1529900337739\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"ใกล้ถึงคิวของคุณแล้ว\",\n    \"header\": \"ใกล้ถึงคิวของคุณแล้ว\",\n    \"queue_no\": \"01-A001\",\n    \"queue_waiting\": \"3\",\n    \"hn_no\": \"065-088698\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"message_title\": \"ใกล้ถึงคิวของคุณแล้ว\",\n    \"message_html\": \"<div ><strong>รออีก 3 คิว คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1</strong></div>\",\n    \"message_text\": \"ใกล้ถึงคิวของคุณแล้ว\",\n    \"message_confirm_url\": \"\",\n    \"message_datetime\": \"2025-02-10T10:53:09.000Z\",\n    \"message_type\": \"HPT\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{prod}}/alert/v3.1/template",
-					"host": [
-						"{{prod}}"
-					],
-					"path": [
-						"alert",
-						"v3.1",
-						"template"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "api 5 คิวของท่านมีการเปลี่ยนแปลง",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjU3MGFlYjA1N2Y1Y2Q0NWY3YTdlZmFkYTU4MzlmY2FlMzViMjA1ZDE4YTZkYjNhYzdjYTI3NTZmMTMxZGUxOTFhYTY0NzYwNzI3MDE0NGQxIn0.eyJhdWQiOiI1MDMiLCJqdGkiOiI1NzBhZWIwNTdmNWNkNDVmN2E3ZWZhZGE1ODM5ZmNhZTM1YjIwNWQxOGE2ZGIzYWM3Y2EyNzU2ZjEzMWRlMTkxYWE2NDc2MDcyNzAxNDRkMSIsImlhdCI6MTc0MjI2NDI2NSwibmJmIjoxNzQyMjY0MjY1LCJleHAiOjE3NDIzNTA2NjUsInN1YiI6IjE3MDcyODA1MjA3NDU4MiIsInNjb3BlcyI6W119.W6xaIuKSH4aehdNg-VNBm2sj9wuT7jti5bPxQXTkF0QQMxFLposj_rAoCMrksydSTskCOeDIYMbU5jPD8F0T1qnJL9tc6tUQPs_e_RK_-2tZlt9Bb1ij-Y0U6YHwJHUMiBuspNzMyTcw47TPvint7fhH20jyfto9AHeFytzZMaszTndouZPTzEnyeZy2x3r0YtQyJYKSsHSdeYaVyB3_X2S7XL_tIxj676iJj0d_zIfziHgChz47e0jzq75_jRuXidWJv7vBaBzw_1fYgzFIKXzdllcNima-MvSfBOhYkcVwCL-R_OP2Q0_h3C_KPrMhhCO9X6ea-9k53Bo91RkHPyG4PzdkBOneYqKkTYxCWlFirvz5DTUVo_sMnpisEk3D1Jdu4tZaPoHU5Igp15sb34DaTbzjgcSZ04nLNtPr5nn6Z-w2u6ohS1IymvV9JPl8juCGQ3wHFyuiTftWGr_qm96VW20DECgowAV_HQ63tCrVld0Z2MxdA34HkA15Zx9vW7Q-l8xOgsa6Jh5R6LB5u4gFQe1D1aGuJbeTrM4tpt3dTc_s4h1__KSR8rrnrk8Gb20LPwrQhOsj-78SxtvVBeVPMNCvvj9O9zzBlrVpluFweASDmBH3Y08jgzlbI8fUM4inc2iOe9IHSvZ_xSFhFkElk5ugHXJQZPq1EX_9T5Y",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "client-key",
-						"value": "37bb9cce99080fc889b9a3ae10388f9b6508acf2",
-						"type": "text"
-					},
-					{
-						"key": "secret-key",
-						"value": "VKFSW3I6TEUJ5QS3FSLEQX4OFHJI",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"cid\": \"1529900337739\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"header\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"queue_no\": \"01-A001\",\n    \"queue_waiting\": \"3\",\n    \"hn_no\": \"065-088698\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"url\": \"\",\n    \"message_title\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"message_html\": \"<div ><strong>คิวของท่านมีการเปลี่ยนแปลง คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1</strong></div>\",\n    \"message_text\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"message_confirm_url\": \"\",\n    \"message_datetime\": \"2025-02-10T10:53:09.000Z\",\n    \"message_type\": \"HPT\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{prod}}/alert/v3.1/template",
-					"host": [
-						"{{prod}}"
-					],
-					"path": [
-						"alert",
-						"v3.1",
-						"template"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "api 6 คิวของท่านมีการเปลี่ยนแปลง แบบมี url",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjU3MGFlYjA1N2Y1Y2Q0NWY3YTdlZmFkYTU4MzlmY2FlMzViMjA1ZDE4YTZkYjNhYzdjYTI3NTZmMTMxZGUxOTFhYTY0NzYwNzI3MDE0NGQxIn0.eyJhdWQiOiI1MDMiLCJqdGkiOiI1NzBhZWIwNTdmNWNkNDVmN2E3ZWZhZGE1ODM5ZmNhZTM1YjIwNWQxOGE2ZGIzYWM3Y2EyNzU2ZjEzMWRlMTkxYWE2NDc2MDcyNzAxNDRkMSIsImlhdCI6MTc0MjI2NDI2NSwibmJmIjoxNzQyMjY0MjY1LCJleHAiOjE3NDIzNTA2NjUsInN1YiI6IjE3MDcyODA1MjA3NDU4MiIsInNjb3BlcyI6W119.W6xaIuKSH4aehdNg-VNBm2sj9wuT7jti5bPxQXTkF0QQMxFLposj_rAoCMrksydSTskCOeDIYMbU5jPD8F0T1qnJL9tc6tUQPs_e_RK_-2tZlt9Bb1ij-Y0U6YHwJHUMiBuspNzMyTcw47TPvint7fhH20jyfto9AHeFytzZMaszTndouZPTzEnyeZy2x3r0YtQyJYKSsHSdeYaVyB3_X2S7XL_tIxj676iJj0d_zIfziHgChz47e0jzq75_jRuXidWJv7vBaBzw_1fYgzFIKXzdllcNima-MvSfBOhYkcVwCL-R_OP2Q0_h3C_KPrMhhCO9X6ea-9k53Bo91RkHPyG4PzdkBOneYqKkTYxCWlFirvz5DTUVo_sMnpisEk3D1Jdu4tZaPoHU5Igp15sb34DaTbzjgcSZ04nLNtPr5nn6Z-w2u6ohS1IymvV9JPl8juCGQ3wHFyuiTftWGr_qm96VW20DECgowAV_HQ63tCrVld0Z2MxdA34HkA15Zx9vW7Q-l8xOgsa6Jh5R6LB5u4gFQe1D1aGuJbeTrM4tpt3dTc_s4h1__KSR8rrnrk8Gb20LPwrQhOsj-78SxtvVBeVPMNCvvj9O9zzBlrVpluFweASDmBH3Y08jgzlbI8fUM4inc2iOe9IHSvZ_xSFhFkElk5ugHXJQZPq1EX_9T5Y",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "client-key",
-						"value": "37bb9cce99080fc889b9a3ae10388f9b6508acf2",
-						"type": "text"
-					},
-					{
-						"key": "secret-key",
-						"value": "VKFSW3I6TEUJ5QS3FSLEQX4OFHJI",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"cid\": \"120970046xxx\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"header\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"queue_no\": \"01-A001\",\n    \"queue_waiting\":\"3\",\n    \"hn_no\": \"065-088698\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"url\":\"https://www.google.com/\",\n    \"message_title\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"message_html\": \"<div ><strong>คิวของท่านมีการเปลี่ยนแปลง คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1 ตรวจสอบคิวล่าสุดที่ https://www.google.com/</strong></div>\",\n    \"message_text\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"message_confirm_url\": \"\",\n    \"message_datetime\": \"2025-02-10T10:53:09.000Z\",\n    \"message_type\": \"HPT\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{prod}}/alert/v3.1/template",
-					"host": [
-						"{{prod}}"
-					],
-					"path": [
-						"alert",
-						"v3.1",
-						"template"
-					]
-				}
-			},
-			"response": []
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "local",
-			"value": "localhost:8080",
-			"type": "string"
-		},
-		{
-			"key": "prod",
-			"value": "https://morpromt2c.moph.go.th",
-			"type": "string"
-		}
-	]
+  "info": {
+    "_postman_id": "cc534619-d328-4569-bf5d-bb7b7e254569",
+    "name": "API MOPH Alert Template V3.1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "20159153",
+    "_collection_link": "https://yellow-idea.postman.co/workspace/CMS-MOPH~7a1231c0-d334-4807-8023-50351b906b1e/collection/20159153-cc534619-d328-4569-bf5d-bb7b7e254569?action=share&source=collection_link&creator=20159153"
+  },
+  "item": [
+    {
+      "name": "api 1 ยินดีต้อนรับ",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "client-key",
+            "value": "xxxxx",
+            "type": "text"
+          },
+          {
+            "key": "secret-key",
+            "value": "xxxxx",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"cid\": \"1209700461501\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"ยินดีต้อนรับ\",\n    \"header\": \"ยินดีต้อนรับ\",\n    \"text\": \"สวัสดีครับ ยินดีต้อนรับสู่สำนักสุขภาพดิจิทัล เราใส่ใจในสุขภาพและความสบายใจของคุณทุกขั้น ตอน หากมีข้อสงสัยหรือสิ่งใดที่เราสามารถช่วยเหลือได้ กรุณาแจ้งเจ้าหน้าที่ได้เลยนะครับ\",\n    \"message_title\": \"ยินดีต้อนรับ\",\n    \"message_html\": \"<div ><strong>สวัสดีครับ ยินดีต้อนรับสู่สำนักสุขภาพดิจิทัล เราใส่ใจในสุขภาพและความสบายใจของคุณทุกขั้น ตอน หากมีข้อสงสัยหรือสิ่งใดที่เราสามารถช่วยเหลือได้ กรุณาแจ้งเจ้าหน้าที่ได้เลยนะครับ</strong></div>\",\n    \"message_text\": \"ยินดีต้อนรับ\",\n    \"message_type\": \"HPT\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{local}}/alert/v3.1/template",
+          "host": [
+            "{{local}}"
+          ],
+          "path": [
+            "alert",
+            "v3.1",
+            "template"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "api 2 แจ้งเตือนคิว",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "xxxxx",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "client-key",
+            "value": "xxxxx",
+            "type": "text"
+          },
+          {
+            "key": "secret-key",
+            "value": "xxxxx",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"cid\": \"120970046xxx\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"แจ้งเตือนคิว\",\n    \"header\": \"แจ้งเตือนคิว\",\n    \"queue_no\": \"01-A001\",\n    \"hn_no\": \"065-0886xx\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"url\": \"\",\n    \"message_title\": \"แจ้งเตือนคิว\",\n    \"message_html\": \"<div ><strong>คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1</strong></div>\",\n    \"message_text\": \"แจ้งเตือนคิว\",\n    \"message_type\": \"HPT\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{prod}}/alert/v3.1/template",
+          "host": [
+            "{{prod}}"
+          ],
+          "path": [
+            "alert",
+            "v3.1",
+            "template"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "api 3 แจ้งเตือนคิว แบบมี url",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "xxxxx",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "client-key",
+            "value": "xxxxx",
+            "type": "text"
+          },
+          {
+            "key": "secret-key",
+            "value": "xxxxx",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"cid\": \"1529900337739\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"แจ้งเตือนคิว\",\n    \"header\": \"แจ้งเตือนคิว\",\n    \"queue_no\": \"01-A001\",\n    \"hn_no\": \"065-088698\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"url\": \"https://www.google.com/\",\n    \"message_title\": \"แจ้งเตือนคิว\",\n    \"message_html\": \"<div ><strong>คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1 ตรวจสอบคิวที่ https://www.google.com/</strong></div>\",\n    \"message_text\": \"แจ้งเตือนคิว\",\n    \"message_confirm_url\": \"\",\n    \"message_datetime\": \"2025-02-10T10:53:09.000Z\",\n    \"message_type\": \"HPT\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{prod}}/alert/v3.1/template",
+          "host": [
+            "{{prod}}"
+          ],
+          "path": [
+            "alert",
+            "v3.1",
+            "template"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "api 4 ใกล้ถึงคิวของคุณแล้ว",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "xxxxx",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "client-key",
+            "value": "xxxxx",
+            "type": "text"
+          },
+          {
+            "key": "secret-key",
+            "value": "xxxxx",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"cid\": \"1529900337739\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"ใกล้ถึงคิวของคุณแล้ว\",\n    \"header\": \"ใกล้ถึงคิวของคุณแล้ว\",\n    \"queue_no\": \"01-A001\",\n    \"queue_waiting\": \"3\",\n    \"hn_no\": \"065-088698\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"message_title\": \"ใกล้ถึงคิวของคุณแล้ว\",\n    \"message_html\": \"<div ><strong>รออีก 3 คิว คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1</strong></div>\",\n    \"message_text\": \"ใกล้ถึงคิวของคุณแล้ว\",\n    \"message_confirm_url\": \"\",\n    \"message_datetime\": \"2025-02-10T10:53:09.000Z\",\n    \"message_type\": \"HPT\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{prod}}/alert/v3.1/template",
+          "host": [
+            "{{prod}}"
+          ],
+          "path": [
+            "alert",
+            "v3.1",
+            "template"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "api 5 คิวของท่านมีการเปลี่ยนแปลง",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "xxxxx",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "client-key",
+            "value": "xxxxx",
+            "type": "text"
+          },
+          {
+            "key": "secret-key",
+            "value": "xxxxx",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"cid\": \"1529900337739\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"header\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"queue_no\": \"01-A001\",\n    \"queue_waiting\": \"3\",\n    \"hn_no\": \"065-088698\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"url\": \"\",\n    \"message_title\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"message_html\": \"<div ><strong>คิวของท่านมีการเปลี่ยนแปลง คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1</strong></div>\",\n    \"message_text\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"message_confirm_url\": \"\",\n    \"message_datetime\": \"2025-02-10T10:53:09.000Z\",\n    \"message_type\": \"HPT\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{prod}}/alert/v3.1/template",
+          "host": [
+            "{{prod}}"
+          ],
+          "path": [
+            "alert",
+            "v3.1",
+            "template"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "api 6 คิวของท่านมีการเปลี่ยนแปลง แบบมี url",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "xxxxx",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "client-key",
+            "value": "xxxxx",
+            "type": "text"
+          },
+          {
+            "key": "secret-key",
+            "value": "xxxxx",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"cid\": \"120970046xxx\",\n    \"name\": \"ปิยะพร เป็งนำสุวรรณ\",\n    \"template\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"header\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"queue_no\": \"01-A001\",\n    \"queue_waiting\":\"3\",\n    \"hn_no\": \"065-088698\",\n    \"service\": \"แผนกสูตินรีเวช ห้องตรวจ 1\",\n    \"url\":\"https://www.google.com/\",\n    \"message_title\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"message_html\": \"<div ><strong>คิวของท่านมีการเปลี่ยนแปลง คิวที่ 01-A001 บริการ แผนกสูตินรีเวช ห้องตรวจ 1 ตรวจสอบคิวล่าสุดที่ https://www.google.com/</strong></div>\",\n    \"message_text\": \"คิวของท่านมีการเปลี่ยนแปลง\",\n    \"message_confirm_url\": \"\",\n    \"message_datetime\": \"2025-02-10T10:53:09.000Z\",\n    \"message_type\": \"HPT\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{prod}}/alert/v3.1/template",
+          "host": [
+            "{{prod}}"
+          ],
+          "path": [
+            "alert",
+            "v3.1",
+            "template"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "local",
+      "value": "localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "prod",
+      "value": "https://morpromt2c.moph.go.th",
+      "type": "string"
+    }
+  ]
 }
