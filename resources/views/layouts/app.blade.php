@@ -444,6 +444,11 @@
                         <a href="{{ route('customer_complain.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                             <i class="fas fa-comment-dots me-2" style="color: #00897b;"></i> รายการความคิดเห็น
                         </a>
+                        @if(auth()->user()->hasAccessMophAlert())
+                        <a href="{{ route('mophalert.hrd.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <i class="fas fa-bell me-2" style="color: #20c997;"></i> ระบบแจ้งเตือน Moph Alert
+                        </a>
+                        @endif
 
                         @if(auth()->user()->hasAccessMra())
                         <!-- MRA System Menu -->

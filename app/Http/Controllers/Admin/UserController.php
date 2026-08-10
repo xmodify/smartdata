@@ -38,6 +38,7 @@ class UserController extends Controller
             'allow_skpcard' => 'nullable|string|in:Y,N',
             'allow_lend' => 'nullable|string|in:Y,N',
             'allow_mra' => 'nullable|string|in:Y,N',
+            'allow_moph_alert' => 'nullable|string|in:Y,N',
         ]);
 
         User::create([
@@ -54,6 +55,7 @@ class UserController extends Controller
             'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
             'allow_lend' => $request->has('allow_lend') ? 'Y' : 'N',
             'allow_mra' => $request->has('allow_mra') ? 'Y' : 'N',
+            'allow_moph_alert' => $request->has('allow_moph_alert') ? 'Y' : 'N',
         ]);
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
@@ -78,6 +80,7 @@ class UserController extends Controller
             'allow_skpcard' => 'nullable|string|in:Y,N',
             'allow_lend' => 'nullable|string|in:Y,N',
             'allow_mra' => 'nullable|string|in:Y,N',
+            'allow_moph_alert' => 'nullable|string|in:Y,N',
         ]);
 
         $updateData = [
@@ -93,6 +96,7 @@ class UserController extends Controller
             'allow_skpcard' => $request->has('allow_skpcard') ? 'Y' : 'N',
             'allow_lend' => $request->has('allow_lend') ? 'Y' : 'N',
             'allow_mra' => $request->has('allow_mra') ? 'Y' : 'N',
+            'allow_moph_alert' => $request->has('allow_moph_alert') ? 'Y' : 'N',
         ];
 
         if ($request->filled('password')) {

@@ -50,8 +50,8 @@
         </div>
 
 
-                <!-- Moph Notify Settings (Left 50%) -->
-                <div class="col-md-6">
+                <!-- Moph Notify Settings (Left 33%) -->
+                <div class="col-md-4">
                     <div class="card border-0 shadow-sm rounded-lg p-4 mb-4 h-100">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-bell me-2"></i> Moph Notify Settings</h5>
@@ -80,7 +80,7 @@
                                             <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
                                                 <div class="d-flex align-items-center me-2">
                                                     <span class="xsmall text-muted me-1">ClientID:</span>
-                                                    <span id="moph_client_id_{{ $moph->id }}" class="small text-truncate" style="max-width: 120px;">********</span>
+                                                    <span id="moph_client_id_{{ $moph->id }}" class="small text-truncate" style="max-width: 100px;">********</span>
                                                     <button class="btn btn-link btn-xs p-0 ms-1 toggle-moph-value" 
                                                         data-id="{{ $moph->id }}" 
                                                         data-type="client_id"
@@ -91,7 +91,7 @@
                                                 <span class="text-muted small">|</span>
                                                 <div class="d-flex align-items-center ms-2">
                                                     <span class="xsmall text-muted me-1">Secret:</span>
-                                                    <span id="moph_secret_{{ $moph->id }}" class="small text-truncate" style="max-width: 120px;">********</span>
+                                                    <span id="moph_secret_{{ $moph->id }}" class="small text-truncate" style="max-width: 100px;">********</span>
                                                     <button class="btn btn-link btn-xs p-0 ms-1 toggle-moph-value" 
                                                         data-id="{{ $moph->id }}" 
                                                         data-type="secret"
@@ -117,8 +117,76 @@
                     </div>
                 </div>
 
-                <!-- Telegram Notify Settings (Right 50%) -->
-                <div class="col-md-6">
+                <!-- Moph Alert Settings (Middle 33%) -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-lg p-4 mb-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-bell me-2"></i> Moph Alert Settings</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle border-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="border-0 small">ชื่อรายการ</th>
+                                        <th class="border-0 small text-center">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($mophAlerts as $alert)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-light text-dark border me-2 xsmall fw-normal" style="font-size: 0.65rem;">#{{ $alert->id }}</span>
+                                                <div class="fw-bold small">{{ $alert->name }}</div>
+                                                @if($alert->active === 'Y')
+                                                    <span class="badge bg-success ms-2 xsmall shadow-sm" style="font-size: 0.65rem;"><i class="fas fa-check-circle me-1"></i>Active</span>
+                                                @else
+                                                    <span class="badge bg-secondary ms-2 xsmall shadow-sm" style="font-size: 0.65rem;"><i class="fas fa-times-circle me-1"></i>Inactive</span>
+                                                @endif
+                                            </div>
+                                            <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                                                <div class="d-flex align-items-center me-2">
+                                                    <span class="xsmall text-muted me-1">ClientID:</span>
+                                                    <span id="moph_alert_client_id_{{ $alert->id }}" class="small text-truncate" style="max-width: 100px;">********</span>
+                                                    <button class="btn btn-link btn-xs p-0 ms-1 toggle-moph-alert-value" 
+                                                        data-id="{{ $alert->id }}" 
+                                                        data-type="client_id"
+                                                        data-value="{{ $alert->client_id }}">
+                                                        <i class="fas fa-eye small"></i>
+                                                    </button>
+                                                </div>
+                                                <span class="text-muted small">|</span>
+                                                <div class="d-flex align-items-center ms-2">
+                                                    <span class="xsmall text-muted me-1">Secret:</span>
+                                                    <span id="moph_alert_secret_{{ $alert->id }}" class="small text-truncate" style="max-width: 100px;">********</span>
+                                                    <button class="btn btn-link btn-xs p-0 ms-1 toggle-moph-alert-value" 
+                                                        data-id="{{ $alert->id }}" 
+                                                        data-type="secret"
+                                                        data-value="{{ $alert->secret }}">
+                                                        <i class="fas fa-eye small"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-outline-primary btn-xs edit-moph-alert" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editMophAlertModal"
+                                                data-alert="{{ json_encode($alert) }}"
+                                                title="แก้ไขการตั้งค่า">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telegram Notify Settings (Right 33%) -->
+                <div class="col-md-4">
                     <div class="card border-0 shadow-sm rounded-lg p-4 mb-4 h-100">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0 text-primary"><i class="fab fa-telegram me-2"></i> Telegram Notify Settings</h5>
@@ -232,6 +300,108 @@
                 <div class="modal-footer border-0 p-4 pt-0">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
                     <button type="submit" class="btn btn-primary px-4 shadow-sm">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Moph Alert Modal -->
+<div class="modal fade" id="editMophAlertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-bell me-2"></i>แก้ไข Moph Alert</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editMophAlertForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">ID / รายการ</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light text-muted border-end-0 xsmall">#<span id="moph_alert_id_label"></span></span>
+                            <input type="text" id="moph_alert_name" class="form-control shadow-sm bg-light" readonly disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Client Key</label>
+                        <div class="input-group">
+                            <input type="password" name="client_id" id="moph_alert_client_id_edit" class="form-control shadow-sm">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="moph_alert_client_id_edit">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Secret Key</label>
+                        <div class="input-group">
+                            <input type="password" name="secret" id="moph_alert_secret_edit" class="form-control shadow-sm">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="moph_alert_secret_edit">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="active" id="moph_alert_active_edit" value="1">
+                            <label class="form-check-label fw-bold small ms-1" for="moph_alert_active_edit">เปิดใช้งาน (Enable Notification)</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Test Moph Alert Modal -->
+<div class="modal fade" id="testMophAlertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-paper-plane me-2"></i>ทดสอบส่ง Moph Alert</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="testMophAlertForm" method="POST" onsubmit="runMophAlertTest(event)">
+                @csrf
+                <input type="hidden" name="alert_id" id="test_alert_id">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">กำลังทดสอบผ่านบริการ:</label>
+                        <div class="fw-bold fs-6 text-primary" id="test_alert_name_label"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">เลือกเจ้าหน้าที่โรงพยาบาล (ดึงจาก Backoffice)</label>
+                        <input type="text" name="cid" id="test_alert_cid" class="form-control shadow-sm" placeholder="พิมพ์ชื่อเพื่อค้นหา หรือระบุเลข CID 13 หลัก" list="staffDatalist" required>
+                        <datalist id="staffDatalist">
+                            @foreach($staffList as $staff)
+                                <option value="{{ $staff->cid }}">{{ $staff->prefix }}{{ $staff->fname }} {{ $staff->lname }}</option>
+                            @endforeach
+                        </datalist>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">หัวข้อแจ้งเตือน (Title)</label>
+                        <input type="text" name="title" id="test_alert_title" class="form-control shadow-sm" value="ทดสอบระบบประชาสัมพันธ์ รพ.หัวตะพาน" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">ข้อความสั้น (Message Text)</label>
+                        <input type="text" name="text" id="test_alert_text" class="form-control shadow-sm" value="ทดสอบระบบส่งการแจ้งเตือนประชาสัมพันธ์ข่าวสาร" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">ข้อความ HTML (Message HTML)</label>
+                        <textarea name="html" id="test_alert_html" class="form-control shadow-sm" rows="3" required><div><strong>สวัสดีครับ โรงพยาบาลหัวตะพานขอแจ้งทดสอบระบบประชาสัมพันธ์ผ่านหมอพร้อม</strong></div></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" id="btn_submit_test" class="btn btn-success px-4 shadow-sm">
+                        <i class="fas fa-paper-plane me-1"></i> ส่งทดสอบ
+                    </button>
                 </div>
             </form>
         </div>
@@ -534,6 +704,20 @@
         });
     });
 
+    // Edit Moph Alert Modal Population
+    document.querySelectorAll('.edit-moph-alert').forEach(button => {
+        button.addEventListener('click', function() {
+            const alert = JSON.parse(this.dataset.alert);
+            const form = document.getElementById('editMophAlertForm');
+            form.action = `{{ url('/') }}/admin/moph-alert/${alert.id}`;
+            document.getElementById('moph_alert_id_label').innerText = alert.id;
+            document.getElementById('moph_alert_name').value = alert.name;
+            document.getElementById('moph_alert_client_id_edit').value = alert.client_id;
+            document.getElementById('moph_alert_secret_edit').value = alert.secret;
+            document.getElementById('moph_alert_active_edit').checked = alert.active === 'Y';
+        });
+    });
+
     // Edit Telegram Modal Population
     document.querySelectorAll('.edit-tele').forEach(button => {
         button.addEventListener('click', function() {
@@ -606,6 +790,108 @@
             }
         });
     });
+
+    // Toggle Moph Alert Value Visibility
+    document.querySelectorAll('.toggle-moph-alert-value').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const type = this.dataset.type;
+            const realValue = this.dataset.value || '(ว่าง)';
+            const displayEl = document.getElementById(`moph_alert_${type}_${id}`);
+            const icon = this.querySelector('i');
+
+            if (icon.classList.contains('fa-eye')) {
+                displayEl.innerText = realValue;
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                displayEl.innerText = '********';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Test Moph Alert Modal Population
+    document.querySelectorAll('.test-moph-alert').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.alertId;
+            const name = this.dataset.alertName;
+            
+            document.getElementById('test_alert_id').value = id;
+            document.getElementById('test_alert_name_label').innerText = name;
+            
+            // Clear inputs
+            document.getElementById('test_alert_cid').value = '';
+        });
+    });
+
+    // Run MOPH Alert AJAX Test
+    function runMophAlertTest(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btn_submit_test');
+        const origContent = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> กำลังส่งข้อความ...';
+        
+        const data = {
+            _token: document.querySelector('input[name="_token"]').value,
+            alert_id: document.getElementById('test_alert_id').value,
+            cid: document.getElementById('test_alert_cid').value,
+            title: document.getElementById('test_alert_title').value,
+            text: document.getElementById('test_alert_text').value,
+            html: document.getElementById('test_alert_html').value
+        };
+
+        fetch('{{ route("admin.moph_alert.test") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            btn.disabled = false;
+            btn.innerHTML = origContent;
+            
+            if (res.success) {
+                // Close modal using standard BS5
+                const modalEl = document.getElementById('testMophAlertModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ส่งทดสอบสำเร็จ!',
+                    text: res.message,
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#198754'
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ส่งทดสอบล้มเหลว!',
+                    text: res.message,
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = origContent;
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ ' + err.message,
+                confirmButtonText: 'ตกลง'
+            });
+        });
+    }
 
     // Copy to Clipboard (Updated for Pre/Code)
     function copyText(id) {

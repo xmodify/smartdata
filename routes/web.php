@@ -62,6 +62,16 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/admin/moph-notify/{mophNotify}', [App\Http\Controllers\Admin\StructureController::class, 'update_moph_notify'])->name('admin.moph_notify.update');
     Route::delete('/admin/moph-notify/{mophNotify}', [App\Http\Controllers\Admin\StructureController::class, 'destroy_moph_notify'])->name('admin.moph_notify.destroy');
     
+    // Moph Alert Routes
+    Route::post('/admin/moph-alert', [App\Http\Controllers\Admin\StructureController::class, 'store_moph_alert'])->name('admin.moph_alert.store');
+    Route::put('/admin/moph-alert/{mophAlert}', [App\Http\Controllers\Admin\StructureController::class, 'update_moph_alert'])->name('admin.moph_alert.update');
+    Route::delete('/admin/moph-alert/{mophAlert}', [App\Http\Controllers\Admin\StructureController::class, 'destroy_moph_alert'])->name('admin.moph_alert.destroy');
+    Route::post('/admin/moph-alert/test', [App\Http\Controllers\Admin\StructureController::class, 'test_moph_alert'])->name('admin.moph_alert.test');
+    
+    // Moph Alert HRD Routes
+    Route::get('/mophalert/hrd', [App\Http\Controllers\MophAlert\HrdAlertController::class, 'index'])->name('mophalert.hrd.index');
+    Route::post('/mophalert/hrd/send', [App\Http\Controllers\MophAlert\HrdAlertController::class, 'send'])->name('mophalert.hrd.send');
+    
     // Telegram Notify Routes
     Route::post('/admin/telegram-notify', [App\Http\Controllers\Admin\StructureController::class, 'store_telegram_notify'])->name('admin.telegram_notify.store');
     Route::put('/admin/telegram-notify/{telegramNotify}', [App\Http\Controllers\Admin\StructureController::class, 'update_telegram_notify'])->name('admin.telegram_notify.update');

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use App\Models\MophNotify;
+use App\Models\MophAlert;
 use App\Models\TelegramNotify;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -31,12 +32,34 @@ class StructureController extends Controller
         }
 
         try {
+            $mophAlerts = MophAlert::all();
+        } catch (\Exception $e) {
+            $mophAlerts = collect();
+        }
+
+        try {
             $telegramNotifies = TelegramNotify::all();
         } catch (\Exception $e) {
             $telegramNotifies = collect();
         }
 
-        return view('admin.system.index', compact('mophNotifies', 'telegramNotifies'));
+        try {
+            $staffList = DB::connection('backoffice')->table('hrd_person')
+                ->leftJoin('hrd_prefix', 'hrd_prefix.HR_PREFIX_ID', '=', 'hrd_person.HR_PREFIX_ID')
+                ->where('hrd_person.HR_STATUS_ID', 1)
+                ->select([
+                    'hrd_person.HR_CID as cid',
+                    'hrd_prefix.HR_PREFIX_NAME as prefix',
+                    'hrd_person.HR_FNAME as fname',
+                    'hrd_person.HR_LNAME as lname'
+                ])
+                ->orderBy('hrd_person.HR_FNAME')
+                ->get();
+        } catch (\Exception $e) {
+            $staffList = collect();
+        }
+
+        return view('admin.system.index', compact('mophNotifies', 'telegramNotifies', 'mophAlerts', 'staffList'));
     }
 
     /**
@@ -484,6 +507,60 @@ class StructureController extends Controller
         $telegramNotify->update($validated);
 
         return back()->with('success', 'อัปเดตการตั้งค่า Telegram Notify (' . $telegramNotify->name_th . ') เรียบร้อยแล้ว')->with('active_tab', 'system');
+    }
+
+    /**
+     * Update Moph Alert settings.
+     */
+    public function update_moph_alert(Request $request, MophAlert $mophAlert)
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'client_id' => 'nullable|string',
+            'secret' => 'nullable|string',
+        ]);
+
+        // Handle checkbox (send 'Y' or 'N' instead of boolean)
+        $validated['active'] = $request->has('active') ? 'Y' : 'N';
+
+        $mophAlert->update($validated);
+
+        return back()->with('success', 'อัปเดตการตั้งค่า Moph Alert (' . $mophAlert->name . ') เรียบร้อยแล้ว')->with('active_tab', 'system');
+    }
+
+    /**
+     * Test MOPH Alert by sending a free-form message.
+     */
+    public function test_moph_alert(Request $request)
+    {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $request->validate([
+            'alert_id' => 'required|integer',
+            'cid'      => 'required|string|max:20',
+            'title'    => 'required|string|max:255',
+            'text'     => 'required|string',
+            'html'     => 'required|string',
+        ]);
+
+        $result = \App\Services\MophAlertService::sendFreeForm(
+            $request->cid,
+            $request->title,
+            $request->text,
+            $request->html,
+            $request->alert_id
+        );
+
+        if ($result) {
+            return response()->json(['success' => true, 'message' => 'ส่งข้อความแจ้งเตือนสำเร็จ!', 'data' => $result]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'ส่งข้อความล้มเหลว กรุณาตรวจสอบ Client ID / Secret หรือ Logs ของระบบ']);
     }
 
 }

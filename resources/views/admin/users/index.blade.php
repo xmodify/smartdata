@@ -131,8 +131,11 @@
                                         @if($user->hasAccessMra())
                                             <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Audit เวชระเบียน</span>
                                         @endif
+                                        @if($user->hasAccessMophAlert())
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">ระบบแจ้งเตือน Moph Alert</span>
+                                        @endif
                                         
-                                        @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra())
+                                        @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra() && !$user->hasAccessMophAlert())
                                             <span class="text-muted small">ไม่มีสิทธิ์เข้าถึง</span>
                                         @endif
                                     </div>
@@ -227,8 +230,11 @@
                                         @if($user->hasAccessMra())
                                             <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Audit เวชระเบียน</span>
                                         @endif
+                                        @if($user->hasAccessMophAlert())
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">ระบบแจ้งเตือน Moph Alert</span>
+                                        @endif
                                         
-                                        @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra())
+                                        @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra() && !$user->hasAccessMophAlert())
                                             <span class="text-muted small">ไม่มีสิทธิ์เข้าถึง</span>
                                         @endif
                                     </div>
@@ -331,6 +337,7 @@
             document.getElementById('edit_allow_skpcard').checked = user.allow_skpcard === 'Y';
             document.getElementById('edit_allow_lend').checked = user.allow_lend === 'Y';
             document.getElementById('edit_allow_mra').checked = user.allow_mra === 'Y';
+            document.getElementById('edit_allow_moph_alert').checked = user.allow_moph_alert === 'Y';
         });
 
         // Reset Password Confirmation using delegated events

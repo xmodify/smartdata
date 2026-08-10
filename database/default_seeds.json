@@ -1,4 +1,18 @@
 {
+    "moph_alert": [
+        {
+            "match_by": [
+                "id"
+            ],
+            "data": {
+                "id": 1,
+                "name": "ระบบประชาสัมพันธ์ รพ.หัวตะพาน",
+                "client_id": "xxxxx",
+                "secret": "xxxxx",
+                "active": "Y"
+            }
+        }
+    ],
     "moph_notify": [
         {
             "match_by": [

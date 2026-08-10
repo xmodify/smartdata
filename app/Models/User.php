@@ -31,6 +31,7 @@ class User extends Authenticatable
         'allow_skpcard',
         'allow_lend',
         'allow_mra',
+        'allow_moph_alert',
     ];
 
     /**
@@ -89,6 +90,11 @@ class User extends Authenticatable
     public function hasAccessMra()
     {
         return $this->role === 'admin' || $this->allow_mra === 'Y';
+    }
+
+    public function hasAccessMophAlert()
+    {
+        return $this->role === 'admin' || $this->allow_moph_alert === 'Y';
     }
 
     public function hasAccessRole($role)

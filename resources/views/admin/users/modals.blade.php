@@ -86,6 +86,12 @@
                                         <label class="form-check-label small" for="add_allow_mra">Audit เวชระเบียน</label>
                                     </div>
                                 </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_moph_alert" value="Y" id="add_allow_moph_alert">
+                                        <label class="form-check-label small" for="add_allow_moph_alert">ระบบแจ้งเตือน Moph Alert</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -183,6 +189,12 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="allow_mra" value="Y" id="edit_allow_mra">
                                         <label class="form-check-label small" for="edit_allow_mra">Audit เวชระเบียน</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_moph_alert" value="Y" id="edit_allow_moph_alert">
+                                        <label class="form-check-label small" for="edit_allow_moph_alert">ระบบแจ้งเตือน Moph Alert</label>
                                     </div>
                                 </div>
                             </div>
