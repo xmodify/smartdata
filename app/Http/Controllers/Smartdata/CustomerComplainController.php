@@ -15,9 +15,13 @@ class CustomerComplainController extends Controller
     /**
      * แสดงรายการเรื่องร้องเรียน/ข้อเสนอแนะทั้งหมด (ต้อง Login)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $complains = CustomerComplain::latest()->paginate(20);
+        $query = CustomerComplain::latest();
+        if ($request->filled('type') && in_array($request->type, ['คำชมเชย', 'ข้อเสนอแนะ', 'ข้อร้องเรียน'])) {
+            $query->where('type', $request->type);
+        }
+        $complains = $query->paginate(20)->withQueryString();
         return view('smartdata.customer_complain.index', compact('complains'));
     }
 
