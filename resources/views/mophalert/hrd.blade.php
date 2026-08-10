@@ -259,8 +259,16 @@
                                     <span class="small text-dark">{{ $item->title }}</span>
                                 </td>
                                 <td>
-                                    <div class="xsmall text-muted text-truncate" style="max-width: 250px;" title="{{ strip_tags($item->message_text) }}">
-                                        {{ strip_tags($item->message_text) }}
+                                    <div class="d-flex align-items-center justify-content-between gap-2">
+                                        <div class="xsmall text-muted text-truncate" style="max-width: 250px;">
+                                            {{ strip_tags($item->message_text) }}
+                                        </div>
+                                        <button class="btn btn-outline-secondary btn-xs px-1 py-0 btn-view-message" 
+                                            data-title="{{ $item->title }}"
+                                            data-message="{{ $item->message_text }}"
+                                            title="ดูข้อความเต็ม">
+                                            <i class="fas fa-eye small"></i>
+                                        </button>
                                     </div>
                                 </td>
                                 <td class="text-center">
@@ -324,6 +332,31 @@
     </div>
 </div>
 
+<!-- View Message Modal -->
+<div class="modal fade" id="viewMessageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient-primary-custom text-white border-0">
+                <h5 class="modal-title fw-bold" id="viewMessageModalLabel"><i class="fas fa-eye me-2"></i>รายละเอียดข้อความทั้งหมด</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">หัวข้อ (Title):</label>
+                    <div class="fw-bold text-dark fs-6" id="viewMessageTitle"></div>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label fw-bold small text-muted">ข้อความแจ้งเตือนเต็ม:</label>
+                    <div class="p-3 bg-light rounded border text-dark fs-6" id="viewMessageContent" style="white-space: pre-wrap; font-family: 'Sarabun', sans-serif; line-height: 1.6;"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-secondary px-4 shadow-sm rounded-pill" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -381,6 +414,15 @@
                         $(this).hide();
                     }
                 });
+            });
+
+            // View full message modal handler
+            $(document).on('click', '.btn-view-message', function() {
+                const title = $(this).data('title');
+                const message = $(this).data('message');
+                $('#viewMessageTitle').text(title);
+                $('#viewMessageContent').text(message);
+                $('#viewMessageModal').modal('show');
             });
 
             updateDeptLabel();
