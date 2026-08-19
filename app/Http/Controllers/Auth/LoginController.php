@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\MophAlert;
 use App\Models\MophAlertDetail;
 use App\Services\MophAlertService;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
