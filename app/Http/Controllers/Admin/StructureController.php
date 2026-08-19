@@ -259,6 +259,10 @@ class StructureController extends Controller
                 $colObj = $tableBlueprint->char($column, $length ?: 1);
             } elseif ($type === 'text') {
                 $colObj = $tableBlueprint->text($column);
+            } elseif ($type === 'longtext') {
+                $colObj = $tableBlueprint->longText($column);
+            } elseif ($type === 'mediumtext') {
+                $colObj = $tableBlueprint->mediumText($column);
             } elseif ($type === 'timestamp') {
                 $colObj = $tableBlueprint->timestamp($column);
             } elseif ($type === 'date') {
