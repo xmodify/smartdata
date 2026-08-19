@@ -255,7 +255,7 @@ class LoginController extends Controller
             return redirect()->route('login')->withErrors(['provider_id' => 'ระบบล็อคอินด้วย Provider ID ยังไม่เปิดใช้งาน หรือยังไม่ได้ตั้งค่าเชื่อมต่อ']);
         }
 
-        $isUat = (config('app.env') === 'local' || strpos(strtolower($config->health_id_client_id), 'uat') !== false || strpos(strtolower($config->health_id_client_id), 'test') !== false);
+        $isUat = (strpos(strtolower($config->health_id_client_id), 'uat') !== false || strpos(strtolower($config->health_id_client_id), 'test') !== false);
         $healthIdUrl = $isUat ? 'https://uat-moph.id.th' : 'https://moph.id.th';
 
         $redirectUri = route('login.provider_id.callback');
@@ -281,7 +281,7 @@ class LoginController extends Controller
             return redirect()->route('login')->withErrors(['provider_id' => 'ระบบตั้งค่า Provider ID ถูกปิดการใช้งาน']);
         }
 
-        $isUat = (config('app.env') === 'local' || strpos(strtolower($config->health_id_client_id), 'uat') !== false || strpos(strtolower($config->health_id_client_id), 'test') !== false);
+        $isUat = (strpos(strtolower($config->health_id_client_id), 'uat') !== false || strpos(strtolower($config->health_id_client_id), 'test') !== false);
         $healthIdUrl = $isUat ? 'https://uat-moph.id.th' : 'https://moph.id.th';
         $providerIdUrl = $isUat ? 'https://uat-provider.id.th' : 'https://provider.id.th';
 
