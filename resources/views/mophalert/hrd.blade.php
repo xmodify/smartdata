@@ -152,13 +152,6 @@
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
-                                <i class="fas fa-search me-1"></i> กรองข้อมูล
-                            </button>
-                            <a href="{{ route('mophalert.hrd.index') }}" class="btn btn-light btn-sm rounded-pill px-3 shadow-sm text-dark border">
-                                รีเซ็ต
-                            </a>
                         </div>
                     </div>
                 </form>
@@ -177,6 +170,9 @@
                         </span>
                     </h5>
                     <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill shadow-sm" id="btn_clear_selections" onclick="clearAllSelectedStaff()">
+                            <i class="fas fa-trash-alt me-1"></i> ล้างการเลือก
+                        </button>
                         <button type="button" class="btn btn-success btn-sm rounded-pill shadow-sm" id="btn_send_batch" onclick="openBatchModal()">
                             <i class="fas fa-paper-plane me-1"></i> ส่งแบบกลุ่ม (<span id="batch_count">0</span> คน)
                         </button>
@@ -363,9 +359,12 @@
     <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
     <script>
+        // Global Map to store selected staff (CID -> Name) across pagination and searches
+        const selectedStaff = new Map();
+
         $(document).ready(function() {
             // DataTables
-            $('#tableStaffAlert').DataTable({
+            const staffTable = $('#tableStaffAlert').DataTable({
                 language: {
                     search: "ค้นหาเจ้าหน้าที่:",
                     lengthMenu: "แสดง _MENU_ รายการ",
@@ -379,6 +378,41 @@
                 },
                 pageLength: 10,
                 responsive: true
+            });
+
+            // Restore checked state when Datatable is redrawn (paging, sorting, searching)
+            staffTable.on('draw.dt', function() {
+                $('input.staff-checkbox').each(function() {
+                    const cid = $(this).val();
+                    if (selectedStaff.has(cid)) {
+                        $(this).prop('checked', true);
+                    } else {
+                        $(this).prop('checked', false);
+                    }
+                });
+                
+                // Update select all header checkbox status
+                const visible = $('input.staff-checkbox');
+                const checkedVisible = $('input.staff-checkbox:checked');
+                const checkAll = $('#check_all_staff');
+                if (visible.length > 0 && visible.length === checkedVisible.length) {
+                    checkAll.prop('checked', true);
+                } else {
+                    checkAll.prop('checked', false);
+                }
+            });
+
+            // Delegate checkbox change events
+            $('#tableStaffAlert tbody').on('change', '.staff-checkbox', function() {
+                const cid = $(this).val();
+                const name = $(this).data('name');
+                if (this.checked) {
+                    selectedStaff.set(cid, name);
+                } else {
+                    selectedStaff.delete(cid);
+                }
+                saveToLocalStorage();
+                updateBatchCount();
             });
 
             $('#tableHistoryLog').DataTable({
@@ -425,6 +459,25 @@
                 $('#viewMessageModal').modal('show');
             });
 
+            // Auto submit filter form when department dropdown is closed
+            $('#deptDropdown').parent().on('hidden.bs.dropdown', function () {
+                $('#filterForm').submit();
+            });
+
+            // Load saved staff from localStorage
+            const savedStaff = localStorage.getItem('moph_selected_staff');
+            if (savedStaff) {
+                try {
+                    const arr = JSON.parse(savedStaff);
+                    arr.forEach(([cid, name]) => {
+                        selectedStaff.set(cid, name);
+                    });
+                } catch(e) {
+                    console.error("Error parsing saved staff", e);
+                }
+            }
+            updateBatchCount();
+
             updateDeptLabel();
         });
 
@@ -455,15 +508,46 @@
             }
         }
 
+        // Save Map to LocalStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('moph_selected_staff', JSON.stringify(Array.from(selectedStaff.entries())));
+        }
+
         // Toggle checkboxes
         function toggleSelectAllStaff(status) {
-            $('.staff-checkbox').prop('checked', status);
+            const table = $('#tableStaffAlert').DataTable();
+            // Get all rows currently matching the search filter across all pages in Datatable
+            const rows = table.rows({ search: 'applied' }).nodes();
+            
+            // Find checkboxes inside these rows and update their prop
+            $('input.staff-checkbox', rows).prop('checked', status).each(function() {
+                const cid = $(this).val();
+                const name = $(this).data('name');
+                if (status) {
+                    selectedStaff.set(cid, name);
+                } else {
+                    selectedStaff.delete(cid);
+                }
+            });
+            
+            // Sync visible rows immediately
+            $('input.staff-checkbox').prop('checked', status);
+            saveToLocalStorage();
+            updateBatchCount();
+        }
+
+        // Clear all selected staff
+        function clearAllSelectedStaff() {
+            selectedStaff.clear();
+            localStorage.removeItem('moph_selected_staff');
+            $('.staff-checkbox').prop('checked', false);
+            $('#check_all_staff').prop('checked', false);
             updateBatchCount();
         }
 
         // Update count of checked users
         function updateBatchCount() {
-            const checkedCount = $('.staff-checkbox:checked').length;
+            const checkedCount = selectedStaff.size;
             $('#batch_count').text(checkedCount);
         }
 
@@ -482,8 +566,7 @@
 
         // Open batch recipient send modal
         function openBatchModal() {
-            const checkedCbs = $('.staff-checkbox:checked');
-            if (checkedCbs.length === 0) {
+            if (selectedStaff.size === 0) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'กรุณาเลือกผู้รับ!',
@@ -497,12 +580,12 @@
             
             let names = [];
             let inputsHtml = '';
-            checkedCbs.each(function() {
-                names.push($(this).data('name'));
-                inputsHtml += `<input type="hidden" name="cids[]" value="${$(this).val()}">`;
+            selectedStaff.forEach((name, cid) => {
+                names.push(name);
+                inputsHtml += `<input type="hidden" name="cids[]" value="${cid}">`;
             });
 
-            $('#recipient_label').text(`ส่งหาเจ้าหน้าที่กลุ่มจำนวน ${checkedCbs.length} คน (${names.slice(0, 3).join(', ')}${names.length > 3 ? '...' : ''})`);
+            $('#recipient_label').text(`ส่งหาเจ้าหน้าที่กลุ่มจำนวน ${selectedStaff.size} คน (${names.slice(0, 3).join(', ')}${names.length > 3 ? '...' : ''})`);
             $('#modal_cids_container').html(inputsHtml);
 
             // Open modal
@@ -561,9 +644,7 @@
                         confirmButtonText: 'ตกลง',
                         confirmButtonColor: '#198754'
                     }).then(() => {
-                        // Reset checkboxes
-                        $('#check_all_staff').prop('checked', false);
-                        toggleSelectAllStaff(false);
+                        clearAllSelectedStaff();
                     });
                 } else {
                     Swal.fire({

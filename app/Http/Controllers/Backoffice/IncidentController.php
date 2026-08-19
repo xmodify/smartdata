@@ -1053,4 +1053,268 @@ class IncidentController extends Controller
 
         return $breadcrumbs;
     }
+
+    public function rca(Request $request)
+    {
+        $budget_year_select = DB::connection('backoffice')->select('select LEAVE_YEAR_ID,LEAVE_YEAR_NAME FROM budget_year ORDER BY LEAVE_YEAR_ID DESC LIMIT 7');
+        $budget_year_last = DB::connection('backoffice')->table('budget_year')->where('DATE_END','>=',date('Y-m-d'))->where('DATE_BEGIN','<=',date('Y-m-d'))->value('LEAVE_YEAR_ID');
+        
+        // Tab 1 Filters: Incident date range
+        $budget_year = $request->budget_year;
+        if($budget_year == '' || $budget_year == null) {
+            $budget_year = $budget_year_last;
+        }
+
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+
+        if ($start_date == '' || $end_date == '') {
+            $start_date = DB::connection('backoffice')->table('budget_year')->where('LEAVE_YEAR_ID',$budget_year)->value('DATE_BEGIN');
+            $end_date = DB::connection('backoffice')->table('budget_year')->where('LEAVE_YEAR_ID',$budget_year)->value('DATE_END');
+        }
+
+        if (!$start_date) {
+            $start_date = (intval($budget_year) - 544) . "-10-01";
+        }
+        if (!$end_date) {
+            $end_date = (intval($budget_year) - 543) . "-09-30";
+        }
+
+        // Tab 2 Filters: Dashboard / RCA date range
+        $dash_budget_year = $request->dash_budget_year;
+        if($dash_budget_year == '' || $dash_budget_year == null) {
+            $dash_budget_year = $budget_year_last;
+        }
+
+        $dash_start_date = $request->dash_start_date;
+        $dash_end_date = $request->dash_end_date;
+
+        if ($dash_start_date == '' || $dash_end_date == '') {
+            $dash_start_date = DB::connection('backoffice')->table('budget_year')->where('LEAVE_YEAR_ID',$dash_budget_year)->value('DATE_BEGIN');
+            $dash_end_date = DB::connection('backoffice')->table('budget_year')->where('LEAVE_YEAR_ID',$dash_budget_year)->value('DATE_END');
+        }
+
+        if (!$dash_start_date) {
+            $dash_start_date = (intval($dash_budget_year) - 544) . "-10-01";
+        }
+        if (!$dash_end_date) {
+            $dash_end_date = (intval($dash_budget_year) - 543) . "-09-30";
+        }
+
+        // Fetch high-severity incidents (E to I) from backoffice.risk_rep
+        $incidents = DB::connection('backoffice')->select('
+            SELECT r.RISKREP_ID, r.RISKREP_DATESAVE, r.RISKREP_STARTDATE, r.RISKREP_DETAILRISK,
+                   l.RISK_REP_LEVEL_NAME AS severity, p.RISK_REPPROGRAM_NAME AS program_name,
+                   ps.RISK_REPPROGRAMSUB_NAME AS sub_name, rl.RISK_LOCATION_NAME AS location_name,
+                   ds.HR_DEPARTMENT_SUB_SUB_NAME AS department
+            FROM risk_rep r
+            LEFT JOIN risk_rep_level l ON l.RISK_REP_LEVEL_ID = r.RISKREP_LEVEL
+            LEFT JOIN risk_rep_program p ON p.RISK_REPPROGRAM_ID = r.RISK_REPPROGRAM_ID
+            LEFT JOIN risk_rep_program_sub ps ON ps.RISK_REPPROGRAMSUB_ID = r.RISK_REPPROGRAMSUB_ID
+            LEFT JOIN risk_rep_location rl ON rl.RISK_LOCATION_ID = r.RISKREP_LOCAL
+            LEFT JOIN hrd_department_sub_sub ds ON ds.HR_DEPARTMENT_SUB_SUB_ID = r.RISKREP_DEPARTMENT_SUB
+            WHERE r.RISKREP_STATUS <> "CANCEL"
+            AND r.RISKREP_DATESAVE BETWEEN ? AND ?
+            AND l.RISK_REP_LEVEL_NAME IN ("E", "F", "G", "H", "I")
+            ORDER BY r.RISKREP_DATESAVE DESC
+        ', [$start_date, $end_date]);
+
+        // Get local RCA statuses
+        $rcas = DB::connection('mysql')->table('root_cause_analyses')->get()->keyBy('incident_id');
+
+        foreach ($incidents as $row) {
+            $row->rca = $rcas->get($row->RISKREP_ID) ?? null;
+        }
+
+        // Fetch saved RCAs for the dashboard using record_date
+        $saved_rcas_query = DB::connection('mysql')->table('root_cause_analyses')
+            ->whereBetween('record_date', [$dash_start_date, $dash_end_date])
+            ->orderBy('record_date', 'desc')
+            ->get();
+
+        // Prepare chart statistics
+        // 1. Risk Level Chart (E, F, G, H, I)
+        $level_counts = ['E' => 0, 'F' => 0, 'G' => 0, 'H' => 0, 'I' => 0];
+        // 2. Swiss Cheese Chart (q1 to q9)
+        $swiss_labels = [
+            'ผู้ป่วย', 'บุคลากร', 'งานที่มอบหมาย', 'ทีมงาน',
+            'เครื่องมือ', 'วัฒนธรรมองค์กร', 'สิ่งแวดล้อม', 'การสื่อสาร', 'ควบคุมไม่ได้'
+        ];
+        $swiss_counts = array_fill(0, 9, 0);
+        // 3. Potential Change Chart
+        $potential_labels = [
+            'Access', 'Entry', 'Assessment', 'Investigate', 'Diagnosis',
+            'Plan of care', 'Discharge Plan', 'Reassess', 'Care of patient',
+            'Communication', 'Info & Empowerment', 'Discharge'
+        ];
+        $potential_counts = array_fill(0, 12, 0);
+
+        foreach ($saved_rcas_query as $rca) {
+            // Count severity levels
+            if (isset($level_counts[$rca->severity])) {
+                $level_counts[$rca->severity]++;
+            }
+
+            // Count Swiss Cheese items
+            if ($rca->swiss_cheese) {
+                $sc = json_decode($rca->swiss_cheese, true);
+                if (is_array($sc)) {
+                    for ($i = 1; $i <= 9; $i++) {
+                        if (isset($sc['q'.$i]['yes_no']) && $sc['q'.$i]['yes_no'] === 'yes') {
+                            $swiss_counts[$i - 1]++;
+                        }
+                    }
+                }
+            }
+
+            // Count Potential Changes items
+            if ($rca->potential_changes) {
+                $pc = json_decode($rca->potential_changes, true);
+                if (is_array($pc)) {
+                    foreach ($pc as $item) {
+                        $idx = array_search($item, $potential_labels);
+                        if ($idx !== false) {
+                            $potential_counts[$idx]++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return view('backoffice.incident.rca', compact(
+            'budget_year_select', 'budget_year', 'start_date', 'end_date',
+            'dash_budget_year', 'dash_start_date', 'dash_end_date',
+            'incidents', 'saved_rcas_query',
+            'level_counts', 'swiss_labels', 'swiss_counts', 'potential_labels', 'potential_counts'
+        ));
+    }
+
+    public function rca_detail($id)
+    {
+        $incident = DB::connection('backoffice')->select('
+            SELECT r.RISKREP_ID, r.RISKREP_DATESAVE, r.RISKREP_STARTDATE, r.RISKREP_DETAILRISK,
+                   l.RISK_REP_LEVEL_NAME AS severity, p.RISK_REPPROGRAM_NAME AS program_name,
+                   ps.RISK_REPPROGRAMSUB_NAME AS sub_name, rl.RISK_LOCATION_NAME AS location_name,
+                   ds.HR_DEPARTMENT_SUB_SUB_NAME AS department
+            FROM risk_rep r
+            LEFT JOIN risk_rep_level l ON l.RISK_REP_LEVEL_ID = r.RISKREP_LEVEL
+            LEFT JOIN risk_rep_program p ON p.RISK_REPPROGRAM_ID = r.RISK_REPPROGRAM_ID
+            LEFT JOIN risk_rep_program_sub ps ON ps.RISK_REPPROGRAMSUB_ID = r.RISK_REPPROGRAMSUB_ID
+            LEFT JOIN risk_rep_location rl ON rl.RISK_LOCATION_ID = r.RISKREP_LOCAL
+            LEFT JOIN hrd_department_sub_sub ds ON ds.HR_DEPARTMENT_SUB_SUB_ID = r.RISKREP_DEPARTMENT_SUB
+            WHERE r.RISKREP_ID = ?
+        ', [$id]);
+
+        if (empty($incident)) {
+            return response()->json(['success' => false, 'message' => 'Incident not found'], 404);
+        }
+
+        $incident = $incident[0];
+
+        $rca = DB::connection('mysql')->table('root_cause_analyses')
+            ->where('incident_id', $id)
+            ->first();
+
+        // Convert JSON strings to array/object before returning to avoid double decoding in JS
+        if ($rca) {
+            $rca->timeline = $rca->timeline ? json_decode($rca->timeline, true) : [];
+            $rca->team_members = $rca->team_members ? json_decode($rca->team_members, true) : [];
+            $rca->potential_changes = $rca->potential_changes ? json_decode($rca->potential_changes, true) : [];
+            $rca->swiss_cheese = $rca->swiss_cheese ? json_decode($rca->swiss_cheese, true) : (object)[];
+            $rca->related_systems = $rca->related_systems ? json_decode($rca->related_systems, true) : [];
+            $rca->creative_solutions = $rca->creative_solutions ? json_decode($rca->creative_solutions, true) : [];
+        }
+
+        return response()->json([
+            'success' => true,
+            'incident' => $incident,
+            'rca' => $rca
+        ]);
+    }
+
+    public function save_rca(Request $request)
+    {
+        $incident_id = $request->input('incident_id');
+        if (!$incident_id) {
+            return response()->json(['success' => false, 'message' => 'Incident ID is required'], 400);
+        }
+
+        // Process timeline data
+        $timeline = [];
+        $timeline_inputs = $request->input('timeline', []);
+        
+        // Loop timeline inputs and handle file uploads
+        if (is_array($timeline_inputs)) {
+            foreach ($timeline_inputs as $index => $row) {
+                $filePath = $row['existing_file'] ?? null;
+                
+                // Check if a new file is uploaded for this timeline row index
+                if ($request->hasFile("timeline.{$index}.file")) {
+                    $file = $request->file("timeline.{$index}.file");
+                    $filename = time() . '_' . $index . '_' . $file->getClientOriginalName();
+                    $file->move(public_path('uploads/rca'), $filename);
+                    $filePath = 'uploads/rca/' . $filename;
+                }
+
+                $timeline[] = [
+                    'date' => $row['date'] ?? null,
+                    'time' => $row['time'] ?? null,
+                    'story' => $row['story'] ?? null,
+                    'file_path' => $filePath
+                ];
+            }
+        }
+
+        // Decode other dynamic lists
+        $team_members = $request->input('team_members', []);
+        $creative_solutions = $request->input('creative_solutions', []);
+        $potential_changes = $request->input('potential_changes', []);
+        $swiss_cheese = $request->input('swiss_cheese', []);
+        $related_systems = $request->input('related_systems', []);
+
+        $data = [
+            'rca_type' => $request->input('rca_type'),
+            'rca_subject' => $request->input('rca_subject'),
+            'severity' => $request->input('severity'),
+            'error_status' => $request->input('error_status'),
+            'department' => $request->input('department'),
+            'incident_date' => $request->input('incident_date'),
+            'shift' => $request->input('shift'),
+            'an' => $request->input('an'),
+            'main_risk_topic' => $request->input('main_risk_topic'),
+            'timeline' => json_encode($timeline),
+            'critical_point' => $request->input('critical_point'),
+            'team_members' => json_encode($team_members),
+            'impact_details' => $request->input('impact_details'),
+            'flowchart_details' => $request->input('flowchart_details'),
+            'potential_changes' => json_encode($potential_changes),
+            'staff_voice_1' => $request->input('staff_voice_1'),
+            'staff_voice_2' => $request->input('staff_voice_2'),
+            'staff_voice_3' => $request->input('staff_voice_3'),
+            'staff_voice_4' => $request->input('staff_voice_4'),
+            'swiss_cheese' => json_encode($swiss_cheese),
+            'related_systems' => json_encode($related_systems),
+            'creative_solutions' => json_encode($creative_solutions),
+            'recorder_name' => $request->input('recorder_name'),
+            'recorder_position' => $request->input('recorder_position'),
+            'record_date' => $request->input('record_date'),
+            'updated_at' => now(),
+        ];
+
+        $exists = DB::connection('mysql')->table('root_cause_analyses')
+            ->where('incident_id', $incident_id)
+            ->exists();
+
+        if ($exists) {
+            DB::connection('mysql')->table('root_cause_analyses')
+                ->where('incident_id', $incident_id)
+                ->update($data);
+        } else {
+            $data['incident_id'] = $incident_id;
+            $data['created_at'] = now();
+            DB::connection('mysql')->table('root_cause_analyses')->insert($data);
+        }
+
+        return response()->json(['success' => true, 'message' => 'บันทึกข้อมูล RCA เรียบร้อยแล้ว']);
+    }
 }

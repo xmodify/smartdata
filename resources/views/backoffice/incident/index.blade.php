@@ -203,27 +203,50 @@
     <div class="container-fluid px-2 px-md-4">
         <!-- Quick Links -->
         <div class="row g-3 mb-4">
-            <div class="col-md-6">
-                <a href="{{ route('backoffice.incident.nrls') }}" class="text-decoration-none">
-                    <div class="card quick-link-card bg-primary text-white p-3 d-flex flex-row align-items-center justify-content-between">
+            <!-- Card 1: NRLS -->
+            <div class="col-md-4 col-sm-6">
+                <div class="card quick-link-card bg-primary text-white p-3 h-100 d-flex flex-column justify-content-between" style="border-radius: 12px; transition: transform 0.2s; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                    <div class="d-flex flex-row align-items-center justify-content-between mb-3">
                         <div>
-                            <h6 class="mb-1 text-white-50">NRLS</h6>
-                            <h6 class="mb-0 fw-bold text-white">ข้อมูลรายงานส่ง NRLS (อุบัติการณ์ / การแก้ไข / Dataset)</h6>
+                            <h6 class="mb-1 text-white-50" style="font-size: 0.8rem; font-weight: 700;">NRLS</h6>
+                            <h6 class="mb-0 fw-bold text-white" style="font-size: 0.95rem; line-height: 1.4;">ข้อมูลรายงานส่ง NRLS (อุบัติการณ์ / การแก้ไข / Dataset)</h6>
                         </div>
                         <i class="fas fa-paper-plane fa-2x opacity-50"></i>
                     </div>
-                </a>
+                    <div class="d-flex">
+                        <a href="{{ route('backoffice.incident.nrls') }}" class="btn btn-sm btn-light text-primary fw-bold w-100" style="border-radius: 8px;"><i class="fas fa-eye me-1"></i>ดูรายงาน</a>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-6">
-                <a href="{{ route('backoffice.incident.med_error') }}" class="text-decoration-none">
-                    <div class="card quick-link-card bg-warning text-white p-3 d-flex flex-row align-items-center justify-content-between">
+            <!-- Card 2: Medication Error -->
+            <div class="col-md-4 col-sm-6">
+                <div class="card quick-link-card text-white p-3 h-100 d-flex flex-column justify-content-between" style="border-radius: 12px; transition: transform 0.2s; border: none; background-color: #e67e22; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                    <div class="d-flex flex-row align-items-center justify-content-between mb-3">
                         <div>
-                            <h6 class="mb-1 text-white-50">Medication Error</h6>
-                            <h6 class="mb-0 fw-bold text-white text-truncate">Medication Error Report HOSxP</h6>
+                            <h6 class="mb-1 text-white-50" style="font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.7) !important;">Medication Error</h6>
+                            <h6 class="mb-0 fw-bold text-white" style="font-size: 0.95rem; line-height: 1.4;">Medication Error Report HOSxP</h6>
                         </div>
                         <i class="fas fa-pills fa-2x opacity-50"></i>
                     </div>
-                </a>
+                    <div class="d-flex">
+                        <a href="{{ route('backoffice.incident.med_error') }}" class="btn btn-sm btn-light fw-bold w-100" style="border-radius: 8px; color: #e67e22;"><i class="fas fa-eye me-1"></i>ดูรายงาน</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 3: RCA -->
+            <div class="col-md-4 col-sm-12">
+                <div class="card quick-link-card text-white p-3 h-100 d-flex flex-column justify-content-between" style="border-radius: 12px; transition: transform 0.2s; border: none; background-color: #6f42c1; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                    <div class="d-flex flex-row align-items-center justify-content-between mb-3">
+                        <div>
+                            <h6 class="mb-1 text-white-50" style="font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.7) !important;">Root Cause Analysis</h6>
+                            <h6 class="mb-0 fw-bold text-white" style="font-size: 0.95rem; line-height: 1.4;">RCA อุบัติการณ์ทางคลินิก (ระดับ E-I)</h6>
+                        </div>
+                        <i class="fas fa-search-plus fa-2x opacity-50"></i>
+                    </div>
+                    <div class="d-flex">
+                        <a href="{{ route('backoffice.incident.rca') }}" class="btn btn-sm btn-light fw-bold w-100" style="border-radius: 8px; color: #6f42c1;"><i class="fas fa-search-plus me-1"></i>ทำ RCA (E-I)</a>
+                    </div>
+                </div>
             </div>
         </div>
 
