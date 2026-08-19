@@ -59,7 +59,13 @@ class StructureController extends Controller
             $staffList = collect();
         }
 
-        return view('admin.system.index', compact('mophNotifies', 'telegramNotifies', 'mophAlerts', 'staffList'));
+        try {
+            $providerId = \App\Models\ProviderId::find(1);
+        } catch (\Exception $e) {
+            $providerId = null;
+        }
+
+        return view('admin.system.index', compact('mophNotifies', 'telegramNotifies', 'mophAlerts', 'staffList', 'providerId'));
     }
 
     /**
@@ -527,8 +533,9 @@ class StructureController extends Controller
             'secret' => 'nullable|string',
         ]);
 
-        // Handle checkbox (send 'Y' or 'N' instead of boolean)
+        // Handle checkboxes (send 'Y' or 'N' instead of boolean)
         $validated['active'] = $request->has('active') ? 'Y' : 'N';
+        $validated['enable_2fa'] = $request->has('enable_2fa') ? 'Y' : 'N';
 
         $mophAlert->update($validated);
 
@@ -567,4 +574,29 @@ class StructureController extends Controller
         return response()->json(['success' => false, 'message' => 'ส่งข้อความล้มเหลว กรุณาตรวจสอบ Client ID / Secret หรือ Logs ของระบบ']);
     }
 
+    /**
+     * Update Provider ID settings.
+     */
+    public function update_provider_id(Request $request, \App\Models\ProviderId $providerId)
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'health_id_client_id' => 'nullable|string',
+            'health_id_secret' => 'nullable|string',
+            'provider_id_client_id' => 'nullable|string',
+            'provider_id_secret' => 'nullable|string',
+        ]);
+
+        // Handle checkbox
+        $validated['active'] = $request->has('active') ? 'Y' : 'N';
+
+        $providerId->update($validated);
+
+        return back()->with('success', 'อัปเดตการตั้งค่า Provider ID เรียบร้อยแล้ว')->with('active_tab', 'system');
+    }
+
 }
+

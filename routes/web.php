@@ -6,6 +6,16 @@ Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLog
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
+// OTP & 2FA Login Routes
+Route::post('/login/send-otp', [App\Http\Controllers\Auth\LoginController::class, 'sendOtp'])->name('login.send_otp');
+Route::post('/login/verify-otp-passwordless', [App\Http\Controllers\Auth\LoginController::class, 'verifyOtpPasswordless'])->name('login.verify_otp_passwordless');
+Route::get('/login/verify-2fa', [App\Http\Controllers\Auth\LoginController::class, 'show2faForm'])->name('login.verify_2fa');
+Route::post('/login/verify-2fa', [App\Http\Controllers\Auth\LoginController::class, 'verify2fa']);
+
+// Provider ID OAuth Login Routes
+Route::get('/login/provider-id', [App\Http\Controllers\Auth\LoginController::class, 'redirectToProviderId'])->name('login.provider_id');
+Route::get('/login/provider-id/callback', [App\Http\Controllers\Auth\LoginController::class, 'handleProviderIdCallback'])->name('login.provider_id.callback');
+
 Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
 
@@ -76,6 +86,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/telegram-notify', [App\Http\Controllers\Admin\StructureController::class, 'store_telegram_notify'])->name('admin.telegram_notify.store');
     Route::put('/admin/telegram-notify/{telegramNotify}', [App\Http\Controllers\Admin\StructureController::class, 'update_telegram_notify'])->name('admin.telegram_notify.update');
     Route::delete('/admin/telegram-notify/{telegramNotify}', [App\Http\Controllers\Admin\StructureController::class, 'destroy_telegram_notify'])->name('admin.telegram_notify.destroy');
+
+    // Provider ID Settings Route
+    Route::put('/admin/provider-id/{providerId}', [App\Http\Controllers\Admin\StructureController::class, 'update_provider_id'])->name('admin.provider_id.update');
 
     // Profile Routes
     Route::put('/profile/password', [App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');

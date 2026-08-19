@@ -9,7 +9,8 @@
                 "name": "ระบบประชาสัมพันธ์ รพ.หัวตะพาน",
                 "client_id": "xxxxx",
                 "secret": "xxxxx",
-                "active": "Y"
+                "active": "Y",
+                "enable_2fa": "N"
             }
         }
     ],
@@ -180,6 +181,21 @@
                 "hmain_ucs": null,
                 "hmain_sss": null,
                 "in_province": "Y"
+            }
+        }
+    ],
+    "provider_id": [
+        {
+            "match_by": [
+                "id"
+            ],
+            "data": {
+                "id": 1,
+                "health_id_client_id": null,
+                "health_id_secret": null,
+                "provider_id_client_id": null,
+                "provider_id_secret": null,
+                "active": "Y"
             }
         }
     ]

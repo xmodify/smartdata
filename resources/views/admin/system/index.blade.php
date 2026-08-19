@@ -233,7 +233,101 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Row for Provider ID Settings -->
+    <div class="row g-4 mt-2 mb-4">
+        <!-- Provider ID Settings (Full Width) -->
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm rounded-lg p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0 text-success"><i class="fas fa-id-card me-2"></i> Provider ID Settings</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border-0 mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0 small">ระบบ</th>
+                                <th class="border-0 small text-center">สถานะ</th>
+                                <th class="border-0 small">Health ID Client ID</th>
+                                <th class="border-0 small">Health ID Secret</th>
+                                <th class="border-0 small">Provider ID Client ID</th>
+                                <th class="border-0 small">Provider ID Secret</th>
+                                <th class="border-0 small text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if($providerId)
+                            <tr>
+                                <td class="fw-bold small">Provider ID / Health ID</td>
+                                <td class="text-center">
+                                    @if($providerId->active === 'Y')
+                                        <span class="badge bg-success xsmall shadow-sm" style="font-size: 0.65rem;"><i class="fas fa-check-circle me-1"></i>Active</span>
+                                    @else
+                                        <span class="badge bg-secondary xsmall shadow-sm" style="font-size: 0.65rem;"><i class="fas fa-times-circle me-1"></i>Inactive</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span id="provider_hid_client_{{ $providerId->id }}" class="small text-truncate" style="max-width: 150px; display: inline-block;">********</span>
+                                    <button class="btn btn-link btn-xs p-0 ms-1 toggle-provider-value" 
+                                        data-id="{{ $providerId->id }}" 
+                                        data-type="hid_client"
+                                        data-value="{{ $providerId->health_id_client_id }}">
+                                        <i class="fas fa-eye small text-muted"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <span id="provider_hid_secret_{{ $providerId->id }}" class="small text-truncate" style="max-width: 150px; display: inline-block;">********</span>
+                                    <button class="btn btn-link btn-xs p-0 ms-1 toggle-provider-value" 
+                                        data-id="{{ $providerId->id }}" 
+                                        data-type="hid_secret"
+                                        data-value="{{ $providerId->health_id_secret }}">
+                                        <i class="fas fa-eye small text-muted"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <span id="provider_pid_client_{{ $providerId->id }}" class="small text-truncate" style="max-width: 150px; display: inline-block;">********</span>
+                                    <button class="btn btn-link btn-xs p-0 ms-1 toggle-provider-value" 
+                                        data-id="{{ $providerId->id }}" 
+                                        data-type="pid_client"
+                                        data-value="{{ $providerId->provider_id_client_id }}">
+                                        <i class="fas fa-eye small text-muted"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <span id="provider_pid_secret_{{ $providerId->id }}" class="small text-truncate" style="max-width: 150px; display: inline-block;">********</span>
+                                    <button class="btn btn-link btn-xs p-0 ms-1 toggle-provider-value" 
+                                        data-id="{{ $providerId->id }}" 
+                                        data-type="pid_secret"
+                                        data-value="{{ $providerId->provider_id_secret }}">
+                                        <i class="fas fa-eye small text-muted"></i>
+                                    </button>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-outline-success btn-xs edit-provider-id" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editProviderIdModal"
+                                        data-provider="{{ json_encode($providerId) }}"
+                                        title="แก้ไขการตั้งค่า">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            @else
+                            <tr>
+                                <td colspan="7" class="text-center text-muted small py-3">ยังไม่มีข้อมูลการตั้งค่า</td>
+                            </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
         <!-- Windows Task Scheduler Commands Card (Full Width) -->
         <div class="col-md-12">
             <div class="card border-0 shadow-sm rounded-lg p-4 mb-4">
@@ -349,6 +443,12 @@
                             <label class="form-check-label fw-bold small ms-1" for="moph_alert_active_edit">เปิดใช้งาน (Enable Notification)</label>
                         </div>
                     </div>
+                    <div class="mt-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="enable_2fa" id="moph_alert_enable_2fa_edit" value="1">
+                            <label class="form-check-label fw-bold small ms-1 text-danger" for="moph_alert_enable_2fa_edit">เปิดการใช้งาน 2FA ในการล็อคอินเข้าระบบ</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
@@ -441,6 +541,77 @@
                 <div class="modal-footer border-0 p-4 pt-0">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
                     <button type="submit" class="btn btn-primary px-4 shadow-sm">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Provider ID Modal -->
+<div class="modal fade" id="editProviderIdModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-id-card me-2"></i>แก้ไข Provider ID / Health ID</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editProviderIdForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">ID / รายการ</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light text-muted border-end-0 xsmall">#<span id="provider_id_label"></span></span>
+                            <input type="text" id="provider_name_display" class="form-control shadow-sm bg-light" value="ระบบ Provider ID / Health ID" readonly disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Health ID Client ID</label>
+                        <div class="input-group">
+                            <input type="password" name="health_id_client_id" id="provider_hid_client_edit" class="form-control shadow-sm">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="provider_hid_client_edit">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Health ID Client Secret</label>
+                        <div class="input-group">
+                            <input type="password" name="health_id_secret" id="provider_hid_secret_edit" class="form-control shadow-sm">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="provider_hid_secret_edit">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Provider ID Client ID</label>
+                        <div class="input-group">
+                            <input type="password" name="provider_id_client_id" id="provider_pid_client_edit" class="form-control shadow-sm">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="provider_pid_client_edit">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Provider ID Client Secret</label>
+                        <div class="input-group">
+                            <input type="password" name="provider_id_secret" id="provider_pid_secret_edit" class="form-control shadow-sm">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="provider_pid_secret_edit">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="active" id="provider_active_edit" value="1">
+                            <label class="form-check-label fw-bold small ms-1" for="provider_active_edit">เปิดใช้งานปุ่ม Login ด้วย Provider ID</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-success px-4 shadow-sm text-white">บันทึกการเปลี่ยนแปลง</button>
                 </div>
             </form>
         </div>
@@ -715,6 +886,7 @@
             document.getElementById('moph_alert_client_id_edit').value = alert.client_id;
             document.getElementById('moph_alert_secret_edit').value = alert.secret;
             document.getElementById('moph_alert_active_edit').checked = alert.active === 'Y';
+            document.getElementById('moph_alert_enable_2fa_edit').checked = alert.enable_2fa === 'Y';
         });
     });
 
@@ -727,6 +899,42 @@
             document.getElementById('tele_name_th').value = tele.name_th;
             document.getElementById('tele_name').value = tele.name;
             document.getElementById('tele_value_edit').value = tele.value || '';
+        });
+    });
+
+    // Edit Provider ID Modal Population
+    document.querySelectorAll('.edit-provider-id').forEach(button => {
+        button.addEventListener('click', function() {
+            const provider = JSON.parse(this.dataset.provider);
+            const form = document.getElementById('editProviderIdForm');
+            form.action = `{{ url('/') }}/admin/provider-id/${provider.id}`;
+            document.getElementById('provider_id_label').innerText = provider.id;
+            document.getElementById('provider_hid_client_edit').value = provider.health_id_client_id || '';
+            document.getElementById('provider_hid_secret_edit').value = provider.health_id_secret || '';
+            document.getElementById('provider_pid_client_edit').value = provider.provider_id_client_id || '';
+            document.getElementById('provider_pid_secret_edit').value = provider.provider_id_secret || '';
+            document.getElementById('provider_active_edit').checked = provider.active === 'Y';
+        });
+    });
+
+    // Toggle Provider ID Values Visibility in Grid Card
+    document.querySelectorAll('.toggle-provider-value').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const type = this.dataset.type;
+            const value = this.dataset.value || '(ว่าง)';
+            const span = document.getElementById(`provider_${type}_${id}`);
+            const icon = this.querySelector('i');
+            
+            if (span.innerText === '********') {
+                span.innerText = value;
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                span.innerText = '********';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         });
     });
 

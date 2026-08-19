@@ -48,6 +48,7 @@ class MophAlertService
              ];
  
              $response = Http::timeout(10)
+                 ->withoutVerifying()
                  ->withHeaders([
                      'Content-Type' => 'application/json',
                      'client-key'   => $config->client_id,
@@ -119,6 +120,7 @@ class MophAlertService
              ], $extra);
  
              $response = Http::timeout(10)
+                 ->withoutVerifying()
                  ->withHeaders([
                      'Content-Type' => 'application/json',
                      'client-key'   => $config->client_id,
