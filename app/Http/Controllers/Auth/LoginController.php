@@ -278,110 +278,115 @@ class LoginController extends Controller
 
     public function handleProviderIdCallback(Request $request)
     {
-        $code = $request->query('code');
-        if (!$code) {
-            return redirect()->route('login')->withErrors(['provider_id' => 'ไม่ได้รับรหัสความถูกต้อง (Authorization Code) จากระบบ Health ID']);
+        try {
+            $code = $request->query('code');
+            if (!$code) {
+                return redirect()->route('login')->withErrors(['provider_id' => 'ไม่ได้รับรหัสความถูกต้อง (Authorization Code) จากระบบ Health ID']);
+            }
+
+            $config = \App\Models\ProviderId::where('active', 'Y')->first();
+            if (!$config) {
+                return redirect()->route('login')->withErrors(['provider_id' => 'ระบบตั้งค่า Provider ID ถูกปิดการใช้งาน']);
+            }
+
+            $isUat = (strpos(strtolower($config->health_id_client_id), 'uat') !== false || strpos(strtolower($config->health_id_client_id), 'test') !== false);
+            $healthIdUrl = $isUat ? 'https://uat-moph.id.th' : 'https://moph.id.th';
+            $providerIdUrl = $isUat ? 'https://uat-provider.id.th' : 'https://provider.id.th';
+
+            // Construct redirect URI using scheme and host from APP_URL config
+            $appUrl = config('app.url');
+            $parsedApp = parse_url($appUrl);
+            $scheme = $parsedApp['scheme'] ?? 'http';
+            $host = $parsedApp['host'] ?? 'localhost';
+            $port = isset($parsedApp['port']) ? ':' . $parsedApp['port'] : '';
+            $path = parse_url(route('login.provider_id.callback'), PHP_URL_PATH);
+            $redirectUri = "{$scheme}://{$host}{$port}{$path}";
+
+            // 1. Get Health ID Access Token
+            $responseHealthToken = \Illuminate\Support\Facades\Http::timeout(15)
+                ->withoutVerifying()
+                ->asForm()
+                ->post("{$healthIdUrl}/api/v1/token", [
+                    'grant_type' => 'authorization_code',
+                    'code' => $code,
+                    'redirect_uri' => $redirectUri,
+                    'client_id' => $config->health_id_client_id,
+                    'client_secret' => $config->health_id_secret,
+                ]);
+
+            if (!$responseHealthToken->successful()) {
+                Log::error('Health ID Token Exchange failed: ' . $responseHealthToken->body());
+                return redirect()->route('login')->withErrors(['provider_id' => 'การยืนยันรหัสกับ Health ID ล้มเหลว: ' . ($responseHealthToken->json('message') ?: 'การติดต่อขัดข้อง')]);
+            }
+
+            $healthToken = $responseHealthToken->json('data.access_token');
+            if (!$healthToken) {
+                return redirect()->route('login')->withErrors(['provider_id' => 'ไม่พบ Access Token ในการยืนยันตัวตนของ Health ID']);
+            }
+
+            // 2. Get Provider ID Access Token using Health ID token
+            $responseProviderToken = \Illuminate\Support\Facades\Http::timeout(15)
+                ->withoutVerifying()
+                ->post("{$providerIdUrl}/api/v1/services/token", [
+                    'client_id' => $config->provider_id_client_id,
+                    'secret_key' => $config->provider_id_secret,
+                    'token_by' => 'Health ID',
+                    'token' => $healthToken
+                ]);
+
+            if (!$responseProviderToken->successful()) {
+                Log::error('Provider ID Token Exchange failed: ' . $responseProviderToken->body());
+                $errorMsg = $responseProviderToken->json('message') ?: 'ไม่พบข้อมูลบุคลากรทางการแพทย์ หรือไม่มีสิทธิ์เข้าใช้ระบบ';
+                return redirect()->route('login')->withErrors(['provider_id' => 'การยืนยันสิทธิ์ Provider ID ล้มเหลว: ' . $errorMsg]);
+            }
+
+            $providerToken = $responseProviderToken->json('data.access_token');
+            if (!$providerToken) {
+                return redirect()->route('login')->withErrors(['provider_id' => 'ไม่ได้รับสิทธิ์ในการเข้าถึงโทเค็นระบบของ Provider ID']);
+            }
+
+            // 3. Get Provider Profile
+            $responseProfile = \Illuminate\Support\Facades\Http::timeout(15)
+                ->withoutVerifying()
+                ->withHeaders([
+                    'Authorization' => "Bearer {$providerToken}",
+                    'client-id' => $config->provider_id_client_id,
+                    'secret-key' => $config->provider_id_secret,
+                ])
+                ->get("{$providerIdUrl}/api/v1/services/profile");
+
+            if (!$responseProfile->successful()) {
+                Log::error('Provider Profile retrieval failed: ' . $responseProfile->body());
+                return redirect()->route('login')->withErrors(['provider_id' => 'ดึงข้อมูลโปรไฟล์ผู้ใช้งานล้มเหลว: ' . ($responseProfile->json('message') ?: 'การติดต่อขัดข้อง')]);
+            }
+
+            $profileData = $responseProfile->json('data');
+            $hashCid = $profileData['hash_cid'] ?? null;
+            if (!$hashCid) {
+                return redirect()->route('login')->withErrors(['provider_id' => 'ไม่พบข้อมูลเลขประจำตัวประชาชนที่เข้าใช้งาน']);
+            }
+
+            // 4. Match user in database by hashed username
+            $user = User::all()->first(function ($u) use ($hashCid) {
+                return hash('sha256', $u->username) === $hashCid;
+            });
+
+            if (!$user) {
+                return redirect()->route('login')->withErrors(['provider_id' => 'บัญชีผู้ใช้งานของคุณไม่มีสิทธิ์ในระบบนี้ กรุณาติดต่อผู้ดูแลระบบเพื่อขอลงทะเบียนเข้าใช้งาน']);
+            }
+
+            if ($user->active !== 'Y') {
+                return redirect()->route('login')->withErrors(['provider_id' => 'บัญชีผู้ใช้งานนี้ยังไม่ได้รับการอนุมัติ กรุณารอผู้ดูแลระบบดำเนินการอนุมัติ']);
+            }
+
+            // Login
+            Auth::login($user);
+            $request->session()->regenerate();
+
+            return redirect()->intended('/dashboard')->with('success', 'ยินดีต้อนรับ! เข้าสู่ระบบด้วย Provider ID สำเร็จ');
+        } catch (\Exception $e) {
+            Log::error('Provider ID login exception: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return redirect()->route('login')->withErrors(['provider_id' => 'เกิดข้อผิดพลาดในการล็อกอินด้วย Provider ID: ' . $e->getMessage()]);
         }
-
-        $config = \App\Models\ProviderId::where('active', 'Y')->first();
-        if (!$config) {
-            return redirect()->route('login')->withErrors(['provider_id' => 'ระบบตั้งค่า Provider ID ถูกปิดการใช้งาน']);
-        }
-
-        $isUat = (strpos(strtolower($config->health_id_client_id), 'uat') !== false || strpos(strtolower($config->health_id_client_id), 'test') !== false);
-        $healthIdUrl = $isUat ? 'https://uat-moph.id.th' : 'https://moph.id.th';
-        $providerIdUrl = $isUat ? 'https://uat-provider.id.th' : 'https://provider.id.th';
-
-        // Construct redirect URI using scheme and host from APP_URL config
-        $appUrl = config('app.url');
-        $parsedApp = parse_url($appUrl);
-        $scheme = $parsedApp['scheme'] ?? 'http';
-        $host = $parsedApp['host'] ?? 'localhost';
-        $port = isset($parsedApp['port']) ? ':' . $parsedApp['port'] : '';
-        $path = parse_url(route('login.provider_id.callback'), PHP_URL_PATH);
-        $redirectUri = "{$scheme}://{$host}{$port}{$path}";
-
-        // 1. Get Health ID Access Token
-        $responseHealthToken = \Illuminate\Support\Facades\Http::timeout(15)
-            ->withoutVerifying()
-            ->asForm()
-            ->post("{$healthIdUrl}/api/v1/token", [
-                'grant_type' => 'authorization_code',
-                'code' => $code,
-                'redirect_uri' => $redirectUri,
-                'client_id' => $config->health_id_client_id,
-                'client_secret' => $config->health_id_secret,
-            ]);
-
-        if (!$responseHealthToken->successful()) {
-            Log::error('Health ID Token Exchange failed: ' . $responseHealthToken->body());
-            return redirect()->route('login')->withErrors(['provider_id' => 'การยืนยันรหัสกับ Health ID ล้มเหลว: ' . ($responseHealthToken->json('message') ?: 'การติดต่อขัดข้อง')]);
-        }
-
-        $healthToken = $responseHealthToken->json('data.access_token');
-        if (!$healthToken) {
-            return redirect()->route('login')->withErrors(['provider_id' => 'ไม่พบ Access Token ในการยืนยันตัวตนของ Health ID']);
-        }
-
-        // 2. Get Provider ID Access Token using Health ID token
-        $responseProviderToken = \Illuminate\Support\Facades\Http::timeout(15)
-            ->withoutVerifying()
-            ->post("{$providerIdUrl}/api/v1/services/token", [
-                'client_id' => $config->provider_id_client_id,
-                'secret_key' => $config->provider_id_secret,
-                'token_by' => 'Health ID',
-                'token' => $healthToken
-            ]);
-
-        if (!$responseProviderToken->successful()) {
-            Log::error('Provider ID Token Exchange failed: ' . $responseProviderToken->body());
-            $errorMsg = $responseProviderToken->json('message') ?: 'ไม่พบข้อมูลบุคลากรทางการแพทย์ หรือไม่มีสิทธิ์เข้าใช้ระบบ';
-            return redirect()->route('login')->withErrors(['provider_id' => 'การยืนยันสิทธิ์ Provider ID ล้มเหลว: ' . $errorMsg]);
-        }
-
-        $providerToken = $responseProviderToken->json('data.access_token');
-        if (!$providerToken) {
-            return redirect()->route('login')->withErrors(['provider_id' => 'ไม่ได้รับสิทธิ์ในการเข้าถึงโทเค็นระบบของ Provider ID']);
-        }
-
-        // 3. Get Provider Profile
-        $responseProfile = \Illuminate\Support\Facades\Http::timeout(15)
-            ->withoutVerifying()
-            ->withHeaders([
-                'Authorization' => "Bearer {$providerToken}",
-                'client-id' => $config->provider_id_client_id,
-                'secret-key' => $config->provider_id_secret,
-            ])
-            ->get("{$providerIdUrl}/api/v1/services/profile");
-
-        if (!$responseProfile->successful()) {
-            Log::error('Provider Profile retrieval failed: ' . $responseProfile->body());
-            return redirect()->route('login')->withErrors(['provider_id' => 'ดึงข้อมูลโปรไฟล์ผู้ใช้งานล้มเหลว: ' . ($responseProfile->json('message') ?: 'การติดต่อขัดข้อง')]);
-        }
-
-        $profileData = $responseProfile->json('data');
-        $hashCid = $profileData['hash_cid'] ?? null;
-        if (!$hashCid) {
-            return redirect()->route('login')->withErrors(['provider_id' => 'ไม่พบข้อมูลเลขประจำตัวประชาชนที่เข้าใช้งาน']);
-        }
-
-        // 4. Match user in database by hashed username
-        $user = User::all()->first(function ($u) use ($hashCid) {
-            return hash('sha256', $u->username) === $hashCid;
-        });
-
-        if (!$user) {
-            return redirect()->route('login')->withErrors(['provider_id' => 'บัญชีผู้ใช้งานของคุณไม่มีสิทธิ์ในระบบนี้ กรุณาติดต่อผู้ดูแลระบบเพื่อขอลงทะเบียนเข้าใช้งาน']);
-        }
-
-        if ($user->active !== 'Y') {
-            return redirect()->route('login')->withErrors(['provider_id' => 'บัญชีผู้ใช้งานนี้ยังไม่ได้รับการอนุมัติ กรุณารอผู้ดูแลระบบดำเนินการอนุมัติ']);
-        }
-
-        // Login
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->intended('/dashboard')->with('success', 'ยินดีต้อนรับ! เข้าสู่ระบบด้วย Provider ID สำเร็จ');
     }
 }
