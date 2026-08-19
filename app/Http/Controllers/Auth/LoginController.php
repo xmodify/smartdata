@@ -384,7 +384,7 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             return redirect()->intended('/dashboard')->with('success', 'ยินดีต้อนรับ! เข้าสู่ระบบด้วย Provider ID สำเร็จ');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Provider ID login exception: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return redirect()->route('login')->withErrors(['provider_id' => 'เกิดข้อผิดพลาดในการล็อกอินด้วย Provider ID: ' . $e->getMessage()]);
         }

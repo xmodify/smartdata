@@ -312,3 +312,26 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+Route::get('/debug-log', function () {
+    $logPath = storage_path('logs/laravel.log');
+    if (!file_exists($logPath)) {
+        return 'No log file found.';
+    }
+    try {
+        $file = new SplFileObject($logPath, 'r');
+        $file->seek(PHP_INT_MAX);
+        $last_line = $file->key();
+        
+        $start = max(0, $last_line - 150);
+        $content = '';
+        for ($i = $start; $i < $last_line; $i++) {
+            $file->seek($i);
+            $content .= $file->current();
+        }
+        return response($content, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    } catch (\Exception $e) {
+        return 'Error reading log: ' . $e->getMessage();
+    }
+});
+
+
