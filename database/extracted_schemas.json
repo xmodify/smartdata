@@ -1595,6 +1595,13 @@
                 "default": null,
                 "extra": "auto_increment"
             },
+            "name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
             "health_id_client_id": {
                 "type": "varchar",
                 "length": 191,

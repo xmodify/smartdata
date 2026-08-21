@@ -191,6 +191,7 @@
             ],
             "data": {
                 "id": 1,
+                "name": "RiMS",
                 "health_id_client_id": null,
                 "health_id_secret": null,
                 "provider_id_client_id": null,

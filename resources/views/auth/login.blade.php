@@ -8,41 +8,214 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>SmartData</title>
+    <title>SmartData - เข้าสู่ระบบ</title>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS & FontAwesome -->
     <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         body {
-            background-color: #f4f6f9;
+            background: radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%);
             min-height: 100vh;
             display: flex;
-            align-items: flex-start;
-            padding-top: 50px;
+            align-items: flex-start; /* แหนวตั้งเกือบติดบน */
+            justify-content: center;
+            font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif;
+            margin: 0;
+            padding-top: 50px; /* ระยะห่างจากด้านบน 50px เสมอกันทุกหน้า */
+        }
+
+        .login-card-original {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(2, 132, 199, 0.06), 0 5px 15px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(2, 132, 199, 0.18) !important;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 680px; /* ขยายความกว้างเพื่อรองรับ 2 คอลัมน์ด้านใน */
+        }
+
+        .login-card-original:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(2, 132, 199, 0.1), 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-login-header {
+            background: linear-gradient(135deg, #0284c7 0%, #16a34a 100%);
+            color: white;
+            padding: 1.8rem;
+            text-align: center;
+        }
+
+        .border-start-custom {
+            border-left: none;
+            padding-left: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .border-start-custom {
+                border-left: 1px solid #e2e8f0;
+                padding-left: 30px;
+            }
+        }
+
+        /* Form Controls with Dimensions */
+        .form-label-custom {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #0284c7;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-label-custom-otp {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #16a34a;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            z-index: 10;
+        }
+
+        .form-input-custom {
+            padding-left: 38px !important;
+            border: 1px solid #cbd5e1 !important;
+            background-color: #f8fafc !important;
+            border-radius: 8px !important;
+            font-size: 0.95rem !important;
+            color: #1e293b !important;
+            transition: all 0.3s ease !important;
+            height: 40px !important;
+        }
+
+        .form-input-custom:focus {
+            outline: none !important;
+            border-color: #0284c7 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12) !important;
+        }
+
+        .form-input-custom:focus + .input-icon {
+            color: #0284c7;
+        }
+
+        /* Buttons with Custom Premium Shape & Icons */
+        .btn-login-original {
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%) !important;
+            border: none !important;
+            color: #ffffff !important;
+            padding: 10px 22px !important;
+            border-radius: 8px !important; /* รูปทรงปุ่มใหม่โค้งมนสวยงาม */
+            font-weight: 600 !important;
+            font-size: 0.95rem !important;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.18) !important;
+            transition: all 0.3s ease !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-login-original:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 16px rgba(13, 110, 253, 0.28) !important;
+        }
+
+        .btn-provider-original {
+            background: linear-gradient(135deg, #198754 0%, #157347 100%) !important;
+            border: none !important;
+            color: #ffffff !important;
+            padding: 10px 22px !important;
+            border-radius: 8px !important; /* รูปทรงปุ่มใหม่โค้งมนสวยงาม */
+            font-weight: 600 !important;
+            font-size: 0.95rem !important;
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.18) !important;
+            transition: all 0.3s ease !important;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-provider-original:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 16px rgba(25, 135, 84, 0.28) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-otp-original {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+            border: none !important;
+            color: #1e293b !important;
+            padding: 10px 22px !important;
+            border-radius: 8px !important; /* รูปทรงปุ่มใหม่โค้งมนสวยงาม */
+            font-weight: 600 !important;
+            font-size: 0.95rem !important;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.15) !important;
+            transition: all 0.3s ease !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-otp-original:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 16px rgba(255, 193, 7, 0.25) !important;
+        }
+
+        .divider-original {
+            border: 0;
+            height: 1px;
+            background: #e2e8f0;
+            margin: 15px 0;
+            opacity: 0.5;
+        }
+
+        .register-link-original {
+            color: #0d6efd;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .register-link-original:hover {
+            color: #0a58ca;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-<div class="container ">
-    <div class="row justify-content-center" >
-        <div class="col-md-6">
-            <div class="card border border-success shadow-lg"> 
-                <div class="card-body text-white" style="
-                    background-image: url('{{ asset('images/logo_smartdata.png') }}');
-                    background-repeat: no-repeat;
-                    background-position: left 1px;
-                    background-size: 300px;
-                    background-blend-mode: lighten;
-                    padding-top: 200px;
-                ">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 d-flex justify-content-center">
+            <div class="card login-card-original shadow-lg"> 
+                <div class="card-login-header">
+                    <h4 class="mb-1 fw-bold text-white" style="font-size: 1.35rem; letter-spacing: -0.5px;">เข้าสู่ระบบ SmartData</h4>
+                    <p class="mb-0 small text-white opacity-75">โรงพยาบาลหัวตะพาน</p>
+                </div>
+                <div class="card-body px-4 pt-3 pb-3" style="padding-bottom: 15px !important; padding-top: 15px !important;">
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
@@ -52,76 +225,95 @@
                             </div>
                         @endif
 
-                        <div class="row mb-3">
-                            <label for="username" class="col-md-4 col-form-label text-md-end text-primary fw-bold">Username</label>
-
-                            <div class="col-md-7">
-                                <input id="username" type="text" class="form-control @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" autofocus placeholder="กรอก Username เข้าใช้งาน">
-
-                                @error('username')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                        <!-- Top Split Row: Logo on Left, Username/Password on Right -->
+                        <div class="row align-items-center mb-1">
+                            <!-- Left Column: Hospital Logo -->
+                            <div class="col-md-5 text-center mb-4 mb-md-0">
+                                <img src="{{ asset('images/logo_smartdata.png') }}" style="max-width: 100%; height: auto; display: block; margin: 0 auto; padding: 10px;" alt="SmartData Logo">
                             </div>
-                        </div>
+                            
+                            <!-- Right Column: Login Inputs -->
+                            <div class="col-md-7 border-start-custom">
+                                <!-- Username Input -->
+                                <div class="mb-3">
+                                    <label for="username" class="form-label-custom">Username</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-regular fa-user input-icon"></i>
+                                        <input id="username" type="text" class="form-control form-input-custom @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" autofocus placeholder="กรอก Username เข้าใช้งาน">
+                                    </div>
+                                    @error('username')
+                                        <span class="invalid-feedback d-block" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
 
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end text-primary fw-bold">{{ __('Password') }}</label>
-
-                            <div class="col-md-7">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" autocomplete="current-password" placeholder="รหัสผ่านเข้าใช้งาน">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <!-- Password Input Wrapper Row -->
+                                <div class="row mb-0">
+                                    <div class="col-md-12">
+                                        <label for="password" class="form-label-custom">Password</label>
+                                        <div class="input-wrapper">
+                                            <i class="fa-solid fa-lock input-icon"></i>
+                                            <input id="password" type="password" class="form-control form-input-custom @error('password') is-invalid @enderror" name="password" autocomplete="current-password" placeholder="รหัสผ่านเข้าใช้งาน">
+                                        </div>
+                                        @error('password')
+                                            <span class="invalid-feedback d-block" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- OTP Verification Block (Initially Hidden) -->
-                        <div id="otp_verify_block" style="display: none;">
-                            <div class="row mb-3">
-                                <label for="otp" class="col-md-4 col-form-label text-md-end text-success fw-bold">รหัส OTP</label>
-                                <div class="col-md-7">
-                                    <input id="otp" type="text" class="form-control text-center fw-bold" style="font-size: 1.25rem; letter-spacing: 4px;" maxlength="6" placeholder="รหัส OTP 6 หลัก">
-                                    <div class="form-text text-white-50 text-center mt-1"><i class="fas fa-info-circle me-1"></i> กรอกรหัสที่ท่านได้รับผ่าน หมอพร้อม LineOA</div>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-12 text-center">
-                                    <button type="button" id="btn_verify_otp" class="btn btn-success px-4 fw-bold shadow-sm">
-                                        <i class="fas fa-check-circle me-1"></i> ยืนยันรหัส OTP
-                                    </button>
-                                    <button type="button" id="btn_cancel_otp" class="btn btn-outline-secondary px-3 ms-2 fw-bold">
-                                        ยกเลิก
-                                    </button>
+                        <div id="otp_verify_block" style="display: none;" class="mb-3">
+                            <div class="row justify-content-center">
+                                <div class="col-md-10">
+                                    <label for="otp" class="form-label-custom-otp">รหัส OTP</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-key input-icon"></i>
+                                        <input id="otp" type="text" class="form-control form-input-custom text-center fw-bold" style="font-size: 1.25rem; letter-spacing: 4px;" maxlength="6" placeholder="รหัส OTP 6 หลัก">
+                                    </div>
+                                    <div class="form-text text-muted text-center mt-2" style="font-size: 0.85rem;"><i class="fas fa-info-circle me-1"></i> กรอกรหัสที่ท่านได้รับผ่าน หมอพร้อม LineOA</div>
+                                    <div class="d-flex justify-content-center gap-2 mt-3">
+                                        <button type="button" id="btn_verify_otp" class="btn btn-success px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #198754 0%, #157347 100%) !important; border: none !important;">
+                                            <i class="fas fa-check-circle me-1"></i> ยืนยันรหัส OTP
+                                        </button>
+                                        <button type="button" id="btn_cancel_otp" class="btn btn-outline-secondary px-3 fw-bold">
+                                            ยกเลิก
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Bottom Full-Width Action Block (Centered below split columns) -->
                         <div class="row mb-0">
-                            <div class="col-md-12 text-center">
+                            <div class="col-md-12 text-center mt-0">
                                 <div id="login_buttons_block" class="d-flex justify-content-center flex-wrap align-items-center gap-2 mb-3">
-                                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                                    <button type="submit" class="btn btn-login-original py-2">
                                         <i class="fas fa-sign-in-alt me-1"></i> {{ __('Login') }}
                                     </button>
+                                    
                                     @php $mophAlertConfig = \App\Models\MophAlert::find(1); @endphp
                                     @if($mophAlertConfig && $mophAlertConfig->active === 'Y' && $mophAlertConfig->enable_2fa !== 'Y')
-                                        <button type="button" id="btn_request_otp" class="btn btn-warning text-dark px-4 fw-bold shadow-sm">
+                                        <button type="button" id="btn_request_otp" class="btn btn-otp-original py-2">
                                             <i class="fas fa-sms me-1"></i> OTP Login
                                         </button>
                                     @endif
+                                    
                                     @php $providerConfig = \App\Models\ProviderId::find(1); @endphp
                                     @if($providerConfig && $providerConfig->active === 'Y' && !empty($providerConfig->health_id_client_id) && !empty($providerConfig->provider_id_client_id))
-                                        <a href="{{ route('login.provider_id') }}" class="btn btn-success px-4 fw-bold shadow-sm text-white" style="background-color: #198754; border-color: #198754;">
+                                        <a href="{{ route('login.provider_id') }}" class="btn btn-provider-original py-2">
                                             <i class="fas fa-id-card me-1"></i> ProviderID Login
                                         </a>
                                     @endif
                                 </div>
-                                <hr>
-                                <p class="mb-0 small text-white text-muted">ยังไม่มีบัญชี? <a href="{{ route('register') }}" class="text-primary fw-bold">ลงทะเบียนที่นี่</a></p>
+                                <hr class="divider-original">
+                                <div class="text-center">
+                                    <p class="mb-0 small text-muted">ยังไม่มีบัญชี? <a href="{{ route('register') }}" class="register-link-original fw-bold">ลงทะเบียนที่นี่</a></p>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -311,9 +503,32 @@
             btnCancelOtp.addEventListener('click', function() {
                 document.getElementById('otp').value = '';
                 passwordInput.closest('.row').style.display = 'flex';
-                document.getElementById('login_buttons_block').style.display = 'block';
+                document.getElementById('login_buttons_block').style.display = 'flex';
                 usernameInput.readOnly = false;
                 document.getElementById('otp_verify_block').style.display = 'none';
+            });
+        }
+
+        // Auto-submit passwordless OTP on 6 digits
+        const otpInputPasswordless = document.getElementById('otp');
+        if (otpInputPasswordless) {
+            otpInputPasswordless.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                if (this.value.length === 6 && btnVerifyOtp) {
+                    btnVerifyOtp.click();
+                }
+            });
+        }
+
+        // Prevent double click on form submission
+        const loginForm = document.querySelector('form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function() {
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> กำลังเข้าระบบ...';
+                }
             });
         }
     });

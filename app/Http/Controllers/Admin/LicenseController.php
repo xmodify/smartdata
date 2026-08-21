@@ -325,10 +325,54 @@ class LicenseController extends Controller
         $hardwareId = $request->input('hardware_id');
         $hcode = $request->input('hcode');
 
-        if (!$licenseKey || !$programCode) {
+        if (!$programCode) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Missing license_key or program_code parameter.'
+                'message' => 'Missing program_code parameter.'
+            ], 400);
+        }
+
+        // Handle RiMS specific verification flow (skip licenses table lookup)
+        if ($programCode === 'rims_license') {
+            if (empty($hcode)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Missing hcode parameter.'
+                ], 400);
+            }
+
+            // Query config values from provider_id and moph_alert tables
+            $provider = \DB::table('provider_id')->where('name', 'RiMS')->first() 
+                ?? \DB::table('provider_id')->first();
+            $mophAlert = \DB::table('moph_alert')->where('name', 'RiMS')->first() 
+                ?? \DB::table('moph_alert')->first();
+
+            return response()->json([
+                'status' => 'active',
+                'expired_at' => '2027-12-31',
+                'license_type' => 'standard',
+                'message' => 'ยืนยันลิขสิทธิ์ระบบ RiMS เรียบร้อยแล้ว',
+                'modules' => [
+                    'moph_alert_2fa',
+                    'provider_id_login'
+                ],
+                'configs' => [
+                    'provider_id_active' => $provider ? $provider->active : 'N',
+                    'provider_id_client_id' => $provider ? $provider->provider_id_client_id : '',
+                    'provider_id_secret_key' => $provider ? $provider->provider_id_secret : '',
+                    'health_id_client_id' => $provider ? $provider->health_id_client_id : '',
+                    'health_id_client_secret' => $provider ? $provider->health_id_secret : '',
+                    'moph_alert_active' => $mophAlert ? $mophAlert->active : 'N',
+                    'moph_alert_client_id' => $mophAlert ? $mophAlert->client_id : '',
+                    'moph_alert_client_secret' => $mophAlert ? $mophAlert->secret : ''
+                ]
+            ]);
+        }
+
+        if (!$licenseKey) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Missing license_key parameter.'
             ], 400);
         }
 

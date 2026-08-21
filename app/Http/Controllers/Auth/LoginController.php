@@ -40,7 +40,7 @@ class LoginController extends Controller
                 session([
                     '2fa_pending_user_id' => $user->id,
                     '2fa_otp' => $otp,
-                    '2fa_expires_at' => now()->addMinutes(5)
+                    '2fa_expires_at' => time() + 120
                 ]);
 
                 // Send OTP via Moph Alert to user's CID (username)
@@ -96,7 +96,7 @@ class LoginController extends Controller
             session([
                 '2fa_pending_user_id' => $user->id,
                 '2fa_otp' => $otp,
-                '2fa_expires_at' => now()->addMinutes(5)
+                '2fa_expires_at' => time() + 120
             ]);
 
             $this->sendMophAlertOTP($user->username, $otp);
@@ -111,7 +111,7 @@ class LoginController extends Controller
             session([
                 'otp_pending_user_id' => $user->id,
                 'otp_code' => $otp,
-                'otp_expires_at' => now()->addMinutes(5)
+                'otp_expires_at' => now()->addSeconds(120)
             ]);
 
             $this->sendMophAlertOTP($user->username, $otp);
@@ -171,10 +171,20 @@ class LoginController extends Controller
 
     public function show2faForm()
     {
-        if (!session('2fa_pending_user_id')) {
+        $pendingUserId = session('2fa_pending_user_id');
+        if (!$pendingUserId) {
             return redirect()->route('login');
         }
-        return view('auth.verify-2fa');
+        $user = User::find($pendingUserId);
+        $username = $user ? $user->username : '';
+        
+        $expiresAt = session('2fa_expires_at');
+        $remainingSeconds = 0;
+        if ($expiresAt) {
+            $remainingSeconds = $expiresAt > time() ? ($expiresAt - time()) : 0;
+        }
+
+        return view('auth.verify-2fa', compact('username', 'remainingSeconds'));
     }
 
     public function verify2fa(Request $request)
@@ -187,7 +197,7 @@ class LoginController extends Controller
         $sessionOtp = session('2fa_otp');
         $expiresAt = session('2fa_expires_at');
 
-        if (!$pendingUserId || !$sessionOtp || now()->gt($expiresAt)) {
+        if (!$pendingUserId || !$sessionOtp || time() > $expiresAt) {
             return redirect()->route('login')->withErrors(['otp' => 'รหัส OTP หมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้ง']);
         }
 
@@ -216,16 +226,25 @@ class LoginController extends Controller
         return redirect('/');
     }
 
+    private function convertToBoldUnicode($str)
+    {
+        $normal = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $bold = ['𝟬', '𝟭', '𝟮', '𝟯', '𝟰', '𝟱', '𝟲', '𝟳', '𝟴', '𝟵'];
+        return str_replace($normal, $bold, $str);
+    }
+
     private function sendMophAlertOTP($cid, $otp)
     {
-        $title = "รหัสผ่านชั่วคราว OTP";
-        $messageText = "รหัส OTP ของคุณคือ {$otp} (ใช้งานได้ภายใน 5 นาที)";
+        $title = "รหัสยืนยันตัวตน (2FA)";
+        $boldOtp = $this->convertToBoldUnicode($otp);
+        $messageText = "รหัสยืนยันตัวตน (2FA) สำหรับเข้าระบบ SmartData ของท่านคือ {$boldOtp}";
         
         $messageHtml = '
-        <div style="font-family: \'Sarabun\', sans-serif; padding: 16px; background-color: #ffffff; border-left: 5px solid #dc3545; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin: 8px 0; border-top: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0;">
-            <div style="font-size: 16px; font-weight: bold; color: #dc3545; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 6px;">🔐 รหัสผ่านชั่วคราว (OTP)</div>
-            <div style="font-size: 20px; font-weight: bold; color: #333333; letter-spacing: 4px; text-align: center; margin: 15px 0;">' . $otp . '</div>
-            <div style="font-size: 13px; color: #666666; line-height: 1.6; text-align: center;">รหัสนี้มีอายุการใช้งาน 5 นาที เพื่อความปลอดภัยกรุณาอย่าเผยแพร่รหัสนี้แก่บุคคลอื่น</div>
+        <div style="font-family: \'Sarabun\', sans-serif; padding: 16px; background-color: #ffffff; border-left: 5px solid #198754; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin: 8px 0; border-top: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0;">
+            <div style="font-size: 16px; font-weight: bold; color: #198754; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 6px;">🔐 รหัสยืนยันตัวตน (2FA)</div>
+            <div style="font-size: 14px; color: #333333; line-height: 1.6; margin-bottom: 10px;">รหัสยืนยันตัวตน (2FA) สำหรับเข้าระบบ SmartData ของท่านคือ:</div>
+            <div style="font-size: 24px; font-weight: bold; color: #198754; letter-spacing: 4px; text-align: center; margin: 15px 0;"><b>' . $otp . '</b></div>
+            <div style="font-size: 12px; color: #666666; text-align: center; line-height: 1.6;">รหัสนี้มีอายุการใช้งาน 120 วินาที เพื่อความปลอดภัยกรุณาอย่าเผยแพร่รหัสนี้แก่บุคคลอื่น</div>
             <div style="margin-top: 16px; font-size: 11px; color: #888888; text-align: right; border-top: 1px dashed #eeeeee; padding-top: 8px;">ระบบความปลอดภัย SmartData</div>
         </div>';
 

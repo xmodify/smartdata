@@ -584,6 +584,7 @@ class StructureController extends Controller
         }
 
         $validated = $request->validate([
+            'name' => 'nullable|string|max:191',
             'health_id_client_id' => 'nullable|string',
             'health_id_secret' => 'nullable|string',
             'provider_id_client_id' => 'nullable|string',

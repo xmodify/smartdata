@@ -261,7 +261,7 @@
                         <tbody>
                             @if($providerId)
                             <tr>
-                                <td class="fw-bold small">Provider ID / Health ID</td>
+                                <td class="fw-bold small">{{ $providerId->name ?: 'Provider ID / Health ID' }}</td>
                                 <td class="text-center">
                                     @if($providerId->active === 'Y')
                                         <span class="badge bg-success xsmall shadow-sm" style="font-size: 0.65rem;"><i class="fas fa-check-circle me-1"></i>Active</span>
@@ -565,6 +565,10 @@
                             <span class="input-group-text bg-light text-muted border-end-0 xsmall">#<span id="provider_id_label"></span></span>
                             <input type="text" id="provider_name_display" class="form-control shadow-sm bg-light" value="ระบบ Provider ID / Health ID" readonly disabled>
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">ชื่อระบบ / รายการ</label>
+                        <input type="text" name="name" id="provider_name_edit" class="form-control shadow-sm" placeholder="เช่น RiMS">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Health ID Client ID</label>
@@ -909,6 +913,7 @@
             const form = document.getElementById('editProviderIdForm');
             form.action = `{{ url('/') }}/admin/provider-id/${provider.id}`;
             document.getElementById('provider_id_label').innerText = provider.id;
+            document.getElementById('provider_name_edit').value = provider.name || '';
             document.getElementById('provider_hid_client_edit').value = provider.health_id_client_id || '';
             document.getElementById('provider_hid_secret_edit').value = provider.health_id_secret || '';
             document.getElementById('provider_pid_client_edit').value = provider.provider_id_client_id || '';
