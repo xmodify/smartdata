@@ -332,13 +332,112 @@ class LicenseController extends Controller
             ], 400);
         }
 
-        // Handle RiMS specific verification flow (skip licenses table lookup)
+        // Handle RiMS specific verification flow
         if ($programCode === 'rims_license') {
             if (empty($hcode)) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Missing hcode parameter.'
                 ], 400);
+            }
+
+            if (empty($licenseKey)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Missing license_key parameter.'
+                ], 400);
+            }
+
+            // Find program
+            $program = LicenseProgram::where('code', 'rims_license')->first();
+            if (!$program) {
+                return response()->json([
+                    'status' => 'invalid_program',
+                    'message' => 'Program code is not registered.'
+                ], 404);
+            }
+
+            // Find license matching key and program
+            $license = License::where('license_key', $licenseKey)
+                ->where('program_id', $program->id)
+                ->first();
+
+            if (!$license) {
+                return response()->json([
+                    'status' => 'invalid_key',
+                    'message' => 'License key is invalid for this program.'
+                ], 404);
+            }
+
+            // Validate Hospital Code (hcode)
+            if ($license->hcode !== $hcode) {
+                return response()->json([
+                    'status' => 'invalid_hcode',
+                    'message' => 'This license key is registered to another organization code.',
+                    'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
+                ], 403);
+            }
+
+            // Check if pending
+            if ($license->status === 'pending') {
+                return response()->json([
+                    'status' => 'pending',
+                    'message' => 'This license is pending activation.',
+                    'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
+                ], 403);
+            }
+
+            // Check if suspended
+            if ($license->status === 'suspended') {
+                return response()->json([
+                    'status' => 'suspended',
+                    'message' => 'This license has been suspended.',
+                    'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
+                ], 403);
+            }
+
+            // Check if expired
+            if ($license->status === 'expired' || $license->isExpired()) {
+                if ($license->status !== 'expired') {
+                    $license->update(['status' => 'expired']);
+                }
+                return response()->json([
+                    'status' => 'expired',
+                    'message' => 'This license has expired.',
+                    'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
+                ], 403);
+            }
+
+            // Update activated_at and status if empty or pending
+            if (is_null($license->activated_at) || $license->status === 'pending') {
+                $license->update([
+                    'activated_at' => $license->activated_at ?: Carbon::now(),
+                    'status' => 'active'
+                ]);
+            }
+
+            // Fetch modules depending on license type
+            $moduleDetails = [];
+            if (($license->license_type ?? 'full') === 'full') {
+                $programModules = $program->modules()->get();
+                foreach ($programModules as $mod) {
+                    $moduleDetails[] = [
+                        'code' => $mod->code,
+                        'name' => $mod->name,
+                        'status' => 'active',
+                        'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
+                    ];
+                }
+            } else {
+                $activated = $license->activatedModules()->withPivot('status', 'expired_at')->get();
+                foreach ($activated as $mod) {
+                    $moduleDetails[] = [
+                        'code' => $mod->code,
+                        'name' => $mod->name,
+                        'status' => $mod->pivot->status,
+                        'expired_at' => $mod->pivot->expired_at ? Carbon::parse($mod->pivot->expired_at)->toDateString() : null,
+                    ];
+                }
             }
 
             // Query config values from provider_id and moph_alert tables
@@ -348,14 +447,15 @@ class LicenseController extends Controller
                 ?? \DB::table('moph_alert')->first();
 
             return response()->json([
-                'status' => 'active',
-                'expired_at' => '2027-12-31',
-                'license_type' => 'standard',
+                'status' => $license->status,
+                'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
+                'license_type' => $license->license_type ?? 'standard',
                 'message' => 'ยืนยันลิขสิทธิ์ระบบ RiMS เรียบร้อยแล้ว',
                 'modules' => [
                     'moph_alert_2fa',
                     'provider_id_login'
                 ],
+                'module_details' => $moduleDetails,
                 'configs' => [
                     'provider_id_active' => $provider ? $provider->active : 'N',
                     'provider_id_client_id' => $provider ? $provider->provider_id_client_id : '',
