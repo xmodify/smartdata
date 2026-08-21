@@ -250,22 +250,7 @@ class LoginController extends Controller
 
         MophAlertService::sendFreeForm($cid, $title, $messageText, $messageHtml, 1);
         
-        // Also save log to moph_alert_detail
-        try {
-            MophAlertDetail::create([
-                'moph_alert_id' => 1,
-                'user_id' => null,
-                'title' => $title,
-                'message_text' => $messageText,
-                'message_html' => $messageHtml,
-                'recipient_count' => 1,
-                'recipients' => [$cid],
-                'status' => 'success',
-                'response_message' => 'Sent OTP successfully',
-            ]);
-        } catch (\Exception $e) {
-            // Ignore logging error
-        }
+        // Do not save system OTP to moph_alert_detail log to keep dashboard history clean
     }
 
     public function redirectToProviderId()
