@@ -19,7 +19,7 @@ class HrdAlertController extends Controller
         }
 
         // Fetch Alert settings to check if Moph Alert is active
-        $mophAlert = MophAlert::find(1); // ID 1 is "ระบบประชาสัมพันธ์ รพ.หัวตะพาน"
+        $mophAlert = MophAlert::where('active', 'Y')->first() ?: MophAlert::find(1);
 
         // Handle Filters (Department)
         $dept_ids = $request->dept_ids ?: [];
@@ -116,12 +116,17 @@ class HrdAlertController extends Controller
             $bubbleText .= "\n📝" . $nbsp . "รายละเอียด:" . $nbsp . $plainDetail;
         }
 
-        // ID 1 is "ระบบประชาสัมพันธ์ รพ.หัวตะพาน"
-        $result = MophAlertService::sendFreeForm($cids, $title, $bubbleText, $html, 1);
+        $activeAlert = MophAlert::where('active', 'Y')->first() ?: MophAlert::find(1);
+        $alertId = $activeAlert ? $activeAlert->id : 1;
+
+        // Message text for MorProm App (strip any complex characters/formatting)
+        $morpromText = trim($title);
+
+        $result = MophAlertService::sendFreeForm($cids, $title, $morpromText, $html, $alertId, $bubbleText);
 
         // Save log to moph_alert_detail
         MophAlertDetail::create([
-            'moph_alert_id' => 1,
+            'moph_alert_id' => $alertId,
             'user_id' => auth()->id(),
             'title' => $title,
             'message_text' => $bubbleText,

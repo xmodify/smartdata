@@ -29,8 +29,8 @@ class LoginController extends Controller
             $user = User::where('username', $request->username)->first();
 
             // Check if 2FA is enabled globally
-            $mophAlert = MophAlert::where('active', 'Y')->first();
-            $is2faEnabled = $mophAlert && $mophAlert->enable_2fa === 'Y';
+            $mophAlert = MophAlert::where('active', 'Y')->where('enable_2fa', 'Y')->first();
+            $is2faEnabled = (bool)$mophAlert;
 
             if ($is2faEnabled) {
                 // Generate OTP
@@ -44,7 +44,7 @@ class LoginController extends Controller
                 ]);
 
                 // Send OTP via Moph Alert to user's CID (username)
-                $this->sendMophAlertOTP($user->username, $otp);
+                $this->sendMophAlertOTP($user->username, $otp, $mophAlert->id);
 
                 // Redirect to 2FA page
                 return redirect()->route('login.verify_2fa');
@@ -52,7 +52,7 @@ class LoginController extends Controller
                 // No 2FA -> Log in immediately
                 if (Auth::attempt(array_merge($credentials, ['active' => 'Y']), $request->boolean('remember'))) {
                     $request->session()->regenerate();
-                    return redirect()->intended('/dashboard');
+                    return redirect()->intended(route('dashboard'));
                 }
             }
         }
@@ -85,8 +85,9 @@ class LoginController extends Controller
         }
 
         // Check 2FA global status
-        $mophAlert = MophAlert::where('active', 'Y')->first();
-        $is2faEnabled = $mophAlert && $mophAlert->enable_2fa === 'Y';
+        $mophAlert = MophAlert::where('active', 'Y')->where('enable_2fa', 'Y')->first();
+        $is2faEnabled = (bool)$mophAlert;
+        $activeAlert = $mophAlert ?: MophAlert::where('active', 'Y')->first();
 
         // Generate OTP
         $otp = rand(100000, 999999);
@@ -99,7 +100,7 @@ class LoginController extends Controller
                 '2fa_expires_at' => time() + 120
             ]);
 
-            $this->sendMophAlertOTP($user->username, $otp);
+            $this->sendMophAlertOTP($user->username, $otp, $activeAlert?->id);
 
             return response()->json([
                 'success' => true,
@@ -114,7 +115,7 @@ class LoginController extends Controller
                 'otp_expires_at' => now()->addSeconds(120)
             ]);
 
-            $this->sendMophAlertOTP($user->username, $otp);
+            $this->sendMophAlertOTP($user->username, $otp, $activeAlert?->id);
 
             return response()->json([
                 'success' => true,
@@ -159,7 +160,7 @@ class LoginController extends Controller
 
             return response()->json([
                 'success' => true,
-                'redirect' => url('/dashboard')
+                'redirect' => route('dashboard')
             ]);
         }
 
@@ -209,7 +210,7 @@ class LoginController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
-            return redirect()->intended('/dashboard');
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors(['otp' => 'รหัส OTP ไม่ถูกต้อง']);
@@ -223,7 +224,7 @@ class LoginController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
     }
 
     private function convertToBoldUnicode($str)
@@ -233,22 +234,28 @@ class LoginController extends Controller
         return str_replace($normal, $bold, $str);
     }
 
-    private function sendMophAlertOTP($cid, $otp)
+    private function sendMophAlertOTP($cid, $otp, $alertId = null)
     {
-        $title = "รหัสยืนยันตัวตน (2FA)";
-        $boldOtp = $this->convertToBoldUnicode($otp);
-        $messageText = "รหัสยืนยันตัวตน (2FA) สำหรับเข้าระบบ SmartData ของท่านคือ {$boldOtp}";
-        
-        $messageHtml = '
-        <div style="font-family: \'Sarabun\', sans-serif; padding: 16px; background-color: #ffffff; border-left: 5px solid #198754; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin: 8px 0; border-top: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0;">
-            <div style="font-size: 16px; font-weight: bold; color: #198754; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 6px;">🔐 รหัสยืนยันตัวตน (2FA)</div>
-            <div style="font-size: 14px; color: #333333; line-height: 1.6; margin-bottom: 10px;">รหัสยืนยันตัวตน (2FA) สำหรับเข้าระบบ SmartData ของท่านคือ:</div>
-            <div style="font-size: 24px; font-weight: bold; color: #198754; letter-spacing: 4px; text-align: center; margin: 15px 0;"><b>' . $otp . '</b></div>
-            <div style="font-size: 12px; color: #666666; text-align: center; line-height: 1.6;">รหัสนี้มีอายุการใช้งาน 120 วินาที เพื่อความปลอดภัยกรุณาอย่าเผยแพร่รหัสนี้แก่บุคคลอื่น</div>
-            <div style="margin-top: 16px; font-size: 11px; color: #888888; text-align: right; border-top: 1px dashed #eeeeee; padding-top: 8px;">ระบบความปลอดภัย SmartData</div>
-        </div>';
+        $cid = trim((string)$cid);
+        if (empty($cid)) {
+            Log::warning('Cannot send Moph Alert OTP: User CID is empty.');
+            return false;
+        }
 
-        MophAlertService::sendFreeForm($cid, $title, $messageText, $messageHtml, 1);
+        // หัวข้อข้อความสำหรับ Application หมอพร้อม (ต้องไม่มี Emoji 4-byte)
+        $title = "รหัส OTP เข้าสู่ระบบ SmartData";
+        $boldOtp = $this->convertToBoldUnicode($otp);
+        
+        // 1. ข้อความสำหรับ Line OA (ส่งเข้า Line Chat bubble - รองรับ Unicode Bold)
+        $lineMessage = "รหัสยืนยันตัวตน (2FA) สำหรับเข้าระบบ SmartData ของท่านคือ {$boldOtp}";
+        
+        // 2. ชื่อรายการในกล่องข้อความ สำหรับส่งเข้า Application หมอพร้อม (ห้ามมี Emoji 4-byte)
+        $appMessageText = "รหัส OTP เข้าสู่ระบบ SmartData";
+        
+        // 3. ข้อความ HTML แสดงข้างในกล่องข้อความ Application หมอพร้อม (ใช้แท็กมาตรฐาน <div>, <strong>, <small> ปราศจาก Emoji 4-byte)
+        $messageHtml = "<div>รหัสยืนยันตัวตน (2FA) สำหรับเข้าระบบ SmartData ของท่านคือ <strong>{$otp}</strong><br><br><small>รหัสนี้มีอายุการใช้งาน 120 วินาที เพื่อความปลอดภัยกรุณาอย่าเปิดเผยรหัสนี้แก่บุคคลอื่น</small></div>";
+
+        return MophAlertService::sendFreeForm($cid, $title, $appMessageText, $messageHtml, $alertId, $lineMessage);
         
         // Do not save system OTP to moph_alert_detail log to keep dashboard history clean
     }
@@ -388,7 +395,7 @@ class LoginController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
-            return redirect()->intended('/dashboard')->with('success', 'ยินดีต้อนรับ! เข้าสู่ระบบด้วย Provider ID สำเร็จ');
+            return redirect()->intended(route('dashboard'))->with('success', 'ยินดีต้อนรับ! เข้าสู่ระบบด้วย Provider ID สำเร็จ');
         } catch (\Throwable $e) {
             Log::error('Provider ID login exception: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return redirect()->route('login')->withErrors(['provider_id' => 'เกิดข้อผิดพลาดในการล็อกอินด้วย Provider ID: ' . $e->getMessage()]);

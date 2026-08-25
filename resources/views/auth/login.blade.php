@@ -296,15 +296,15 @@
                                         <i class="fas fa-sign-in-alt me-1"></i> {{ __('Login') }}
                                     </button>
                                     
-                                    @php $mophAlertConfig = \App\Models\MophAlert::find(1); @endphp
-                                    @if($mophAlertConfig && $mophAlertConfig->active === 'Y' && $mophAlertConfig->enable_2fa !== 'Y')
+                                    @php $mophAlertConfig = \App\Models\MophAlert::where('active', 'Y')->first(); @endphp
+                                    @if($mophAlertConfig && $mophAlertConfig->enable_2fa !== 'Y')
                                         <button type="button" id="btn_request_otp" class="btn btn-otp-original py-2">
                                             <i class="fas fa-sms me-1"></i> OTP Login
                                         </button>
                                     @endif
                                     
-                                    @php $providerConfig = \App\Models\ProviderId::find(1); @endphp
-                                    @if($providerConfig && $providerConfig->active === 'Y' && !empty($providerConfig->health_id_client_id) && !empty($providerConfig->provider_id_client_id))
+                                    @php $providerConfig = \App\Models\ProviderId::where('active', 'Y')->first(); @endphp
+                                    @if($providerConfig && !empty($providerConfig->health_id_client_id) && !empty($providerConfig->provider_id_client_id))
                                         <a href="{{ route('login.provider_id') }}" class="btn btn-provider-original py-2">
                                             <i class="fas fa-id-card me-1"></i> ProviderID Login
                                         </a>

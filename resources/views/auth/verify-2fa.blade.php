@@ -128,7 +128,7 @@
         <h4 class="fw-bold text-dark mb-3" style="font-size: 1.5rem; letter-spacing: -0.5px;">ยืนยันตัวตนเข้าระบบ (2FA)</h4>
         <p class="text-muted small mb-4" style="font-size: 0.85rem; line-height: 1.6;">ระบบความปลอดภัยต้องการรหัสผ่านขั้นตอนที่สองเพื่อเข้าใช้งาน<br>กรุณากรอกรหัส OTP ที่ได้รับทาง หมอพร้อม LineOA</p>
         
-        <form method="POST" action="{{ url('/login/verify-2fa') }}">
+        <form method="POST" action="{{ route('login.verify_2fa') }}">
             @csrf
 
             <div class="mb-4">
