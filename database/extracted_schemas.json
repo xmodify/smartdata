@@ -1554,6 +1554,13 @@
                 "default": null,
                 "extra": ""
             },
+            "rca_status": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": "pending",
+                "extra": ""
+            },
             "created_at": {
                 "type": "timestamp",
                 "length": null,

@@ -89,6 +89,48 @@
             padding: 5px 10px;
             border-radius: 20px;
         }
+        .person-search-results, #recorder_person_results {
+            border: 1px solid #d1d3e2;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+            background: #fff;
+            margin-top: 4px;
+            z-index: 1080 !important;
+            min-width: 320px;
+        }
+        .person-search-results .list-group-item, #recorder_person_results .list-group-item {
+            cursor: pointer;
+            border: none;
+            border-bottom: 1px solid #f1f3f9;
+            padding: 9px 12px;
+            transition: all 0.15s ease-in-out;
+        }
+        .person-search-results .list-group-item:hover, #recorder_person_results .list-group-item:hover {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+        }
+        .person-search-results .list-group-item:last-child, #recorder_person_results .list-group-item:last-child {
+            border-bottom: none;
+        }
+        .dept-dropdown-menu {
+            border: 1px solid #d1d3e2;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+            background: #fff;
+        }
+        .dept-item {
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .dept-item:hover:not(.active-dept) {
+            background-color: #f0f4ff;
+            color: #2e59d9 !important;
+        }
         /* Styles for Print Mode */
         @media print {
             body * {
@@ -232,7 +274,7 @@
                                         <td>{{ $row->department ?? 'ไม่ระบุ' }}</td>
                                         <td>
                                             @if ($row->rca)
-                                                @if ($row->rca->rca_status === 'completed')
+                                                @if (($row->rca->rca_status ?? 'pending') === 'completed')
                                                     <span class="badge bg-success text-white badge-status"><i class="fas fa-check-circle me-1"></i>วิเคราะห์เสร็จสิ้น</span>
                                                 @else
                                                     <span class="badge bg-warning text-dark badge-status"><i class="fas fa-spinner fa-spin me-1"></i>กำลังดำเนินการ</span>
@@ -477,7 +519,7 @@
 
                                     <div class="col-md-4">
                                         <label class="form-label-bold" for="department">หน่วยงานที่เกิดเหตุ</label>
-                                        <input type="text" name="department" id="department" class="form-control">
+                                        <input type="text" name="department" id="department" list="departmentList" class="form-control" placeholder="เลือกหรือพิมพ์หน่วยงาน...">
                                     </div>
 
                                     <div class="col-md-4">
@@ -556,16 +598,16 @@
                                     <span><i class="fas fa-users me-1"></i> 1.1 สมาชิกผู้ร่วมวิเคราะห์</span>
                                     <button type="button" class="btn btn-sm btn-success no-print" onclick="addTeamRow()"><i class="fas fa-plus me-1"></i> เพิ่มแถว</button>
                                 </div>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-striped align-middle" id="tableTeamForm" style="font-size: 0.85rem;">
+                                <div style="overflow: visible;">
+                                    <table class="table table-bordered table-striped align-middle" id="tableTeamForm" style="font-size: 0.85rem; width: 100%;">
                                         <thead class="table-light">
                                             <tr>
-                                                <th style="width: 8%;" class="text-center">ลำดับ</th>
-                                                <th>ชื่อ-สกุล</th>
-                                                <th>ตำแหน่ง</th>
-                                                <th>หน่วยงาน</th>
-                                                <th>ระบบงาน</th>
-                                                <th class="text-center no-print" style="width: 8%;">ลบ</th>
+                                                <th style="width: 6%;" class="text-center">ลำดับ</th>
+                                                <th style="width: 32%; min-width: 220px;">ชื่อ-สกุล</th>
+                                                <th style="width: 22%;">ตำแหน่ง</th>
+                                                <th style="width: 22%;">หน่วยงาน</th>
+                                                <th style="width: 12%;">ระบบงาน</th>
+                                                <th class="text-center no-print" style="width: 6%;">ลบ</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -712,17 +754,17 @@
                                     <span><i class="fas fa-lightbulb me-1"></i> ออกแบบระบบงานใหม่ (Creative Solution) - ผลที่ได้จากการทำ RCA</span>
                                     <button type="button" class="btn btn-sm btn-success no-print" onclick="addSolutionRow()"><i class="fas fa-plus me-1"></i> เพิ่มแถว</button>
                                 </div>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-striped align-middle" id="tableSolutionForm" style="font-size: 0.85rem;">
+                                <div style="overflow: visible;">
+                                    <table class="table table-bordered table-striped align-middle" id="tableSolutionForm" style="font-size: 0.85rem; width: 100%;">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>รากของปัญหา (Root Cause)</th>
-                                                <th>กระบวนการ</th>
-                                                <th>หน่วยงานรับผิดชอบ</th>
-                                                <th>ระบบ</th>
-                                                <th>การปรับปรุง/ออกแบบงานใหม่</th>
-                                                <th>ตัวชี้วัด/ความถี่</th>
-                                                <th class="text-center no-print" style="width: 8%;">ลบ</th>
+                                                <th style="width: 18%;">รากของปัญหา (Root Cause)</th>
+                                                <th style="width: 16%;">กระบวนการ</th>
+                                                <th style="width: 22%;">หน่วยงานรับผิดชอบ</th>
+                                                <th style="width: 10%;">ระบบ</th>
+                                                <th style="width: 20%;">การปรับปรุง/ออกแบบงานใหม่</th>
+                                                <th style="width: 10%;">ตัวชี้วัด/ความถี่</th>
+                                                <th class="text-center no-print" style="width: 4%;">ลบ</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -738,9 +780,10 @@
                             <div class="card-body">
                                 <div class="section-header-custom"><i class="fas fa-user-edit me-1"></i> ข้อมูลผู้บันทึกแบบฟอร์ม</div>
                                 <div class="row g-3">
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 position-relative">
                                         <label class="form-label-bold" for="recorder_name">ชื่อ-สกุล ผู้บันทึก</label>
-                                        <input type="text" name="recorder_name" id="recorder_name" class="form-control" placeholder="นาย/นาง/นางสาว...">
+                                        <input type="text" name="recorder_name" id="recorder_name" class="form-control" placeholder="พิมพ์ค้นหาชื่อ หรือกรอกเอง..." autocomplete="off">
+                                        <div id="recorder_person_results" class="list-group position-absolute w-100 shadow-lg" style="display: none; z-index: 1060; max-height: 200px; overflow-y: auto;"></div>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label-bold" for="recorder_position">ตำแหน่ง</label>
@@ -771,6 +814,15 @@
         </div>
     </div>
 
+    <!-- Datalist for Backoffice Departments -->
+    <datalist id="departmentList">
+        @if(isset($departments) && count($departments) > 0)
+            @foreach($departments as $dept)
+                <option value="{{ $dept }}">
+            @endforeach
+        @endif
+    </datalist>
+
     <!-- Incident Detail View Modal -->
     <div class="modal fade" id="modalIncidentDetail" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -798,7 +850,9 @@
     <script src="{{ asset('vendor/chartjs/chart.umd.js') }}"></script>
     
     <script>
+        const backofficeDepartments = @json($departments ?? []);
         const yearOffset = 543;
+        const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
         const commonConfig = {
             locale: "th",
             dateFormat: "Y-m-d",
@@ -809,10 +863,12 @@
                 if (instance.altInput) {
                     const originalValue = instance.altInput.value;
                     if (originalValue) {
-                        const date = instance.selectedDates[0] || new Date(instance.input.value);
+                        const date = instance.selectedDates[0] || (instance.input.value ? new Date(instance.input.value) : null);
                         if (date && !isNaN(date.getTime())) {
                             const day = date.getDate();
-                            const month = instance.l10n.months.shorthand[date.getMonth()];
+                            const month = (instance.l10n && instance.l10n.months && instance.l10n.months.shorthand) 
+                                          ? instance.l10n.months.shorthand[date.getMonth()] 
+                                          : thaiMonths[date.getMonth()];
                             const year = date.getFullYear() + yearOffset;
                             instance.altInput.value = `${day} ${month} ${year}`;
                         }
@@ -824,7 +880,9 @@
                     const date = selectedDates[0];
                     setTimeout(() => {
                         const day = date.getDate();
-                        const month = instance.l10n.months.shorthand[date.getMonth()];
+                        const month = (instance.l10n && instance.l10n.months && instance.l10n.months.shorthand) 
+                                      ? instance.l10n.months.shorthand[date.getMonth()] 
+                                      : thaiMonths[date.getMonth()];
                         const year = date.getFullYear() + yearOffset;
                         instance.altInput.value = `${day} ${month} ${year}`;
                     }, 10);
@@ -872,6 +930,9 @@
 
             // Initialize Charts if Tab 2 is active or loaded
             initDashboardCharts();
+            
+            // Initialize Recorder Person Search
+            initRecorderPersonSearch();
             
             // Switch tabs helper to check URL parameters
             const urlParams = new URLSearchParams(window.location.search);
@@ -1031,10 +1092,15 @@
         function addTimelineRow(data = null) {
             const tableBody = document.querySelector('#tableTimelineForm tbody');
             const rowId = timelineRowIndex++;
-            const dateVal = data ? data.date : '';
-            const timeVal = data ? data.time : '';
-            const storyVal = data ? data.story : '';
-            const fileLink = data && data.file_path ? `<a href="{{ asset('') }}${data.file_path}" target="_blank" class="btn btn-xs btn-outline-info p-1"><i class="fas fa-file-pdf"></i> ไฟล์แนบเดิม</a><input type="hidden" name="timeline[${rowId}][existing_file]" value="${data.file_path}">` : '';
+            const dateVal = data && data.date && data.date !== 'null' ? data.date : '';
+            const timeVal = data && data.time && data.time !== 'null' ? data.time : '';
+            const storyVal = data && data.story && data.story !== 'null' ? data.story : '';
+            let fileLink = '';
+            if (data && data.file_path) {
+                const fileNameOnly = data.file_path.split('/').pop();
+                const fileUrl = "{{ route('backoffice.incident.rca.file', ':filename') }}".replace(':filename', encodeURIComponent(fileNameOnly));
+                fileLink = `<a href="${fileUrl}" target="_blank" class="btn btn-xs btn-outline-info p-1"><i class="fas fa-file-pdf"></i> ไฟล์แนบเดิม</a><input type="hidden" name="timeline[${rowId}][existing_file]" value="${data.file_path}">`;
+            }
 
             const rowHtml = `
                 <tr id="timeline-row-${rowId}">
@@ -1064,25 +1130,31 @@
         function addTeamRow(data = null) {
             const tableBody = document.querySelector('#tableTeamForm tbody');
             const rowId = teamRowIndex++;
-            const nameVal = data ? data.name : '';
-            const posVal = data ? data.position : '';
-            const deptVal = data ? data.department : '';
-            const sysVal = data ? data.work_system : '';
+            const nameVal = data && data.name && data.name !== 'null' ? data.name : '';
+            const posVal = data && data.position && data.position !== 'null' ? data.position : '';
+            const deptVal = data && data.department && data.department !== 'null' ? data.department : '';
+            const sysVal = data && data.work_system && data.work_system !== 'null' ? data.work_system : '';
             const count = tableBody.rows.length + 1;
 
             const rowHtml = `
                 <tr id="team-row-${rowId}">
                     <td class="text-center fw-bold team-no">${count}</td>
-                    <td><input type="text" name="team_members[${rowId}][name]" class="form-control form-control-sm" value="${nameVal}"></td>
-                    <td><input type="text" name="team_members[${rowId}][position]" class="form-control form-control-sm" value="${posVal}"></td>
-                    <td><input type="text" name="team_members[${rowId}][department]" class="form-control form-control-sm" value="${deptVal}"></td>
-                    <td><input type="text" name="team_members[${rowId}][work_system]" class="form-control form-control-sm" value="${sysVal}"></td>
+                    <td>
+                        <div class="position-relative">
+                            <input type="text" name="team_members[${rowId}][name]" class="form-control form-control-sm team-person-search" value="${nameVal}" placeholder="พิมพ์ค้นหาชื่อ..." autocomplete="off">
+                            <div class="list-group position-absolute w-100 shadow-lg person-search-results" style="display: none; z-index: 1060; max-height: 200px; overflow-y: auto;"></div>
+                        </div>
+                    </td>
+                    <td><input type="text" name="team_members[${rowId}][position]" class="form-control form-control-sm team-person-position" value="${posVal}" placeholder="ตำแหน่ง..."></td>
+                    <td><input type="text" name="team_members[${rowId}][department]" list="departmentList" class="form-control form-control-sm team-person-department" value="${deptVal}" placeholder="หน่วยงาน..."></td>
+                    <td><input type="text" name="team_members[${rowId}][work_system]" class="form-control form-control-sm" value="${sysVal}" placeholder="ระบบงาน (เช่น IC, RM...)"></td>
                     <td class="text-center no-print">
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeTeamRow('team-row-${rowId}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `;
             tableBody.insertAdjacentHTML('beforeend', rowHtml);
+            initTeamPersonSearch(rowId);
         }
 
         function removeTeamRow(rowId) {
@@ -1097,31 +1169,159 @@
         function addSolutionRow(data = null) {
             const tableBody = document.querySelector('#tableSolutionForm tbody');
             const rowId = solutionRowIndex++;
-            const rcVal = data ? data.root_cause : '';
-            const procVal = data ? data.process : '';
-            const deptVal = data ? data.department : '';
-            const sysVal = data ? data.system : '';
-            const impVal = data ? data.improvement : '';
-            const freqVal = data ? data.frequency : '';
+            const rcVal = data && data.root_cause && data.root_cause !== 'null' ? data.root_cause : '';
+            const procVal = data && data.process && data.process !== 'null' ? data.process : '';
+            const deptVal = data && data.department && data.department !== 'null' ? data.department : '';
+            const sysVal = data && data.system && data.system !== 'null' ? data.system : '';
+            const impVal = data && data.improvement && data.improvement !== 'null' ? data.improvement : '';
+            const freqVal = data && data.frequency && data.frequency !== 'null' ? data.frequency : '';
+
+            // Generate department items list from Backoffice
+            let departmentItemsHtml = `
+                <div class="dept-item py-1 px-2 rounded cursor-pointer ${!deptVal ? 'active-dept bg-primary text-white' : 'text-dark'}" data-value="">
+                    <i class="fas fa-undo me-1 opacity-75"></i> -- ไม่ระบุหน่วยงาน --
+                </div>
+            `;
+            let foundMatch = false;
+            if (Array.isArray(backofficeDepartments)) {
+                backofficeDepartments.forEach(d => {
+                    const isSelected = (deptVal === d);
+                    if (isSelected) foundMatch = true;
+                    departmentItemsHtml += `
+                        <div class="dept-item py-1 px-2 rounded cursor-pointer ${isSelected ? 'active-dept bg-primary text-white' : 'text-dark'}" data-value="${d}">
+                            ${d}
+                        </div>
+                    `;
+                });
+            }
+            if (deptVal && !foundMatch) {
+                departmentItemsHtml += `
+                    <div class="dept-item py-1 px-2 rounded cursor-pointer active-dept bg-primary text-white" data-value="${deptVal}">
+                        ${deptVal}
+                    </div>
+                `;
+            }
 
             const rowHtml = `
                 <tr id="solution-row-${rowId}">
-                    <td><textarea name="creative_solutions[${rowId}][root_cause]" class="form-control form-control-sm" rows="1">${rcVal}</textarea></td>
-                    <td><textarea name="creative_solutions[${rowId}][process]" class="form-control form-control-sm" rows="1">${procVal}</textarea></td>
-                    <td><input type="text" name="creative_solutions[${rowId}][department]" class="form-control form-control-sm" value="${deptVal}"></td>
-                    <td><input type="text" name="creative_solutions[${rowId}][system]" class="form-control form-control-sm" value="${sysVal}"></td>
-                    <td><textarea name="creative_solutions[${rowId}][improvement]" class="form-control form-control-sm" rows="1">${impVal}</textarea></td>
-                    <td><input type="text" name="creative_solutions[${rowId}][frequency]" class="form-control form-control-sm" value="${freqVal}"></td>
+                    <td><textarea name="creative_solutions[${rowId}][root_cause]" class="form-control form-control-sm" rows="2" placeholder="ระบุรากของปัญหา...">${rcVal}</textarea></td>
+                    <td><textarea name="creative_solutions[${rowId}][process]" class="form-control form-control-sm" rows="2" placeholder="กระบวนการ...">${procVal}</textarea></td>
+                    <td>
+                        <div class="dropdown custom-dept-select position-relative" id="dept-select-wrap-${rowId}">
+                            <input type="hidden" name="creative_solutions[${rowId}][department]" class="dept-hidden-val" value="${deptVal}">
+                            <button type="button" class="form-select form-select-sm text-start dept-toggle-btn d-flex justify-content-between align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                <span class="dept-label-text text-truncate">${deptVal ? deptVal : '-- เลือกหน่วยงาน --'}</span>
+                            </button>
+                            <div class="dropdown-menu p-2 shadow-lg dept-dropdown-menu" style="min-width: 280px; max-width: 320px; z-index: 1080;">
+                                <div class="mb-2">
+                                    <input type="text" class="form-control form-control-sm dept-search-input" placeholder="ค้นหาแผนก/หน่วยงาน..." autocomplete="off">
+                                </div>
+                                <div class="dept-items-list" style="max-height: 220px; overflow-y: auto;">
+                                    ${departmentItemsHtml}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><input type="text" name="creative_solutions[${rowId}][system]" class="form-control form-control-sm" value="${sysVal}" placeholder="เช่น IC, PTC..."></td>
+                    <td><textarea name="creative_solutions[${rowId}][improvement]" class="form-control form-control-sm" rows="2" placeholder="แนวทางปรับปรุง...">${impVal}</textarea></td>
+                    <td><input type="text" name="creative_solutions[${rowId}][frequency]" class="form-control form-control-sm" value="${freqVal}" placeholder="เช่น ทุก 1 เดือน..."></td>
                     <td class="text-center no-print">
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow('solution-row-${rowId}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `;
             tableBody.insertAdjacentHTML('beforeend', rowHtml);
+            initDeptSelect(rowId);
+        }
+
+        // Initialize searchable single-select department dropdown for a row
+        function initDeptSelect(rowId) {
+            const wrap = document.getElementById(`dept-select-wrap-${rowId}`);
+            if (!wrap) return;
+
+            const searchInput = wrap.querySelector('.dept-search-input');
+            const toggleBtn = wrap.querySelector('.dept-toggle-btn');
+            const hiddenVal = wrap.querySelector('.dept-hidden-val');
+            const labelText = wrap.querySelector('.dept-label-text');
+            const items = wrap.querySelectorAll('.dept-item');
+
+            // Search filter in real time
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const q = this.value.toLowerCase().trim();
+                    items.forEach(item => {
+                        const val = (item.getAttribute('data-value') || '').toLowerCase();
+                        const txt = item.textContent.toLowerCase();
+                        if (!q || val.includes(q) || txt.includes(q)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Single item click selection
+            items.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const val = this.getAttribute('data-value') || '';
+                    hiddenVal.value = val;
+                    labelText.textContent = val ? val : '-- เลือกหน่วยงาน --';
+
+                    items.forEach(el => {
+                        el.classList.remove('active-dept', 'bg-primary', 'text-white');
+                        el.classList.add('text-dark');
+                    });
+                    this.classList.add('active-dept', 'bg-primary', 'text-white');
+                    this.classList.remove('text-dark');
+
+                    // Close dropdown
+                    if (window.bootstrap && bootstrap.Dropdown) {
+                        const dd = bootstrap.Dropdown.getInstance(toggleBtn) || new bootstrap.Dropdown(toggleBtn);
+                        if (dd) dd.hide();
+                    } else if (window.$) {
+                        $(toggleBtn).dropdown('hide');
+                    }
+                });
+            });
+
+            // Focus search input when dropdown opens
+            if (toggleBtn) {
+                toggleBtn.addEventListener('shown.bs.dropdown', function() {
+                    if (searchInput) {
+                        searchInput.value = '';
+                        searchInput.focus();
+                        items.forEach(el => el.style.display = 'block');
+                    }
+                });
+            }
         }
 
         function removeRow(rowId) {
             document.getElementById(rowId).remove();
+        }
+
+        // Safe Bootstrap Modal display helper
+        function showBsModal(modalId) {
+            const modalEl = document.getElementById(modalId);
+            if (!modalEl) return;
+            try {
+                if (window.bootstrap && bootstrap.Modal) {
+                    const modal = bootstrap.Modal.getOrCreateInstance ? 
+                                  bootstrap.Modal.getOrCreateInstance(modalEl) : 
+                                  (bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl));
+                    modal.show();
+                } else if (window.$ && $.fn.modal) {
+                    $(modalEl).modal('show');
+                }
+            } catch (err) {
+                console.error('Error showing modal:', err);
+                if (window.$ && $.fn.modal) {
+                    $(modalEl).modal('show');
+                }
+            }
         }
 
         // Open RCA Modal Form & Populate existing values
@@ -1130,7 +1330,11 @@
             resetRcaForm();
             
             // Set incident ID
-            document.getElementById('form_incident_id').value = incidentId;
+            const incidentInput = document.getElementById('form_incident_id');
+            if (incidentInput) incidentInput.value = incidentId;
+
+            // Open the modal immediately
+            showBsModal('modalRcaForm');
 
             // Load details using AJAX
             const detailUrl = "{{ route('backoffice.incident.rca.detail', ':id') }}".replace(':id', incidentId);
@@ -1139,112 +1343,164 @@
                 method: 'GET',
                 success: function(res) {
                     if (res.success) {
-                        const inc = res.incident;
-                        const rca = res.rca;
+                        try {
+                            const inc = res.incident || {};
+                            const rca = res.rca || null;
 
-                        // Pre-populate fields from backoffice incident
-                        document.getElementById('department').value = inc.department || '';
-                        document.getElementById('incident_date').value = inc.RISKREP_STARTDATE || '';
-                        document.getElementById('an').value = inc.an || '';
-                        
-                        // Set severity level
-                        if (inc.severity) {
-                            const sevRadio = document.getElementById(`severity_${inc.severity}`);
-                            if (sevRadio) sevRadio.checked = true;
+                            // Pre-populate fields from backoffice incident
+                            const deptEl = document.getElementById('department');
+                            if (deptEl) deptEl.value = (rca && rca.department) ? rca.department : (inc.department || '');
+
+                            const incDateEl = document.getElementById('incident_date');
+                            if (incDateEl) {
+                                const iDate = (rca && rca.incident_date) ? rca.incident_date : (inc.RISKREP_STARTDATE || '');
+                                incDateEl.value = iDate;
+                                if (incDateEl._flatpickr) incDateEl._flatpickr.setDate(iDate, true);
+                            }
+
+                            const anEl = document.getElementById('an');
+                            if (anEl) anEl.value = (rca && rca.an) ? rca.an : (inc.an || '');
+                            
+                            // Set severity level
+                            const sev = (rca && rca.severity) ? rca.severity : inc.severity;
+                            if (sev) {
+                                const sevRadio = document.getElementById(`severity_${sev}`);
+                                if (sevRadio) sevRadio.checked = true;
+                            }
+
+                            // Pre-populate fields from saved RCA record
+                            if (rca) {
+                                // RCA Type radio
+                                if (rca.rca_type) {
+                                    const typeRadio = document.querySelector(`input[name="rca_type"][value="${rca.rca_type}"]`);
+                                    if (typeRadio) typeRadio.checked = true;
+                                }
+                                
+                                const subjEl = document.getElementById('rca_subject');
+                                if (subjEl) subjEl.value = rca.rca_subject || '';
+                                
+                                // Error Status radio
+                                if (rca.error_status) {
+                                    const errRadio = document.querySelector(`input[name="error_status"][value="${rca.error_status}"]`);
+                                    if (errRadio) errRadio.checked = true;
+                                }
+                                
+                                const shiftEl = document.getElementById('shift');
+                                if (shiftEl && rca.shift) shiftEl.value = rca.shift;
+
+                                const mainTopicEl = document.getElementById('main_risk_topic');
+                                if (mainTopicEl && rca.main_risk_topic) mainTopicEl.value = rca.main_risk_topic;
+
+                                const cpEl = document.getElementById('critical_point');
+                                if (cpEl) cpEl.value = rca.critical_point || '';
+
+                                const impEl = document.getElementById('impact_details');
+                                if (impEl) impEl.value = rca.impact_details || '';
+
+                                const fcEl = document.getElementById('flowchart_details');
+                                if (fcEl) fcEl.value = rca.flowchart_details || '';
+
+                                const sv1 = document.getElementById('staff_voice_1');
+                                if (sv1) sv1.value = rca.staff_voice_1 || '';
+
+                                const sv2 = document.getElementById('staff_voice_2');
+                                if (sv2) sv2.value = rca.staff_voice_2 || '';
+
+                                const sv3 = document.getElementById('staff_voice_3');
+                                if (sv3) sv3.value = rca.staff_voice_3 || '';
+
+                                const sv4 = document.getElementById('staff_voice_4');
+                                if (sv4) sv4.value = rca.staff_voice_4 || '';
+                                
+                                const recName = document.getElementById('recorder_name');
+                                if (recName) recName.value = rca.recorder_name || '';
+
+                                const recPos = document.getElementById('recorder_position');
+                                if (recPos) recPos.value = rca.recorder_position || '';
+
+                                const recDate = document.getElementById('record_date');
+                                if (recDate) {
+                                    recDate.value = rca.record_date || '';
+                                    if (recDate._flatpickr) recDate._flatpickr.setDate(rca.record_date || '', true);
+                                }
+
+                                const rcaStat = document.getElementById('rca_status');
+                                if (rcaStat) rcaStat.value = rca.rca_status || 'pending';
+
+                                // Populate dynamic Timeline rows
+                                if (Array.isArray(rca.timeline) && rca.timeline.length > 0) {
+                                    rca.timeline.forEach(row => addTimelineRow(row));
+                                } else {
+                                    addTimelineRow();
+                                }
+                                
+                                // Populate dynamic Team Member rows
+                                if (Array.isArray(rca.team_members) && rca.team_members.length > 0) {
+                                    rca.team_members.forEach(row => addTeamRow(row));
+                                } else {
+                                    addTeamRow();
+                                }
+                                
+                                // Populate dynamic Solution rows
+                                if (Array.isArray(rca.creative_solutions) && rca.creative_solutions.length > 0) {
+                                    rca.creative_solutions.forEach(row => addSolutionRow(row));
+                                } else {
+                                    addSolutionRow();
+                                }
+
+                                // Check Potential Changes checkboxes
+                                if (Array.isArray(rca.potential_changes)) {
+                                    rca.potential_changes.forEach(opt => {
+                                        const cb = document.querySelector(`input[name="potential_changes[]"][value="${opt}"]`);
+                                        if (cb) cb.checked = true;
+                                    });
+                                }
+
+                                // Populate Swiss Cheese table
+                                if (rca.swiss_cheese && typeof rca.swiss_cheese === 'object') {
+                                    Object.keys(rca.swiss_cheese).forEach(qk => {
+                                        const idx = qk.replace('q', '');
+                                        const item = rca.swiss_cheese[qk];
+                                        if (item && item.yes_no) {
+                                            const radio = document.querySelector(`input[name="swiss_cheese[q${idx}][yes_no]"][value="${item.yes_no}"]`);
+                                            if (radio) radio.checked = true;
+                                        }
+                                        if (item && item.detail) {
+                                            const txt = document.querySelector(`input[name="swiss_cheese[q${idx}][detail]"]`);
+                                            if (txt) txt.value = item.detail || '';
+                                        }
+                                    });
+                                }
+
+                                // Check Related Systems checkboxes
+                                if (Array.isArray(rca.related_systems)) {
+                                    rca.related_systems.forEach(sys => {
+                                        const cb = document.getElementById(`sys_${sys}`);
+                                        if (cb) cb.checked = true;
+                                    });
+                                }
+                            } else {
+                                // If no RCA saved, add default blank rows
+                                addTimelineRow();
+                                addTeamRow();
+                                addSolutionRow();
+                                
+                                const recDate = document.getElementById('record_date');
+                                const todayStr = new Date().toISOString().substring(0, 10);
+                                if (recDate) {
+                                    recDate.value = todayStr;
+                                    if (recDate._flatpickr) recDate._flatpickr.setDate(todayStr, true);
+                                }
+                            }
+                        } catch (err) {
+                            console.error('Error populating RCA form:', err);
                         }
-
-                        // Pre-populate fields from saved RCA record
-                        if (rca) {
-                            // RCA Type radio
-                            if (rca.rca_type) {
-                                const typeRadio = document.querySelector(`input[name="rca_type"][value="${rca.rca_type}"]`);
-                                if (typeRadio) typeRadio.checked = true;
-                            }
-                            
-                            document.getElementById('rca_subject').value = rca.rca_subject || '';
-                            
-                            // Error Status radio
-                            if (rca.error_status) {
-                                const errRadio = document.querySelector(`input[name="error_status"][value="${rca.error_status}"]`);
-                                if (errRadio) errRadio.checked = true;
-                            }
-                            
-                            if (rca.shift) document.getElementById('shift').value = rca.shift;
-                            if (rca.main_risk_topic) document.getElementById('main_risk_topic').value = rca.main_risk_topic;
-                            document.getElementById('critical_point').value = rca.critical_point || '';
-                            document.getElementById('impact_details').value = rca.impact_details || '';
-                            document.getElementById('flowchart_details').value = rca.flowchart_details || '';
-                            document.getElementById('staff_voice_1').value = rca.staff_voice_1 || '';
-                            document.getElementById('staff_voice_2').value = rca.staff_voice_2 || '';
-                            document.getElementById('staff_voice_3').value = rca.staff_voice_3 || '';
-                            document.getElementById('staff_voice_4').value = rca.staff_voice_4 || '';
-                            
-                            document.getElementById('recorder_name').value = rca.recorder_name || '';
-                            document.getElementById('recorder_position').value = rca.recorder_position || '';
-                            document.getElementById('record_date').value = rca.record_date || '';
-                            document.getElementById('rca_status').value = rca.rca_status || 'pending';
-
-                            // Populate dynamic Timeline rows
-                            if (Array.isArray(rca.timeline)) {
-                                rca.timeline.forEach(row => addTimelineRow(row));
-                            }
-                            
-                            // Populate dynamic Team Member rows
-                            if (Array.isArray(rca.team_members)) {
-                                rca.team_members.forEach(row => addTeamRow(row));
-                            }
-                            
-                            // Populate dynamic Solution rows
-                            if (Array.isArray(rca.creative_solutions)) {
-                                rca.creative_solutions.forEach(row => addSolutionRow(row));
-                            }
-
-                            // Check Potential Changes checkboxes
-                            if (Array.isArray(rca.potential_changes)) {
-                                rca.potential_changes.forEach(opt => {
-                                    const cb = document.querySelector(`input[name="potential_changes[]"][value="${opt}"]`);
-                                    if (cb) cb.checked = true;
-                                });
-                            }
-
-                            // Populate Swiss Cheese table
-                            if (rca.swiss_cheese) {
-                                Object.keys(rca.swiss_cheese).forEach(qk => {
-                                    const idx = qk.replace('q', '');
-                                    const item = rca.swiss_cheese[qk];
-                                    const radio = document.querySelector(`input[name="swiss_cheese[q${idx}][yes_no]"][value="${item.yes_no}"]`);
-                                    if (radio) radio.checked = true;
-                                    
-                                    const txt = document.querySelector(`input[name="swiss_cheese[q${idx}][detail]"]`);
-                                    if (txt) txt.value = item.detail || '';
-                                });
-                            }
-
-                            // Check Related Systems checkboxes
-                            if (Array.isArray(rca.related_systems)) {
-                                rca.related_systems.forEach(sys => {
-                                    const cb = document.getElementById(`sys_${sys}`);
-                                    if (cb) cb.checked = true;
-                                });
-                            }
-                        } else {
-                            // If no RCA saved, add at least one blank row for dynamic lists
-                            addTimelineRow();
-                            addTeamRow();
-                            addSolutionRow();
-                            
-                            // Pre-fill record date with today
-                            document.getElementById('record_date').value = new Date().toISOString().substring(0, 10);
-                        }
-
-                        // Open the modal
-                        const rcaModal = new bootstrap.Modal(document.getElementById('modalRcaForm'));
-                        rcaModal.show();
                     } else {
                         Swal.fire('ข้อผิดพลาด', res.message || 'ไม่สามารถโหลดข้อมูลได้', 'error');
                     }
                 },
-                error: function() {
+                error: function(xhr) {
+                    console.error('AJAX Error:', xhr);
                     Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
                 }
             });
@@ -1332,9 +1588,137 @@
 
         // Show Full Incident Detail Modal
         function showIncidentDetail(text) {
-            document.getElementById('incident_full_text').textContent = text;
-            const detailModal = new bootstrap.Modal(document.getElementById('modalIncidentDetail'));
-            detailModal.show();
+            const el = document.getElementById('incident_full_text');
+            if (el) el.textContent = text;
+            showBsModal('modalIncidentDetail');
         }
+
+        // AJAX search handler for Team Members row
+        function initTeamPersonSearch(rowId) {
+            const row = document.getElementById(`team-row-${rowId}`);
+            if (!row) return;
+            const searchInput = row.querySelector('.team-person-search');
+            const resultsDiv = row.querySelector('.person-search-results');
+            const posInput = row.querySelector('.team-person-position');
+            const deptInput = row.querySelector('.team-person-department');
+            let timeout = null;
+
+            if (!searchInput || !resultsDiv) return;
+
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                const q = this.value.trim();
+                if (q.length < 1) {
+                    resultsDiv.style.display = 'none';
+                    resultsDiv.innerHTML = '';
+                    return;
+                }
+
+                timeout = setTimeout(() => {
+                    fetch(`{{ route('backoffice.incident.rca.search_person') }}?q=${encodeURIComponent(q)}`)
+                        .then(res => res.json())
+                        .then(res => {
+                            if (res.success && res.data && res.data.length > 0) {
+                                resultsDiv.innerHTML = '';
+                                res.data.forEach(p => {
+                                    const btn = document.createElement('button');
+                                    btn.type = 'button';
+                                    btn.className = 'list-group-item list-group-item-action text-start py-2';
+                                    btn.style.fontSize = '0.85rem';
+                                    btn.innerHTML = `
+                                        <div class="fw-bold text-dark d-flex align-items-center justify-content-between">
+                                            <span><i class="fas fa-user text-primary me-2"></i>${p.fullname}</span>
+                                            <span class="badge bg-light text-secondary border">${p.department ? p.department : 'บุคลากร'}</span>
+                                        </div>
+                                        <div class="text-muted small mt-1" style="font-size: 0.78rem;">
+                                            <i class="fas fa-briefcase me-1 text-muted"></i>${p.position ? p.position : 'ไม่ระบุตำแหน่ง'}
+                                        </div>
+                                    `;
+                                    btn.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        searchInput.value = p.fullname;
+                                        if (posInput) posInput.value = p.position || '';
+                                        if (deptInput) deptInput.value = p.department || '';
+
+                                        resultsDiv.style.display = 'none';
+                                        resultsDiv.innerHTML = '';
+                                    });
+                                    resultsDiv.appendChild(btn);
+                                });
+                                resultsDiv.style.display = 'block';
+                            } else {
+                                resultsDiv.style.display = 'none';
+                                resultsDiv.innerHTML = '';
+                            }
+                        })
+                        .catch(err => console.error(err));
+                }, 250);
+            });
+        }
+
+        // AJAX search handler for Recorder Name (Section 9)
+        function initRecorderPersonSearch() {
+            const searchInput = document.getElementById('recorder_name');
+            const resultsDiv = document.getElementById('recorder_person_results');
+            const posInput = document.getElementById('recorder_position');
+            let timeout = null;
+
+            if (!searchInput || !resultsDiv) return;
+
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                const q = this.value.trim();
+                if (q.length < 1) {
+                    resultsDiv.style.display = 'none';
+                    resultsDiv.innerHTML = '';
+                    return;
+                }
+
+                timeout = setTimeout(() => {
+                    fetch(`{{ route('backoffice.incident.rca.search_person') }}?q=${encodeURIComponent(q)}`)
+                        .then(res => res.json())
+                        .then(res => {
+                            if (res.success && res.data && res.data.length > 0) {
+                                resultsDiv.innerHTML = '';
+                                res.data.forEach(p => {
+                                    const btn = document.createElement('button');
+                                    btn.type = 'button';
+                                    btn.className = 'list-group-item list-group-item-action text-start py-2';
+                                    btn.style.fontSize = '0.85rem';
+                                    btn.innerHTML = `
+                                        <div class="fw-bold text-dark"><i class="fas fa-user-edit text-primary me-1"></i>${p.fullname}</div>
+                                        <small class="text-muted">${p.position ? p.position : 'ไม่ระบุตำแหน่ง'}${p.department ? ' | ' + p.department : ''}</small>
+                                    `;
+                                    btn.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        searchInput.value = p.fullname;
+                                        if (posInput) posInput.value = p.position || '';
+
+                                        resultsDiv.style.display = 'none';
+                                        resultsDiv.innerHTML = '';
+                                    });
+                                    resultsDiv.appendChild(btn);
+                                });
+                                resultsDiv.style.display = 'block';
+                            } else {
+                                resultsDiv.style.display = 'none';
+                                resultsDiv.innerHTML = '';
+                            }
+                        })
+                        .catch(err => console.error(err));
+                }, 250);
+            });
+        }
+
+        // Close search results on outside click
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.position-relative')) {
+                document.querySelectorAll('.person-search-results, #recorder_person_results').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+        });
     </script>
 @endpush

@@ -293,6 +293,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/rca', [App\Http\Controllers\Backoffice\IncidentController::class, 'rca'])->name('backoffice.incident.rca');
         Route::get('/rca/detail/{id}', [App\Http\Controllers\Backoffice\IncidentController::class, 'rca_detail'])->name('backoffice.incident.rca.detail');
         Route::post('/rca/save', [App\Http\Controllers\Backoffice\IncidentController::class, 'save_rca'])->name('backoffice.incident.rca.save');
+        Route::get('/rca/file/{filename}', [App\Http\Controllers\Backoffice\IncidentController::class, 'rca_file'])->name('backoffice.incident.rca.file');
+        Route::get('/rca/search_person', [App\Http\Controllers\Backoffice\IncidentController::class, 'search_person'])->name('backoffice.incident.rca.search_person');
     });
 
     // License System Management (เฉพาะ user 1341800003078 เท่านั้น โดยมีตัวดักสิทธิ์ที่ Controller)

@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 
 class IncidentController extends Controller
 {
@@ -1181,11 +1182,21 @@ class IncidentController extends Controller
             }
         }
 
+        $departments = DB::connection('backoffice')->table('hrd_department_sub_sub')
+            ->where('ACTIVE', 1)
+            ->orWhereNull('ACTIVE')
+            ->orderBy('HR_DEPARTMENT_SUB_SUB_NAME')
+            ->pluck('HR_DEPARTMENT_SUB_SUB_NAME')
+            ->filter()
+            ->unique()
+            ->values();
+
         return view('backoffice.incident.rca', compact(
             'budget_year_select', 'budget_year', 'start_date', 'end_date',
             'dash_budget_year', 'dash_start_date', 'dash_end_date',
             'incidents', 'saved_rcas_query',
-            'level_counts', 'swiss_labels', 'swiss_counts', 'potential_labels', 'potential_counts'
+            'level_counts', 'swiss_labels', 'swiss_counts', 'potential_labels', 'potential_counts',
+            'departments'
         ));
     }
 
@@ -1251,9 +1262,10 @@ class IncidentController extends Controller
                 // Check if a new file is uploaded for this timeline row index
                 if ($request->hasFile("timeline.{$index}.file")) {
                     $file = $request->file("timeline.{$index}.file");
-                    $filename = time() . '_' . $index . '_' . $file->getClientOriginalName();
-                    $file->move(public_path('uploads/rca'), $filename);
-                    $filePath = 'uploads/rca/' . $filename;
+                    $originalName = preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $file->getClientOriginalName());
+                    $filename = time() . '_' . $index . '_' . $originalName;
+                    $file->storeAs('rca', $filename);
+                    $filePath = $filename;
                 }
 
                 $timeline[] = [
@@ -1298,6 +1310,7 @@ class IncidentController extends Controller
             'recorder_name' => $request->input('recorder_name'),
             'recorder_position' => $request->input('recorder_position'),
             'record_date' => $request->input('record_date'),
+            'rca_status' => $request->input('rca_status', 'pending'),
             'updated_at' => now(),
         ];
 
@@ -1316,5 +1329,72 @@ class IncidentController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'บันทึกข้อมูล RCA เรียบร้อยแล้ว']);
+    }
+
+    /**
+     * Protected file stream for RCA timeline attachments
+     */
+    public function rca_file($filename)
+    {
+        $filename = basename($filename);
+        $path = null;
+
+        if (Storage::disk('local')->exists('rca/' . $filename)) {
+            $path = Storage::disk('local')->path('rca/' . $filename);
+        } elseif (file_exists(storage_path('app/rca/' . $filename))) {
+            $path = storage_path('app/rca/' . $filename);
+        } elseif (file_exists(public_path('uploads/rca/' . $filename))) {
+            $path = public_path('uploads/rca/' . $filename);
+        }
+
+        if (!$path || !file_exists($path)) {
+            abort(404, 'File not found.');
+        }
+
+        $mimeType = mime_content_type($path) ?: 'application/pdf';
+
+        return response()->file($path, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $filename . '"'
+        ]);
+    }
+
+    /**
+     * AJAX search staff/personnel from backoffice HR database
+     */
+    public function search_person(Request $request)
+    {
+        $q = trim($request->input('q', ''));
+        if (mb_strlen($q) < 1) {
+            return response()->json(['success' => true, 'data' => []]);
+        }
+
+        $searchTerm = '%' . $q . '%';
+
+        $persons = DB::connection('backoffice')->select('
+            SELECT 
+                hr.ID as id,
+                TRIM(CONCAT(COALESCE(hrp.HR_PREFIX_NAME, ""), hr.HR_FNAME, " ", hr.HR_LNAME)) as fullname,
+                COALESCE(hr.POSITION_IN_WORK, "") as position,
+                COALESCE(hrds.HR_DEPARTMENT_SUB_SUB_NAME, hrd.HR_DEPARTMENT_NAME, "") as department
+            FROM hrd_person hr
+            LEFT JOIN hrd_prefix hrp ON hrp.HR_PREFIX_ID = hr.HR_PREFIX_ID
+            LEFT JOIN hrd_department hrd ON hrd.HR_DEPARTMENT_ID = hr.HR_DEPARTMENT_ID
+            LEFT JOIN hrd_department_sub_sub hrds ON hrds.HR_DEPARTMENT_SUB_SUB_ID = hr.HR_DEPARTMENT_SUB_SUB_ID
+            WHERE hr.HR_STATUS_ID = 1
+            AND (
+                hr.HR_FNAME LIKE ? 
+                OR hr.HR_LNAME LIKE ? 
+                OR CONCAT(COALESCE(hrp.HR_PREFIX_NAME, ""), hr.HR_FNAME, " ", hr.HR_LNAME) LIKE ?
+                OR hr.POSITION_IN_WORK LIKE ?
+            )
+            ORDER BY hr.HR_FNAME ASC
+            LIMIT 20
+        ', [$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $persons
+        ]);
     }
 }
