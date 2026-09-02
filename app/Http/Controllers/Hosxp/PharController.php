@@ -2747,6 +2747,529 @@ class PharController extends Controller
         ];
     }
 
+    public function customDrug(Request $request)
+    {
+        $title = 'ข้อมูลการใช้ยา (ระบุตัวยา)';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        // 1. Fetch active drug items for multi-select dropdown (ไม่เอายาที่ขึ้นต้นด้วย *)
+        $drug_list = DB::connection('hosxp')->select("
+            SELECT icode, CONCAT(name, ' ', IFNULL(strength, '')) AS drug_name, units
+            FROM drugitems
+            WHERE istatus = 'Y' AND icode LIKE '1%'
+              AND TRIM(name) NOT LIKE '*%'
+            ORDER BY name ASC
+        ");
+
+        // 2. Resolve selected drugs
+        $selected_icodes = $request->input('drug_icodes', []);
+        if (!is_array($selected_icodes)) {
+            $selected_icodes = $selected_icodes ? [$selected_icodes] : [];
+        }
+        $selected_icodes = array_values(array_filter($selected_icodes));
+
+        $has_searched = !empty($selected_icodes);
+
+        // Generate all months in range for X-Axis & Tabs
+        $thai_months = [
+            '01' => 'ม.ค.', '02' => 'ก.พ.', '03' => 'มี.ค.', '04' => 'เม.ย.',
+            '05' => 'พ.ค.', '06' => 'มิ.ย.', '07' => 'ก.ค.', '08' => 'ส.ค.',
+            '09' => 'ก.ย.', '10' => 'ต.ค.', '11' => 'พ.ย.', '12' => 'ธ.ค.'
+        ];
+        
+        $start = new \DateTime($start_date);
+        $start->modify('first day of this month');
+        $end = new \DateTime($end_date);
+        $end->modify('last day of this month');
+        
+        $interval = new \DateInterval('P1M');
+        $period = new \DatePeriod($start, $interval, $end);
+        
+        $month_keys = [];
+        $month_categories = [];
+        $months_list = [];
+        foreach ($period as $dt) {
+            $ym = $dt->format('Y-m');
+            $month_keys[] = $ym;
+            list($y, $m) = explode('-', $ym);
+            $thai_year = ($y + 543) % 100;
+            $label = $thai_months[$m] . ' ' . $thai_year;
+            $month_categories[] = $label;
+            $months_list[] = [
+                'key' => $ym,
+                'label' => $label
+            ];
+        }
+
+        if (!$has_searched) {
+            // Initial load without search: Do not run heavy queries
+            $custom_opd = [];
+            $custom_ipd = [];
+            $custom_opd_monthly = [];
+            $custom_ipd_monthly = [];
+            $chart_series_opd = [];
+            $chart_series_ipd = [];
+            $patient_prescriptions = [];
+            $sp_counts = [
+                'ALL' => 0,
+                'ER' => 0,
+                'ICU' => 0,
+                'VIP' => 0,
+                'IPD' => 0,
+                'OPD' => 0
+            ];
+        } else {
+            // Build SQL filter clause
+            $placeholders = implode(',', array_fill(0, count($selected_icodes), '?'));
+            $drugFilterSql = " AND o.icode IN ($placeholders) ";
+            $bindingsOpd = array_merge([$start_date, $end_date], $selected_icodes);
+            $bindingsIpd = array_merge([$start_date, $end_date], $selected_icodes);
+            $bindingsPt = array_merge([$start_date, $end_date], $selected_icodes);
+
+            // 3. OPD Yearly Summary (Pivot Table)
+        $custom_opd = DB::connection('hosxp')->select("
+            SELECT 
+                o.icode,
+                CONCAT(d.name, ' ', IFNULL(d.strength, '')) AS drug_name,
+                d.generic_name AS generic_name,
+                COUNT(DISTINCT o.hn) AS total_hn,
+                COUNT(DISTINCT o.vn) AS total_visit,
+                SUM(o.qty) AS total_qty,
+                SUM(o.qty * o.cost) AS total_cost,
+                SUM(o.sum_price) AS total_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'UCS' THEN o.vn END) AS ucs_visit,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.sum_price ELSE 0 END) AS ucs_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'OFC' THEN o.vn END) AS ofc_visit,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.sum_price ELSE 0 END) AS ofc_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'LGO' THEN o.vn END) AS lgo_visit,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.sum_price ELSE 0 END) AS lgo_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.vn END) AS sss_visit,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.sum_price ELSE 0 END) AS sss_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.vn END) AS other_visit,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+            FROM opitemrece o
+            LEFT JOIN pttype p ON p.pttype = o.pttype
+            LEFT JOIN drugitems d ON d.icode = o.icode								
+            WHERE o.rxdate BETWEEN ? AND ?
+              $drugFilterSql
+              AND (o.vn IS NOT NULL AND o.vn <> '')
+            GROUP BY o.icode, d.name, d.strength, d.generic_name
+            ORDER BY total_price DESC
+        ", $bindingsOpd);
+
+        // 4. IPD Yearly Summary (Pivot Table)
+        $custom_ipd = DB::connection('hosxp')->select("
+            SELECT 
+                o.icode,
+                CONCAT(d.name, ' ', IFNULL(d.strength, '')) AS drug_name,
+                d.generic_name AS generic_name,
+                COUNT(DISTINCT o.hn) AS total_hn,
+                COUNT(DISTINCT o.an) AS total_visit,
+                SUM(o.qty) AS total_qty,
+                SUM(o.qty * o.cost) AS total_cost,
+                SUM(o.sum_price) AS total_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'UCS' THEN o.an END) AS ucs_visit,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.sum_price ELSE 0 END) AS ucs_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'OFC' THEN o.an END) AS ofc_visit,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.sum_price ELSE 0 END) AS ofc_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'LGO' THEN o.an END) AS lgo_visit,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.sum_price ELSE 0 END) AS lgo_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.an END) AS sss_visit,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.sum_price ELSE 0 END) AS sss_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.an END) AS other_visit,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+            FROM opitemrece o
+            LEFT JOIN pttype p ON p.pttype = o.pttype
+            LEFT JOIN drugitems d ON d.icode = o.icode								
+            WHERE o.rxdate BETWEEN ? AND ?
+              $drugFilterSql
+              AND (o.an IS NOT NULL AND o.an <> '')
+            GROUP BY o.icode, d.name, d.strength, d.generic_name
+            ORDER BY total_price DESC
+        ", $bindingsIpd);
+
+        // 5. Monthly raw queries for charts and monthly tabs
+        $monthly_raw_opd = DB::connection('hosxp')->select("
+            SELECT 
+                CONCAT(d.name, ' ', IFNULL(d.strength, '')) AS drug_name,
+                YEAR(o.rxdate) as y,
+                MONTH(o.rxdate) as m,
+                SUM(o.qty) AS qty
+            FROM opitemrece o
+            LEFT JOIN drugitems d ON d.icode = o.icode
+            WHERE o.rxdate BETWEEN ? AND ?
+              $drugFilterSql
+              AND (o.vn IS NOT NULL AND o.vn <> '')
+            GROUP BY d.name, d.strength, y, m
+            ORDER BY d.name, y, m
+        ", $bindingsOpd);
+
+        $monthly_raw_ipd = DB::connection('hosxp')->select("
+            SELECT 
+                CONCAT(d.name, ' ', IFNULL(d.strength, '')) AS drug_name,
+                YEAR(o.rxdate) as y,
+                MONTH(o.rxdate) as m,
+                SUM(o.qty) AS qty
+            FROM opitemrece o
+            LEFT JOIN drugitems d ON d.icode = o.icode
+            WHERE o.rxdate BETWEEN ? AND ?
+              $drugFilterSql
+              AND (o.an IS NOT NULL AND o.an <> '')
+            GROUP BY d.name, d.strength, y, m
+            ORDER BY d.name, y, m
+        ", $bindingsIpd);
+
+        // Generate all months in range for X-Axis & Tabs
+        $thai_months = [
+            '01' => 'ม.ค.', '02' => 'ก.พ.', '03' => 'มี.ค.', '04' => 'เม.ย.',
+            '05' => 'พ.ค.', '06' => 'มิ.ย.', '07' => 'ก.ค.', '08' => 'ส.ค.',
+            '09' => 'ก.ย.', '10' => 'ต.ค.', '11' => 'พ.ย.', '12' => 'ธ.ค.'
+        ];
+        
+        $start = new \DateTime($start_date);
+        $start->modify('first day of this month');
+        $end = new \DateTime($end_date);
+        $end->modify('last day of this month');
+        
+        $interval = new \DateInterval('P1M');
+        $period = new \DatePeriod($start, $interval, $end);
+        
+        $month_keys = [];
+        $month_categories = [];
+        $months_list = [];
+        foreach ($period as $dt) {
+            $ym = $dt->format('Y-m');
+            $month_keys[] = $ym;
+            list($y, $m) = explode('-', $ym);
+            $thai_year = ($y + 543) % 100;
+            $label = $thai_months[$m] . ' ' . $thai_year;
+            $month_categories[] = $label;
+            $months_list[] = [
+                'key' => $ym,
+                'label' => $label
+            ];
+        }
+
+        // OPD Monthly rollup Query
+        $custom_opd_monthly_raw = DB::connection('hosxp')->select("
+            SELECT 
+                o.icode,
+                CONCAT(d.name, ' ', IFNULL(d.strength, '')) AS drug_name,
+                d.generic_name AS generic_name,
+                DATE_FORMAT(o.rxdate, '%Y-%m') AS month_key,
+                COUNT(DISTINCT o.vn) AS total_visit,
+                SUM(o.qty) AS total_qty,
+                SUM(o.qty * o.cost) AS total_cost,
+                SUM(o.sum_price) AS total_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'UCS' THEN o.vn END) AS ucs_visit,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.sum_price ELSE 0 END) AS ucs_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'OFC' THEN o.vn END) AS ofc_visit,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.sum_price ELSE 0 END) AS ofc_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'LGO' THEN o.vn END) AS lgo_visit,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.sum_price ELSE 0 END) AS lgo_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.vn END) AS sss_visit,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.sum_price ELSE 0 END) AS sss_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.vn END) AS other_visit,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+            FROM opitemrece o
+            LEFT JOIN pttype p ON p.pttype = o.pttype
+            LEFT JOIN drugitems d ON d.icode = o.icode								
+            WHERE o.rxdate BETWEEN ? AND ?
+              $drugFilterSql
+              AND (o.vn IS NOT NULL AND o.vn <> '')
+            GROUP BY o.icode, d.name, d.strength, d.generic_name, month_key
+            ORDER BY total_price DESC
+        ", $bindingsOpd);
+
+        // IPD Monthly rollup Query
+        $custom_ipd_monthly_raw = DB::connection('hosxp')->select("
+            SELECT 
+                o.icode,
+                CONCAT(d.name, ' ', IFNULL(d.strength, '')) AS drug_name,
+                d.generic_name AS generic_name,
+                DATE_FORMAT(o.rxdate, '%Y-%m') AS month_key,
+                COUNT(DISTINCT o.an) AS total_visit,
+                SUM(o.qty) AS total_qty,
+                SUM(o.qty * o.cost) AS total_cost,
+                SUM(o.sum_price) AS total_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'UCS' THEN o.an END) AS ucs_visit,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.qty ELSE 0 END) AS ucs_qty,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.qty * o.cost ELSE 0 END) AS ucs_cost,
+                SUM(CASE WHEN p.hipdata_code = 'UCS' THEN o.sum_price ELSE 0 END) AS ucs_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'OFC' THEN o.an END) AS ofc_visit,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.qty ELSE 0 END) AS ofc_qty,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.qty * o.cost ELSE 0 END) AS ofc_cost,
+                SUM(CASE WHEN p.hipdata_code = 'OFC' THEN o.sum_price ELSE 0 END) AS ofc_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code = 'LGO' THEN o.an END) AS lgo_visit,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.qty ELSE 0 END) AS lgo_qty,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.qty * o.cost ELSE 0 END) AS lgo_cost,
+                SUM(CASE WHEN p.hipdata_code = 'LGO' THEN o.sum_price ELSE 0 END) AS lgo_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.an END) AS sss_visit,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.qty ELSE 0 END) AS sss_qty,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.qty * o.cost ELSE 0 END) AS sss_cost,
+                SUM(CASE WHEN p.hipdata_code IN ('SSS', 'SSI') THEN o.sum_price ELSE 0 END) AS sss_price,
+                
+                COUNT(DISTINCT CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.an END) AS other_visit,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.qty ELSE 0 END) AS other_qty,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.qty * o.cost ELSE 0 END) AS other_cost,
+                SUM(CASE WHEN p.hipdata_code NOT IN ('UCS', 'OFC', 'LGO', 'SSS', 'SSI') OR p.hipdata_code IS NULL THEN o.sum_price ELSE 0 END) AS other_price
+            FROM opitemrece o
+            LEFT JOIN pttype p ON p.pttype = o.pttype
+            LEFT JOIN drugitems d ON d.icode = o.icode								
+            WHERE o.rxdate BETWEEN ? AND ?
+              $drugFilterSql
+              AND (o.an IS NOT NULL AND o.an <> '')
+            GROUP BY o.icode, d.name, d.strength, d.generic_name, month_key
+            ORDER BY total_price DESC
+        ", $bindingsIpd);
+
+        $custom_opd_monthly = [];
+        foreach ($custom_opd_monthly_raw as $row) {
+            $custom_opd_monthly[$row->month_key][] = $row;
+        }
+
+        $custom_ipd_monthly = [];
+        foreach ($custom_ipd_monthly_raw as $row) {
+            $custom_ipd_monthly[$row->month_key][] = $row;
+        }
+
+        // Format chart helper
+        $formatChart = function($raw_data) use ($month_keys) {
+            $series = [];
+            $drugs_data = [];
+            
+            foreach ($raw_data as $row) {
+                $drug_name = $row->drug_name;
+                $ym = sprintf('%04d-%02d', $row->y, $row->m);
+                if (!isset($drugs_data[$drug_name])) {
+                    $drugs_data[$drug_name] = array_fill_keys($month_keys, 0);
+                }
+                $drugs_data[$drug_name][$ym] = (float)$row->qty;
+            }
+            
+            foreach ($drugs_data as $drug_name => $values) {
+                $series[] = [
+                    'name' => $drug_name,
+                    'data' => array_values($values)
+                ];
+            }
+            
+            return $series;
+        };
+
+        $chart_series_opd = $formatChart($monthly_raw_opd);
+        $chart_series_ipd = $formatChart($monthly_raw_ipd);
+
+        // 6. Detailed Patient Prescriptions List (Bottom Table)
+        $patient_prescriptions = DB::connection('hosxp')->select("
+            SELECT 
+                o.hos_guid,
+                o.vn,
+                o.an,
+                o.hn,
+                p.cid,
+                CONCAT(p.pname, p.fname, ' ', p.lname) AS ptname,
+                IFNULL(v.age_y, a.age_y) AS age_y,
+                o.rxdate,
+                o.rxtime,
+                o.icode,
+                CONCAT(d.name, ' ', IFNULL(d.strength, '')) AS drug_name,
+                d.units,
+                o.qty,
+                o.sum_price,
+                du.name1 AS du_name1,
+                du.name2 AS du_name2,
+                du.name3 AS du_name3,
+                du.shortlist AS du_shortlist,
+                du.code AS du_code,
+                su.name1 AS su_name1,
+                su.name2 AS su_name2,
+                su.name3 AS su_name3,
+                doc.name AS doctor_name,
+                u.name AS staff_name,
+                pt.name AS pttype_name,
+                pt.hipdata_code,
+                i.ward AS ward_code,
+                w.name AS ward_name,
+                er.vn AS er_vn,
+                k.department AS dept_name,
+                
+                CASE 
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370601') THEN 'รพ.สต.หัวตะพาน' 
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370602' AND p.moopart IN ('4','5','6','10','11')) THEN 'รพ.สต.โนนหนามแท่ง'   
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370602' AND p.moopart IN ('1','2','3','7','8','9','12')) THEN 'รพ.สต.คำพระ'  
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370603' ) THEN 'รพ.สต.เค็งใหญ่'  
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370604' ) THEN 'รพ.สต.โคกเลาะ'   
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370605' AND p.moopart IN ('2','5','6','7','8','9')) THEN 'รพ.สต.ขุมเหล็ก' 
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370605' AND p.moopart IN ('1','3','4','10','11','12')) THEN 'รพ.สต.โพนเมืองน้อย' 
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370606' AND p.moopart IN ('1','3','7','10','11','12','13')) THEN 'รพ.สต.สร้างถ่อน้อย' 
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370606' AND p.moopart IN ('2','4','5','6','8','9') ) THEN 'รพ.สต.นาคู' 
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370607' AND p.moopart IN ('3','6','7','8','9')) THEN 'รพ.สต.หนองยอ'  
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370607' AND p.moopart IN ('1','2','4','5','10','11','12')) THEN 'รพ.สต.จิกดู่'   
+                    WHEN (CONCAT(p.chwpart,p.amppart,p.tmbpart )='370608' ) THEN 'PCU รัตนวารี' 
+                    ELSE 'นอกเขตอำเภอหัวตะพาน' 
+                END AS pcu
+
+            FROM opitemrece o
+            LEFT JOIN patient p ON p.hn = o.hn
+            LEFT JOIN vn_stat v ON v.vn = o.vn
+            LEFT JOIN an_stat a ON a.an = o.an
+            LEFT JOIN ovst ov ON ov.vn = o.vn
+            LEFT JOIN ipt i ON i.an = o.an
+            LEFT JOIN ward w ON w.ward = i.ward
+            LEFT JOIN er_regist er ON er.vn = o.vn
+            LEFT JOIN kskdepartment k ON k.depcode = o.dep_code
+            LEFT JOIN drugitems d ON d.icode = o.icode
+            LEFT JOIN drugusage du ON du.drugusage = o.drugusage
+            LEFT JOIN sp_use su ON su.sp_use = o.sp_use
+            LEFT JOIN doctor doc ON doc.code = o.doctor
+            LEFT JOIN opduser u ON u.loginname = o.staff
+            LEFT JOIN pttype pt ON pt.pttype = o.pttype
+            WHERE o.rxdate BETWEEN ? AND ?
+              $drugFilterSql
+            ORDER BY o.rxdate DESC, o.rxtime DESC
+            LIMIT 1500
+        ", $bindingsPt);
+
+        // Calculate service point and drug usage text in PHP
+        $sp_counts = [
+            'ALL' => count($patient_prescriptions),
+            'ER' => 0,
+            'ICU' => 0,
+            'VIP' => 0,
+            'IPD' => 0,
+            'OPD' => 0
+        ];
+
+        foreach ($patient_prescriptions as $pt) {
+            // 1. Format Drug Usage Text
+            $usage_parts = array_filter([$pt->du_name1, $pt->du_name2, $pt->du_name3, $pt->du_shortlist]);
+            if (!empty($usage_parts)) {
+                $pt->drugusage_text = implode(' ', $usage_parts);
+            } else {
+                $sp_parts = array_filter([$pt->su_name1, $pt->su_name2, $pt->su_name3]);
+                if (!empty($sp_parts)) {
+                    $pt->drugusage_text = implode(' ', $sp_parts);
+                } else {
+                    $pt->drugusage_text = $pt->du_code ?: '-';
+                }
+            }
+
+            // 2. Doctor Name fallback
+            $pt->doctor_name = $pt->doctor_name ?: ($pt->staff_name ?: '-');
+            $pt->pttype_name = $pt->pttype_name ?: '-';
+
+            // 3. Service Point Mapping:
+            // - IPD/VIP/ICU from ipt.ward
+            // - ER from er_regist (vn in er_regist)
+            // - Otherwise OPD
+            if (!empty($pt->an)) {
+                $w_code = trim((string)($pt->ward_code ?? ''));
+                $w_name = trim((string)($pt->ward_name ?? ''));
+                
+                if ($w_code === '10' || stripos($w_name, 'ICU') !== false || stripos($w_name, 'วิกฤต') !== false) {
+                    $pt->service_point_code = 'ICU';
+                    $pt->service_point_name = $w_name ?: 'ICU (หอผู้ป่วยวิกฤต)';
+                } elseif ($w_code === '03' || stripos($w_name, 'VIP') !== false || stripos($w_name, 'พิเศษ') !== false) {
+                    $pt->service_point_code = 'VIP';
+                    $pt->service_point_name = $w_name ?: 'VIP (ห้องพิเศษ)';
+                } else {
+                    $pt->service_point_code = 'IPD';
+                    $pt->service_point_name = $w_name ?: 'หอผู้ป่วยใน (IPD)';
+                }
+            } elseif (!empty($pt->er_vn)) {
+                $pt->service_point_code = 'ER';
+                $pt->service_point_name = 'ห้องอุบัติเหตุฉุกเฉิน (ER)';
+            } else {
+                $pt->service_point_code = 'OPD';
+                $pt->service_point_name = $pt->dept_name ?: 'แผนกผู้ป่วยนอก (OPD)';
+            }
+
+            // Increment Count
+            $code = $pt->service_point_code;
+            if (isset($sp_counts[$code])) {
+                $sp_counts[$code]++;
+            } else {
+                $sp_counts['OPD']++;
+            }
+        }
+        }
+
+        return view('hosxp.phar.custom_drug', compact(
+            'title',
+            'has_searched',
+            'budget_year_select',
+            'budget_year',
+            'start_date',
+            'end_date',
+            'drug_list',
+            'selected_icodes',
+            'custom_opd',
+            'custom_ipd',
+            'custom_opd_monthly',
+            'custom_ipd_monthly',
+            'month_categories',
+            'months_list',
+            'chart_series_opd',
+            'chart_series_ipd',
+            'patient_prescriptions',
+            'sp_counts'
+        ));
+    }
+
     private function resolveDateRange(Request $request)
     {
         $budget_year_select = DB::table('budget_year')->select('LEAVE_YEAR_ID', 'LEAVE_YEAR_NAME')->orderByDesc('LEAVE_YEAR_ID')->limit(7)->get();

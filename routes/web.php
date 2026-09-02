@@ -177,6 +177,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dmht', [App\Http\Controllers\Hosxp\PharController::class, 'dmht'])->name('hosxp.phar.dmht');
         Route::get('/allergy-pcu', [App\Http\Controllers\Hosxp\PharController::class, 'allergyPcu'])->name('hosxp.phar.allergy_pcu');
         Route::get('/night-shift', [App\Http\Controllers\Hosxp\PharController::class, 'nightShift'])->name('hosxp.phar.night_shift');
+        Route::get('/custom-drug', [App\Http\Controllers\Hosxp\PharController::class, 'customDrug'])->name('hosxp.phar.custom_drug');
     });
 
     // NCD Routes

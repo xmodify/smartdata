@@ -61,6 +61,12 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
+                            <a href="{{ route('hosxp.phar.custom_drug') }}" class="list-group-item list-group-item-action py-3 px-4 border-0" style="background-color: #f0fdf4;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-success fw-bold"><i class="fas fa-search-plus me-2"></i>ข้อมูลการใช้ยา (ระบุตัวยา)</span>
+                                    <span class="badge bg-success rounded-pill px-2 py-1" style="font-size: 0.65rem;">เลือกตัวยาได้</span>
+                                </div>
+                            </a>
                             <a href="{{ route('hosxp.phar.prescription_count') }}" class="list-group-item list-group-item-action py-3 px-4 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="small text-dark fw-bold">จำนวนใบสั่งยา</span>
