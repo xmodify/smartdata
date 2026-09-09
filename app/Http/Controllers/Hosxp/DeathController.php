@@ -12,25 +12,32 @@ class DeathController extends Controller
     {
         $title = 'รายงานการเสียชีวิต';
         $dates = $this->resolveDateRange($request);
-        $start_date = $dates['start_date'];
-        $end_date = $dates['end_date'];
+        $year_start = $dates['year_start'];
+        $year_end = $dates['year_end'];
+        $table_start_date = $dates['table_start_date'];
+        $table_end_date = $dates['table_end_date'];
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        // Raw Death Query
-        $death_list = DB::connection('hosxp')->select('select 
-            pt.hn,d.an,CONCAT(pt.pname,pt.fname,SPACE(1),pt.lname ) AS ptname,
-            pt.birthday,d.death_date,d.death_time,c1.name1 AS name504,CONCAT("[",i1.`code`,"] ",i1.`name`) AS icdname
-            FROM death d
-            LEFT OUTER JOIN patient pt ON pt.hn = d.hn
-            LEFT OUTER JOIN rpt_504_name c1 ON c1.id = d.death_cause
-            LEFT OUTER JOIN icd101 i1 ON i1.CODE = d.death_diag_1 
-            WHERE d.death_date BETWEEN ? AND ?
-            AND d.death_place = "1"
-            ORDER BY d.death_date', [$start_date, $end_date]);
+        // Raw Death Query for Patient Table filtered by independent table dates
+        $death_list = $this->fetch_death_patients($table_start_date, $table_end_date);
 
-        // Monthly Trend Data
-        $monthly_trend_raw = $this->fetch_death_trend_monthly($start_date, $end_date);
+        // Check if Ajax request
+        if ($request->ajax()) {
+            $html = view('hosxp.death.partials._table_death', compact('death_list'))->render();
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'total' => count($death_list)
+            ]);
+        }
+
+        // Monthly Trend Data (12-month budget year)
+        $monthly_trend_raw = $this->fetch_death_trend_monthly($year_start, $year_end);
         $monthly_trend = collect($monthly_trend_raw)->map(function ($item) {
             $months_th = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             $item->label = $months_th[(int) $item->month_num] . " " . ($item->year_be);
@@ -40,12 +47,20 @@ class DeathController extends Controller
         // Yearly Trend Data
         $yearly_trend = $this->fetch_death_trend_yearly($budget_year);
 
+        // Backwards compatibility variables
+        $start_date = $year_start;
+        $end_date = $year_end;
+
         return view('hosxp.death.index', compact(
             'title',
             'budget_year_select',
             'budget_year',
             'start_date',
             'end_date',
+            'year_start',
+            'year_end',
+            'table_start_date',
+            'table_end_date',
             'death_list',
             'monthly_trend',
             'yearly_trend'
@@ -116,38 +131,66 @@ class DeathController extends Controller
 
         $budget_year = $request->budget_year ?: $budget_year_now;
 
-        if ($request->start_date && $request->end_date) {
+        $year_data = DB::table('budget_year')
+            ->where('LEAVE_YEAR_ID', $budget_year)
+            ->first();
+
+        if ($year_data) {
+            $year_start = $year_data->DATE_BEGIN;
+            $year_end = $year_data->DATE_END;
+        } else {
+            $year_start = ($budget_year - 544) . '-10-01';
+            $year_end = ($budget_year - 543) . '-09-30';
+        }
+
+        // Support explicit start_date & end_date if requested
+        if ($request->filled('start_date') && $request->filled('end_date')) {
             $start_date = $request->start_date;
             $end_date = $request->end_date;
-
-            $matched_year = DB::table('budget_year')
-                ->where('DATE_BEGIN', '<=', $start_date)
-                ->where('DATE_END', '>=', $start_date)
-                ->first();
-
-            if ($matched_year) {
-                $budget_year = $matched_year->LEAVE_YEAR_ID;
-            }
         } else {
-            $year_data = DB::table('budget_year')
-                ->where('LEAVE_YEAR_ID', $budget_year)
-                ->first();
+            $start_date = $year_start;
+            $end_date = $year_end;
+        }
 
-            if ($year_data) {
-                $start_date = $year_data->DATE_BEGIN;
-                $end_date = $year_data->DATE_END;
+        // Independent table date range (defaults to current month, clamped to selected budget year)
+        if ($request->filled('table_start_date') && $request->filled('table_end_date')) {
+            $table_start_date = $request->table_start_date;
+            $table_end_date = $request->table_end_date;
+        } else {
+            $currentDate = date('Y-m-d');
+            if ($currentDate >= $year_start && $currentDate <= $year_end) {
+                $table_start_date = date('Y-m-01');
+                $table_end_date = date('Y-m-t');
             } else {
-                $start_date = ($budget_year - 543) . '-10-01';
-                $end_date = ($budget_year - 542) . '-09-30';
+                $table_start_date = date('Y-m-01', strtotime($year_end));
+                $table_end_date = $year_end;
             }
         }
 
         return [
             'start_date' => $start_date,
             'end_date' => $end_date,
+            'year_start' => $year_start,
+            'year_end' => $year_end,
+            'table_start_date' => $table_start_date,
+            'table_end_date' => $table_end_date,
             'budget_year' => $budget_year,
             'budget_year_select' => $budget_year_select
         ];
+    }
+
+    private function fetch_death_patients($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select('select 
+            pt.hn,d.an,CONCAT(pt.pname,pt.fname,SPACE(1),pt.lname ) AS ptname,
+            pt.birthday,d.death_date,d.death_time,c1.name1 AS name504,CONCAT("[",i1.`code`,"] ",i1.`name`) AS icdname
+            FROM death d
+            LEFT OUTER JOIN patient pt ON pt.hn = d.hn
+            LEFT OUTER JOIN rpt_504_name c1 ON c1.id = d.death_cause
+            LEFT OUTER JOIN icd101 i1 ON i1.CODE = d.death_diag_1 
+            WHERE d.death_date BETWEEN ? AND ?
+            AND d.death_place = "1"
+            ORDER BY d.death_date', [$start_date, $end_date]);
     }
 
     private function fetch_death_trend_monthly($start_date, $end_date)

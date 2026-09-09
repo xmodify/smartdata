@@ -12,9 +12,14 @@
 @section('content')
     @php
         $total_visits = count($patients);
-        $count_type = count(array_filter($patients, function($p) { return $p->ovstist == '12'; }));
-        $count_charge = count(array_filter($patients, function($p) { return $p->has_telmed_charge == 1; }));
-        $unique_hns = count(array_unique(array_column($patients, 'hn')));
+        $count_complete = count(array_filter($patients, function($p) { return $p->ovstist == '12' && $p->has_telmed_charge; }));
+        $count_type = count(array_filter($patients, function($p) { return $p->ovstist == '12' && !$p->has_telmed_charge; }));
+        $count_charge = count(array_filter($patients, function($p) { return $p->ovstist != '12' && $p->has_telmed_charge; }));
+        
+        $ann_total = $summary->total_visits ?? 0;
+        $ann_hns = $summary->unique_hns ?? 0;
+        $ann_type = $summary->count_type ?? 0;
+        $ann_charge = $summary->count_charge ?? 0;
     @endphp
 
     <div class="container-fluid px-2 px-md-3">
@@ -26,51 +31,30 @@
                         <i class="fas fa-tv text-primary me-2"></i>
                         {{ $title }}
                     </h5>
-                    <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
-                    <div class="text-primary small fw-bold mt-1">
-                        <i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง
-                        {{ DateThai($end_date) }}
-                    </div>
+                    <div class="text-muted small mt-1">ข้อมูลภาพรวมปีงบประมาณ {{ $budget_year }}</div>
                 </div>
             </div>
 
             <div class="d-flex align-items-center">
-                <form action="" method="GET" class="m-0 header-form-controls">
-                    <span class="me-1 fw-bold text-muted small">ช่วงวันที่:</span>
-                    <div class="input-group input-group-sm shadow-sm input-group-date"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-primary"><i
-                                class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0"
-                            value="{{ $start_date }}" placeholder="วันที่เริ่ม" style="font-size: 0.8rem;">
-                    </div>
-                    <div class="input-group input-group-sm shadow-sm input-group-date"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-primary"><i
-                                class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0"
-                            value="{{ $end_date }}" placeholder="วันที่สิ้นสุด" style="font-size: 0.8rem;">
-                    </div>
-                    <div class="input-group input-group-sm shadow-sm input-group-budget"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
+                <form action="" method="GET" class="m-0">
+                    <div class="input-group input-group-sm shadow-sm" style="width: 230px; border-radius: 8px; overflow: hidden;">
+                        <span class="input-group-text bg-light text-primary border-end-0 fw-bold" style="font-size: 0.8rem;">
+                            <i class="fas fa-calendar-alt me-1"></i> เลือก
+                        </span>
+                        <select class="form-select border-start-0" name="budget_year" onchange="this.form.submit()" style="font-size: 0.85rem;">
                             @foreach ($budget_year_select as $row)
                                 <option value="{{ $row->LEAVE_YEAR_ID }}"
                                     {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>
-                                    {{ $row->LEAVE_YEAR_NAME }}
+                                    ปีงบ {{ $row->LEAVE_YEAR_NAME }}
                                 </option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-primary px-3" style="font-size: 0.8rem;">
-                            <i class="fas fa-search"></i> ค้นหา
-                        </button>
                     </div>
                 </form>
             </div>
         </div>
 
-
-        <!-- Summary Cards -->
+        <!-- Summary Cards (Annual Budget Year) -->
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-3">
                 <div class="card border-left-primary shadow-sm h-100 py-2 card-hover-effect">
@@ -78,9 +62,10 @@
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    จำนวนการให้บริการรวม
+                                    บริการรวมทั้งปีงบ (ครั้ง)
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($total_visits) }} ครั้ง</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($ann_total) }} ครั้ง</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">ปีงบประมาณ {{ $budget_year }}</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-laptop-medical fa-2x text-gray-300"></i>
@@ -96,9 +81,10 @@
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                    จำนวนผู้ป่วย (ไม่ซ้ำคน)
+                                    ผู้ป่วยทั้งปีงบ (ไม่ซ้ำคน)
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($unique_hns) }} คน</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($ann_hns) }} คน</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">ปีงบประมาณ {{ $budget_year }}</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-users fa-2x text-gray-300"></i>
@@ -114,9 +100,10 @@
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                    ผ่านประเภทผู้ป่วย (ovstist=12)
+                                    ประเภทผู้ป่วย (ovstist=12)
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($count_type) }} ครั้ง</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($ann_type) }} ครั้ง</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">ปีงบประมาณ {{ $budget_year }}</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-user-md fa-2x text-gray-300"></i>
@@ -132,9 +119,10 @@
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    ผ่านการบันทึกรหัส (TELMED)
+                                    บันทึกรหัสเบิก (TELMED)
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($count_charge) }} ครั้ง</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($ann_charge) }} ครั้ง</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">ปีงบประมาณ {{ $budget_year }}</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-file-invoice-dollar fa-2x text-gray-300"></i>
@@ -151,7 +139,7 @@
                 <div class="card border-0 shadow-sm" style="border-radius: 15px; border-top: 4px solid #4e73df !important;">
                     <div class="card-header bg-transparent border-0 pt-4 px-4">
                         <h6 class="fw-bold mb-0 text-dark">
-                            <i class="fas fa-chart-bar me-2 text-primary"></i> กราฟแสดงจำนวนผู้รับบริการ Telehealth รายเดือน (หน่วย: ครั้ง)
+                            <i class="fas fa-chart-bar me-2 text-primary"></i> กราฟแสดงจำนวนผู้รับบริการ Telehealth รายเดือน ปีงบประมาณ {{ $budget_year }} (หน่วย: ครั้ง)
                         </h6>
                     </div>
                     <div class="card-body px-4 pb-4">
@@ -163,86 +151,71 @@
 
         <!-- Table Container -->
         <div class="card border-0 shadow-sm mb-5 shadow-hover" style="border-radius: 15px; border-top: 4px solid #1cc88a !important;">
-            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-                <h6 class="fw-bold mb-3 text-dark">
-                    <i class="fas fa-list me-2 text-success"></i> รายชื่อผู้รับบริการ Telehealth ทั้งหมด
-                </h6>
+            <div class="card-header bg-white border-0 pt-4 px-4 pb-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">
+                            <i class="fas fa-list me-2 text-success"></i> รายชื่อผู้รับบริการ Telehealth
+                        </h6>
+                        <small class="text-muted">
+                            ช่วงวันที่: <span id="displayDateRange" class="fw-bold text-dark">{{ DateThai($table_start_date) }} ถึง {{ DateThai($table_end_date) }}</span>
+                        </small>
+                    </div>
+
+                    <!-- Independent Table Date Filter -->
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <div class="input-group input-group-sm" style="width: 140px;">
+                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="text" id="table_start_date" class="form-control border-start-0 ps-0 text-center"
+                                value="{{ $table_start_date }}" placeholder="เริ่ม">
+                        </div>
+                        <span class="text-muted small">ถึง</span>
+                        <div class="input-group input-group-sm" style="width: 140px;">
+                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="text" id="table_end_date" class="form-control border-start-0 ps-0 text-center"
+                                value="{{ $table_end_date }}" placeholder="สิ้นสุด">
+                        </div>
+                        <button type="button" id="btnFilterTable" class="btn btn-sm btn-primary px-3 shadow-sm" style="border-radius: 6px;">
+                            <i class="fas fa-search me-1"></i> ค้นหา
+                        </button>
+                        <div class="btn-group btn-group-sm ms-1 shadow-sm">
+                            <button type="button" id="btnCurrentMonth" class="btn btn-outline-secondary" title="เลือกเดือนปัจจุบัน">
+                                เดือนนี้
+                            </button>
+                            <button type="button" id="btnPrevMonth" class="btn btn-outline-secondary" title="เลือกเดือนก่อนหน้า">
+                                เดือนก่อน
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Status Filter Tabs -->
-                <ul class="nav nav-pills custom-pills mb-2" id="statusFilterTabs" role="tablist" style="gap: 5px;">
+                <ul class="nav nav-pills custom-pills mb-1" id="statusFilterTabs" role="tablist" style="gap: 5px;">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active status-tab py-1 px-3" data-status-filter="all" type="button">
-                            ทั้งหมด ({{ number_format($total_visits) }})
+                            ทั้งหมด (<span id="tab_count_all">{{ number_format($total_visits) }}</span>)
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link status-tab py-1 px-3" data-status-filter="complete" type="button">
-                            ครบถ้วน ({{ number_format(count(array_filter($patients, function($p) { return $p->ovstist == '12' && $p->has_telmed_charge; }))) }})
+                            ครบถ้วน (<span id="tab_count_complete">{{ number_format($count_complete) }}</span>)
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link status-tab py-1 px-3" data-status-filter="type_only" type="button">
-                            เฉพาะประเภทผู้ป่วย ({{ number_format(count(array_filter($patients, function($p) { return $p->ovstist == '12' && !$p->has_telmed_charge; }))) }})
+                            เฉพาะประเภทผู้ป่วย (<span id="tab_count_type">{{ number_format($count_type) }}</span>)
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link status-tab py-1 px-3" data-status-filter="charge_only" type="button">
-                            เฉพาะรหัสเบิก ({{ number_format(count(array_filter($patients, function($p) { return $p->ovstist != '12' && $p->has_telmed_charge; }))) }})
+                            เฉพาะรหัสเบิก (<span id="tab_count_charge">{{ number_format($count_charge) }}</span>)
                         </button>
                     </li>
                 </ul>
             </div>
-            <div class="card-body p-4 pt-2">
-                <div class="table-responsive">
-                    <table id="telehealthTable" class="table table-hover align-middle mb-0" style="width:100%">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="text-center" style="width: 50px;">ลำดับ</th>
-                                <th class="text-center">วันที่บริการ</th>
-                                <th class="text-center">VN</th>
-                                <th class="text-center">คิว</th>
-                                <th class="text-center">HN</th>
-                                <th>ชื่อ-สกุล</th>
-                                <th class="text-center">อายุ (ปี)</th>
-                                <th>สิทธิการรักษา</th>
-                                <th class="text-center">โรคหลัก</th>
-                                <th>ห้องตรวจที่รักษา</th>
-                                <th class="text-center">แพทย์ผู้ตรวจ</th>
-                                <th class="text-center">สถานะ</th>
-                                <th>เลขที่สิทธิ / เลขอนุมัติ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($patients as $row)
-                                <tr>
-                                    <td class="text-center text-muted" style="font-size: 0.85rem;">{{ $loop->iteration }}</td>
-                                    <td class="text-center" style="font-size: 0.85rem;">{{ DateThai($row->vstdate) }}</td>
-                                    <td class="text-center text-primary fw-bold" style="font-size: 0.85rem;">{{ $row->vn }}</td>
-                                    <td class="text-center" style="font-size: 0.85rem;">
-                                        <span class="badge bg-secondary rounded-pill px-2 py-1">{{ $row->oqueue }}</span>
-                                    </td>
-                                    <td class="text-center" style="font-size: 0.85rem;">{{ $row->hn }}</td>
-                                    <td class="fw-bold text-dark" style="font-size: 0.85rem;">{{ $row->ptname }}</td>
-                                    <td class="text-center" style="font-size: 0.85rem;">{{ $row->age_y }}</td>
-                                    <td style="font-size: 0.85rem;">{{ $row->pttype }}</td>
-                                    <td class="text-center fw-bold text-danger" style="font-size: 0.85rem;">{{ $row->pdx }}</td>
-                                    <td style="font-size: 0.85rem;">{{ $row->department }}</td>
-                                    <td class="text-center" style="font-size: 0.85rem;">{{ $row->dx_doctor }}</td>
-                                    <td class="text-center" style="font-size: 0.82rem;" data-status="{{ ($row->ovstist == '12' && $row->has_telmed_charge) ? 'complete' : (($row->ovstist == '12') ? 'type_only' : 'charge_only') }}">
-                                        @if ($row->ovstist == '12' && $row->has_telmed_charge)
-                                            <span class="badge bg-success">ครบถ้วน</span>
-                                        @elseif ($row->ovstist == '12')
-                                            <span class="badge bg-primary">ประเภท: Tele</span>
-                                        @else
-                                            <span class="badge bg-warning text-dark">เฉพาะรหัสเบิก</span>
-                                        @endif
-                                    </td>
-                                    <td style="font-family: monospace; font-size: 0.82rem;">{{ $row->auth_code ?: '-' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+
+            <div class="card-body p-4 pt-2" id="tableContainer">
+                @include('hosxp.opd.partials._table_telehealth')
             </div>
         </div>
     </div>
@@ -265,38 +238,6 @@
         .report-title-box h5 {
             font-size: 1.1rem;
             letter-spacing: -0.01em;
-        }
-
-        .header-form-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .input-group-date {
-            width: 160px !important;
-        }
-
-        .input-group-budget {
-            width: 250px !important;
-        }
-
-        @media (max-width: 768px) {
-            .page-header-container {
-                flex-direction: column;
-                align-items: flex-start !important;
-                gap: 1rem;
-            }
-
-            .header-form-controls {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-
-            .input-group-date,
-            .input-group-budget {
-                width: 100% !important;
-            }
         }
 
         .flatpickr-today-button {
@@ -408,111 +349,55 @@
 
     <script>
         $(document).ready(function() {
-            if (typeof flatpickr !== 'undefined') {
-                const yearOffset = 543;
-                const commonConfig = {
-                    locale: "th",
-                    dateFormat: "Y-m-d",
-                    altInput: true,
-                    altFormat: "j M Y",
-                    allowInput: true,
-                    onReady: function(selectedDates, dateStr, instance) {
-                        const container = instance.calendarContainer;
-                        if (container && !container.querySelector('.flatpickr-today-button')) {
-                            const btn = document.createElement("div");
-                            btn.className = "flatpickr-today-button";
-                            btn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> วันนี้';
-                            btn.addEventListener("mousedown", function(e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                instance.setDate(new Date());
-                                instance.close();
-                            });
-                            container.appendChild(btn);
-                        }
-
-                        if (instance.altInput) {
-                            const originalValue = instance.altInput.value;
-                            if (originalValue) {
-                                const date = instance.selectedDates[0] || new Date(instance.input.value);
-                                if (date && !isNaN(date.getTime())) {
-                                    const day = date.getDate();
-                                    const month = instance.l10n.months.shorthand[date.getMonth()];
-                                    const year = date.getFullYear() + yearOffset;
-                                    instance.altInput.value = `${day} ${month} ${year}`;
-                                }
-                            }
-                        }
-                    },
-                    onChange: function(selectedDates, dateStr, instance) {
-                        if (instance.altInput && selectedDates.length > 0) {
-                            const date = selectedDates[0];
-                            const day = date.getDate();
-                            const month = instance.l10n.months.shorthand[date.getMonth()];
-                            const year = date.getFullYear() + yearOffset;
-                            setTimeout(() => {
-                                instance.altInput.value = `${day} ${month} ${year}`;
-                            }, 10);
-                        }
-                    }
-                };
-
-                const startPicker = flatpickr("#start_date", commonConfig);
-                const endPicker = flatpickr("#end_date", commonConfig);
-
-                $('select[name="budget_year"]').on('change', function() {
-                    var selectedYear = parseInt($(this).val());
-                    if(!isNaN(selectedYear)) {
-                        var startYear = selectedYear - 544;
-                        var endYear = selectedYear - 543;
-                        var startDateStr = startYear + "-10-01";
-                        var endDateStr = endYear + "-09-30";
-                        
-                        setTimeout(() => {
-                            if (typeof startPicker !== 'undefined' && startPicker) startPicker.setDate(startDateStr, true);
-                            if (typeof endPicker !== 'undefined' && endPicker) endPicker.setDate(endDateStr, true);
-                        }, 50);
-                    }
-                });
-            }
+            let currentFilterStatus = 'all';
+            let table = null;
 
             // Setup Custom DataTable Filter for Status Tabs
-            let currentFilterStatus = 'all';
             $.fn.dataTable.ext.search.push(
                 function(settings, data, dataIndex) {
                     if (currentFilterStatus === 'all') {
                         return true;
                     }
+                    if (!table) return true;
                     let cell = table.cell(dataIndex, 11).node();
                     let status = $(cell).attr('data-status');
                     return status === currentFilterStatus;
                 }
             );
 
-            // Initialize DataTable
-            const table = $('#telehealthTable').DataTable({
-                dom: '<"d-flex justify-content-between align-items-center mb-3"l<"d-flex align-items-center gap-2"fB>>rtip',
-                buttons: [{
-                    extend: 'excelHtml5',
-                    text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
-                    className: 'btn btn-success btn-sm m-0',
-                    title: '{{ $title }}',
-                    messageTop: 'ช่วงวันที่: {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}'
-                }],
-                pageLength: 10,
-                language: {
-                    search: "ค้นหา:",
-                    lengthMenu: "แสดง _MENU_ รายการ",
-                    info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
-                    paginate: {
-                        first: "หน้าแรก",
-                        last: "หน้าสุดท้าย",
-                        next: "ถัดไป",
-                        previous: "ก่อนหน้า"
-                    }
-                },
-                responsive: true
-            });
+            function initPatientTable() {
+                if ($.fn.DataTable.isDataTable('#telehealthTable')) {
+                    $('#telehealthTable').DataTable().destroy();
+                }
+
+                table = $('#telehealthTable').DataTable({
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"l<"d-flex align-items-center gap-2"fB>>rtip',
+                    buttons: [{
+                        extend: 'excelHtml5',
+                        text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                        className: 'btn btn-success btn-sm m-0',
+                        title: '{{ $title }}',
+                        messageTop: function() {
+                            return 'ช่วงวันที่: ' + ($('#displayDateRange').text() || '{{ DateThai($table_start_date) }} ถึง {{ DateThai($table_end_date) }}');
+                        }
+                    }],
+                    pageLength: 10,
+                    language: {
+                        search: "ค้นหา:",
+                        lengthMenu: "แสดง _MENU_ รายการ",
+                        info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                        paginate: {
+                            first: "หน้าแรก",
+                            last: "หน้าสุดท้าย",
+                            next: "ถัดไป",
+                            previous: "ก่อนหน้า"
+                        }
+                    },
+                    responsive: true
+                });
+            }
+
+            initPatientTable();
 
             // Handle tab filtering click
             $('.status-tab').on('click', function(e) {
@@ -520,7 +405,129 @@
                 $('.status-tab').removeClass('active');
                 $(this).addClass('active');
                 currentFilterStatus = $(this).data('status-filter');
-                table.draw();
+                if (table) table.draw();
+            });
+
+            // Flatpickr setup
+            const yearOffset = 543;
+            const commonConfig = {
+                locale: "th",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "j M Y",
+                allowInput: true,
+                onReady: function(selectedDates, dateStr, instance) {
+                    const container = instance.calendarContainer;
+                    if (container && !container.querySelector('.flatpickr-today-button')) {
+                        const btn = document.createElement("div");
+                        btn.className = "flatpickr-today-button";
+                        btn.innerHTML = '<i class="fas fa-calendar-day me-1"></i> วันนี้';
+                        btn.addEventListener("mousedown", function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            instance.setDate(new Date());
+                            instance.close();
+                        });
+                        container.appendChild(btn);
+                    }
+
+                    if (instance.altInput && instance.input.value) {
+                        const date = instance.selectedDates[0] || new Date(instance.input.value);
+                        if (date && !isNaN(date.getTime())) {
+                            const day = date.getDate();
+                            const month = instance.l10n.months.shorthand[date.getMonth()];
+                            const year = date.getFullYear() + yearOffset;
+                            instance.altInput.value = `${day} ${month} ${year}`;
+                        }
+                    }
+                },
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (instance.altInput && selectedDates.length > 0) {
+                        const date = selectedDates[0];
+                        const day = date.getDate();
+                        const month = instance.l10n.months.shorthand[date.getMonth()];
+                        const year = date.getFullYear() + yearOffset;
+                        setTimeout(() => {
+                            instance.altInput.value = `${day} ${month} ${year}`;
+                        }, 10);
+                    }
+                }
+            };
+
+            const startPicker = flatpickr("#table_start_date", commonConfig);
+            const endPicker = flatpickr("#table_end_date", commonConfig);
+
+            // Ajax table loader
+            function loadTableData(startDate, endDate) {
+                $('#tableContainer').html(`
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="mt-2 text-muted small">กำลังโหลดข้อมูลรายชื่อ...</div>
+                    </div>
+                `);
+
+                $.ajax({
+                    url: "{{ route('hosxp.opd.telehealth') }}",
+                    type: "GET",
+                    data: {
+                        budget_year: "{{ $budget_year }}",
+                        table_start_date: startDate,
+                        table_end_date: endDate
+                    },
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.success) {
+                            $('#tableContainer').html(res.html);
+                            $('#displayDateRange').text(`${res.start_date_thai} ถึง ${res.end_date_thai}`);
+                            $('#tab_count_all').text(Number(res.total).toLocaleString());
+                            $('#tab_count_complete').text(Number(res.count_complete).toLocaleString());
+                            $('#tab_count_type').text(Number(res.count_type).toLocaleString());
+                            $('#tab_count_charge').text(Number(res.count_charge).toLocaleString());
+                            initPatientTable();
+                        } else {
+                            $('#tableContainer').html('<div class="alert alert-danger text-center m-4">ไม่สามารถโหลดข้อมูลได้</div>');
+                        }
+                    },
+                    error: function() {
+                        $('#tableContainer').html('<div class="alert alert-danger text-center m-4">เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์</div>');
+                    }
+                });
+            }
+
+            $('#btnFilterTable').on('click', function() {
+                const sDate = $('#table_start_date').val();
+                const eDate = $('#table_end_date').val();
+                if (sDate && eDate) {
+                    loadTableData(sDate, eDate);
+                }
+            });
+
+            $('#btnCurrentMonth').on('click', function() {
+                const now = new Date();
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+                const sStr = firstDay.toISOString().split('T')[0];
+                const eStr = lastDay.toISOString().split('T')[0];
+
+                startPicker.setDate(sStr, true);
+                endPicker.setDate(eStr, true);
+                loadTableData(sStr, eStr);
+            });
+
+            $('#btnPrevMonth').on('click', function() {
+                const now = new Date();
+                const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+
+                const sStr = firstDay.toISOString().split('T')[0];
+                const eStr = lastDay.toISOString().split('T')[0];
+
+                startPicker.setDate(sStr, true);
+                endPicker.setDate(eStr, true);
+                loadTableData(sStr, eStr);
             });
 
             // ApexCharts Setup

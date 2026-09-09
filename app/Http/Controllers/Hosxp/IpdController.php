@@ -236,26 +236,40 @@ class IpdController extends Controller
 
         $budget_year = $request->budget_year ?: $budget_year_now;
 
-        if ($request->start_date && $request->end_date) {
-            $start_date = $request->start_date;
-            $end_date = $request->end_date;
-        } else {
-            $year_data = DB::table('budget_year')
-                ->where('LEAVE_YEAR_ID', $budget_year)
-                ->first();
+        $year_start = ($budget_year - 544) . '-10-01';
+        $year_end = ($budget_year - 543) . '-09-30';
 
-            if ($year_data) {
-                $start_date = $year_data->DATE_BEGIN;
-                $end_date = $year_data->DATE_END;
-            } else {
-                $start_date = ($budget_year - 543) . '-10-01';
-                $end_date = ($budget_year - 542) . '-09-30';
-            }
+        $year_data = DB::table('budget_year')->where('LEAVE_YEAR_ID', $budget_year)->first();
+        if ($year_data) {
+            $year_start = $year_data->DATE_BEGIN;
+            $year_end = $year_data->DATE_END;
+        }
+
+        // Default table date range: current month if in budget year, else September of budget year
+        $today = date('Y-m-d');
+        if ($today >= $year_start && $today <= $year_end) {
+            $table_start_date = date('Y-m-01');
+            $table_end_date = date('Y-m-t');
+        } else {
+            $table_start_date = ($budget_year - 543) . '-09-01';
+            $table_end_date = ($budget_year - 543) . '-09-30';
+        }
+
+        if ($request->filled('table_start_date') && $request->filled('table_end_date')) {
+            $table_start_date = $request->table_start_date;
+            $table_end_date = $request->table_end_date;
+        } elseif ($request->filled('start_date') && $request->filled('end_date') && !$request->has('budget_year_changed')) {
+            $table_start_date = $request->start_date;
+            $table_end_date = $request->end_date;
         }
 
         return [
-            'start_date' => $start_date,
-            'end_date' => $end_date,
+            'year_start' => $year_start,
+            'year_end' => $year_end,
+            'table_start_date' => $table_start_date,
+            'table_end_date' => $table_end_date,
+            'start_date' => $year_start,
+            'end_date' => $year_end,
             'budget_year' => $budget_year,
             'budget_year_select' => $budget_year_select
         ];
@@ -351,13 +365,44 @@ class IpdController extends Controller
     {
         $title = 'รายงาน Re-Admit ภายใน 28 วันด้วยโรคเดิม';
         $dates = $this->resolveDateRange($request);
-        $start_date = $dates['start_date'];
-        $end_date = $dates['end_date'];
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
+        $year_start = $dates['year_start'];
+        $year_end = $dates['year_end'];
+        $table_start_date = $dates['table_start_date'];
+        $table_end_date = $dates['table_end_date'];
+        $start_date = $table_start_date;
+        $end_date = $table_end_date;
 
-        // 1. Patient List Query (Optimized)
-        $patients = DB::connection('hosxp')->select("
+        if ($request->ajax()) {
+            $patients = $this->fetch_readmit_patients($table_start_date, $table_end_date);
+            $html = view('hosxp.ipd.partials._table_readmit', compact('patients'))->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'total' => count($patients)
+            ]);
+        }
+
+        $patients = $this->fetch_readmit_patients($table_start_date, $table_end_date);
+        $monthly_stats = $this->fetch_readmit_monthly_stats($year_start, $year_end);
+        $top_diagnoses = $this->fetch_readmit_top_diagnoses($year_start, $year_end);
+
+        return view('hosxp.ipd.readmit', compact(
+            'title', 'budget_year_select', 'budget_year', 'year_start', 'year_end',
+            'table_start_date', 'table_end_date', 'start_date', 'end_date',
+            'patients', 'monthly_stats', 'top_diagnoses'
+        ));
+    }
+
+    private function fetch_readmit_patients($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select("
             SELECT 
                 p.hn,
                 CONCAT(p.pname, p.fname, ' ', p.lname) AS ptname,
@@ -381,9 +426,11 @@ class IpdController extends Controller
               AND TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) <= 28
             ORDER BY ipt_new.an
         ", [$start_date, $end_date]);
+    }
 
-        // 2. Monthly Re-admissions count (Optimized)
-        $monthly_stats = DB::connection('hosxp')->select("
+    private function fetch_readmit_monthly_stats($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select("
             SELECT 
                 CASE 
                     WHEN MONTH(ipt_new.regdate) = 10 THEN CONCAT('ต.ค. ', RIGHT(YEAR(ipt_new.regdate) + 543, 2))
@@ -410,9 +457,11 @@ class IpdController extends Controller
             GROUP BY YEAR(ipt_new.regdate), MONTH(ipt_new.regdate)
             ORDER BY YEAR(ipt_new.regdate), MONTH(ipt_new.regdate)
         ", [$start_date, $end_date]);
+    }
 
-        // 3. Top 10 Re-admit Diagnoses (Optimized)
-        $top_diagnoses = DB::connection('hosxp')->select("
+    private function fetch_readmit_top_diagnoses($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select("
             SELECT 
                 diag_new.icd10 AS icd10,
                 c.name AS icd_name,
@@ -429,9 +478,5 @@ class IpdController extends Controller
             ORDER BY total_readmit DESC
             LIMIT 10
         ", [$start_date, $end_date]);
-
-        return view('hosxp.ipd.readmit', compact(
-            'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date', 'patients', 'monthly_stats', 'top_diagnoses'
-        ));
     }
 }

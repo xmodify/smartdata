@@ -190,14 +190,45 @@ class OpdController extends Controller
                 $end_date = $year_data->DATE_END;
             }
             else {
-                $start_date = ($budget_year - 543) . '-10-01';
-                $end_date = ($budget_year - 542) . '-09-30';
+                $start_date = ($budget_year - 544) . '-10-01';
+                $end_date = ($budget_year - 543) . '-09-30';
+            }
+        }
+
+        $year_data = DB::table('budget_year')
+            ->where('LEAVE_YEAR_ID', $budget_year)
+            ->first();
+
+        if ($year_data) {
+            $year_start = $year_data->DATE_BEGIN;
+            $year_end = $year_data->DATE_END;
+        } else {
+            $year_start = ($budget_year - 544) . '-10-01';
+            $year_end = ($budget_year - 543) . '-09-30';
+        }
+
+        // Independent table date range (defaults to current month, clamped to selected budget year)
+        if ($request->filled('table_start_date') && $request->filled('table_end_date')) {
+            $table_start_date = $request->table_start_date;
+            $table_end_date = $request->table_end_date;
+        } else {
+            $currentDate = date('Y-m-d');
+            if ($currentDate >= $year_start && $currentDate <= $year_end) {
+                $table_start_date = date('Y-m-01');
+                $table_end_date = date('Y-m-t');
+            } else {
+                $table_start_date = date('Y-m-01', strtotime($year_end));
+                $table_end_date = $year_end;
             }
         }
 
         return [
             'start_date' => $start_date,
             'end_date' => $end_date,
+            'year_start' => $year_start,
+            'year_end' => $year_end,
+            'table_start_date' => $table_start_date,
+            'table_end_date' => $table_end_date,
             'budget_year' => $budget_year,
             'budget_year_select' => $budget_year_select
         ];
@@ -321,10 +352,14 @@ class OpdController extends Controller
     {
         $title = 'รายงานการให้บริการแพทย์ทางไกล Telehealth';
         $dates = $this->resolveDateRange($request);
-        $start_date = $dates['start_date'];
-        $end_date = $dates['end_date'];
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
+        $year_start = $dates['year_start'];
+        $year_end = $dates['year_end'];
+        $table_start_date = $dates['table_start_date'];
+        $table_end_date = $dates['table_end_date'];
+        $start_date = $year_start;
+        $end_date = $year_end;
 
         // Get telehealth non-drug items to find target icodes
         $telmed_icodes = DB::connection('hosxp')
@@ -335,7 +370,7 @@ class OpdController extends Controller
 
         $icodes_str = count($telmed_icodes) > 0 ? "'" . implode("','", $telmed_icodes) . "'" : "''";
 
-        // Query telehealth visits using the optimized query
+        // Query telehealth visits for the table using independent table date range
         $patients = DB::connection('hosxp')->select("
             SELECT 
                 o.vstdate, o.vn, o.oqueue, o.hn, 
@@ -376,9 +411,30 @@ class OpdController extends Controller
                   )
               )
             ORDER BY o.hn, o.vstdate
-        ", [$start_date, $end_date]);
+        ", [$table_start_date, $table_end_date]);
 
-        // Query telehealth monthly stats for chart
+        // Check if Ajax request
+        if ($request->ajax()) {
+            $html = view('hosxp.opd.partials._table_telehealth', compact('patients'))->render();
+            $total_visits = count($patients);
+            $count_complete = count(array_filter($patients, function($p) { return $p->ovstist == '12' && $p->has_telmed_charge; }));
+            $count_type = count(array_filter($patients, function($p) { return $p->ovstist == '12' && !$p->has_telmed_charge; }));
+            $count_charge = count(array_filter($patients, function($p) { return $p->ovstist != '12' && $p->has_telmed_charge; }));
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'total' => $total_visits,
+                'count_complete' => $count_complete,
+                'count_type' => $count_type,
+                'count_charge' => $count_charge
+            ]);
+        }
+
+        // Query telehealth monthly stats for chart across full budget year
         $monthly_stats = DB::connection('hosxp')->select("
             SELECT 
                 CASE 
@@ -409,8 +465,31 @@ class OpdController extends Controller
               )
             GROUP BY YEAR(o.vstdate), MONTH(o.vstdate)
             ORDER BY YEAR(o.vstdate), MONTH(o.vstdate)
-        ", [$start_date, $end_date]);
+        ", [$year_start, $year_end]);
 
-        return view('hosxp.opd.telehealth', compact('title', 'budget_year_select', 'budget_year', 'start_date', 'end_date', 'patients', 'monthly_stats'));
+        // Annual Summary for cards
+        $annual_summary = DB::connection('hosxp')->select("
+            SELECT 
+                COUNT(DISTINCT o.vn) AS total_visits,
+                COUNT(DISTINCT o.hn) AS unique_hns,
+                SUM(IF(o.ovstist = '12', 1, 0)) AS count_type,
+                SUM(IF(EXISTS(SELECT 1 FROM opitemrece op WHERE op.vn = o.vn AND op.icode IN ($icodes_str)), 1, 0)) AS count_charge
+            FROM ovst o
+            WHERE o.vstdate BETWEEN ? AND ?
+              AND (
+                  o.ovstist = '12'
+                  OR o.vn IN (
+                      SELECT vn FROM opitemrece WHERE icode IN ($icodes_str)
+                  )
+              )
+        ", [$year_start, $year_end]);
+        $summary = $annual_summary[0] ?? null;
+
+        return view('hosxp.opd.telehealth', compact(
+            'title', 'budget_year_select', 'budget_year',
+            'start_date', 'end_date', 'year_start', 'year_end',
+            'table_start_date', 'table_end_date',
+            'patients', 'monthly_stats', 'summary'
+        ));
     }
 }

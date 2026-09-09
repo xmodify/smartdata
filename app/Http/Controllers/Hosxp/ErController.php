@@ -78,68 +78,14 @@ class ErController extends Controller
     {
         $title = 'รายงานผู้ป่วยให้บริการ EMS';
         $dates = $this->resolveDateRange($request);
-        $start_date = $dates['start_date'];
-        $end_date = $dates['end_date'];
+        $year_start = $dates['year_start'];
+        $year_end = $dates['year_end'];
+        $table_start_date = $dates['table_start_date'];
+        $table_end_date = $dates['table_end_date'];
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        $ems_diag_als = DB::connection('hosxp')->select('
-            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
-            FROM (
-                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
-                FROM vn_stat v
-                LEFT JOIN icd101 i ON i.code=v.pdx
-                LEFT JOIN ovst o ON o.vn=v.vn
-                WHERE v.vstdate BETWEEN ? AND ?
-                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
-                AND o.ovstist IN ("08")
-                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
-            ) AS a
-            GROUP BY pdx
-            ORDER BY sum DESC LIMIT 20
-        ', [$start_date, $end_date]);
-
-        $ems_diag_als_name = array_column($ems_diag_als, 'name');
-        $ems_diag_als_sum = array_column($ems_diag_als, 'sum');
-
-        $ems_diag_ils = DB::connection('hosxp')->select('
-            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
-            FROM (
-                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
-                FROM vn_stat v
-                LEFT JOIN icd101 i ON i.code=v.pdx
-                LEFT JOIN ovst o ON o.vn=v.vn
-                WHERE v.vstdate BETWEEN ? AND ?
-                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
-                AND o.ovstist IN ("09")
-                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
-            ) AS a
-            GROUP BY pdx
-            ORDER BY sum DESC LIMIT 20
-        ', [$start_date, $end_date]);
-
-        $ems_diag_ils_name = array_column($ems_diag_ils, 'name');
-        $ems_diag_ils_sum = array_column($ems_diag_ils, 'sum');
-
-        $ems_diag_fr = DB::connection('hosxp')->select('
-            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
-            FROM (
-                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
-                FROM vn_stat v
-                LEFT JOIN icd101 i ON i.code=v.pdx
-                LEFT JOIN ovst o ON o.vn=v.vn
-                WHERE v.vstdate BETWEEN ? AND ?
-                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
-                AND o.ovstist IN ("10")
-                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
-            ) AS a
-            GROUP BY pdx
-            ORDER BY sum DESC LIMIT 20
-        ', [$start_date, $end_date]);
-
-        $ems_diag_fr_name = array_column($ems_diag_fr, 'name');
-        $ems_diag_fr_sum = array_column($ems_diag_fr, 'sum');
-
+        // 1. Patient List for Table (Filtered by independent table date range)
         $ems_list = DB::connection('hosxp')->select('
             SELECT o.vn, o.oqueue, o.vstdate, o.vsttime, o.hn, CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS ptname,
             v.age_y, CONCAT(o.pttype, " [", p1.hipdata_code, "]") AS pttype, o1.cc, v.pdx, d.`name` AS dx_doctor,
@@ -159,7 +105,79 @@ class ErController extends Controller
             WHERE o.vstdate BETWEEN ? AND ?
             AND o.ovstist IN ("08", "09", "10")
             GROUP BY o.vn
-        ', [$start_date, $end_date]);
+        ', [$table_start_date, $table_end_date]);
+
+        // Check if Ajax request
+        if ($request->ajax()) {
+            $html = view('hosxp.er.partials._table_ems', compact('ems_list'))->render();
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'total' => count($ems_list)
+            ]);
+        }
+
+        // 2. Executive Charts (12-month budget year stats)
+        $ems_diag_als = DB::connection('hosxp')->select('
+            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
+            FROM (
+                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
+                FROM vn_stat v
+                LEFT JOIN icd101 i ON i.code=v.pdx
+                LEFT JOIN ovst o ON o.vn=v.vn
+                WHERE v.vstdate BETWEEN ? AND ?
+                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
+                AND o.ovstist IN ("08")
+                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
+            ) AS a
+            GROUP BY pdx
+            ORDER BY sum DESC LIMIT 20
+        ', [$year_start, $year_end]);
+
+        $ems_diag_als_name = array_column($ems_diag_als, 'name');
+        $ems_diag_als_sum = array_column($ems_diag_als, 'sum');
+
+        $ems_diag_ils = DB::connection('hosxp')->select('
+            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
+            FROM (
+                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
+                FROM vn_stat v
+                LEFT JOIN icd101 i ON i.code=v.pdx
+                LEFT JOIN ovst o ON o.vn=v.vn
+                WHERE v.vstdate BETWEEN ? AND ?
+                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
+                AND o.ovstist IN ("09")
+                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
+            ) AS a
+            GROUP BY pdx
+            ORDER BY sum DESC LIMIT 20
+        ', [$year_start, $year_end]);
+
+        $ems_diag_ils_name = array_column($ems_diag_ils, 'name');
+        $ems_diag_ils_sum = array_column($ems_diag_ils, 'sum');
+
+        $ems_diag_fr = DB::connection('hosxp')->select('
+            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
+            FROM (
+                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
+                FROM vn_stat v
+                LEFT JOIN icd101 i ON i.code=v.pdx
+                LEFT JOIN ovst o ON o.vn=v.vn
+                WHERE v.vstdate BETWEEN ? AND ?
+                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
+                AND o.ovstist IN ("10")
+                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
+            ) AS a
+            GROUP BY pdx
+            ORDER BY sum DESC LIMIT 20
+        ', [$year_start, $year_end]);
+
+        $ems_diag_fr_name = array_column($ems_diag_fr, 'name');
+        $ems_diag_fr_sum = array_column($ems_diag_fr, 'sum');
 
         $ems_monthly = DB::connection('hosxp')->select('
             SELECT 
@@ -185,10 +203,15 @@ class ErController extends Controller
             AND o.ovstist IN ("08", "09", "10")
             GROUP BY YEAR(o.vstdate), MONTH(o.vstdate)
             ORDER BY YEAR(o.vstdate), MONTH(o.vstdate)
-        ', [$start_date, $end_date]);
+        ', [$year_start, $year_end]);
+
+        // Backwards compatibility variables
+        $start_date = $year_start;
+        $end_date = $year_end;
 
         return view('hosxp.er.ems', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
+            'year_start', 'year_end', 'table_start_date', 'table_end_date',
             'ems_diag_als', 'ems_diag_als_name', 'ems_diag_als_sum',
             'ems_diag_ils', 'ems_diag_ils_name', 'ems_diag_ils_sum',
             'ems_diag_fr', 'ems_diag_fr_name', 'ems_diag_fr_sum',
@@ -234,12 +257,45 @@ class ErController extends Controller
     {
         $title = 'รายงาน Re-visit ใน 48 ชม. ด้วยโรคเดิม ER';
         $dates = $this->resolveDateRange($request);
-        $start_date = $dates['start_date'];
-        $end_date = $dates['end_date'];
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
+        $year_start = $dates['year_start'];
+        $year_end = $dates['year_end'];
+        $table_start_date = $dates['table_start_date'];
+        $table_end_date = $dates['table_end_date'];
+        $start_date = $table_start_date;
+        $end_date = $table_end_date;
 
-        $revisit_list = DB::connection('hosxp')->select('
+        if ($request->ajax()) {
+            $revisit_list = $this->fetch_revisit_48h_list($table_start_date, $table_end_date);
+            $html = view('hosxp.er.partials._table_revisit_48h', compact('revisit_list'))->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'total' => count($revisit_list)
+            ]);
+        }
+
+        $revisit_list = $this->fetch_revisit_48h_list($table_start_date, $table_end_date);
+        $revisit_diagtop = $this->fetch_revisit_48h_diagtop($year_start, $year_end);
+        $revisit_504 = $this->fetch_revisit_48h_504($year_start, $year_end);
+        $revisit_monthly = $this->fetch_revisit_48h_monthly($year_start, $year_end);
+
+        return view('hosxp.er.revisit_48h', compact(
+            'title', 'budget_year_select', 'budget_year', 'year_start', 'year_end',
+            'table_start_date', 'table_end_date', 'start_date', 'end_date',
+            'revisit_list', 'revisit_diagtop', 'revisit_504', 'revisit_monthly'
+        ));
+    }
+
+    private function fetch_revisit_48h_list($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select('
             SELECT o.vstdate, CONCAT(v.lastvisit_hour, " ช.ม.") AS p_vstdate, o.main_dep_queue AS q, o.hn, c.cc, CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS ptname
             , v.age_y, v.pttype, v.pdx, "ER" AS depart, IF(o.an <> "", "Admit", NULL) AS admit, IF(r.vn <> "", "Refer", NULL) AS refer
             FROM ovst o
@@ -260,8 +316,11 @@ class ErController extends Controller
             GROUP BY o.vn, v.pdx
             ORDER BY v.pdx, o.hn, o.vstdate
         ', [$start_date, $end_date]);
+    }
 
-        $revisit_diagtop = DB::connection('hosxp')->select('
+    private function fetch_revisit_48h_diagtop($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select('
             SELECT a.pdx AS code, i.`name` AS pdx_name, i.`tname` AS pdx_tname,
             SUM(CASE WHEN a.sex=1 THEN 1 ELSE 0 END) AS male,
             SUM(CASE WHEN a.sex=2 THEN 1 ELSE 0 END) AS female,
@@ -289,8 +348,11 @@ class ErController extends Controller
             ORDER BY total DESC 
             LIMIT 20
         ', [$start_date, $end_date]);
+    }
 
-        $revisit_504 = DB::connection('hosxp')->select('
+    private function fetch_revisit_48h_504($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select('
             SELECT 
                 CONCAT(n.name1, " [", n.id, "]") AS name,
                 IFNULL(d.male, 0) AS male,
@@ -326,8 +388,11 @@ class ErController extends Controller
             WHERE IFNULL(d.total, 0) > 0
             ORDER BY total DESC
         ', [$start_date, $end_date]);
+    }
 
-        $revisit_monthly = DB::connection('hosxp')->select('
+    private function fetch_revisit_48h_monthly($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select('
             SELECT 
                 CASE 
                     WHEN MONTH(a.vstdate) = 10 THEN CONCAT("ต.ค. ", RIGHT(YEAR(a.vstdate) + 543, 2))
@@ -365,11 +430,6 @@ class ErController extends Controller
             GROUP BY YEAR(a.vstdate), MONTH(a.vstdate)
             ORDER BY YEAR(a.vstdate), MONTH(a.vstdate)
         ', [$start_date, $end_date]);
-
-        return view('hosxp.er.revisit_48h', compact(
-            'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
-            'revisit_list', 'revisit_diagtop', 'revisit_504', 'revisit_monthly'
-        ));
     }
 
     public function top20(Request $request)
@@ -444,35 +504,40 @@ class ErController extends Controller
 
         $budget_year = $request->budget_year ?: $budget_year_now;
 
-        if ($request->start_date && $request->end_date && !$request->has('budget_year_changed')) {
-            $start_date = $request->start_date;
-            $end_date = $request->end_date;
+        $year_start = ($budget_year - 544) . '-10-01';
+        $year_end = ($budget_year - 543) . '-09-30';
 
-            $matched_year = DB::table('budget_year')
-                ->where('DATE_BEGIN', '<=', $start_date)
-                ->where('DATE_END', '>=', $start_date)
-                ->value('LEAVE_YEAR_ID');
+        $year_data = DB::table('budget_year')->where('LEAVE_YEAR_ID', $budget_year)->first();
+        if ($year_data) {
+            $year_start = $year_data->DATE_BEGIN;
+            $year_end = $year_data->DATE_END;
+        }
 
-            if ($matched_year) {
-                $budget_year = $matched_year;
-            }
+        // Default table date range: current month if in budget year, else September of budget year
+        $today = date('Y-m-d');
+        if ($today >= $year_start && $today <= $year_end) {
+            $table_start_date = date('Y-m-01');
+            $table_end_date = date('Y-m-t');
         } else {
-            $year_data = DB::table('budget_year')
-                ->where('LEAVE_YEAR_ID', $budget_year)
-                ->first();
+            $table_start_date = ($budget_year - 543) . '-09-01';
+            $table_end_date = ($budget_year - 543) . '-09-30';
+        }
 
-            if ($year_data) {
-                $start_date = $year_data->DATE_BEGIN;
-                $end_date = $year_data->DATE_END;
-            } else {
-                $start_date = ($budget_year - 543) . '-10-01';
-                $end_date = ($budget_year - 542) . '-09-30';
-            }
+        if ($request->filled('table_start_date') && $request->filled('table_end_date')) {
+            $table_start_date = $request->table_start_date;
+            $table_end_date = $request->table_end_date;
+        } elseif ($request->filled('start_date') && $request->filled('end_date') && !$request->has('budget_year_changed')) {
+            $table_start_date = $request->start_date;
+            $table_end_date = $request->end_date;
         }
 
         return [
-            'start_date' => $start_date,
-            'end_date' => $end_date,
+            'year_start' => $year_start,
+            'year_end' => $year_end,
+            'table_start_date' => $table_start_date,
+            'table_end_date' => $table_end_date,
+            'start_date' => $year_start,
+            'end_date' => $year_end,
             'budget_year' => $budget_year,
             'budget_year_select' => $budget_year_select
         ];

@@ -265,35 +265,21 @@
                         <i class="{{ $config['icon'] }} {{ $config['color'] }} me-2"></i>
                         รายชื่อ{{ $category_label }} โรค{{ $config['name'] }}
                     </h5>
-                    <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
-                    <div class="text-primary small fw-bold mt-1">
-                        <i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง
-                        {{ DateThai($end_date) }}
+                    <div class="text-muted small mt-1">
+                        ปีงบประมาณ {{ $budget_year }} | สถิติภาพรวมประจำปี ({{ DateThai($year_start) }} ถึง {{ DateThai($year_end) }})
                     </div>
                 </div>
             </div>
 
+            <!-- Top Controls: Only Budget Year (Controls Charts) -->
             <div class="d-flex align-items-center">
-                <form action="" method="GET" class="m-0 d-md-flex align-items-center gap-2 header-form-controls">
+                <form action="" method="GET" class="m-0 header-form-controls">
                     <input type="hidden" name="category" value="{{ $category }}">
-                    <span class="me-1 fw-bold text-muted small">ช่วงวันที่:</span>
-                    <div class="input-group input-group-sm mb-2 mb-md-0 shadow-sm input-group-date"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-primary"><i
-                                class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0"
-                            value="{{ $start_date }}" placeholder="วันที่เริ่ม" style="font-size: 0.8rem;">
-                    </div>
-                    <div class="input-group input-group-sm mb-2 mb-md-0 shadow-sm input-group-date"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-primary"><i
-                                class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0"
-                            value="{{ $end_date }}" placeholder="วันที่สิ้นสุด" style="font-size: 0.8rem;">
-                    </div>
-                    <div class="input-group input-group-sm shadow-sm input-group-budget"
-                        style="border-radius: 8px; overflow: hidden;">
-                        <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
+                    <div class="input-group input-group-sm shadow-sm" style="width: 230px;">
+                        <span class="input-group-text bg-white border-end-0 text-primary fw-bold">
+                            <i class="fas fa-calendar-alt me-1"></i> เลือก
+                        </span>
+                        <select class="form-select border-start-0 ps-2" name="budget_year" id="budget_year" onchange="this.form.submit()" style="cursor: pointer;">
                             @foreach ($budget_year_select as $row)
                                 <option value="{{ $row->LEAVE_YEAR_ID }}"
                                     {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>
@@ -301,9 +287,6 @@
                                 </option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-primary px-3" style="font-size: 0.8rem;">
-                            <i class="fas fa-search"></i> ค้นหา
-                        </button>
                     </div>
                 </form>
             </div>
@@ -376,12 +359,42 @@
         <!-- Patient List Card -->
         <div class="card dash-card">
             <div class="card-header card-header-premium">
-                <h6 class="fw-bold text-dark mb-0">
-                    <i class="bi bi-people-fill text-primary me-2"></i>
-                    รายชื่อ{{ $category_label }} โรค{{ $config['name'] }} ปีงบประมาณ {{ $budget_year }}
-                </h6>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-people-fill text-primary me-2"></i>
+                            รายชื่อ{{ $category_label }} โรค{{ $config['name'] }}
+                        </h6>
+                        <p class="text-muted small mb-0 mt-1">
+                            แสดงข้อมูลตามช่วงวันที่ <span id="displayDateRange" class="fw-bold text-dark">{{ DateThai($table_start_date) }} ถึง {{ DateThai($table_end_date) }}</span>
+                        </p>
+                    </div>
+
+                    <!-- Table Independent Date Filter Controls -->
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="input-group input-group-sm shadow-sm" style="width: 155px;">
+                            <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-day"></i></span>
+                            <input type="text" id="table_start_date" class="form-control border-start-0 ps-0" value="{{ $table_start_date }}" placeholder="วันที่เริ่มต้น">
+                        </div>
+                        <div class="input-group input-group-sm shadow-sm" style="width: 155px;">
+                            <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-day"></i></span>
+                            <input type="text" id="table_end_date" class="form-control border-start-0 ps-0" value="{{ $table_end_date }}" placeholder="วันที่สิ้นสุด">
+                        </div>
+                        <button type="button" id="btnFilterTable" class="btn btn-primary btn-sm shadow-sm px-3 fw-bold">
+                            <i class="fas fa-search me-1"></i> ค้นหา
+                        </button>
+                        <div class="btn-group btn-group-sm shadow-sm">
+                            <button type="button" id="btnCurrentMonth" class="btn btn-outline-secondary" title="เลือกเดือนปัจจุบัน">
+                                เดือนนี้
+                            </button>
+                            <button type="button" id="btnPrevMonth" class="btn btn-outline-secondary" title="เลือกเดือนก่อนหน้า">
+                                เดือนก่อน
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-0">
+            <div class="card-body p-0" id="tableContainer">
                 @if ($category === 'ipd')
                     @include('hosxp.diagnosis.partials._table_ipd')
                 @elseif($category === 'refer' || $category === 'ic')
@@ -412,7 +425,42 @@
         // Register the plugin to all charts if needed, or just specific ones
         Chart.register(ChartDataLabels);
 
+        let diagTable = null;
+
+        function initDataTable() {
+            if ($.fn.DataTable.isDataTable('#diag_list')) {
+                $('#diag_list').DataTable().destroy();
+            }
+            diagTable = $('#diag_list').DataTable({
+                dom: '<"d-flex justify-content-between align-items-center mb-3 py-2 px-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center p-3"ip>',
+                buttons: [{
+                    extend: 'excelHtml5',
+                    text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                    className: 'btn btn-success',
+                    title: function() {
+                        return 'รายชื่อ{{ $category_label }}โรค {{ $config['name'] }} (' + $('#displayDateRange').text() + ')';
+                    }
+                }],
+                language: {
+                    search: "ค้นหา:",
+                    lengthMenu: "แสดง _MENU_ รายการ",
+                    info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                    paginate: {
+                        previous: "ก่อนหน้า",
+                        next: "ถัดไป"
+                    }
+                },
+                pageLength: 10,
+                responsive: true,
+                order: [
+                    [0, 'asc']
+                ]
+            });
+        }
+
         $(document).ready(function() {
+            let tableStartPicker, tableEndPicker;
+
             if (typeof flatpickr !== 'undefined') {
                 const yearOffset = 543;
                 const commonConfig = {
@@ -463,50 +511,88 @@
                     }
                 };
 
-                const startPicker = flatpickr("#start_date", commonConfig);
-                    const endPicker = flatpickr("#end_date", commonConfig);
-
-                    // Update start_date and end_date based on budget_year change
-                    $('select[name="budget_year"]').on('change', function() {
-                        var selectedYear = parseInt($(this).val());
-                        if(!isNaN(selectedYear)) {
-                            // Calculate budget year ranges
-                            var startYear = selectedYear - 544; // Example: 2567 -> 2023
-                            var endYear = selectedYear - 543;   // Example: 2567 -> 2024
-                            var startDateStr = startYear + "-10-01";
-                            var endDateStr = endYear + "-09-30";
-                            
-                            setTimeout(() => {
-                                if (typeof startPicker !== 'undefined' && startPicker) startPicker.setDate(startDateStr, true);
-                                if (typeof endPicker !== 'undefined' && endPicker) endPicker.setDate(endDateStr, true);
-                            }, 50);
-                        }
-                    });
+                tableStartPicker = flatpickr("#table_start_date", commonConfig);
+                tableEndPicker = flatpickr("#table_end_date", commonConfig);
             }
 
-            $('#diag_list').DataTable({
-                dom: '<"d-flex justify-content-between align-items-center mb-3 py-2 px-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center p-3"ip>',
-                buttons: [{
-                    extend: 'excelHtml5',
-                    text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
-                    className: 'btn btn-success',
-                    title: 'รายชื่อ{{ $category_label }}โรค {{ $config['name'] }} ปีงบประมาณ {{ $budget_year }}'
-                }],
-                language: {
-                    search: "ค้นหา:",
-                    lengthMenu: "แสดง _MENU_ รายการ",
-                    info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
-                    paginate: {
-                        previous: "ก่อนหน้า",
-                        next: "ถัดไป"
+            // AJAX function to load table data
+            function loadTableData(startDate, endDate) {
+                const $btn = $('#btnFilterTable');
+                const originalText = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> ค้นหา...');
+                $('#tableContainer').css('opacity', '0.5');
+
+                $.ajax({
+                    url: "{{ route('hosxp.diagnosis.report', ['type' => $type]) }}",
+                    method: 'GET',
+                    data: {
+                        category: "{{ $category }}",
+                        budget_year: "{{ $budget_year }}",
+                        table_start_date: startDate,
+                        table_end_date: endDate
+                    },
+                    dataType: 'json',
+                    success: function(res) {
+                        if (res.success && res.html) {
+                            if ($.fn.DataTable.isDataTable('#diag_list')) {
+                                $('#diag_list').DataTable().destroy();
+                            }
+                            $('#tableContainer').html(res.html);
+                            initDataTable();
+
+                            // Update Header Subtitle
+                            $('#displayDateRange').text(`${res.start_date_thai} ถึง ${res.end_date_thai}`);
+                        }
+                    },
+                    error: function(err) {
+                        console.error("Failed to load table data", err);
+                        alert("เกิดข้อผิดพลาดในการโหลดข้อมูลตาราง กรุณาลองใหม่อีกครั้ง");
+                    },
+                    complete: function() {
+                        $('#tableContainer').css('opacity', '1');
+                        $btn.prop('disabled', false).html(originalText);
                     }
-                },
-                pageLength: 10,
-                responsive: true,
-                order: [
-                    [0, 'asc']
-                ]
+                });
+            }
+
+            // Table Filter Button click
+            $('#btnFilterTable').on('click', function() {
+                const s = $('#table_start_date').val();
+                const e = $('#table_end_date').val();
+                loadTableData(s, e);
             });
+
+            // Quick Filter: Current Month
+            $('#btnCurrentMonth').on('click', function() {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
+                const s = `${y}-${m}-01`;
+                const e = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+
+                if (tableStartPicker) tableStartPicker.setDate(s, true);
+                if (tableEndPicker) tableEndPicker.setDate(e, true);
+                loadTableData(s, e);
+            });
+
+            // Quick Filter: Previous Month
+            $('#btnPrevMonth').on('click', function() {
+                const now = new Date();
+                const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const y = prev.getFullYear();
+                const m = String(prev.getMonth() + 1).padStart(2, '0');
+                const lastDay = new Date(y, prev.getMonth() + 1, 0).getDate();
+                const s = `${y}-${m}-01`;
+                const e = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+
+                if (tableStartPicker) tableStartPicker.setDate(s, true);
+                if (tableEndPicker) tableEndPicker.setDate(e, true);
+                loadTableData(s, e);
+            });
+
+            // Initialize DataTable on page load
+            initDataTable();
         });
 
         document.addEventListener("DOMContentLoaded", () => {

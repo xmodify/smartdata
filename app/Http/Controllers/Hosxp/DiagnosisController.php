@@ -306,11 +306,15 @@ class DiagnosisController extends Controller
         set_time_limit(300);
 
         $dates = $this->resolveDateRange($request);
-        $start_date = $dates['start_date'];
-        $end_date = $dates['end_date'];
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
+        $year_start = $dates['year_start'];
+        $year_end = $dates['year_end'];
         $start_date_y = $dates['start_date_y'];
+        $table_start_date = $dates['table_start_date'];
+        $table_end_date = $dates['table_end_date'];
+        $start_date = $table_start_date;
+        $end_date = $table_end_date;
 
         $codes = $config['codes'];
 
@@ -366,7 +370,33 @@ class DiagnosisController extends Controller
             $diag_where = "(" . implode(' OR ', $where_clauses) . ")";
         }
 
-        // Monthly Stats
+        // Handle AJAX Request for Table Data
+        if ($request->ajax()) {
+            if ($category === 'ipd') {
+                $diag_list = $this->fetch_ipd_list($table_start_date, $table_end_date, $codes);
+                $viewName = 'hosxp.diagnosis.partials._table_ipd';
+            } elseif ($category === 'refer' || $category === 'ic') {
+                $diag_list = $this->fetch_refer_list($table_start_date, $table_end_date, $codes);
+                $viewName = 'hosxp.diagnosis.partials._table_refer';
+            } else {
+                $diag_list = $this->fetch_opd_list($table_start_date, $table_end_date, $codes);
+                $viewName = 'hosxp.diagnosis.partials._table_opd';
+            }
+
+            $html = view($viewName, compact('diag_list'))->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'total' => count($diag_list)
+            ]);
+        }
+
+        // Monthly Stats (Always 12 months of the budget year)
         $diag_month = DB::connection('hosxp')->select("
             SELECT CASE 
                 WHEN MONTH($date_col)=10 THEN CONCAT('ต.ค. ',RIGHT(YEAR($date_col)+543,2))
@@ -386,13 +416,13 @@ class DiagnosisController extends Controller
             WHERE $date_col BETWEEN ? AND ?
             AND $diag_where
             GROUP BY MONTH($date_col)
-            ORDER BY YEAR($date_col), MONTH($date_col)", array_merge([$start_date, $end_date], $params_set));
+            ORDER BY YEAR($date_col), MONTH($date_col)", array_merge([$year_start, $year_end], $params_set));
 
         $diag_m = array_column($diag_month, 'month');
         $diag_visit_m = array_column($diag_month, 'visit');
         $diag_hn_m = array_column($diag_month, 'hn');
 
-        // Yearly Trend
+        // Yearly Trend (5 years)
         $diag_year = DB::connection('hosxp')->select("
             SELECT IF(MONTH($date_col)>9,YEAR($date_col)+1,YEAR($date_col)) + 543 AS year_bud,
             COUNT(DISTINCT $hn_col) AS 'hn', COUNT($vn_col) AS 'visit'
@@ -400,18 +430,19 @@ class DiagnosisController extends Controller
             WHERE $date_col BETWEEN ? AND ?
             AND $diag_where
             GROUP BY year_bud
-            ORDER BY year_bud", array_merge([$start_date_y, $end_date], $params_set));
+            ORDER BY year_bud", array_merge([$start_date_y, $year_end], $params_set));
 
         $diag_y = array_column($diag_year, 'year_bud');
         $diag_visit_y = array_column($diag_year, 'visit');
         $diag_hn_y = array_column($diag_year, 'hn');
 
+        // Fetch patient list for initial page view (table_start_date to table_end_date)
         if ($category === 'ipd') {
-            $diag_list = $this->fetch_ipd_list($start_date, $end_date, $codes);
+            $diag_list = $this->fetch_ipd_list($table_start_date, $table_end_date, $codes);
         } elseif ($category === 'refer' || $category === 'ic') {
-            $diag_list = $this->fetch_refer_list($start_date, $end_date, $codes);
+            $diag_list = $this->fetch_refer_list($table_start_date, $table_end_date, $codes);
         } else {
-            $diag_list = $this->fetch_opd_list($start_date, $end_date, $codes);
+            $diag_list = $this->fetch_opd_list($table_start_date, $table_end_date, $codes);
         }
 
         return view('hosxp.diagnosis.report', compact(
@@ -420,6 +451,10 @@ class DiagnosisController extends Controller
             'category',
             'budget_year',
             'budget_year_select',
+            'year_start',
+            'year_end',
+            'table_start_date',
+            'table_end_date',
             'start_date',
             'end_date',
             'diag_m',
@@ -438,7 +473,7 @@ class DiagnosisController extends Controller
     private function resolveDateRange(Request $request)
     {
         $budget_year_select = \DB::table('budget_year')
-            ->select('LEAVE_YEAR_ID', 'LEAVE_YEAR_NAME')
+            ->select('LEAVE_YEAR_ID', 'LEAVE_YEAR_NAME', 'DATE_BEGIN', 'DATE_END')
             ->orderByDesc('LEAVE_YEAR_ID')
             ->limit(7)
             ->get();
@@ -450,29 +485,33 @@ class DiagnosisController extends Controller
 
         $budget_year = $request->budget_year ?: $budget_year_now;
 
-        if ($request->start_date && $request->end_date) {
-            $start_date = $request->start_date;
-            $end_date = $request->end_date;
+        $year_data = \DB::table('budget_year')
+            ->where('LEAVE_YEAR_ID', $budget_year)
+            ->first();
 
-            $matched_year = \DB::table('budget_year')
-                ->where('DATE_BEGIN', '<=', $start_date)
-                ->where('DATE_END', '>=', $start_date)
-                ->first();
-
-            if ($matched_year) {
-                $budget_year = $matched_year->LEAVE_YEAR_ID;
-            }
+        if ($year_data) {
+            $year_start = $year_data->DATE_BEGIN;
+            $year_end = $year_data->DATE_END;
         } else {
-            $year_data = \DB::table('budget_year')
-                ->where('LEAVE_YEAR_ID', $budget_year)
-                ->first();
+            $year_start = ($budget_year - 544) . '-10-01';
+            $year_end = ($budget_year - 543) . '-09-30';
+        }
 
-            if ($year_data) {
-                $start_date = $year_data->DATE_BEGIN;
-                $end_date = $year_data->DATE_END;
+        // Table Date Range: default to current month if in active budget year, else last month of budget year
+        if ($request->table_start_date && $request->table_end_date) {
+            $table_start_date = $request->table_start_date;
+            $table_end_date = $request->table_end_date;
+        } elseif ($request->start_date && $request->end_date) {
+            $table_start_date = $request->start_date;
+            $table_end_date = $request->end_date;
+        } else {
+            $today = date('Y-m-d');
+            if ($today >= $year_start && $today <= $year_end) {
+                $table_start_date = date('Y-m-01');
+                $table_end_date = date('Y-m-t');
             } else {
-                $start_date = ($budget_year - 543) . '-10-01';
-                $end_date = ($budget_year - 542) . '-09-30';
+                $table_start_date = date('Y-m-01', strtotime($year_end));
+                $table_end_date = $year_end;
             }
         }
 
@@ -482,14 +521,16 @@ class DiagnosisController extends Controller
             ->value('DATE_BEGIN');
 
         if (!$start_date_y) {
-            $start_date_y = ($budget_year - 547) . '-10-01';
+            $start_date_y = ($budget_year - 548) . '-10-01';
         }
 
         return [
-            'start_date' => $start_date,
-            'end_date' => $end_date,
             'budget_year' => $budget_year,
             'budget_year_select' => $budget_year_select,
+            'year_start' => $year_start,
+            'year_end' => $year_end,
+            'table_start_date' => $table_start_date,
+            'table_end_date' => $table_end_date,
             'start_date_y' => $start_date_y
         ];
     }

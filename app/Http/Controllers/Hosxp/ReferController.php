@@ -59,15 +59,32 @@ class ReferController extends Controller
         $view = $view_map[$hours];
 
         $dates = $this->resolveDateRange($request);
-        $start_date = $dates['start_date'];
-        $end_date = $dates['end_date'];
+        $year_start = $dates['year_start'];
+        $year_end = $dates['year_end'];
+        $table_start_date = $dates['table_start_date'];
+        $table_end_date = $dates['table_end_date'];
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        $report_data = $this->fetch_refer_out_after_admit($start_date, $end_date, $hours);
+        // Table patient data filtered by table_start_date & table_end_date
+        $report_data = $this->fetch_refer_out_after_admit($table_start_date, $table_end_date, $hours);
 
-        // Fetch Trend Data for Charts
-        $monthly_trend_raw = $this->fetch_refer_after_admit_trend_monthly($start_date, $end_date, $hours);
+        // Check if Ajax request
+        if ($request->ajax()) {
+            $html = view('hosxp.refer.partials._table_refer_out', compact('report_data', 'hours'))->render();
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'total' => count($report_data)
+            ]);
+        }
+
+        // Executive Charts: 12-month trend of the selected budget year ($year_start to $year_end)
+        $monthly_trend_raw = $this->fetch_refer_after_admit_trend_monthly($year_start, $year_end, $hours);
         $monthly_trend = collect($monthly_trend_raw)->map(function ($item) {
             $months_th = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             $item->label = $months_th[(int) $item->month_num] . " " . ($item->year_be);
@@ -75,6 +92,10 @@ class ReferController extends Controller
         });
 
         $yearly_trend = $this->fetch_refer_after_admit_trend_yearly($budget_year, $hours);
+
+        // Backwards compatibility variables
+        $start_date = $year_start;
+        $end_date = $year_end;
 
         return view('hosxp.refer.' . $view, compact(
             'title',
@@ -85,7 +106,11 @@ class ReferController extends Controller
             'monthly_trend',
             'yearly_trend',
             'start_date',
-            'end_date'
+            'end_date',
+            'year_start',
+            'year_end',
+            'table_start_date',
+            'table_end_date'
         ));
     }
 
@@ -167,35 +192,49 @@ class ReferController extends Controller
 
         $budget_year = $request->budget_year ?: $budget_year_now;
 
-        if ($request->start_date && $request->end_date) {
+        $year_data = DB::table('budget_year')
+            ->where('LEAVE_YEAR_ID', $budget_year)
+            ->first();
+
+        if ($year_data) {
+            $year_start = $year_data->DATE_BEGIN;
+            $year_end = $year_data->DATE_END;
+        } else {
+            $year_start = ($budget_year - 544) . '-10-01';
+            $year_end = ($budget_year - 543) . '-09-30';
+        }
+
+        // Support explicit start_date & end_date if requested (for non-decoupled reports)
+        if ($request->filled('start_date') && $request->filled('end_date')) {
             $start_date = $request->start_date;
             $end_date = $request->end_date;
-
-            $matched_year = DB::table('budget_year')
-                ->where('DATE_BEGIN', '<=', $start_date)
-                ->where('DATE_END', '>=', $start_date)
-                ->first();
-
-            if ($matched_year) {
-                $budget_year = $matched_year->LEAVE_YEAR_ID;
-            }
         } else {
-            $year_data = DB::table('budget_year')
-                ->where('LEAVE_YEAR_ID', $budget_year)
-                ->first();
+            $start_date = $year_start;
+            $end_date = $year_end;
+        }
 
-            if ($year_data) {
-                $start_date = $year_data->DATE_BEGIN;
-                $end_date = $year_data->DATE_END;
+        // Independent table date range (defaults to current month, clamped to selected budget year)
+        if ($request->filled('table_start_date') && $request->filled('table_end_date')) {
+            $table_start_date = $request->table_start_date;
+            $table_end_date = $request->table_end_date;
+        } else {
+            $currentDate = date('Y-m-d');
+            if ($currentDate >= $year_start && $currentDate <= $year_end) {
+                $table_start_date = date('Y-m-01');
+                $table_end_date = date('Y-m-t');
             } else {
-                $start_date = ($budget_year - 543) . '-10-01';
-                $end_date = ($budget_year - 542) . '-09-30';
+                $table_start_date = date('Y-m-01', strtotime($year_end));
+                $table_end_date = $year_end;
             }
         }
 
         return [
             'start_date' => $start_date,
             'end_date' => $end_date,
+            'year_start' => $year_start,
+            'year_end' => $year_end,
+            'table_start_date' => $table_start_date,
+            'table_end_date' => $table_end_date,
             'budget_year' => $budget_year,
             'budget_year_select' => $budget_year_select
         ];
