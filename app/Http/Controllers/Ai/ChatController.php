@@ -22,30 +22,6 @@ class ChatController extends Controller
     {
         $this->sqlService = $sqlService;
         $this->ragService = $ragService;
-
-        $this->middleware(function ($request, $next) {
-            if (!\App\Models\AiSetting::isCopilotEnabled()) {
-                if ($request->expectsJson() || $request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'content' => 'ระบบ SmartData Copilot ปิดให้บริการชั่วคราวโดยผู้ดูแลระบบ'
-                    ], 403);
-                }
-                return redirect()->route('ai.knowledge.index')->with('warning', 'ระบบ SmartData Copilot ปิดให้บริการชั่วคราวโดยผู้ดูแลระบบ');
-            }
-
-            if (!auth()->check() || !auth()->user()->hasAccessCopilot()) {
-                if ($request->expectsJson() || $request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'content' => 'คุณไม่มีสิทธิ์เข้าใช้งานระบบ SmartData Copilot กรุณาติดต่อผู้ดูแลระบบ'
-                    ], 403);
-                }
-                return redirect()->route('ai.knowledge.index')->with('warning', 'คุณไม่มีสิทธิ์เข้าใช้งานระบบ SmartData Copilot กรุณาติดต่อผู้ดูแลระบบ');
-            }
-
-            return $next($request);
-        });
     }
 
     /**
@@ -53,6 +29,14 @@ class ChatController extends Controller
      */
     public function index(Request $request)
     {
+        if (!\App\Models\AiSetting::isCopilotEnabled()) {
+            return redirect()->route('ai.knowledge.index')->with('warning', 'ระบบ SmartData Copilot ปิดให้บริการชั่วคราวโดยผู้ดูแลระบบ');
+        }
+
+        if (!auth()->check() || !auth()->user()->hasAccessCopilot()) {
+            return redirect()->route('ai.knowledge.index')->with('warning', 'คุณไม่มีสิทธิ์เข้าใช้งานระบบ SmartData Copilot กรุณาติดต่อผู้ดูแลระบบ');
+        }
+
         $userId = auth()->id();
         $sessions = AiChatSession::where('user_id', $userId)
             ->orderBy('updated_at', 'desc')
@@ -102,6 +86,13 @@ class ChatController extends Controller
             return response()->json([
                 'success' => false,
                 'content' => 'ระบบ SmartData Copilot ปิดให้บริการชั่วคราวโดยผู้ดูแลระบบ'
+            ], 403);
+        }
+
+        if (!auth()->check() || !auth()->user()->hasAccessCopilot()) {
+            return response()->json([
+                'success' => false,
+                'content' => 'คุณไม่มีสิทธิ์เข้าใช้งานระบบ SmartData Copilot กรุณาติดต่อผู้ดูแลระบบ'
             ], 403);
         }
 
@@ -259,6 +250,10 @@ class ChatController extends Controller
      */
     public function newSession(Request $request)
     {
+        if (!\App\Models\AiSetting::isCopilotEnabled() || !auth()->check() || !auth()->user()->hasAccessCopilot()) {
+            return response()->json(['success' => false, 'content' => 'คุณไม่มีสิทธิ์เข้าใช้งานระบบ SmartData Copilot'], 403);
+        }
+
         $userId = auth()->id();
         $targetDb = $request->input('target_db', 'hosxp');
 
@@ -281,6 +276,10 @@ class ChatController extends Controller
      */
     public function loadSession(string $uuid)
     {
+        if (!\App\Models\AiSetting::isCopilotEnabled() || !auth()->check() || !auth()->user()->hasAccessCopilot()) {
+            return response()->json(['success' => false, 'content' => 'คุณไม่มีสิทธิ์เข้าใช้งานระบบ SmartData Copilot'], 403);
+        }
+
         $session = AiChatSession::where('session_uuid', $uuid)
             ->where('user_id', auth()->id())
             ->with(['messages'])
@@ -298,6 +297,10 @@ class ChatController extends Controller
      */
     public function deleteSession(string $uuid)
     {
+        if (!\App\Models\AiSetting::isCopilotEnabled() || !auth()->check() || !auth()->user()->hasAccessCopilot()) {
+            return response()->json(['success' => false, 'content' => 'คุณไม่มีสิทธิ์เข้าใช้งานระบบ SmartData Copilot'], 403);
+        }
+
         $session = AiChatSession::where('session_uuid', $uuid)
             ->where('user_id', auth()->id())
             ->firstOrFail();
