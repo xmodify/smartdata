@@ -204,6 +204,14 @@
         {
             "match_by": ["key_name"],
             "data": {
+                "key_name": "copilot_enabled",
+                "key_value": "Y",
+                "description": "เปิด/ปิดการใช้งาน SmartData Copilot ทั่วทั้งระบบ (Y/N)"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
                 "key_name": "active_provider",
                 "key_value": "gemini",
                 "description": "โมเดลหลักที่ใช้งาน (gemini, openai, ollama)"

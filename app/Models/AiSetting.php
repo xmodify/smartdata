@@ -28,4 +28,9 @@ class AiSetting extends Model
     {
         return static::pluck('key_value', 'key_name')->toArray();
     }
+
+    public static function isCopilotEnabled(): bool
+    {
+        return static::get('copilot_enabled', 'Y') === 'Y';
+    }
 }

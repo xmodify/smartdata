@@ -46,6 +46,8 @@ class AiSettingController extends Controller
             'sql_default_db',
         ];
 
+        AiSetting::set('copilot_enabled', $request->has('copilot_enabled') ? 'Y' : 'N', 'เปิด/ปิดการใช้งาน SmartData Copilot ทั่วทั้งระบบ');
+
         foreach ($fields as $field) {
             if ($request->has($field)) {
                 AiSetting::set($field, $request->input($field));

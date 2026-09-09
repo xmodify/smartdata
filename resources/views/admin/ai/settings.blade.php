@@ -38,6 +38,31 @@
     <form action="{{ route('admin.ai.settings.update') }}" method="POST">
         @csrf
 
+        <!-- Master Enable/Disable Switch -->
+        @php
+            $isCopilotEnabled = ($settings['copilot_enabled'] ?? 'Y') === 'Y';
+        @endphp
+        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: {{ $isCopilotEnabled ? '#f0fdf4' : '#fef2f2' }}; border-left: 5px solid {{ $isCopilotEnabled ? '#22c55e' : '#ef4444' }} !important;">
+            <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle p-3 me-3 {{ $isCopilotEnabled ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }}">
+                        <i class="fas {{ $isCopilotEnabled ? 'fa-power-off' : 'fa-ban' }} fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1 {{ $isCopilotEnabled ? 'text-success' : 'text-danger' }}">
+                            สถานะระบบ SmartData Copilot: {{ $isCopilotEnabled ? 'เปิดใช้งานอยู่ (Active)' : 'ปิดการใช้งานชั่วคราว (Disabled)' }}
+                        </h5>
+                        <p class="text-muted small mb-0">
+                            {{ $isCopilotEnabled ? 'ผู้ใช้งานทั่วไปสามารถเข้าถึงหน้าจอแชทและปุ่มลอย (Floating Widget) ได้ตามปกติ' : 'ระบบถูกซ่อนจากผู้ใช้งานทั่วไป และปิดการประมวลผลคำขอใหม่ชั่วคราว' }}
+                        </p>
+                    </div>
+                </div>
+                <div class="form-check form-switch ps-0">
+                    <input class="form-check-input ms-0" type="checkbox" name="copilot_enabled" id="copilot_enabled" value="Y" {{ $isCopilotEnabled ? 'checked' : '' }} style="width: 3.5rem; height: 1.8rem; cursor: pointer;">
+                </div>
+            </div>
+        </div>
+
         <!-- Provider Selection Section -->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white border-0 pt-4 px-4">

@@ -476,9 +476,14 @@
                         @endif
 
                     <div class="sidebar-section-header">ระบบ AI & คลังความรู้</div>
+                    @if(\App\Models\AiSetting::isCopilotEnabled() || auth()->user()->hasAccessRole('admin'))
                     <a href="{{ route('ai.chat') }}" class="list-group-item list-group-item-action bg-transparent text-dark fw-bold">
                         <i class="fas fa-robot me-2" style="color: #0d6efd;"></i> SmartData Copilot
+                        @if(!\App\Models\AiSetting::isCopilotEnabled())
+                            <span class="badge bg-danger-subtle text-danger ms-1" style="font-size: 0.65rem;">ปิด</span>
+                        @endif
                     </a>
+                    @endif
                     <a href="{{ route('ai.knowledge.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                         <i class="fas fa-book-medical me-2" style="color: #0dcaf0;"></i> คลังความรู้โรงพยาบาล
                     </a>
@@ -513,9 +518,11 @@
 
                 <div class="d-flex align-items-center">
                     @auth
+                        @if(\App\Models\AiSetting::isCopilotEnabled() || auth()->user()->hasAccessRole('admin'))
                         <a href="{{ route('ai.chat') }}" class="btn btn-outline-light btn-sm rounded-pill me-2 d-none d-sm-inline-flex align-items-center px-3" title="เปิด SmartData Copilot">
                             <i class="fas fa-robot me-1"></i> Copilot
                         </a>
+                        @endif
                         <div class="dropdown">
                             <a class="nav-link dropdown-toggle text-white fw-bold d-flex align-items-center" href="#"
                                 id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -714,7 +721,9 @@
         });
     </script>
     @auth
-        @include('ai.partials._floating_widget')
+        @if(\App\Models\AiSetting::isCopilotEnabled() || auth()->user()->hasAccessRole('admin'))
+            @include('ai.partials._floating_widget')
+        @endif
     @endauth
     @stack('scripts')
 </body>

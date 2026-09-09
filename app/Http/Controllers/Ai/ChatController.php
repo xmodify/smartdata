@@ -29,6 +29,10 @@ class ChatController extends Controller
      */
     public function index(Request $request)
     {
+        if (!\App\Models\AiSetting::isCopilotEnabled() && auth()->user()->role !== 'admin') {
+            return redirect()->route('dashboard')->with('error', 'ระบบ SmartData Copilot ปิดให้บริการชั่วคราวโดยผู้ดูแลระบบ');
+        }
+
         $userId = auth()->id();
         $sessions = AiChatSession::where('user_id', $userId)
             ->orderBy('updated_at', 'desc')
@@ -73,6 +77,13 @@ class ChatController extends Controller
             'message' => 'required|string',
             'session_uuid' => 'required|string',
         ]);
+
+        if (!\App\Models\AiSetting::isCopilotEnabled() && auth()->user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'content' => 'ระบบ SmartData Copilot ปิดให้บริการชั่วคราวโดยผู้ดูแลระบบ'
+            ], 403);
+        }
 
         $userId = auth()->id();
         $messageText = trim($request->input('message'));
