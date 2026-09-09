@@ -325,7 +325,8 @@ Schema ข้อมูลที่สามารถใช้ได้:
 - patient: ข้อมูลประชากร/ผู้ป่วย (hn, fname as ชื่อ, lname as นามสกุล, sex as เพศ [1=ชาย, 2=หญิง], birthday as วันเกิด, cid, addrpart, mojupart, amphur, changwat)
 - ovst: ข้อมูลการมาตรวจผู้ป่วยนอก (vn, hn, vstdate as วันที่ตรวจ [YYYY-MM-DD], vsttime as เวลาตรวจ, cur_dep as แผนกที่ตรวจ, pttype as สิทธิการรักษา, main_dep)
 - vn_stat: สถิติผู้ป่วยนอกและค่าใช้จ่าย (vn, hn, vstdate as วันที่ตรวจ, pdx as รหัสโรคหลัก ICD10, dx0, dx1, dx2, dx3, dx4, dx5, sex, age_y as อายุเป็นปี, pttype, income as ค่าใช้จ่ายรวม, uc_money as เบิกได้, paid_money as ชำระเอง)
-- ipt: ผู้ป่วยในรับ admit (an, hn, vn, regdate as วันที่รับไว้, regtime, dchdate as วันที่จำหน่าย, dchtime, dchstts as สถานะจำหน่าย, dchtype as ประเภทจำหน่าย, ward as รหัสหอผู้ป่วย, pttype, bedno as เตียง)
+- ipt: ผู้ป่วยในรับ admit (an, hn, vn, regdate as วันที่รับไว้, regtime, dchdate as วันที่จำหน่าย [ถ้ายังนอน รพ. dchdate IS NULL], dchtime, dchstts as สถานะจำหน่าย, dchtype as ประเภทจำหน่าย, ward as รหัสหอผู้ป่วย, pttype, spclty)
+- iptadm: เตียงและห้องพักผู้ป่วยใน (an, bedno as เลขที่เตียง, roomno as ห้องพัก)
 - an_stat: สถิติผู้ป่วยใน (an, hn, regdate, dchdate, pdx as รหัสโรคหลัก, income as ยอดเงินรวม, ward, age_y)
 - ovstdiag: การวินิจฉัยโรค OPD (vn, hn, icd10 as รหัสโรค, diagtype as ประเภทการวินิจฉัย [1=Principle Dx, 2=Co-morbidity, 3=Complication], vstdate)
 - iptdiag: การวินิจฉัยโรค IPD (an, hn, icd10, diagtype)
@@ -333,11 +334,12 @@ Schema ข้อมูลที่สามารถใช้ได้:
 - referout: การส่งต่อผู้ป่วยไป รพ. อื่น (vn, hn, refer_date as วันที่ส่งต่อ, refer_hospcode as รหัสสถานพยาบาลปลายทาง, refer_point, with_ambulance)
 - pttype: ตารางสิทธิการรักษา (pttype as รหัสสิทธิ, name as ชื่อสิทธิการรักษา, pcode)
 - clinic: แผนก/คลินิก (clinic as รหัสคลินิก, name as ชื่อคลินิก)
-- ward: ตึกผู้ป่วยใน/หอผู้ป่วย (ward as รหัสวอร์ด, name as ชื่อหอผู้ป่วย)
+- ward: ตึกผู้ป่วยใน/หอผู้ป่วย (ward as รหัสวอร์ด, name as ชื่อหอผู้ป่วย, bedcount as จำนวนเตียงทั้งหมด)
 - icd101: พจนานุกรมรหัสโรค ICD-10 (code as รหัสโรค, name as ชื่อโรคอังกฤษ, tname as ชื่อโรคภาษาไทย)
 - drugitems: คลังรายการยา (icode as รหัสยา, name as ชื่อยา, generic_name, units)
 - opitemrece: รายการจ่ายยาและค่าบริการ (vn, an, hn, icode, qty, unitprice, sum_price, rxdate)
 - doctor: แพทย์และบุคลากรทางการแพทย์ (code as รหัสแพทย์, name as ชื่อแพทย์)
+* กฎสำคัญ HOSxP: ตาราง ipt ไม่มีฟิลด์ bedno เด็ดขาด หากต้องการนับผู้ป่วยครองเตียง/Admit ให้ใช้ COUNT(DISTINCT i.an) WHERE i.dchdate IS NULL และอัตราครองเตียงให้คำนวณร่วมกับ ward.bedcount
 ";
     }
 }
