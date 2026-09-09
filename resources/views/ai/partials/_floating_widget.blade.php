@@ -29,16 +29,8 @@
             </div>
         </div>
 
-        <!-- Target DB Quick Pill -->
-        <div class="bg-light px-3 py-1 border-bottom d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
-            <span class="text-muted">ฐานข้อมูล:</span>
-            <select id="widget_target_db" class="form-select form-select-sm border-0 bg-transparent py-0 fw-bold text-primary" style="width: auto; font-size: 0.75rem; cursor: pointer;">
-                <option value="auto">🤖 อัตโนมัติ (Auto)</option>
-                <option value="hosxp" selected>🏥 HOSxP (คนไข้)</option>
-                <option value="backoffice">🏢 Backoffice (พัสดุ/HR)</option>
-                <option value="mysql">⚙️ SmartData (ระบบ)</option>
-            </select>
-        </div>
+        <!-- Hidden Auto Target DB -->
+        <input type="hidden" id="widget_target_db" value="auto">
 
         <!-- Message Body -->
         <div class="card-body p-3 overflow-auto flex-grow-1" id="widgetChatContainer" style="background: #f8fafc; font-size: 0.85rem;">
