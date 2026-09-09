@@ -1073,6 +1073,16 @@ function testConnection(provider) {
         resultBox.innerHTML = '<div class="alert alert-secondary py-2 px-3 small mb-0"><i class="fas fa-spinner fa-spin me-2"></i> กำลังทดสอบเชื่อมต่อกับ ' + provider + '...</div>';
     }
 
+    Swal.fire({
+        title: 'กำลังทดสอบเชื่อมต่อ...',
+        html: '<div class="py-2"><i class="fas fa-satellite-dish fa-spin fs-2 text-primary mb-3"></i><p class="text-muted small mb-0">กำลังส่งคำขอทดสอบการเชื่อมต่อและตรวจวัด Latency กับ ' + provider + '...</p></div>',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
     const payload = {
         _token: '{{ csrf_token() }}',
         provider: provider,
@@ -1098,17 +1108,74 @@ function testConnection(provider) {
     })
     .then(res => res.json())
     .then(data => {
-        if (!resultBox) return;
         if (data.success) {
-            resultBox.innerHTML = '<div class="alert alert-success py-2 px-3 small mb-0"><i class="fas fa-check-circle me-1"></i> ' + data.message + ' <span class="badge bg-success ms-1">' + (data.latency_ms || 0) + ' ms</span></div>';
+            if (resultBox) {
+                resultBox.innerHTML = '<div class="alert alert-success py-2 px-3 small mb-0"><i class="fas fa-check-circle me-1"></i> ' + data.message + ' <span class="badge bg-success ms-1">' + (data.latency_ms || 0) + ' ms</span></div>';
+            }
+
+            let modelName = data.model;
+            if (!modelName) {
+                if (provider === 'gemini') modelName = document.getElementById('gemini_model')?.value || 'gemini-2.0-flash';
+                else if (provider === 'openai') modelName = document.getElementById('openai_model')?.value || 'gpt-4o-mini';
+                else modelName = document.getElementById('ollama_model')?.value || 'deepseek-r1:latest';
+            }
+
+            let replyText = (data.response || 'การเชื่อมต่อระบบ AI สำเร็จ').toString().trim();
+            replyText = replyText.replace(/^["'\s]+|["'\s]+$/g, '');
+
+            Swal.fire({
+                icon: 'success',
+                title: '<h3 class="fw-bold text-dark mt-2 mb-2">เชื่อมต่อ AI สำเร็จ!</h3>',
+                html: `
+                    <div class="text-center px-1">
+                        <div class="mb-2">
+                            <span class="text-success fw-bold fs-5">
+                                <i class="fas fa-check-circle me-1"></i> ผู้ให้บริการ: ${provider}
+                            </span>
+                        </div>
+                        <div class="text-muted small mb-3">
+                            โมเดลที่ตอบ: <code class="text-danger fw-bold" style="font-size: 0.95rem;">${modelName}</code>
+                        </div>
+                        <div class="p-3 bg-light rounded-3 text-start mb-3 border small" style="background-color: #f8fafc;">
+                            <div class="fw-bold text-dark mb-1">การตอบกลับ:</div>
+                            <div class="text-dark">"${replyText}"</div>
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#6366f1',
+                customClass: {
+                    confirmButton: 'btn btn-primary px-4 py-2 rounded-3 fw-bold'
+                }
+            });
         } else {
-            resultBox.innerHTML = '<div class="alert alert-danger py-2 px-3 small mb-0"><i class="fas fa-times-circle me-1"></i> ' + data.message + '</div>';
+            if (resultBox) {
+                resultBox.innerHTML = '<div class="alert alert-danger py-2 px-3 small mb-0"><i class="fas fa-times-circle me-1"></i> ' + data.message + '</div>';
+            }
+            Swal.fire({
+                icon: 'error',
+                title: '<h4 class="fw-bold text-dark mt-2">เชื่อมต่อ AI ไม่สำเร็จ</h4>',
+                html: `
+                    <div class="text-start p-3 bg-light rounded-3 border small text-danger">
+                        ${data.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาตรวจสอบการตั้งค่า'}
+                    </div>
+                `,
+                confirmButtonText: 'ปิด',
+                confirmButtonColor: '#dc3545'
+            });
         }
     })
     .catch(err => {
         if (resultBox) {
             resultBox.innerHTML = '<div class="alert alert-danger py-2 px-3 small mb-0"><i class="fas fa-times-circle me-1"></i> ไม่สามารถส่งคำขอได้: ' + err.message + '</div>';
         }
+        Swal.fire({
+            icon: 'error',
+            title: '<h4 class="fw-bold text-dark mt-2">เกิดข้อผิดพลาด</h4>',
+            text: 'ไม่สามารถส่งคำขอได้: ' + err.message,
+            confirmButtonText: 'ปิด',
+            confirmButtonColor: '#dc3545'
+        });
     });
 }
 

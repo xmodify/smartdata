@@ -135,15 +135,16 @@ class GeminiProvider implements LlmProviderInterface
             }
 
             $reply = $this->chat([
-                ['role' => 'user', 'content' => 'ตอบคำว่า "CONNECTED" เพียงคำเดียวสั้นๆ']
+                ['role' => 'user', 'content' => 'ตอบคำว่า "การเชื่อมต่อระบบ AI สำเร็จ" เพียงข้อความเดียวสั้นๆ']
             ]);
 
             $latency = round((microtime(true) - $start) * 1000);
             return [
                 'success' => true,
                 'message' => "เชื่อมต่อ Gemini สำเร็จ! ({$this->model})",
+                'model' => $this->model,
                 'latency_ms' => $latency,
-                'response' => $reply
+                'response' => trim($reply)
             ];
         } catch (Exception $e) {
             $latency = round((microtime(true) - $start) * 1000);
