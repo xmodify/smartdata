@@ -1,17 +1,17 @@
 <!-- SmartData Copilot Floating Widget (RiMS Style) -->
-<div id="smartdata-copilot-widget" style="position: fixed; bottom: 25px; right: 25px; z-index: 1060; font-family: inherit;">
+<div id="smartdata-copilot-widget" style="position: fixed; bottom: 25px; right: 25px; z-index: 9999; font-family: inherit;">
     <!-- Floating Trigger Button with AI Badge -->
     <div class="position-relative d-inline-block">
-        <button id="copilot-trigger-btn" type="button" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0" style="width: 60px; height: 60px; background: #ffffff; border: 3px solid #ffffff; box-shadow: 0 6px 24px rgba(9, 74, 136, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: hidden;" onclick="toggleCopilotWidget()" title="SmartData Copilot">
-            <img src="{{ asset('images/logo.png') }}" id="copilot-btn-img" alt="SmartData Copilot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-            <i class="fas fa-times fa-2x text-white d-none" id="copilot-btn-close"></i>
+        <button id="copilot-trigger-btn" type="button" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0" style="width: 60px; height: 60px; background: #ffffff; border: 3px solid #ffffff; box-shadow: 0 6px 24px rgba(9, 74, 136, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: hidden; cursor: pointer;" onclick="toggleCopilotWidget()" title="SmartData Copilot">
+            <img src="{{ asset('images/logo.png') }}" id="copilot-btn-img" alt="SmartData Copilot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; pointer-events: none;">
+            <i class="fas fa-times fa-2x text-white d-none" id="copilot-btn-close" style="pointer-events: none;"></i>
         </button>
         <!-- Red AI Pill Badge (RiMS Style) -->
         <span class="badge rounded-pill bg-danger position-absolute" style="top: -3px; right: -3px; font-size: 0.65rem; font-weight: 800; padding: 3px 6px; box-shadow: 0 2px 6px rgba(220, 53, 69, 0.5); border: 2px solid #ffffff; pointer-events: none; letter-spacing: 0.5px;">AI</span>
     </div>
 
     <!-- Floating Chat Window (Drawer - RiMS Style) -->
-    <div id="copilot-chat-window" class="card border-0 rounded-4 overflow-hidden" style="display: none; position: absolute; bottom: 75px; right: 0; width: 400px; max-width: calc(100vw - 30px); height: 590px; max-height: calc(100vh - 105px); z-index: 1061; flex-direction: column; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0,0,0,0.05); border-radius: 20px !important;">
+    <div id="copilot-chat-window" class="card border-0 rounded-4 overflow-hidden" style="display: none; position: absolute; bottom: 75px; right: 0; width: 400px; max-width: calc(100vw - 30px); height: 590px; max-height: calc(100vh - 105px); z-index: 10000; flex-direction: column; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0,0,0,0.05); border-radius: 20px !important;">
         <!-- Header: Deep Hospital Navy Blue -->
         <div class="card-header text-white border-0 py-3 px-3 d-flex justify-content-between align-items-center" style="background: #094a88;">
             <div class="d-flex align-items-center">
@@ -120,9 +120,25 @@
 .hover-white:hover {
     color: #ffffff !important;
 }
+@media (max-width: 576px) {
+    #smartdata-copilot-widget {
+        bottom: 15px !important;
+        right: 15px !important;
+    }
+    #copilot-chat-window {
+        position: fixed !important;
+        bottom: 85px !important;
+        right: 15px !important;
+        left: 15px !important;
+        width: auto !important;
+        max-width: none !important;
+        height: calc(100vh - 110px) !important;
+    }
+}
 </style>
 
 <script>
+window.isWidgetOpen = false;
 let widgetSessionUuid = 'widget-' + Math.random().toString(36).substr(2, 9);
 window.smartdataLogoUrl = window.smartdataLogoUrl || "{{ asset('images/logo.png') }}";
 var smartdataLogoUrl = window.smartdataLogoUrl;
@@ -132,21 +148,30 @@ function toggleCopilotWidget() {
     const btnImg = document.getElementById('copilot-btn-img');
     const btnClose = document.getElementById('copilot-btn-close');
     const triggerBtn = document.getElementById('copilot-trigger-btn');
-    isWidgetOpen = !isWidgetOpen;
+    if (!chatWindow) return;
 
-    if (isWidgetOpen) {
+    window.isWidgetOpen = !window.isWidgetOpen;
+
+    if (window.isWidgetOpen) {
         chatWindow.style.display = 'flex';
-        btnImg.classList.add('d-none');
-        btnClose.classList.remove('d-none');
-        triggerBtn.style.background = '#094a88';
-        triggerBtn.style.border = '3px solid #ffffff';
-        document.getElementById('widgetMessageInput').focus();
+        if (btnImg) btnImg.classList.add('d-none');
+        if (btnClose) btnClose.classList.remove('d-none');
+        if (triggerBtn) {
+            triggerBtn.style.background = '#094a88';
+            triggerBtn.style.border = '3px solid #ffffff';
+        }
+        setTimeout(() => {
+            const input = document.getElementById('widgetMessageInput');
+            if (input) input.focus();
+        }, 150);
     } else {
         chatWindow.style.display = 'none';
-        btnImg.classList.remove('d-none');
-        btnClose.classList.add('d-none');
-        triggerBtn.style.background = '#ffffff';
-        triggerBtn.style.border = '3px solid #ffffff';
+        if (btnImg) btnImg.classList.remove('d-none');
+        if (btnClose) btnClose.classList.add('d-none');
+        if (triggerBtn) {
+            triggerBtn.style.background = '#ffffff';
+            triggerBtn.style.border = '3px solid #ffffff';
+        }
     }
 }
 
@@ -175,6 +200,7 @@ function clearWidgetChat() {
 function resetWidgetConversation() {
     widgetSessionUuid = 'widget-' + Math.random().toString(36).substr(2, 9);
     const container = document.getElementById('widgetChatContainer');
+    if (!container) return;
     container.innerHTML = `
         <div class="card border border-light-subtle rounded-4 shadow-sm bg-white p-3 mb-3" id="widgetWelcomeCard" style="border-radius: 16px !important;">
             <div class="fw-bold text-dark mb-2 d-flex align-items-center" style="font-size: 0.95rem;">
@@ -206,8 +232,9 @@ function resetWidgetConversation() {
 }
 
 function handleWidgetSubmit(e) {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const input = document.getElementById('widgetMessageInput');
+    if (!input) return;
     const text = input.value.trim();
     if (!text) return;
 
@@ -219,14 +246,15 @@ function handleWidgetSubmit(e) {
     // Append loading
     const loading = appendWidgetLoading();
 
-    const targetDb = document.getElementById('widget_target_db').value;
+    const targetDbEl = document.getElementById('widget_target_db');
+    const targetDb = targetDbEl ? targetDbEl.value : 'auto';
 
     fetch('{{ route('ai.chat.message') }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
         },
         body: JSON.stringify({
             message: text,
@@ -235,8 +263,15 @@ function handleWidgetSubmit(e) {
             target_db: targetDb
         })
     })
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.message || ('Server error ' + response.status));
+        }
+        return data;
+    })
     .then(data => {
-        loading.remove();
+        if (loading && loading.remove) loading.remove();
         let reply = data.content || '';
         let extraHtml = '';
 
@@ -269,18 +304,22 @@ function handleWidgetSubmit(e) {
         appendWidgetMessage('assistant', reply, extraHtml);
     })
     .catch(err => {
-        loading.remove();
-        appendWidgetMessage('assistant', 'ขออภัย เกิดข้อผิดพลาด: ' + err.message);
+        if (loading && loading.remove) loading.remove();
+        appendWidgetMessage('assistant', 'ขออภัย เกิดข้อผิดพลาด: ' + (err.message || 'ไม่สามารถติดต่อ AI ได้'));
     });
 }
 
 function sendWidgetQuickPrompt(text) {
-    document.getElementById('widgetMessageInput').value = text;
-    document.getElementById('widgetChatForm').dispatchEvent(new Event('submit'));
+    const input = document.getElementById('widgetMessageInput');
+    if (input) {
+        input.value = text;
+        handleWidgetSubmit(new Event('submit'));
+    }
 }
 
 function appendWidgetMessage(role, text, extraHtml = '') {
     const container = document.getElementById('widgetChatContainer');
+    if (!container) return;
     const div = document.createElement('div');
 
     if (role === 'user') {
@@ -303,6 +342,7 @@ function appendWidgetMessage(role, text, extraHtml = '') {
 
 function appendWidgetLoading() {
     const container = document.getElementById('widgetChatContainer');
+    if (!container) return null;
     const div = document.createElement('div');
     div.className = 'd-flex justify-content-start mb-3 align-items-start';
     div.innerHTML = `
@@ -320,4 +360,11 @@ function escapeHtmlWidget(text) {
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
 }
+
+// Expose functions to global window object
+window.toggleCopilotWidget = toggleCopilotWidget;
+window.clearWidgetChat = clearWidgetChat;
+window.resetWidgetConversation = resetWidgetConversation;
+window.handleWidgetSubmit = handleWidgetSubmit;
+window.sendWidgetQuickPrompt = sendWidgetQuickPrompt;
 </script>
