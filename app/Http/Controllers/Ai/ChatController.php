@@ -213,13 +213,15 @@ class ChatController extends Controller
                         'execution_ms' => $sqlResult['execution_ms'] ?? 0,
                     ]);
                 } else {
-                    // SQL execution returned error
-                    $errorMsg = $sqlResult['error'];
+                    // SQL execution returned error or empty
+                    $displayMsg = $sqlResult['polite_message'] ?? $sqlResult['error'];
+                    $rawError = $sqlResult['raw_error'] ?? null;
+
                     $assistantMsg = AiChatMessage::create([
                         'session_id' => $session->id,
                         'role' => 'assistant',
-                        'content' => $errorMsg,
-                        'message_type' => 'text',
+                        'content' => $displayMsg,
+                        'message_type' => 'sql_query',
                         'generated_sql' => $sqlResult['sql'] ?? null,
                         'target_db' => $sqlResult['target_db'] ?? null,
                     ]);
@@ -227,8 +229,10 @@ class ChatController extends Controller
                     return response()->json([
                         'success' => false,
                         'mode' => 'sql',
-                        'content' => $errorMsg,
+                        'content' => $displayMsg,
                         'sql' => $sqlResult['sql'] ?? null,
+                        'raw_error' => $rawError,
+                        'target_db' => $sqlResult['target_db'] ?? null,
                     ]);
                 }
             } elseif ($detectedMode === 'rag') {
@@ -309,7 +313,7 @@ class ChatController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'content' => 'เกิดข้อผิดพลาดในการประมวลผล: ' . $e->getMessage()
+                'content' => 'ขออภัยครับ ระบบเกิดข้อขัดข้องชั่วคราวในการประมวลผล: ' . $e->getMessage()
             ], 500);
         }
     }

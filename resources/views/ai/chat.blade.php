@@ -137,7 +137,7 @@
                                 <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 shadow-sm border" style="width: 36px; height: 36px; object-fit: contain;" alt="SmartData">
                             </div>
                             <div class="assistant-bubble p-3 rounded-4 shadow-sm bg-white border" style="max-width: 85%;">
-                                <div class="message-text mb-2" style="white-space: pre-wrap;">{!! nl2br(e($msg->content)) !!}</div>
+                                <div class="message-text mb-2" style="white-space: pre-wrap;">{!! nl2br(preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', e($msg->content))) !!}</div>
 
                                 @if(!empty($msg->query_result) && is_array($msg->query_result))
                                 <div class="table-responsive rounded-3 border bg-light mt-2" style="max-height: 350px;">
@@ -436,6 +436,16 @@ function appendAssistantMessage(data) {
 
         // Show SQL only for Admin in a collapsed details toggle
         if (isAdmin && data.sql) {
+            let errorAlert = '';
+            if (data.raw_error) {
+                errorAlert = `
+                    <div class="p-2 mb-2 rounded bg-danger bg-opacity-25 border border-danger border-opacity-50 text-white small" style="font-size: 0.72rem; white-space: pre-wrap;">
+                        <div class="fw-bold text-warning mb-1"><i class="fas fa-exclamation-triangle me-1"></i> ข้อมูลทางเทคนิคสำหรับ Admin (Technical Error):</div>
+                        <div class="font-monospace text-light opacity-75">${escapeHtml(data.raw_error)}</div>
+                    </div>
+                `;
+            }
+
             extraHtml += `
                 <details class="mt-2 text-muted">
                     <summary class="small cursor-pointer user-select-none text-muted" style="font-size: 0.75rem;">
@@ -448,6 +458,7 @@ function appendAssistantMessage(data) {
                                 <i class="fas fa-copy me-1"></i> Copy SQL
                             </button>
                         </div>
+                        ${errorAlert}
                         <pre class="mb-0 font-monospace small text-info" style="white-space: pre-wrap; font-size: 0.75rem;"><code>${escapeHtml(data.sql)}</code></pre>
                     </div>
                 </details>
@@ -468,12 +479,16 @@ function appendAssistantMessage(data) {
         extraHtml += `</div></div>`;
     }
 
+    let formattedContent = escapeHtml(data.content || '')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
     div.innerHTML = `
         <div class="me-3">
             <img src="${smartdataLogoUrl}" class="rounded-circle bg-white p-1 shadow-sm border" style="width: 36px; height: 36px; object-fit: contain;" alt="SmartData">
         </div>
         <div class="assistant-bubble p-3 rounded-4 shadow-sm bg-white border" style="max-width: 85%;">
-            <div class="message-text mb-2" style="white-space: pre-wrap;">${escapeHtml(data.content || '')}</div>
+            <div class="message-text mb-2" style="white-space: pre-wrap;">${formattedContent}</div>
             ${extraHtml}
         </div>
     `;

@@ -122,10 +122,12 @@ Schema ข้อมูลที่สามารถใช้ได้:
         $sql = $this->extractSql($rawResponse);
 
         if (empty($sql)) {
+            $politeMsg = "ขออภัยครับ ระบบไม่สามารถแปลงคำถามนี้เป็นคำสั่งสืบค้นได้ครับ 🙏\n\n💡 *คำแนะนำ: กรุณาระบุรายละเอียดเพิ่มเติม เช่น ชื่อแผนก ตึกผู้ป่วย หรือช่วงเวลาที่ต้องการสืบค้นครับ*";
             return [
                 'success' => false,
                 'target_db' => $connection,
-                'error' => 'ไม่สามารถสร้างคำสั่ง SQL จากคำถามนี้ได้ กรุณาระบุรายละเอียดเพิ่มเติม',
+                'polite_message' => $politeMsg,
+                'error' => $politeMsg,
                 'raw_reply' => $rawResponse
             ];
         }
@@ -133,11 +135,14 @@ Schema ข้อมูลที่สามารถใช้ได้:
         // Validate SQL safety
         $safetyCheck = $this->validateSqlSafety($sql);
         if (!$safetyCheck['safe']) {
+            $politeMsg = "ขออภัยครับ คำถามนี้สร้างคำสั่งสืบค้นที่ไม่ผ่านเกณฑ์ความปลอดภัยของระบบครับ 🙏\n\n💡 *ระบบอนุญาตเฉพาะคำสั่งสืบค้นข้อมูล (SELECT) ที่ปลอดภัยเท่านั้นครับ*";
             return [
                 'success' => false,
                 'target_db' => $connection,
                 'sql' => $sql,
-                'error' => 'คำสั่ง SQL ถูกระงับเนื่องจากเหตุผลด้านความปลอดภัย: ' . $safetyCheck['reason']
+                'polite_message' => $politeMsg,
+                'error' => $politeMsg,
+                'raw_error' => $safetyCheck['reason']
             ];
         }
 
@@ -173,11 +178,17 @@ Schema ข้อมูลที่สามารถใช้ได้:
                 'explanation' => $explanation,
             ];
         } catch (Exception $e) {
+            $rawError = $e->getMessage();
+            $dbName = strtoupper($connection);
+            $politeMsg = "ขออภัยครับ ระบบไม่พบข้อมูลหรือเกิดข้อขัดข้องในการสืบค้นจากฐานข้อมูล {$dbName} ในขณะนี้ครับ 🙏\n\n💡 *คำแนะนำ: โครงสร้างคำถามอาจยังไม่สอดคล้องกับตารางข้อมูล ท่านสามารถลองปรับเปลี่ยนคำค้นหา หรือสอบถามเจ้าหน้าที่ผู้ดูแลระบบ (Admin) เพื่อตรวจสอบคำสั่งสืบค้นได้ครับ*";
+
             return [
                 'success' => false,
                 'target_db' => $connection,
                 'sql' => $sql,
-                'error' => 'เกิดข้อผิดพลาดในการรัน SQL บนฐานข้อมูล ' . $connection . ': ' . $e->getMessage()
+                'polite_message' => $politeMsg,
+                'error' => $politeMsg,
+                'raw_error' => $rawError,
             ];
         }
     }
@@ -234,12 +245,13 @@ Schema ข้อมูลที่สามารถใช้ได้:
     protected function generateSummary(string $question, string $sql, array $rows, string $connection): string
     {
         $count = count($rows);
+        $dbName = strtoupper($connection);
         if ($count === 0) {
             $hint = "";
             if (mb_strpos($question, 'วันนี้') !== false || mb_strpos($sql, 'CURDATE()') !== false) {
-                $hint = " (หมายเหตุ: เนื่องจากเงื่อนไขสืบค้นเป็น 'วันนี้' หากอยู่นอกเวลาทำการหรือยังไม่มีการบันทึกข้อมูล สามารถลองระบุเป็น 'เดือนนี้' หรือ 'ย้อนหลัง 30 วัน' ได้ครับ)";
+                $hint = "\n\n💡 *คำแนะนำ: เนื่องจากเงื่อนไขสืบค้นระบุเป็น 'วันนี้' หากอยู่นอกเวลาทำการหรือยังไม่มีการบันทึกข้อมูล สามารถลองสอบถามโดยระบุเป็น 'เดือนนี้' หรือ 'ย้อนหลัง 30 วัน' ได้ครับ*";
             }
-            return "สืบค้นข้อมูลจากฐานข้อมูล {$connection} สำเร็จ ไม่พบข้อมูลตามเงื่อนไขที่ระบุ{$hint}";
+            return "ขออภัยครับ จากการสืบค้นฐานข้อมูล {$dbName} ในระบบ ไม่พบข้อมูลตามเงื่อนไขหรือช่วงเวลาที่ระบุครับ 🙏{$hint}";
         }
 
         // If single row with 1-3 columns, format directly
@@ -249,7 +261,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
                 $formattedVal = is_numeric($v) ? number_format($v) : $v;
                 $parts[] = "{$k}: **{$formattedVal}**";
             }
-            return "ผลลัพธ์จากฐานข้อมูล {$connection}: " . implode(' | ', $parts);
+            return "ผลลัพธ์จากฐานข้อมูล {$dbName}: " . implode(' | ', $parts);
         }
 
         // Multiple rows (2-10): Provide conversational breakdown with numbers
@@ -266,7 +278,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
                 }
             }
             if (!empty($lines)) {
-                return "ผลลัพธ์จากฐานข้อมูล {$connection} (พบทั้งหมด **{$count}** รายการ):\n" . implode("\n", $lines);
+                return "ผลลัพธ์จากฐานข้อมูล {$dbName} (พบทั้งหมด **{$count}** รายการ):\n" . implode("\n", $lines);
             }
         }
 
@@ -282,12 +294,12 @@ Schema ข้อมูลที่สามารถใช้ได้:
                     $sampleLines[] = "- {$name}: **{$num}**";
                 }
             }
-            $sampleText = !empty($sampleLines) ? ":\n" . implode("\n", $sampleLines) . "\n- *(และรายการอื่น ๆ รวมทั้งหมด {$count} รายการ ดังตาราง)*" : "";
-            return "ผลลัพธ์จากฐานข้อมูล {$connection} พบทั้งหมด **{$count}** รายการ{$sampleText}";
+            $sampleText = !empty($sampleLines) ? ":\n" . implode("\n", $sampleLines) . "\n- *(และรายการอื่น ๆ รวมทั้งหมด {$count} รายการ ดังตารางด้านล่าง)*" : "";
+            return "ผลลัพธ์จากฐานข้อมูล {$dbName} พบทั้งหมด **{$count}** รายการ{$sampleText}";
         }
 
         // General summary
-        return "สืบค้นข้อมูลจากฐานข้อมูล {$connection} สำเร็จ พบผลลัพธ์ทั้งหมด **{$count}** รายการ ดังแสดงในตารางด้านล่าง";
+        return "สืบค้นข้อมูลจากฐานข้อมูล {$dbName} สำเร็จ พบผลลัพธ์ทั้งหมด **{$count}** รายการ ดังแสดงในตารางด้านล่าง";
     }
 
     /**
@@ -301,7 +313,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
 - hrd_person: ข้อมูลบุคลากร/เจ้าหน้าที่ (ID, HR_CID as เลขบัตรประชาชน, HR_PREFIX_ID as คำนำหน้า, HR_FNAME as ชื่อ, HR_LNAME as นามสกุล, HR_DEPARTMENT_ID as รหัสกลุ่มงาน/ฝ่าย, HR_DEPARTMENT_SUB_ID as รหัสงานย่อย, HR_PERSON_TYPE_ID as รหัสประเภทบุคลากร, HR_POSITION_ID as รหัสตำแหน่งสายงาน, HR_STATUS_ID as สถานะการทำงาน [1=ปฏิบัติงานปกติ], SEX, BIRTHDAY, START_WORK_DATE)
 - hrd_person_type: ประเภทบุคลากร (HR_PERSON_TYPE_ID, HR_PERSON_TYPE_NAME เช่น ข้าราชการ, ลูกจ้างประจำ, พนักงานราชการ, พนักงานกระทรวงสาธารณสุข, ลูกจ้างรายเดือน, ลูกจ้างรายวัน, ผู้พิเศษ)
 - hrd_position: ตำแหน่งสายงาน/วิชาชีพ (HR_POSITION_ID, HR_POSITION_NAME เช่น พยาบาลวิชาชีพ, นายแพทย์, เจ้าพนักงานสาธารณสุข, เภสัชกร, นักวิชาการสาธารณสุข)
-- hrd_department: กลุ่มงาน/ฝ่าย (HR_DEPARTMENT_ID, HR_DEPARTMENT_NAME เช่น กลุ่มงานการพยาบาล, กลุ่มงานบริหารทั่วไป, กลุ่มงานบริการทางการแพทย์)
+- hrd_department: กลุ่มงาน/ฝ่าย (HR_DEPARTMENT_ID, HR_DEPARTMENT_NAME เช่น กลุ่มงานการพยาบาล, กลุ่มงานบริหารทั่วไป, กลุ่มงานบริการทางการแพทย์, กลุ่มงานสุขภาพดิจิทัล)
 - hrd_department_sub: ฝ่ายย่อย/งาน (HR_DEPARTMENT_SUB_ID, HR_DEPARTMENT_SUB_NAME, HR_DEPARTMENT_ID)
 - hrd_prefix: คำนำหน้าชื่อ (HR_PREFIX_ID, HR_PREFIX_NAME เช่น นาย, นาง, นางสาว, นพ., พญ.)
 - hrd_status: สถานะเจ้าหน้าที่ (HR_STATUS_ID, HR_STATUS_NAME เช่น 1=ปฏิบัติงานปกติ, 2=ลาศึกษาต่อ, 3=ลาออก, 4=เกษียณ)
@@ -309,6 +321,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
 - gleave_type: ประเภทวันลา (LEAVE_TYPE_ID, LEAVE_TYPE_NAME เช่น ลาป่วย, ลากิจ, ลาพักผ่อน, ลาคลอด)
 - supplies: ข้อมูลพัสดุ/ครุภัณฑ์ (ID, NUM as รหัสครุภัณฑ์, NAME as ชื่อพัสดุ, BUY_DATE as วันที่ซื้อ, PRICE as ราคา, STATUS_ID as สถานะ)
 - supplies_types: ประเภทพัสดุครุภัณฑ์ (SUP_TYPE_ID, SUP_TYPE_NAME)
+* กฎสำคัญ Backoffice: เจ้าหน้าที่ไอทีหรือสารสนเทศ สังกัดกลุ่มงานชื่อ 'กลุ่มงานสุขภาพดิจิทัล'
 ";
         }
 
@@ -343,7 +356,12 @@ Schema ข้อมูลที่สามารถใช้ได้:
 - drugitems: คลังรายการยา (icode as รหัสยา, name as ชื่อยา, generic_name, units)
 - opitemrece: รายการจ่ายยาและค่าบริการ (vn, an, hn, icode, qty, unitprice, sum_price, rxdate)
 - doctor: แพทย์และบุคลากรทางการแพทย์ (code as รหัสแพทย์, name as ชื่อแพทย์)
-* กฎสำคัญ HOSxP: ตาราง ipt ไม่มีฟิลด์ bedno เด็ดขาด หากต้องการนับผู้ป่วยครองเตียง/Admit ให้ใช้ COUNT(DISTINCT i.an) WHERE i.dchdate IS NULL และอัตราครองเตียงให้คำนวณร่วมกับ ward.bedcount
+* กฎสำคัญ HOSxP:
+1. ตาราง ipt ไม่มีฟิลด์ pdx และไม่มีฟิลด์ bedno เด็ดขาด!
+2. หากต้องการรหัสโรคหลักของผู้ป่วยใน (IPD) ต้อง JOIN an_stat a ON i.an = a.an แล้วใช้ a.pdx (เช่น LEFT JOIN icd101 icd ON a.pdx = icd.code) หรือ JOIN iptdiag id ON i.an = id.an AND id.diagtype = 1 แล้วใช้ id.icd10
+3. หากต้องการเตียงผู้ป่วยใน ให้ JOIN iptadm adm ON i.an = adm.an แล้วใช้ adm.bedno
+4. หากต้องการนับผู้ป่วยครองเตียง/Admit ขณะนี้ ให้ใช้ COUNT(DISTINCT i.an) WHERE i.dchdate IS NULL และอัตราครองเตียงให้คำนวณร่วมกับ ward.bedcount
+5. กรณีค้นหาผู้ป่วยหนัก หรือ ICU ให้ค้นหาจากชื่อหอผู้ป่วย เช่น w.name LIKE '%ผู้ป่วยหนัก%' OR w.name LIKE '%ICU%' OR w.name LIKE '%วิกฤต%'
 ";
     }
 }

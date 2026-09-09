@@ -145,6 +145,7 @@ window.isWidgetOpen = false;
 let widgetSessionUuid = 'widget-' + Math.random().toString(36).substr(2, 9);
 window.smartdataLogoUrl = window.smartdataLogoUrl || "{{ asset('images/logo.png') }}";
 var smartdataLogoUrl = window.smartdataLogoUrl;
+const isWidgetAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
 
 function toggleCopilotWidget() {
     const chatWindow = document.getElementById('copilot-chat-window');
@@ -302,8 +303,39 @@ function handleWidgetSubmit(e) {
                         <span><i class="fas fa-database text-primary me-1"></i> ${(data.target_db || 'HOSxP').toUpperCase()} • ${data.count || data.rows.length} รายการ</span>
                     </div>
                 `;
-            } else if (data.count !== undefined) {
-                reply += `\n(ดึงข้อมูลสำเร็จ ${data.count} รายการ จากฐานข้อมูล ${data.target_db || 'HOSxP'})`;
+            } else if (data.count !== undefined && data.count > 0) {
+                reply += `\n(ดึงข้อมูลสำเร็จ ${data.count} รายการ จากฐานข้อมูล ${(data.target_db || 'HOSxP').toUpperCase()})`;
+            }
+
+            // Show SQL for Admin in widget too
+            if (isWidgetAdmin && data.sql) {
+                let widgetErrorAlert = '';
+                if (data.raw_error) {
+                    widgetErrorAlert = `
+                        <div class="p-2 mb-2 rounded bg-danger bg-opacity-25 border border-danger border-opacity-50 text-white small" style="font-size: 0.7rem; white-space: pre-wrap;">
+                            <div class="fw-bold text-warning mb-1"><i class="fas fa-exclamation-triangle me-1"></i> ข้อมูลทางเทคนิคสำหรับ Admin:</div>
+                            <div class="font-monospace text-light opacity-75">${escapeHtmlWidget(data.raw_error)}</div>
+                        </div>
+                    `;
+                }
+
+                extraHtml += `
+                    <details class="mt-2 text-muted">
+                        <summary class="small cursor-pointer user-select-none text-muted" style="font-size: 0.72rem;">
+                            <i class="fas fa-terminal me-1"></i> คำสั่ง SQL ที่ใช้สืบค้น (สำหรับ Admin)
+                        </summary>
+                        <div class="rounded-3 p-2 bg-dark text-light mt-1" style="font-size: 0.7rem;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-secondary" style="font-size: 0.65rem;">${(data.target_db || 'HOSxP').toUpperCase()}</span>
+                                <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.65rem;" onclick="navigator.clipboard.writeText(this.closest('.rounded-3').querySelector('code').innerText); alert('คัดลอก SQL แล้ว');">
+                                    Copy SQL
+                                </button>
+                            </div>
+                            ${widgetErrorAlert}
+                            <pre class="mb-0 font-monospace text-info" style="white-space: pre-wrap; font-size: 0.68rem;"><code>${escapeHtmlWidget(data.sql)}</code></pre>
+                        </div>
+                    </details>
+                `;
             }
         }
 
@@ -332,11 +364,15 @@ function appendWidgetMessage(role, text, extraHtml = '') {
         div.className = 'd-flex justify-content-end mb-3';
         div.innerHTML = `<div class="px-3 py-2 rounded-4 text-white shadow-sm" style="max-width: 82%; background: #094a88; line-height: 1.45; word-break: break-word; white-space: pre-wrap; border-bottom-right-radius: 4px !important;">${escapeHtmlWidget(text)}</div>`;
     } else {
+        let formattedText = escapeHtmlWidget(text)
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
         div.className = 'd-flex justify-content-start mb-3 align-items-start';
         div.innerHTML = `
             <img src="${smartdataLogoUrl}" class="rounded-circle shadow-sm me-2 border bg-white flex-shrink-0" style="width: 28px; height: 28px; object-fit: contain; padding: 1px;" alt="SmartData">
             <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-dark" style="max-width: 88%; line-height: 1.45; word-break: break-word; border-top-left-radius: 4px !important;">
-                <div style="white-space: pre-wrap;">${escapeHtmlWidget(text)}</div>
+                <div style="white-space: pre-wrap;">${formattedText}</div>
                 ${extraHtml}
             </div>
         `;
