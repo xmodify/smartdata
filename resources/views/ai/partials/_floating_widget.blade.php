@@ -35,7 +35,7 @@
         <div class="card-body p-3 overflow-auto flex-grow-1" id="widgetChatContainer" style="background: #f8fafc; font-size: 0.85rem;">
             <div class="d-flex justify-content-start mb-3">
                 <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 shadow-sm me-2 border flex-shrink-0" style="width: 28px; height: 28px; object-fit: contain;" alt="SmartData">
-                <div class="p-2 rounded-3 shadow-sm bg-white border" style="max-width: 85%;">
+                <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-dark" style="max-width: 82%; line-height: 1.45;">
                     สวัสดีครับ! ผมคือ <strong>SmartData Copilot</strong> ถามสถิติคนไข้, แปลง SQL, หรือค้นหาแนวทาง CPG โรงพยาบาลได้เลยครับ
                 </div>
             </div>
@@ -170,18 +170,12 @@ function appendWidgetMessage(role, text) {
 
     if (role === 'user') {
         div.className = 'd-flex justify-content-end mb-2';
-        div.innerHTML = `
-            <div class="p-2 rounded-3 text-white shadow-sm" style="max-width: 85%; background: #0d6efd; white-space: pre-wrap;">
-                ${escapeHtmlWidget(text)}
-            </div>
-        `;
+        div.innerHTML = `<div class="px-3 py-2 rounded-4 text-white shadow-sm" style="max-width: 82%; background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%); line-height: 1.45; word-break: break-word; white-space: pre-wrap;">${escapeHtmlWidget(text)}</div>`;
     } else {
         div.className = 'd-flex justify-content-start mb-2';
         div.innerHTML = `
             <img src="${smartdataLogoUrl}" class="rounded-circle shadow-sm me-2 border bg-white flex-shrink-0" style="width: 28px; height: 28px; object-fit: contain; padding: 1px;" alt="SmartData">
-            <div class="p-2 rounded-3 shadow-sm bg-white border text-dark" style="max-width: 85%; white-space: pre-wrap;">
-                ${escapeHtmlWidget(text)}
-            </div>
+            <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-dark" style="max-width: 82%; line-height: 1.45; word-break: break-word; white-space: pre-wrap;">${escapeHtmlWidget(text)}</div>
         `;
     }
 
@@ -195,7 +189,7 @@ function appendWidgetLoading() {
     div.className = 'd-flex justify-content-start mb-2';
     div.innerHTML = `
         <img src="${smartdataLogoUrl}" class="rounded-circle shadow-sm me-2 border bg-white flex-shrink-0 fa-spin" style="width: 28px; height: 28px; object-fit: contain; padding: 1px;" alt="SmartData">
-        <div class="p-2 rounded-3 shadow-sm bg-white border text-muted small">
+        <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-muted small">
             กำลังประมวลผล...
         </div>
     `;
