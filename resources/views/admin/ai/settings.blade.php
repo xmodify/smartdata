@@ -122,80 +122,28 @@
             </div>
         </div>
 
-        <!-- Provider Selection Section -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 pt-4 px-4">
-                <h5 class="fw-bold mb-0 text-dark">
-                    <i class="fas fa-sliders-h text-primary me-2"></i>1. เลือก AI Provider หลักที่ใช้งาน (Active Provider)
-                </h5>
-                <p class="text-muted small mb-0">เลือกว่าจะใช้สมองกลค่ายใดเป็นหลักในการตอบแชท, แปลง Text-to-SQL และสร้าง Vector RAG</p>
-            </div>
-            <div class="card-body px-4 pb-4">
-                <div class="row g-3">
-                    @php
-                        $activeProvider = $settings['active_provider'] ?? 'gemini';
-                    @endphp
+        @php
+            $activeProvider = $settings['active_provider'] ?? 'gemini';
+        @endphp
 
-                    <!-- Gemini Option -->
-                    <div class="col-md-4">
-                        <label class="provider-radio-card d-block p-3 rounded-4 border {{ $activeProvider === 'gemini' ? 'border-primary bg-primary-subtle active' : 'border-light-subtle bg-light' }} text-center h-100 position-relative cursor-pointer shadow-sm">
-                            <input type="radio" name="active_provider" value="gemini" class="form-check-input position-absolute top-0 end-0 m-3" {{ $activeProvider === 'gemini' ? 'checked' : '' }}>
-                            <div class="mb-2">
-                                <i class="fab fa-google fa-2x text-primary"></i>
-                            </div>
-                            <h5 class="fw-bold text-dark mb-1">Google Gemini</h5>
-                            <span class="badge bg-primary-subtle text-primary rounded-pill mb-2">แนะนำ Cloud เร็ว & ฟรี/คุ้มค่า</span>
-                            <p class="small text-muted mb-0">โมเดล Gemini 2.0 Flash / 1.5 Pro ประมวลผลภาษาไทยได้ดีมาก เหมาะสำหรับ Text-to-SQL และ RAG</p>
-                        </label>
-                    </div>
-
-                    <!-- OpenAI Option -->
-                    <div class="col-md-4">
-                        <label class="provider-radio-card d-block p-3 rounded-4 border {{ $activeProvider === 'openai' ? 'border-success bg-success-subtle active' : 'border-light-subtle bg-light' }} text-center h-100 position-relative cursor-pointer shadow-sm">
-                            <input type="radio" name="active_provider" value="openai" class="form-check-input position-absolute top-0 end-0 m-3" {{ $activeProvider === 'openai' ? 'checked' : '' }}>
-                            <div class="mb-2">
-                                <i class="fas fa-brain fa-2x text-success"></i>
-                            </div>
-                            <h5 class="fw-bold text-dark mb-1">OpenAI (ChatGPT)</h5>
-                            <span class="badge bg-success-subtle text-success rounded-pill mb-2">GPT-4o / GPT-4o-mini</span>
-                            <p class="small text-muted mb-0">โมเดลยอดนิยม แม่นยำสูง รองรับ Embedding-3 Small</p>
-                        </label>
-                    </div>
-
-                    <!-- Ollama Option -->
-                    <div class="col-md-4">
-                        <label class="provider-radio-card d-block p-3 rounded-4 border {{ $activeProvider === 'ollama' ? 'border-warning bg-warning-subtle active' : 'border-light-subtle bg-light' }} text-center h-100 position-relative cursor-pointer shadow-sm">
-                            <input type="radio" name="active_provider" value="ollama" class="form-check-input position-absolute top-0 end-0 m-3" {{ $activeProvider === 'ollama' ? 'checked' : '' }}>
-                            <div class="mb-2">
-                                <i class="fas fa-server fa-2x text-warning"></i>
-                            </div>
-                            <h5 class="fw-bold text-dark mb-1">Local LLM (Ollama)</h5>
-                            <span class="badge bg-warning-subtle text-dark rounded-pill mb-2">100% Offline / PDPA ปลอดภัย</span>
-                            <p class="small text-muted mb-0">รันบน Server โรงพยาบาล ข้อมูลไม่ออกนอกเครื่อง (DeepSeek-R1, Qwen2.5, Typhoon)</p>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Provider Configurations Accordion/Cards -->
-        <div class="row g-4">
-            <!-- 1. Google Gemini Config (Featured Full Width Card matching reference UI) -->
-            <div class="col-12">
+        <!-- Unified AI & LLM Connection Card -->
+        <div class="col-12">
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             <h5 class="fw-bold mb-1 text-dark d-flex align-items-center">
                                 <i class="fas fa-cog text-warning me-2"></i>ตั้งค่า AI & LLM Connection
-                                <span class="badge bg-primary-subtle text-primary rounded-pill ms-2 fs-6 fw-normal px-2 py-1">Google Gemini</span>
+                                <span id="header_provider_badge" class="badge {{ $activeProvider === 'gemini' ? 'bg-primary-subtle text-primary' : ($activeProvider === 'openai' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark') }} rounded-pill ms-2 fs-6 fw-normal px-3 py-1">
+                                    {{ $activeProvider === 'gemini' ? 'Google Gemini' : ($activeProvider === 'openai' ? 'OpenAI (ChatGPT)' : 'Local LLM (Ollama)') }}
+                                </span>
                             </h5>
-                            <p class="text-muted small mb-0">เชื่อมต่อกับ Google AI Studio สำหรับระบบค้นหาเวชระเบียน, Text-to-SQL และ RAG คลังความรู้</p>
+                            <p class="text-muted small mb-0">ระบบเชื่อมต่อ AI สำหรับตอบคำถามค้นหาเวชระเบียน, Text-to-SQL และ RAG คลังความรู้</p>
                         </div>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="openGeminiListModal()">
+                            <button type="button" id="header_gemini_table_btn" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="openGeminiListModal()" style="{{ $activeProvider === 'gemini' ? '' : 'display: none;' }}">
                                 <i class="fas fa-list-ul me-1"></i> ดูตารางทุกโมเดล
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="testConnection('gemini')">
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="testActiveConnection()">
                                 <i class="fas fa-satellite-dish me-1"></i> ((•)) ทดสอบเชื่อมต่อทันที
                             </button>
                         </div>
@@ -208,22 +156,59 @@
                         </div>
 
                         <div class="row g-3">
-                            <!-- Row 1: Provider & Base URL matching Image 2 -->
+                            <!-- Row 1: Provider & Dynamic Base URL -->
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-muted">ผู้ให้บริการ AI (AI Provider)</label>
-                                <select id="active_provider_select" class="form-select bg-light border-0 shadow-sm fw-semibold text-primary" onchange="syncProviderDropdown(this.value)">
-                                    <option value="gemini" {{ $activeProvider === 'gemini' ? 'selected' : '' }}>Google Gemini</option>
-                                    <option value="openai" {{ $activeProvider === 'openai' ? 'selected' : '' }}>OpenAI (ChatGPT)</option>
-                                    <option value="ollama" {{ $activeProvider === 'ollama' ? 'selected' : '' }}>Local LLM (Ollama - Offline)</option>
+                                <select id="active_provider_select" name="active_provider" class="form-select bg-light border-0 shadow-sm fw-semibold text-primary py-2 fs-6" onchange="switchProvider(this.value)">
+                                    <option value="gemini" {{ $activeProvider === 'gemini' ? 'selected' : '' }}>Google Gemini (แนะนำ Cloud เร็ว/ฟรี)</option>
+                                    <option value="openai" {{ $activeProvider === 'openai' ? 'selected' : '' }}>OpenAI (ChatGPT - GPT-4o / GPT-4o-mini)</option>
+                                    <option value="ollama" {{ $activeProvider === 'ollama' ? 'selected' : '' }}>Local LLM (Ollama - Offline 100% / PDPA)</option>
                                 </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-muted">AI Base URL (Google Cloud Official API)</label>
-                                <input type="text" class="form-control bg-light border-0 shadow-sm font-monospace" value="https://generativelanguage.googleapis.com" readonly>
-                                <div class="small text-success mt-1 fw-medium">
-                                    <i class="fas fa-check-circle me-1"></i> เชื่อมต่อ Google Official Cloud API โดยตรง (ไม่ต้องแก้ไข)
+                                <div class="small text-muted mt-1" id="provider_description">
+                                    @if($activeProvider === 'gemini')
+                                        <span class="text-primary"><i class="fab fa-google me-1"></i> แนะนำ Cloud เร็ว & ฟรี/คุ้มค่า (Gemini 2.0 Flash / 1.5 Pro)</span>
+                                    @elseif($activeProvider === 'openai')
+                                        <span class="text-success"><i class="fas fa-brain me-1"></i> OpenAI Official Cloud (GPT-4o / GPT-4o-mini)</span>
+                                    @else
+                                        <span class="text-warning"><i class="fas fa-server me-1"></i> 100% Offline / PDPA ปลอดภัยบนเซิร์ฟเวอร์โรงพยาบาล</span>
+                                    @endif
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <!-- Gemini Base URL -->
+                                <div id="base-url-gemini" class="provider-base-url-section" style="{{ $activeProvider === 'gemini' ? '' : 'display: none;' }}">
+                                    <label class="form-label fw-bold small text-muted">AI API Base URL (Google Cloud Official API)</label>
+                                    <input type="text" class="form-control bg-light border-0 shadow-sm font-monospace" value="https://generativelanguage.googleapis.com" readonly>
+                                    <div class="small text-success mt-1 fw-medium">
+                                        <i class="fas fa-check-circle me-1"></i> เชื่อมต่อ Google Official Cloud API โดยตรง (ไม่ต้องแก้ไข)
+                                    </div>
+                                </div>
+
+                                <!-- OpenAI Base URL -->
+                                <div id="base-url-openai" class="provider-base-url-section" style="{{ $activeProvider === 'openai' ? '' : 'display: none;' }}">
+                                    <label class="form-label fw-bold small text-muted">OpenAI API Base URL</label>
+                                    <input type="text" class="form-control bg-light border-0 shadow-sm font-monospace" value="https://api.openai.com/v1" readonly>
+                                    <div class="small text-success mt-1 fw-medium">
+                                        <i class="fas fa-check-circle me-1"></i> เชื่อมต่อ OpenAI Official Endpoint (ไม่ต้องแก้ไข)
+                                    </div>
+                                </div>
+
+                                <!-- Ollama Base URL -->
+                                <div id="base-url-ollama" class="provider-base-url-section" style="{{ $activeProvider === 'ollama' ? '' : 'display: none;' }}">
+                                    <label class="form-label fw-bold small text-muted">Ollama Base URL (IP / Server URL)</label>
+                                    <input type="text" id="ollama_base_url" name="ollama_base_url" value="{{ $settings['ollama_base_url'] ?? 'http://localhost:11434' }}" class="form-control bg-light border-0 shadow-sm font-monospace" placeholder="http://localhost:11434">
+                                    <div class="small text-muted mt-1">
+                                        <i class="fas fa-network-wired me-1"></i> เช่น <code>http://localhost:11434</code> หรือ <code>http://192.168.1.xxx:11434</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4 text-muted opacity-25">
+
+                        <!-- 1. Google Gemini Config Section -->
+                        <div id="section-gemini" class="provider-config-section" style="{{ $activeProvider === 'gemini' ? '' : 'display: none;' }}">
+                            <div class="row g-3">
 
                             <!-- Row 2: API Key with Search Button matching Image 2 -->
                             <div class="col-12">
@@ -364,39 +349,14 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div id="gemini-test-result" class="mt-3" style="display: none;"></div>
-
-                        <!-- Card Action Footer matching Image 2 -->
-                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top flex-wrap gap-2">
-                            <button type="button" class="btn btn-outline-primary rounded-pill px-4 shadow-sm" onclick="testConnection('gemini')">
-                                <i class="fas fa-satellite-dish me-2"></i> ((•)) ทดสอบเชื่อมต่อทันที
-                            </button>
-                            <div class="d-flex gap-2">
-                                <a href="{{ route('admin.ai.settings') }}" class="btn btn-secondary rounded-pill px-4">ยกเลิก</a>
-                                <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm">
-                                    <i class="fas fa-save me-2"></i> บันทึกการตั้งค่า
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 2. OpenAI Config -->
-            <div class="col-lg-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold mb-0 text-dark">
-                            <i class="fas fa-brain text-success me-2"></i>OpenAI (ChatGPT)
-                        </h5>
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="testConnection('openai')">
-                            <i class="fas fa-plug me-1"></i> ทดสอบเชื่อมต่อ
-                        </button>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">OpenAI API Key</label>
+                <!-- 2. OpenAI Config Section -->
+                <div id="section-openai" class="provider-config-section" style="{{ $activeProvider === 'openai' ? '' : 'display: none;' }}">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted">OpenAI API Key <span class="text-danger small">(จำเป็นสำหรับ OpenAI)</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-0"><i class="fas fa-key text-muted"></i></span>
                                 <input type="password" id="openai_api_key" name="openai_api_key" value="{{ $settings['openai_api_key'] ?? '' }}" class="form-control bg-light border-0 shadow-sm" placeholder="sk-proj-...">
@@ -405,11 +365,10 @@
                             <small class="text-muted">รับ API Key ได้ที่ <a href="https://platform.openai.com/api-keys" target="_blank" class="text-decoration-none">OpenAI Platform</a></small>
                         </div>
 
-                        <!-- ⚡ Quick Pills for OpenAI -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted mb-1">Chat Model</label>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1"><i class="fas fa-comment-dots text-success me-1"></i> ชื่อโมเดลตอบคำถาม (Chat Model)</label>
                             <input type="text" id="openai_model" name="openai_model" value="{{ $settings['openai_model'] ?? 'gpt-4o-mini' }}" class="form-control bg-light border-0 shadow-sm font-monospace" placeholder="gpt-4o-mini">
-                            <div class="d-flex flex-wrap gap-2 mt-2" id="openai-chat-pills">
+                            <div class="d-flex flex-wrap gap-1 mt-2" id="openai-chat-pills">
                                 <button type="button" class="gemini-pill pill-rec {{ ($settings['openai_model'] ?? 'gpt-4o-mini') === 'gpt-4o-mini' ? 'active' : '' }}" onclick="selectOpenAiChat('gpt-4o-mini', this)">
                                     ⭐ gpt-4o-mini (แนะนำ/คุ้มค่า)
                                 </button>
@@ -422,10 +381,11 @@
                             </div>
                             <small class="text-muted d-block mt-2">แนะนำ: <code>gpt-4o-mini</code> หรือ <code>gpt-4o</code></small>
                         </div>
-                        <div class="mb-0">
-                            <label class="form-label fw-bold small text-muted mb-1">Embedding Model (Vector)</label>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1"><i class="fas fa-project-diagram text-primary me-1"></i> Embedding Model (Vector)</label>
                             <input type="text" id="openai_embed_model" name="openai_embed_model" value="{{ $settings['openai_embed_model'] ?? 'text-embedding-3-small' }}" class="form-control bg-light border-0 shadow-sm font-monospace" placeholder="text-embedding-3-small">
-                            <div class="d-flex flex-wrap gap-2 mt-2" id="openai-embed-pills">
+                            <div class="d-flex flex-wrap gap-1 mt-2" id="openai-embed-pills">
                                 <button type="button" class="gemini-pill pill-rec {{ ($settings['openai_embed_model'] ?? 'text-embedding-3-small') === 'text-embedding-3-small' ? 'active' : '' }}" onclick="selectOpenAiEmbed('text-embedding-3-small', this)">
                                     ⭐ text-embedding-3-small (แนะนำ)
                                 </button>
@@ -435,34 +395,54 @@
                             </div>
                             <small class="text-muted d-block mt-2">ขนาด 1,536 มิติ (Default: <code>text-embedding-3-small</code>)</small>
                         </div>
-                        <div id="openai-test-result" class="mt-3" style="display: none;"></div>
+
+                        <!-- OpenAI Presets -->
+                        <div class="col-12 mt-3">
+                            <label class="form-label fw-bold small text-muted mb-2">
+                                <i class="fas fa-magic text-warning me-1"></i> ⚡ แนะนำโมเดลตามการใช้งาน (คลิกเพื่อเลือกทันที):
+                            </label>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOpenAiPreset('gpt-4o-mini', 'text-embedding-3-small', 'GPT-4o-mini (คุ้มค่า)', 'โมเดลราคาประหยัด ประมวลผลเร็ว')">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="badge bg-success-subtle text-success rounded-pill fw-bold" style="font-size: 0.72rem;">⭐ แนะนำ / ประหยัด</span>
+                                            <span class="badge bg-white text-muted border" style="font-size: 0.68rem;">128k Tokens</span>
+                                        </div>
+                                        <strong class="text-dark small d-block">GPT-4o-mini (เร็ว & ประหยัด)</strong>
+                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>gpt-4o-mini</code> | Embed: <code>text-embedding-3-small</code></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOpenAiPreset('gpt-4o', 'text-embedding-3-small', 'GPT-4o (เรือธง)', 'โมเดลเรือธง ความแม่นยำสูงสุด')">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="badge bg-primary-subtle text-primary rounded-pill fw-bold" style="font-size: 0.72rem;">👑 โมเดลเรือธง</span>
+                                            <span class="badge bg-white text-muted border" style="font-size: 0.68rem;">128k Tokens</span>
+                                        </div>
+                                        <strong class="text-dark small d-block">GPT-4o (แม่นยำสูงสุด)</strong>
+                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>gpt-4o</code> | Embed: <code>text-embedding-3-small</code></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 3. Local Ollama Config -->
-            <div class="col-lg-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold mb-0 text-dark">
-                            <i class="fas fa-server text-warning me-2"></i>Local LLM (Ollama)
-                        </h5>
-                        <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-dark" onclick="testConnection('ollama')">
-                            <i class="fas fa-plug me-1"></i> ทดสอบเชื่อมต่อ
-                        </button>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Ollama Base URL</label>
-                            <input type="text" id="ollama_base_url" name="ollama_base_url" value="{{ $settings['ollama_base_url'] ?? 'http://localhost:11434' }}" class="form-control bg-light border-0 shadow-sm font-monospace" placeholder="http://localhost:11434">
-                            <small class="text-muted">IP หรือ Domain ของเครื่องเซิร์ฟเวอร์ที่รัน Ollama</small>
+                <!-- 3. Local Ollama Config Section -->
+                <div id="section-ollama" class="provider-config-section" style="{{ $activeProvider === 'ollama' ? '' : 'display: none;' }}">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="alert alert-success border-0 rounded-3 py-2 px-3 small d-flex align-items-center mb-0" style="background-color: #f0fdf4; color: #166534;">
+                                <i class="fas fa-shield-alt fs-4 me-2 text-success"></i>
+                                <div>
+                                    <strong>100% Offline & PDPA Compliant:</strong> Local LLM (Ollama) ทำงานบน Server ภายในโรงพยาบาล ไม่ต้องใช้ API Key ข้อมูลเวชระเบียนของผู้ป่วยจะไม่ถูกส่งออกสู่อินเทอร์เน็ต
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- ⚡ Quick Pills for Ollama -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted mb-1">Chat Model</label>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1"><i class="fas fa-comment-dots text-warning me-1"></i> Chat Model (โมเดลตอบคำถาม)</label>
                             <input type="text" id="ollama_model" name="ollama_model" value="{{ $settings['ollama_model'] ?? 'deepseek-r1:latest' }}" class="form-control bg-light border-0 shadow-sm font-monospace" placeholder="deepseek-r1:latest">
-                            <div class="d-flex flex-wrap gap-2 mt-2" id="ollama-chat-pills">
+                            <div class="d-flex flex-wrap gap-1 mt-2" id="ollama-chat-pills">
                                 <button type="button" class="gemini-pill pill-rec {{ ($settings['ollama_model'] ?? 'deepseek-r1:latest') === 'deepseek-r1:latest' ? 'active' : '' }}" onclick="selectOllamaChat('deepseek-r1:latest', this)">
                                     ⭐ deepseek-r1:latest (เหตุผล)
                                 </button>
@@ -475,10 +455,11 @@
                             </div>
                             <small class="text-muted d-block mt-2">เช่น: <code>deepseek-r1:latest</code>, <code>qwen2.5:latest</code>, <code>typhoon2:latest</code></small>
                         </div>
-                        <div class="mb-0">
-                            <label class="form-label fw-bold small text-muted mb-1">Embedding Model</label>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark mb-1"><i class="fas fa-project-diagram text-primary me-1"></i> Embedding Model (Vector)</label>
                             <input type="text" id="ollama_embed_model" name="ollama_embed_model" value="{{ $settings['ollama_embed_model'] ?? 'nomic-embed-text' }}" class="form-control bg-light border-0 shadow-sm font-monospace" placeholder="nomic-embed-text">
-                            <div class="d-flex flex-wrap gap-2 mt-2" id="ollama-embed-pills">
+                            <div class="d-flex flex-wrap gap-1 mt-2" id="ollama-embed-pills">
                                 <button type="button" class="gemini-pill pill-rec {{ ($settings['ollama_embed_model'] ?? 'nomic-embed-text') === 'nomic-embed-text' ? 'active' : '' }}" onclick="selectOllamaEmbed('nomic-embed-text', this)">
                                     ⭐ nomic-embed-text (แนะนำ)
                                 </button>
@@ -488,51 +469,97 @@
                             </div>
                             <small class="text-muted d-block mt-2">แนะนำ: <code>nomic-embed-text</code> หรือ <code>bge-m3</code></small>
                         </div>
-                        <div id="ollama-test-result" class="mt-3" style="display: none;"></div>
+
+                        <!-- Ollama Presets -->
+                        <div class="col-12 mt-3">
+                            <label class="form-label fw-bold small text-muted mb-2">
+                                <i class="fas fa-magic text-warning me-1"></i> ⚡ แนะนำโมเดลตามการใช้งาน (คลิกเพื่อเลือกทันที):
+                            </label>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOllamaPreset('deepseek-r1:latest', 'nomic-embed-text', 'DeepSeek-R1', 'โมเดลเน้นการคิดวิเคราะห์ขั้นสูง')">
+                                        <span class="badge bg-warning-subtle text-dark rounded-pill fw-bold mb-1" style="font-size: 0.72rem;">🧠 วิเคราะห์เหตุผล</span>
+                                        <strong class="text-dark small d-block">DeepSeek-R1</strong>
+                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>deepseek-r1:latest</code> | Embed: <code>nomic-embed-text</code></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOllamaPreset('qwen2.5:latest', 'nomic-embed-text', 'Qwen 2.5', 'โมเดลภาษาไทยยอดนิยม ตอบได้เป็นธรรมชาติ')">
+                                        <span class="badge bg-success-subtle text-success rounded-pill fw-bold mb-1" style="font-size: 0.72rem;">🇹🇭 ภาษาไทยดีเยี่ยม</span>
+                                        <strong class="text-dark small d-block">Qwen 2.5</strong>
+                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>qwen2.5:latest</code> | Embed: <code>nomic-embed-text</code></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOllamaPreset('typhoon2:latest', 'nomic-embed-text', 'Typhoon 2', 'โมเดลภาษาไทยเฉพาะทางโดย SCB 10X')">
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill fw-bold mb-1" style="font-size: 0.72rem;">🇹🇭 ภาษาไทย SCB 10X</span>
+                                        <strong class="text-dark small d-block">Typhoon 2</strong>
+                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>typhoon2:latest</code> | Embed: <code>nomic-embed-text</code></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 4. RAG & SQL Parameters -->
-            <div class="col-lg-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-header bg-white border-0 pt-4 px-4">
-                        <h5 class="fw-bold mb-0 text-dark">
-                            <i class="fas fa-cogs text-secondary me-2"></i>พารามิเตอร์ RAG & SQL
-                        </h5>
-                    </div>
-                    <div class="card-body px-4 pb-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">ฐานข้อมูลเริ่มต้นสำหรับ Text-to-SQL</label>
-                            <select name="sql_default_db" class="form-select bg-light border-0 shadow-sm">
-                                <option value="hosxp" {{ ($settings['sql_default_db'] ?? 'hosxp') === 'hosxp' ? 'selected' : '' }}>🏥 HOSxP (Slave 1) - เวชระเบียน / ผู้ป่วย / คลินิก</option>
-                                <option value="backoffice" {{ ($settings['sql_default_db'] ?? '') === 'backoffice' ? 'selected' : '' }}>🏢 Backoffice - งานบริหาร / พัสดุ / บุคคล</option>
-                                <option value="mysql" {{ ($settings['sql_default_db'] ?? '') === 'mysql' ? 'selected' : '' }}>⚙️ SmartData - ฐานข้อมูลระบบภายใน</option>
-                            </select>
-                            <small class="text-muted">สามารถสลับฐานข้อมูลเป้าหมายได้อิสระในห้องแชท</small>
-                        </div>
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label class="form-label fw-bold small text-muted">Top-K Chunks (RAG)</label>
-                                <input type="number" name="rag_top_k" value="{{ $settings['rag_top_k'] ?? '4' }}" min="1" max="10" class="form-control bg-light border-0 shadow-sm">
-                                <small class="text-muted">จำนวนท่อนเอกสารที่ดึงมาตอบ</small>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label fw-bold small text-muted">Min Cosine Score (0 - 1)</label>
-                                <input type="number" step="0.05" name="rag_min_score" value="{{ $settings['rag_min_score'] ?? '0.60' }}" min="0.1" max="1.0" class="form-control bg-light border-0 shadow-sm">
-                                <small class="text-muted">คะแนนความสอดคล้องขั้นต่ำ</small>
-                            </div>
-                        </div>
-                        <div class="alert alert-info border-0 rounded-3 mb-0 small">
-                            <i class="fas fa-info-circle me-1"></i> <strong>ระบบ Vector MySQL:</strong> เมื่อมีการสลับโมเดล Provider (เช่น จาก Gemini เป็น OpenAI) อย่าลืมกดปุ่ม <code>Re-Embed ทั้งหมด</code> ในหน้าจัดการคลังความรู้ เพื่อแปลงมิติ Vector ให้ตรงกับโมเดลใหม่
-                        </div>
+                <!-- Test Result Inline Alert Box -->
+                <div id="active-test-result" class="mt-3" style="display: none;"></div>
+
+                <!-- Card Action Footer -->
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top flex-wrap gap-2">
+                    <button type="button" class="btn btn-outline-primary rounded-pill px-4 shadow-sm" onclick="testActiveConnection()">
+                        <i class="fas fa-satellite-dish me-2"></i> ((•)) ทดสอบเชื่อมต่อทันที
+                    </button>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('admin.ai.settings') }}" class="btn btn-secondary rounded-pill px-4">ยกเลิก</a>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm">
+                            <i class="fas fa-save me-2"></i> บันทึกการตั้งค่า
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- พารามิเตอร์ RAG & SQL Card -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="fas fa-cogs text-secondary me-2"></i>พารามิเตอร์ RAG & SQL
+                    </h5>
+                    <p class="text-muted small mb-0">กำหนดฐานข้อมูลเป้าหมายสำหรับการค้นหาเวชระเบียน และความละเอียดในการดึงเอกสาร RAG</p>
+                </div>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted">ฐานข้อมูลเริ่มต้นสำหรับ Text-to-SQL</label>
+                        <select name="sql_default_db" class="form-select bg-light border-0 shadow-sm py-2">
+                            <option value="hosxp" {{ ($settings['sql_default_db'] ?? 'hosxp') === 'hosxp' ? 'selected' : '' }}>🏥 HOSxP (Slave 1) - เวชระเบียน / ผู้ป่วย / คลินิก</option>
+                            <option value="backoffice" {{ ($settings['sql_default_db'] ?? '') === 'backoffice' ? 'selected' : '' }}>🏢 Backoffice - งานบริหาร / พัสดุ / บุคคล</option>
+                            <option value="mysql" {{ ($settings['sql_default_db'] ?? '') === 'mysql' ? 'selected' : '' }}>⚙️ SmartData - ฐานข้อมูลระบบภายใน</option>
+                        </select>
+                        <small class="text-muted">สามารถสลับฐานข้อมูลเป้าหมายได้อิสระในห้องแชท</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-muted">Top-K Chunks (RAG)</label>
+                        <input type="number" name="rag_top_k" value="{{ $settings['rag_top_k'] ?? '4' }}" min="1" max="10" class="form-control bg-light border-0 shadow-sm py-2">
+                        <small class="text-muted">จำนวนท่อนเอกสารที่ดึงมาตอบ</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-muted">Min Cosine Score (0 - 1)</label>
+                        <input type="number" step="0.05" name="rag_min_score" value="{{ $settings['rag_min_score'] ?? '0.60' }}" min="0.1" max="1.0" class="form-control bg-light border-0 shadow-sm py-2">
+                        <small class="text-muted">คะแนนความสอดคล้องขั้นต่ำ</small>
+                    </div>
+                </div>
+                <div class="alert alert-info border-0 rounded-3 mb-0 small">
+                    <i class="fas fa-info-circle me-1"></i> <strong>ระบบ Vector MySQL:</strong> เมื่อมีการสลับโมเดล Provider (เช่น จาก Gemini เป็น OpenAI) อย่าลืมกดปุ่ม <code>Re-Embed ทั้งหมด</code> ในหน้าจัดการคลังความรู้ เพื่อแปลงมิติ Vector ให้ตรงกับโมเดลใหม่
+                </div>
+            </div>
+        </div>
+
         <!-- Submit Button -->
-        <div class="text-center mt-5 mb-5">
+        <div class="text-center mt-4 mb-5">
             <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
                 <i class="fas fa-save me-2"></i> บันทึกการตั้งค่าทั้งหมด
             </button>
@@ -605,21 +632,60 @@ function openGeminiListModal() {
     modal.show();
 }
 
-function syncProviderDropdown(val) {
-    const radio = document.querySelector(`input[name="active_provider"][value="${val}"]`);
-    if (radio) {
-        radio.checked = true;
-        document.querySelectorAll('.provider-radio-card').forEach(c => {
-            c.classList.remove('active', 'border-primary', 'bg-primary-subtle', 'border-success', 'bg-success-subtle', 'border-warning', 'bg-warning-subtle');
-        });
-        const card = radio.closest('.provider-radio-card');
-        if (card) {
-            card.classList.add('active');
-            if (val === 'gemini') card.classList.add('border-primary', 'bg-primary-subtle');
-            else if (val === 'openai') card.classList.add('border-success', 'bg-success-subtle');
-            else if (val === 'ollama') card.classList.add('border-warning', 'bg-warning-subtle');
+function switchProvider(provider) {
+    // 1. Update dropdown
+    const select = document.getElementById('active_provider_select');
+    if (select && select.value !== provider) select.value = provider;
+
+    // 2. Switch provider sections
+    document.querySelectorAll('.provider-config-section').forEach(sec => sec.style.display = 'none');
+    const activeSec = document.getElementById('section-' + provider);
+    if (activeSec) activeSec.style.display = 'block';
+
+    // 3. Switch Base URL displays
+    document.querySelectorAll('.provider-base-url-section').forEach(u => u.style.display = 'none');
+    const activeUrl = document.getElementById('base-url-' + provider);
+    if (activeUrl) activeUrl.style.display = 'block';
+
+    // 4. Update Header Badge and buttons
+    const badge = document.getElementById('header_provider_badge');
+    const tableBtn = document.getElementById('header_gemini_table_btn');
+    if (provider === 'gemini') {
+        if (badge) {
+            badge.className = 'badge bg-primary-subtle text-primary rounded-pill ms-2 fs-6 fw-normal px-3 py-1';
+            badge.textContent = 'Google Gemini';
+        }
+        if (tableBtn) tableBtn.style.display = 'inline-block';
+    } else if (provider === 'openai') {
+        if (badge) {
+            badge.className = 'badge bg-success-subtle text-success rounded-pill ms-2 fs-6 fw-normal px-3 py-1';
+            badge.textContent = 'OpenAI (ChatGPT)';
+        }
+        if (tableBtn) tableBtn.style.display = 'none';
+    } else if (provider === 'ollama') {
+        if (badge) {
+            badge.className = 'badge bg-warning-subtle text-dark rounded-pill ms-2 fs-6 fw-normal px-3 py-1';
+            badge.textContent = 'Local LLM (Ollama)';
+        }
+        if (tableBtn) tableBtn.style.display = 'none';
+    }
+
+    // 5. Update helper description
+    const desc = document.getElementById('provider_description');
+    if (desc) {
+        if (provider === 'gemini') {
+            desc.innerHTML = '<span class="text-primary"><i class="fab fa-google me-1"></i> แนะนำ Cloud เร็ว & ฟรี/คุ้มค่า (Gemini 2.0 Flash / 1.5 Pro)</span>';
+        } else if (provider === 'openai') {
+            desc.innerHTML = '<span class="text-success"><i class="fas fa-brain me-1"></i> OpenAI Official Cloud (GPT-4o / GPT-4o-mini)</span>';
+        } else if (provider === 'ollama') {
+            desc.innerHTML = '<span class="text-warning"><i class="fas fa-server me-1"></i> 100% Offline / PDPA ปลอดภัยบนเซิร์ฟเวอร์โรงพยาบาล</span>';
         }
     }
+}
+
+function testActiveConnection() {
+    const provider = document.getElementById('active_provider_select')?.value || 'gemini';
+    testConnection(provider);
 }
 
 function selectGeminiChatModel(modelName, btn) {
@@ -1067,7 +1133,7 @@ function applyOllamaPreset(chatModel, embedModel, name, desc) {
 }
 
 function testConnection(provider) {
-    const resultBox = document.getElementById(provider + '-test-result');
+    const resultBox = document.getElementById('active-test-result') || document.getElementById(provider + '-test-result');
     if (resultBox) {
         resultBox.style.display = 'block';
         resultBox.innerHTML = '<div class="alert alert-secondary py-2 px-3 small mb-0"><i class="fas fa-spinner fa-spin me-2"></i> กำลังทดสอบเชื่อมต่อกับ ' + provider + '...</div>';
@@ -1181,27 +1247,23 @@ function testConnection(provider) {
 
 // Initial synchronization on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Sync Gemini Chat Pill
+    // 1. Initial provider display switch
+    const curProvider = document.getElementById('active_provider_select')?.value || 'gemini';
+    switchProvider(curProvider);
+
+    // 2. Sync Gemini Chat Pill
     const curChat = document.getElementById('gemini_model')?.value.trim();
     if (curChat) {
         const p = document.querySelector(`#gemini-chat-pills .gemini-pill[data-model="${curChat}"]`);
         if (p) p.classList.add('active');
     }
 
-    // 2. Sync Gemini Embed Pill
+    // 3. Sync Gemini Embed Pill
     const curEmbed = document.getElementById('gemini_embed_model')?.value.trim();
     if (curEmbed) {
         const p = document.querySelector(`#gemini-embed-pills .gemini-pill[data-model="${curEmbed}"]`);
         if (p) p.classList.add('active');
     }
-
-    // 3. Provider Radio changes update Dropdown
-    document.querySelectorAll('input[name="active_provider"]').forEach(r => {
-        r.addEventListener('change', function() {
-            const select = document.getElementById('active_provider_select');
-            if (select) select.value = this.value;
-        });
-    });
 
     // 4. Input live listeners for pill highlights
     document.getElementById('gemini_model')?.addEventListener('input', function() {
