@@ -54,9 +54,7 @@
                 <!-- Chat Header Toolbar -->
                 <div class="px-4 py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center bg-white gap-2">
                     <div class="d-flex align-items-center">
-                        <div class="bg-gradient-primary rounded-circle p-2 text-white me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: linear-gradient(135deg, #0d6efd, #0dcaf0);">
-                            <i class="fas fa-robot fa-lg"></i>
-                        </div>
+                        <img src="{{ asset('images/logo.png') }}" class="rounded-circle me-3 shadow-sm bg-white p-1 border" style="width: 42px; height: 42px; object-fit: contain;" alt="SmartData Copilot">
                         <div>
                             <h5 class="fw-bold mb-0 text-dark">SmartData Copilot</h5>
                             <span class="badge bg-success-subtle text-success rounded-pill px-2 py-0 small">
@@ -96,8 +94,8 @@
                     <!-- Welcome Hero -->
                     <div id="welcomeHero" class="text-center py-5 my-auto">
                         <div class="mb-4">
-                            <div class="d-inline-flex p-4 rounded-circle shadow-sm" style="background: linear-gradient(135deg, rgba(13,110,253,0.1), rgba(13,202,240,0.15));">
-                                <i class="fas fa-robot fa-4x text-primary"></i>
+                            <div class="d-inline-flex p-3 rounded-circle shadow-sm bg-white border" style="width: 90px; height: 90px;">
+                                <img src="{{ asset('images/logo.png') }}" class="w-100 h-100 object-fit-contain" alt="SmartData Copilot">
                             </div>
                         </div>
                         <h3 class="fw-bold text-dark mb-2">ยินดีต้อนรับสู่ SmartData Copilot</h3>
@@ -133,9 +131,7 @@
                         @else
                         <div class="d-flex justify-content-start mb-4">
                             <div class="me-3">
-                                <div class="rounded-circle bg-light p-2 shadow-sm d-flex align-items-center justify-content-center text-primary" style="width: 36px; height: 36px;">
-                                    <i class="fas fa-robot"></i>
-                                </div>
+                                <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 shadow-sm border" style="width: 36px; height: 36px; object-fit: contain;" alt="SmartData">
                             </div>
                             <div class="assistant-bubble p-3 rounded-4 shadow-sm bg-white border" style="max-width: 85%;">
                                 <div class="message-text mb-2" style="white-space: pre-wrap;">{!! nl2br(e($msg->content)) !!}</div>
@@ -247,6 +243,7 @@
 <script>
 const isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
 let currentSessionUuid = '{{ $currentSession->session_uuid ?? "" }}';
+const smartdataLogoUrl = "{{ asset('images/logo.png') }}";
 
 document.getElementById('messageInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -361,9 +358,7 @@ function appendLoadingBubble() {
     div.className = 'd-flex justify-content-start mb-4 loading-bubble-wrapper';
     div.innerHTML = `
         <div class="me-3">
-            <div class="rounded-circle bg-light p-2 shadow-sm d-flex align-items-center justify-content-center text-primary" style="width: 36px; height: 36px;">
-                <i class="fas fa-robot fa-spin"></i>
-            </div>
+            <img src="${smartdataLogoUrl}" class="rounded-circle bg-white p-1 shadow-sm border fa-spin" style="width: 36px; height: 36px; object-fit: contain;" alt="SmartData">
         </div>
         <div class="p-3 rounded-4 shadow-sm bg-white border text-muted small d-flex align-items-center">
             <span class="spinner-grow spinner-grow-sm me-2 text-primary"></span>
@@ -455,9 +450,7 @@ function appendAssistantMessage(data) {
 
     div.innerHTML = `
         <div class="me-3">
-            <div class="rounded-circle bg-light p-2 shadow-sm d-flex align-items-center justify-content-center text-primary" style="width: 36px; height: 36px;">
-                <i class="fas fa-robot"></i>
-            </div>
+            <img src="${smartdataLogoUrl}" class="rounded-circle bg-white p-1 shadow-sm border" style="width: 36px; height: 36px; object-fit: contain;" alt="SmartData">
         </div>
         <div class="assistant-bubble p-3 rounded-4 shadow-sm bg-white border" style="max-width: 85%;">
             <div class="message-text mb-2" style="white-space: pre-wrap;">${escapeHtml(data.content || '')}</div>

@@ -1,8 +1,9 @@
 <!-- SmartData Copilot Floating Widget -->
 <div id="smartdata-copilot-widget" style="position: fixed; bottom: 25px; right: 25px; z-index: 1060; font-family: inherit;">
     <!-- Floating Trigger Button -->
-    <button id="copilot-trigger-btn" type="button" class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0" style="width: 60px; height: 60px; background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%); border: 3px solid #ffffff; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" onclick="toggleCopilotWidget()" title="ถาม SmartData Copilot">
-        <i class="fas fa-robot fa-2x text-white" id="copilot-btn-icon"></i>
+    <button id="copilot-trigger-btn" type="button" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0" style="width: 60px; height: 60px; background: #ffffff; border: 3px solid #ffffff; box-shadow: 0 4px 18px rgba(13, 110, 253, 0.4); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: hidden;" onclick="toggleCopilotWidget()" title="ถาม SmartData Copilot">
+        <img src="{{ asset('images/logo.png') }}" id="copilot-btn-img" alt="SmartData Copilot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+        <i class="fas fa-times fa-2x text-white d-none" id="copilot-btn-close"></i>
     </button>
 
     <!-- Floating Chat Window (Drawer) -->
@@ -10,9 +11,7 @@
         <!-- Header -->
         <div class="card-header text-white border-0 py-3 px-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #0d6efd 0%, #0250c5 100%);">
             <div class="d-flex align-items-center">
-                <div class="rounded-circle bg-white text-primary p-2 me-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;">
-                    <i class="fas fa-robot"></i>
-                </div>
+                <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 me-2 shadow-sm" style="width: 34px; height: 34px; object-fit: contain;" alt="SmartData">
                 <div>
                     <h6 class="fw-bold mb-0 text-white leading-tight">SmartData Copilot</h6>
                     <small class="text-white-50" style="font-size: 0.7rem;">ผู้ช่วยอัจฉริยะ (SQL & CPG)</small>
@@ -35,9 +34,7 @@
         <!-- Message Body -->
         <div class="card-body p-3 overflow-auto flex-grow-1" id="widgetChatContainer" style="background: #f8fafc; font-size: 0.85rem;">
             <div class="d-flex justify-content-start mb-3">
-                <div class="rounded-circle bg-light p-1 shadow-sm d-flex align-items-center justify-content-center text-primary me-2" style="width: 28px; height: 28px;">
-                    <i class="fas fa-robot small"></i>
-                </div>
+                <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 shadow-sm me-2 border flex-shrink-0" style="width: 28px; height: 28px; object-fit: contain;" alt="SmartData">
                 <div class="p-2 rounded-3 shadow-sm bg-white border" style="max-width: 85%;">
                     สวัสดีครับ! ผมคือ <strong>SmartData Copilot</strong> ถามสถิติคนไข้, แปลง SQL, หรือค้นหาแนวทาง CPG โรงพยาบาลได้เลยครับ
                 </div>
@@ -88,19 +85,28 @@
 <script>
 let widgetSessionUuid = 'widget-' + Math.random().toString(36).substr(2, 9);
 let isWidgetOpen = false;
+const smartdataLogoUrl = "{{ asset('images/logo.png') }}";
 
 function toggleCopilotWidget() {
     const chatWindow = document.getElementById('copilot-chat-window');
-    const icon = document.getElementById('copilot-btn-icon');
+    const btnImg = document.getElementById('copilot-btn-img');
+    const btnClose = document.getElementById('copilot-btn-close');
+    const triggerBtn = document.getElementById('copilot-trigger-btn');
     isWidgetOpen = !isWidgetOpen;
 
     if (isWidgetOpen) {
         chatWindow.style.display = 'flex';
-        icon.className = 'fas fa-times fa-2x text-white';
+        btnImg.classList.add('d-none');
+        btnClose.classList.remove('d-none');
+        triggerBtn.style.background = 'linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%)';
+        triggerBtn.style.border = '3px solid #ffffff';
         document.getElementById('widgetMessageInput').focus();
     } else {
         chatWindow.style.display = 'none';
-        icon.className = 'fas fa-robot fa-2x text-white';
+        btnImg.classList.remove('d-none');
+        btnClose.classList.add('d-none');
+        triggerBtn.style.background = '#ffffff';
+        triggerBtn.style.border = '3px solid #ffffff';
     }
 }
 
@@ -172,9 +178,7 @@ function appendWidgetMessage(role, text) {
     } else {
         div.className = 'd-flex justify-content-start mb-2';
         div.innerHTML = `
-            <div class="rounded-circle bg-light p-1 shadow-sm d-flex align-items-center justify-content-center text-primary me-2 flex-shrink-0" style="width: 28px; height: 28px;">
-                <i class="fas fa-robot small"></i>
-            </div>
+            <img src="${smartdataLogoUrl}" class="rounded-circle shadow-sm me-2 border bg-white flex-shrink-0" style="width: 28px; height: 28px; object-fit: contain; padding: 1px;" alt="SmartData">
             <div class="p-2 rounded-3 shadow-sm bg-white border text-dark" style="max-width: 85%; white-space: pre-wrap;">
                 ${escapeHtmlWidget(text)}
             </div>
@@ -190,9 +194,7 @@ function appendWidgetLoading() {
     const div = document.createElement('div');
     div.className = 'd-flex justify-content-start mb-2';
     div.innerHTML = `
-        <div class="rounded-circle bg-light p-1 shadow-sm d-flex align-items-center justify-content-center text-primary me-2" style="width: 28px; height: 28px;">
-            <i class="fas fa-robot fa-spin small"></i>
-        </div>
+        <img src="${smartdataLogoUrl}" class="rounded-circle shadow-sm me-2 border bg-white flex-shrink-0 fa-spin" style="width: 28px; height: 28px; object-fit: contain; padding: 1px;" alt="SmartData">
         <div class="p-2 rounded-3 shadow-sm bg-white border text-muted small">
             กำลังประมวลผล...
         </div>

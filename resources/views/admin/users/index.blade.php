@@ -135,7 +135,7 @@
                                             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">ระบบแจ้งเตือน Moph Alert</span>
                                         @endif
                                         @if($user->hasAccessCopilot())
-                                            <span class="badge bg-info-subtle text-primary border border-info-subtle rounded-pill"><i class="fas fa-robot me-1"></i>Copilot</span>
+                                            <span class="badge bg-info-subtle text-primary border border-info-subtle rounded-pill"><img src="{{ asset('images/logo.png') }}" class="rounded-circle me-1" style="width: 14px; height: 14px; object-fit: contain; vertical-align: -2px;">Copilot</span>
                                         @endif
                                         
                                         @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra() && !$user->hasAccessMophAlert() && !$user->hasAccessCopilot())
@@ -237,7 +237,7 @@
                                             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">ระบบแจ้งเตือน Moph Alert</span>
                                         @endif
                                         @if($user->hasAccessCopilot())
-                                            <span class="badge bg-info-subtle text-primary border border-info-subtle rounded-pill"><i class="fas fa-robot me-1"></i>Copilot</span>
+                                            <span class="badge bg-info-subtle text-primary border border-info-subtle rounded-pill"><img src="{{ asset('images/logo.png') }}" class="rounded-circle me-1" style="width: 14px; height: 14px; object-fit: contain; vertical-align: -2px;">Copilot</span>
                                         @endif
                                         
                                         @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra() && !$user->hasAccessMophAlert() && !$user->hasAccessCopilot())

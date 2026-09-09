@@ -19,8 +19,8 @@
                 </div>
                 @if(\App\Models\AiSetting::isCopilotEnabled() && auth()->check() && auth()->user()->hasAccessCopilot())
                 <div class="col-lg-4 text-center text-lg-end mt-3 mt-lg-0">
-                    <a href="{{ route('ai.chat') }}" class="btn btn-light btn-lg rounded-pill px-4 shadow-sm text-primary fw-bold">
-                        <i class="fas fa-robot me-2"></i> เปิด SmartData Copilot
+                    <a href="{{ route('ai.chat') }}" class="btn btn-light btn-lg rounded-pill px-4 shadow-sm text-primary fw-bold d-inline-flex align-items-center">
+                        <img src="{{ asset('images/logo.png') }}" class="rounded-circle me-2" style="width: 28px; height: 28px; object-fit: contain;" alt="SmartData"> เปิด SmartData Copilot
                     </a>
                 </div>
                 @endif
@@ -112,8 +112,8 @@
 
                             @if(\App\Models\AiSetting::isCopilotEnabled() && auth()->check() && auth()->user()->hasAccessCopilot())
                             <!-- Ask AI About This Doc -->
-                            <a href="{{ route('ai.chat') }}?doc_id={{ $doc->id }}&message={{ urlencode('ช่วยสรุปสาระสำคัญของเอกสาร "' . $doc->title . '" ให้หน่อย') }}" class="btn btn-light rounded-pill btn-sm px-3 text-info" title="ถาม AI ผู้ช่วยเกี่ยวกับเล่มนี้">
-                                <i class="fas fa-robot"></i>
+                            <a href="{{ route('ai.chat') }}?doc_id={{ $doc->id }}&message={{ urlencode('ช่วยสรุปสาระสำคัญของเอกสาร "' . $doc->title . '" ให้หน่อย') }}" class="btn btn-light rounded-pill btn-sm px-2 text-info d-inline-flex align-items-center" title="ถาม SmartData Copilot เกี่ยวกับเล่มนี้">
+                                <img src="{{ asset('images/logo.png') }}" class="rounded-circle" style="width: 20px; height: 20px; object-fit: contain;" alt="SmartData">
                             </a>
                             @endif
                         </div>

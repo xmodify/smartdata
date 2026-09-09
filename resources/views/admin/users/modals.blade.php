@@ -96,7 +96,7 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="allow_copilot" value="Y" id="add_allow_copilot">
                                         <label class="form-check-label small fw-semibold text-primary" for="add_allow_copilot">
-                                            <i class="fas fa-robot me-1"></i>SmartData Copilot
+                                            <img src="{{ asset('images/logo.png') }}" class="rounded-circle me-1" style="width: 16px; height: 16px; object-fit: contain; vertical-align: -2px;" alt="SmartData">SmartData Copilot
                                         </label>
                                     </div>
                                 </div>
@@ -209,7 +209,7 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="allow_copilot" value="Y" id="edit_allow_copilot">
                                         <label class="form-check-label small fw-semibold text-primary" for="edit_allow_copilot">
-                                            <i class="fas fa-robot me-1"></i>SmartData Copilot
+                                            <img src="{{ asset('images/logo.png') }}" class="rounded-circle me-1" style="width: 16px; height: 16px; object-fit: contain; vertical-align: -2px;" alt="SmartData">SmartData Copilot
                                         </label>
                                     </div>
                                 </div>
