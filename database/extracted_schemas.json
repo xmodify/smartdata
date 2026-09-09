@@ -120,6 +120,13 @@
                 "default": "N",
                 "extra": ""
             },
+            "allow_copilot": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "N",
+                "extra": ""
+            },
             "created_at": {
                 "type": "timestamp",
                 "length": null,
