@@ -174,17 +174,6 @@
                             <div class="assistant-bubble p-3 rounded-4 shadow-sm bg-white border" style="max-width: 85%;">
                                 <div class="message-text mb-2" style="white-space: pre-wrap;">{!! nl2br(e($msg->content)) !!}</div>
 
-                                @if($msg->message_type === 'sql_query' && $msg->generated_sql)
-                                <div class="sql-box rounded-3 p-3 bg-dark text-light mb-3 mt-2">
-                                    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary pb-1">
-                                        <span class="badge bg-primary text-white"><i class="fas fa-database me-1"></i> {{ strtoupper($msg->target_db ?: 'HOSxP') }}</span>
-                                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" onclick="copySql(this)">
-                                            <i class="fas fa-copy me-1"></i> Copy SQL
-                                        </button>
-                                    </div>
-                                    <pre class="mb-0 font-monospace small text-info" style="white-space: pre-wrap;"><code>{{ $msg->generated_sql }}</code></pre>
-                                </div>
-
                                 @if(!empty($msg->query_result) && is_array($msg->query_result))
                                 <div class="table-responsive rounded-3 border bg-light mt-2" style="max-height: 350px;">
                                     <table class="table table-sm table-striped table-hover mb-0 small">
@@ -206,12 +195,31 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="text-end mt-2">
+                                <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+                                    <span class="badge bg-light text-muted border">
+                                        <i class="fas fa-database text-primary me-1"></i> {{ strtoupper($msg->target_db ?: 'HOSxP') }} • {{ count($msg->query_result) }} รายการ
+                                    </span>
                                     <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="exportTableToCsv(this)">
                                         <i class="fas fa-file-excel me-1"></i> ส่งออก CSV
                                     </button>
                                 </div>
                                 @endif
+
+                                @if(auth()->user()->role === 'admin' && $msg->message_type === 'sql_query' && $msg->generated_sql)
+                                <details class="mt-2 text-muted">
+                                    <summary class="small cursor-pointer user-select-none text-muted" style="font-size: 0.75rem;">
+                                        <i class="fas fa-terminal me-1"></i> คำสั่ง SQL ที่ใช้สืบค้น (สำหรับ Admin)
+                                    </summary>
+                                    <div class="sql-box rounded-3 p-2 bg-dark text-light mt-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="badge bg-secondary" style="font-size: 0.68rem;">{{ strtoupper($msg->target_db ?: 'HOSxP') }}</span>
+                                            <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="copySql(this)">
+                                                <i class="fas fa-copy me-1"></i> Copy SQL
+                                            </button>
+                                        </div>
+                                        <pre class="mb-0 font-monospace small text-info" style="white-space: pre-wrap; font-size: 0.75rem;"><code>{{ $msg->generated_sql }}</code></pre>
+                                    </div>
+                                </details>
                                 @endif
 
                                 @if($msg->message_type === 'rag_result' && !empty($msg->sources))
@@ -271,6 +279,7 @@
 
 @push('scripts')
 <script>
+const isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
 let currentSessionUuid = '{{ $currentSession->session_uuid ?? "" }}';
 
 document.getElementById('messageInput').addEventListener('keydown', function(e) {
@@ -397,19 +406,7 @@ function appendAssistantMessage(data) {
     let extraHtml = '';
 
     // If SQL query result
-    if (data.mode === 'sql' && data.sql) {
-        extraHtml += `
-            <div class="sql-box rounded-3 p-3 bg-dark text-light mb-3 mt-2">
-                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary pb-1">
-                    <span class="badge bg-primary text-white"><i class="fas fa-database me-1"></i> ${(data.target_db || 'HOSxP').toUpperCase()}</span>
-                    <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" onclick="copySql(this)">
-                        <i class="fas fa-copy me-1"></i> Copy SQL
-                    </button>
-                </div>
-                <pre class="mb-0 font-monospace small text-info" style="white-space: pre-wrap;"><code>${escapeHtml(data.sql)}</code></pre>
-            </div>
-        `;
-
+    if (data.mode === 'sql') {
         if (data.rows && data.rows.length > 0) {
             let tableHeaders = '';
             data.columns.forEach(col => {
@@ -435,11 +432,34 @@ function appendAssistantMessage(data) {
                         <tbody>${tableRows}</tbody>
                     </table>
                 </div>
-                <div class="text-end mt-2">
+                <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+                    <span class="badge bg-light text-muted border">
+                        <i class="fas fa-database text-primary me-1"></i> ${(data.target_db || 'HOSxP').toUpperCase()} • ${data.count || data.rows.length} รายการ
+                    </span>
                     <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="exportTableToCsv(this)">
                         <i class="fas fa-file-excel me-1"></i> ส่งออก CSV
                     </button>
                 </div>
+            `;
+        }
+
+        // Show SQL only for Admin in a collapsed details toggle
+        if (isAdmin && data.sql) {
+            extraHtml += `
+                <details class="mt-2 text-muted">
+                    <summary class="small cursor-pointer user-select-none text-muted" style="font-size: 0.75rem;">
+                        <i class="fas fa-terminal me-1"></i> คำสั่ง SQL ที่ใช้สืบค้น (สำหรับ Admin)
+                    </summary>
+                    <div class="sql-box rounded-3 p-2 bg-dark text-light mt-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="badge bg-secondary" style="font-size: 0.68rem;">${(data.target_db || 'HOSxP').toUpperCase()}</span>
+                            <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="copySql(this)">
+                                <i class="fas fa-copy me-1"></i> Copy SQL
+                            </button>
+                        </div>
+                        <pre class="mb-0 font-monospace small text-info" style="white-space: pre-wrap; font-size: 0.75rem;"><code>${escapeHtml(data.sql)}</code></pre>
+                    </div>
+                </details>
             `;
         }
     }
