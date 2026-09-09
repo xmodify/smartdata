@@ -436,11 +436,6 @@
                     @endif
 
                         <div class="sidebar-section-header">ระบบ SmartData</div>
-                        @if(\App\Models\AiSetting::isCopilotEnabled())
-                        <a href="{{ route('ai.knowledge.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                            <i class="fas fa-brain me-2" style="color: #0ea5e9;"></i> คลังความรู้ AI
-                        </a>
-                        @endif
                         <a href="{{ url('/skpcard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                             <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆะประชาร่วมใจ
                         </a>
@@ -479,6 +474,10 @@
                             </div>
                         </div>
                         @endif
+
+                        <a href="{{ route('ai.knowledge.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                            <i class="fas fa-book-medical me-2" style="color: #0ea5e9;"></i> คลังความรู้
+                        </a>
 
                     <div class="sidebar-section-header">ระบบ Dashboard</div>
                     <a href="{{ route('ipd.wait_dchsummary') }}" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">

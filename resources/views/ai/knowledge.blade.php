@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'คลังความรู้โรงพยาบาล (Hospital Knowledge Library) - SmartData')
+@section('title', 'คลังความรู้ (Hospital Knowledge Library) - SmartData')
 
 @section('content')
 <div class="container py-4">
@@ -12,7 +12,7 @@
                     <span class="badge bg-white text-primary rounded-pill px-3 py-2 mb-3 fw-bold">
                         <i class="fas fa-book-reader me-1"></i> Hospital Digital Library & CPG
                     </span>
-                    <h1 class="fw-bold mb-2 display-6">คลังความรู้ AI</h1>
+                    <h1 class="fw-bold mb-2 display-6">คลังความรู้</h1>
                     <p class="lead mb-0 text-white-50 fs-6">
                         ศูนย์รวมแนวทางการรักษา (CPG), นโยบายคุณภาพ, ระเบียบปฏิบัติ และคู่มือการทำงาน สามารถเปิดอ่าน พิมพ์ หรือดาวน์โหลดได้โดยตรง พร้อมมีระบบ AI ช่วยสรุปเนื้อหา
                     </p>
