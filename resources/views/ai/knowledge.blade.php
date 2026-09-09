@@ -17,7 +17,7 @@
                         ศูนย์รวมแนวทางการรักษา (CPG), นโยบายคุณภาพ, ระเบียบปฏิบัติ และคู่มือการทำงาน สามารถเปิดอ่าน พิมพ์ หรือดาวน์โหลดได้โดยตรง พร้อมมีระบบ AI ช่วยสรุปเนื้อหา
                     </p>
                 </div>
-                @if(\App\Models\AiSetting::isCopilotEnabled())
+                @if(\App\Models\AiSetting::isCopilotEnabled() && auth()->check() && auth()->user()->hasAccessCopilot())
                 <div class="col-lg-4 text-center text-lg-end mt-3 mt-lg-0">
                     <a href="{{ route('ai.chat') }}" class="btn btn-light btn-lg rounded-pill px-4 shadow-sm text-primary fw-bold">
                         <i class="fas fa-robot me-2"></i> เปิด SmartData Copilot
@@ -110,7 +110,7 @@
                                 <i class="fas fa-download text-secondary"></i>
                             </a>
 
-                            @if(\App\Models\AiSetting::isCopilotEnabled())
+                            @if(\App\Models\AiSetting::isCopilotEnabled() && auth()->check() && auth()->user()->hasAccessCopilot())
                             <!-- Ask AI About This Doc -->
                             <a href="{{ route('ai.chat') }}?doc_id={{ $doc->id }}&message={{ urlencode('ช่วยสรุปสาระสำคัญของเอกสาร "' . $doc->title . '" ให้หน่อย') }}" class="btn btn-light rounded-pill btn-sm px-3 text-info" title="ถาม AI ผู้ช่วยเกี่ยวกับเล่มนี้">
                                 <i class="fas fa-robot"></i>

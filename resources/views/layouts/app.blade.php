@@ -707,7 +707,7 @@
         });
     </script>
     @auth
-        @if(\App\Models\AiSetting::isCopilotEnabled())
+        @if(\App\Models\AiSetting::isCopilotEnabled() && auth()->user()->hasAccessCopilot())
             @include('ai.partials._floating_widget')
         @endif
     @endauth

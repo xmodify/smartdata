@@ -32,6 +32,7 @@ class User extends Authenticatable
         'allow_lend',
         'allow_mra',
         'allow_moph_alert',
+        'allow_copilot',
     ];
 
     /**
@@ -95,6 +96,11 @@ class User extends Authenticatable
     public function hasAccessMophAlert()
     {
         return $this->role === 'admin' || $this->allow_moph_alert === 'Y';
+    }
+
+    public function hasAccessCopilot()
+    {
+        return $this->role === 'admin' || ($this->allow_copilot ?? 'N') === 'Y';
     }
 
     public function hasAccessRole($role)
