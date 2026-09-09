@@ -147,6 +147,56 @@
                             </div>
                             <small class="text-muted">รับ API Key ได้ฟรีที่ <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-decoration-none">Google AI Studio</a></small>
                         </div>
+
+                        <!-- ⚡ One-Click Model Presets for Gemini -->
+                        <div class="mb-3 p-3 rounded-3 bg-light-subtle border">
+                            <label class="form-label fw-bold small text-dark d-flex align-items-center justify-content-between mb-2">
+                                <span><i class="fas fa-bolt text-warning me-1"></i> แนะนำชุดโมเดลตามโควต้า Token (คลิกเพื่อเลือกทันที):</span>
+                            </label>
+                            <div class="d-flex flex-column gap-2">
+                                <!-- Preset 1: Flash 2.0 (Best Balance) -->
+                                <div class="p-2 rounded-3 border bg-white cursor-pointer gemini-preset-item hover-shadow" onclick="applyGeminiPreset('gemini-2.0-flash', 'text-embedding-004', 'ชุดมาตรฐาน Flash 2.0', 'เร็วสุด ตอบไวใน 1 วิ • ฟรี 1,500 RPD / 1M TPM • เหมาะกับดึงข้อมูล SQL คนไข้ และ CPG')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-success-subtle text-success me-1">แนะนำอันดับ 1</span>
+                                            <strong class="text-dark small">Flash 2.0 (เร็ว + โควต้าฟรีเยอะ)</strong>
+                                            <div class="text-muted" style="font-size: 0.75rem;">
+                                                Chat: <code>gemini-2.0-flash</code> | Embed: <code>text-embedding-004</code>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill py-0 px-2" style="font-size: 0.75rem;">ใช้ชุดนี้</button>
+                                    </div>
+                                </div>
+
+                                <!-- Preset 2: Flash 2.0 Lite -->
+                                <div class="p-2 rounded-3 border bg-white cursor-pointer gemini-preset-item hover-shadow" onclick="applyGeminiPreset('gemini-2.0-flash-lite', 'text-embedding-004', 'ชุดประหยัด Token (Lite)', 'กิน Token น้อยสุด ตอบไว • เหมาะสำหรับบุคลากรใช้งานพร้อมกันจำนวนมาก')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-info-subtle text-info me-1">ประหยัด Token</span>
+                                            <strong class="text-dark small">Flash 2.0 Lite (สเปกเบา ประหยัดโควต้า)</strong>
+                                            <div class="text-muted" style="font-size: 0.75rem;">
+                                                Chat: <code>gemini-2.0-flash-lite</code> | Embed: <code>text-embedding-004</code>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill py-0 px-2" style="font-size: 0.75rem;">ใช้ชุดนี้</button>
+                                    </div>
+                                </div>
+
+                                <!-- Preset 3: Pro 1.5 -->
+                                <div class="p-2 rounded-3 border bg-white cursor-pointer gemini-preset-item hover-shadow" onclick="applyGeminiPreset('gemini-1.5-pro', 'text-embedding-004', 'ชุดวิเคราะห์เชิงลึก (Pro 1.5)', 'ความจุสูงถึง 2,000,000 Tokens • อ่านเอกสาร CPG หรือระเบียบเล่มหนาหลายร้อยหน้าได้ลึกซึ้ง')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-primary-subtle text-primary me-1">เอกสารยาว/วิเคราะห์ลึก</span>
+                                            <strong class="text-dark small">Pro 1.5 (ความจุ 2 ล้าน Tokens)</strong>
+                                            <div class="text-muted" style="font-size: 0.75rem;">
+                                                Chat: <code>gemini-1.5-pro</code> | Embed: <code>text-embedding-004</code>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill py-0 px-2" style="font-size: 0.75rem;">ใช้ชุดนี้</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label class="form-label fw-bold small text-muted mb-0">Chat Model</label>
@@ -209,6 +259,39 @@
                             </div>
                             <small class="text-muted">รับ API Key ได้ที่ <a href="https://platform.openai.com/api-keys" target="_blank" class="text-decoration-none">OpenAI Platform</a></small>
                         </div>
+
+                        <!-- ⚡ One-Click Model Presets for OpenAI -->
+                        <div class="mb-3 p-3 rounded-3 bg-light-subtle border">
+                            <label class="form-label fw-bold small text-dark d-flex align-items-center justify-content-between mb-2">
+                                <span><i class="fas fa-bolt text-warning me-1"></i> แนะนำชุดโมเดลตามความคุ้มค่า (คลิกเพื่อเลือกทันที):</span>
+                            </label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="p-2 rounded-3 border bg-white cursor-pointer hover-shadow" onclick="applyOpenAiPreset('gpt-4o-mini', 'text-embedding-3-small', 'ชุดประหยัดคุ้มค่า GPT-4o mini', 'ประหยัด Token 95% • ตอบไว ฉลาด เหมาะกับงานทั่วไป')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-success-subtle text-success me-1">แนะนำ/คุ้มค่าสุด</span>
+                                            <strong class="text-dark small">GPT-4o mini (เร็ว + ประหยัดค่าใช้จ่าย)</strong>
+                                            <div class="text-muted" style="font-size: 0.75rem;">
+                                                Chat: <code>gpt-4o-mini</code> | Embed: <code>text-embedding-3-small</code>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-success btn-sm rounded-pill py-0 px-2" style="font-size: 0.75rem;">ใช้ชุดนี้</button>
+                                    </div>
+                                </div>
+                                <div class="p-2 rounded-3 border bg-white cursor-pointer hover-shadow" onclick="applyOpenAiPreset('gpt-4o', 'text-embedding-3-small', 'ชุดเรือธง GPT-4o', 'ฉลาดและแม่นยำสูงสุด • เหมาะกับงานวิเคราะห์ข้อมูลที่มีความซับซ้อนมาก')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-primary-subtle text-primary me-1">แม่นยำสูงสุด</span>
+                                            <strong class="text-dark small">GPT-4o (โมเดลเรือธง)</strong>
+                                            <div class="text-muted" style="font-size: 0.75rem;">
+                                                Chat: <code>gpt-4o</code> | Embed: <code>text-embedding-3-small</code>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill py-0 px-2" style="font-size: 0.75rem;">ใช้ชุดนี้</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">Chat Model</label>
                             <input type="text" id="openai_model" name="openai_model" value="{{ $settings['openai_model'] ?? 'gpt-4o-mini' }}" class="form-control bg-light border-0 shadow-sm" placeholder="gpt-4o-mini">
@@ -240,6 +323,39 @@
                             <label class="form-label fw-bold small text-muted">Ollama Base URL</label>
                             <input type="text" id="ollama_base_url" name="ollama_base_url" value="{{ $settings['ollama_base_url'] ?? 'http://localhost:11434' }}" class="form-control bg-light border-0 shadow-sm" placeholder="http://localhost:11434">
                             <small class="text-muted">IP หรือ Domain ของเครื่องเซิร์ฟเวอร์ที่รัน Ollama</small>
+                        </div>
+
+                        <!-- ⚡ One-Click Model Presets for Ollama -->
+                        <div class="mb-3 p-3 rounded-3 bg-light-subtle border">
+                            <label class="form-label fw-bold small text-dark d-flex align-items-center justify-content-between mb-2">
+                                <span><i class="fas fa-bolt text-warning me-1"></i> แนะนำชุดโมเดล Offline (คลิกเพื่อเลือกทันที):</span>
+                            </label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="p-2 rounded-3 border bg-white cursor-pointer hover-shadow" onclick="applyOllamaPreset('deepseek-r1:latest', 'nomic-embed-text', 'ชุดคิดวิเคราะห์ DeepSeek R1', 'แสดงขั้นตอนการคิดเชิงเหตุผล • เหมาะสำหรับคำนวณและวิเคราะห์สถิติ')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-warning-subtle text-dark me-1">คิดวิเคราะห์เหตุผล</span>
+                                            <strong class="text-dark small">DeepSeek-R1 (Reasoning Model)</strong>
+                                            <div class="text-muted" style="font-size: 0.75rem;">
+                                                Chat: <code>deepseek-r1:latest</code> | Embed: <code>nomic-embed-text</code>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-warning btn-sm text-dark rounded-pill py-0 px-2" style="font-size: 0.75rem;">ใช้ชุดนี้</button>
+                                    </div>
+                                </div>
+                                <div class="p-2 rounded-3 border bg-white cursor-pointer hover-shadow" onclick="applyOllamaPreset('qwen2.5:latest', 'nomic-embed-text', 'ชุดภาษาไทยลื่นไหล Qwen 2.5', 'ตอบภาษาไทยได้เป็นธรรมชาติและเร็ว • รันบนเครื่อง Server ได้สบาย')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-info-subtle text-info me-1">ภาษาไทยดีเยี่ยม</span>
+                                            <strong class="text-dark small">Qwen 2.5 (ตอบไว/ลื่นไหล)</strong>
+                                            <div class="text-muted" style="font-size: 0.75rem;">
+                                                Chat: <code>qwen2.5:latest</code> | Embed: <code>nomic-embed-text</code>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill py-0 px-2" style="font-size: 0.75rem;">ใช้ชุดนี้</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">Chat Model</label>
@@ -537,6 +653,56 @@ function filterGeminiModelsTable() {
     rows.forEach(r => {
         const text = r.innerText.toLowerCase();
         r.style.display = text.includes(filter) ? '' : 'none';
+    });
+}
+
+function applyGeminiPreset(chatModel, embedModel, name, desc) {
+    document.getElementById('gemini_model').value = chatModel;
+    document.getElementById('gemini_embed_model').value = embedModel;
+    
+    document.querySelectorAll('.gemini-preset-item').forEach(el => el.classList.remove('border-primary', 'bg-primary-subtle'));
+    if (window.event && window.event.currentTarget) {
+        window.event.currentTarget.classList.add('border-primary', 'bg-primary-subtle');
+    }
+
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'เลือก ' + name + ' แล้ว!',
+        html: '<small class="text-muted">' + desc + '<br><b class="text-primary">อย่าลืมกดปุ่ม "บันทึกการตั้งค่า" ด้านล่าง</b></small>',
+        showConfirmButton: false,
+        timer: 3500
+    });
+}
+
+function applyOpenAiPreset(chatModel, embedModel, name, desc) {
+    document.getElementById('openai_model').value = chatModel;
+    document.getElementById('openai_embed_model').value = embedModel;
+    
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'เลือก ' + name + ' แล้ว!',
+        html: '<small class="text-muted">' + desc + '<br><b class="text-success">อย่าลืมกดปุ่ม "บันทึกการตั้งค่า" ด้านล่าง</b></small>',
+        showConfirmButton: false,
+        timer: 3500
+    });
+}
+
+function applyOllamaPreset(chatModel, embedModel, name, desc) {
+    document.getElementById('ollama_model').value = chatModel;
+    document.getElementById('ollama_embed_model').value = embedModel;
+    
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'เลือก ' + name + ' แล้ว!',
+        html: '<small class="text-muted">' + desc + '<br><b class="text-warning">อย่าลืมกดปุ่ม "บันทึกการตั้งค่า" ด้านล่าง</b></small>',
+        showConfirmButton: false,
+        timer: 3500
     });
 }
 
