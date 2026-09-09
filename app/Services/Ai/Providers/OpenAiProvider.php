@@ -46,7 +46,8 @@ class OpenAiProvider implements LlmProviderInterface
             'max_tokens' => $options['maxTokens'] ?? 2048,
         ];
 
-        $response = Http::timeout(60)
+        $response = Http::withoutVerifying()
+            ->timeout(60)
             ->withToken($this->apiKey)
             ->post("{$this->baseUrl}/chat/completions", $payload);
 
@@ -65,7 +66,8 @@ class OpenAiProvider implements LlmProviderInterface
             throw new Exception('กรุณาระบุ OpenAI API Key ก่อนสร้าง Embedding');
         }
 
-        $response = Http::timeout(30)
+        $response = Http::withoutVerifying()
+            ->timeout(30)
             ->withToken($this->apiKey)
             ->post("{$this->baseUrl}/embeddings", [
                 'model' => $this->embedModel,

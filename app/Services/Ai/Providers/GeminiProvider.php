@@ -70,7 +70,8 @@ class GeminiProvider implements LlmProviderInterface
 
         $url = "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}";
 
-        $response = Http::timeout(60)
+        $response = Http::withoutVerifying()
+            ->timeout(60)
             ->withHeaders(['Content-Type' => 'application/json'])
             ->post($url, $payload);
 
@@ -96,7 +97,8 @@ class GeminiProvider implements LlmProviderInterface
 
         $url = "{$this->baseUrl}/models/{$this->embedModel}:embedContent?key={$this->apiKey}";
 
-        $response = Http::timeout(30)
+        $response = Http::withoutVerifying()
+            ->timeout(30)
             ->withHeaders(['Content-Type' => 'application/json'])
             ->post($url, [
                 'model' => "models/{$this->embedModel}",
@@ -157,7 +159,7 @@ class GeminiProvider implements LlmProviderInterface
         }
 
         $url = "{$this->baseUrl}/models?key={$this->apiKey}";
-        $response = Http::timeout(25)->get($url);
+        $response = Http::withoutVerifying()->timeout(25)->get($url);
 
         if (!$response->successful()) {
             $errorMsg = $response->json('error.message') ?? $response->body();

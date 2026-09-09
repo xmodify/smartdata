@@ -44,7 +44,8 @@ class OllamaProvider implements LlmProviderInterface
         ];
 
         try {
-            $response = Http::timeout(120)
+            $response = Http::withoutVerifying()
+                ->timeout(120)
                 ->post("{$this->baseUrl}/api/chat", $payload);
 
             if (!$response->successful()) {
@@ -65,7 +66,8 @@ class OllamaProvider implements LlmProviderInterface
     public function embed(string $text): array
     {
         try {
-            $response = Http::timeout(60)
+            $response = Http::withoutVerifying()
+                ->timeout(60)
                 ->post("{$this->baseUrl}/api/embeddings", [
                     'model' => $this->embedModel,
                     'prompt' => $text
@@ -91,7 +93,7 @@ class OllamaProvider implements LlmProviderInterface
         $start = microtime(true);
         try {
             // Check Ollama version or tags first
-            $check = Http::timeout(5)->get("{$this->baseUrl}/api/version");
+            $check = Http::withoutVerifying()->timeout(5)->get("{$this->baseUrl}/api/version");
             if (!$check->successful()) {
                 return [
                     'success' => false,
