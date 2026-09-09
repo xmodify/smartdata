@@ -100,7 +100,11 @@ class User extends Authenticatable
 
     public function hasAccessCopilot()
     {
-        return $this->role === 'admin' || ($this->allow_copilot ?? 'N') === 'Y';
+        try {
+            return $this->role === 'admin' || ($this->allow_copilot ?? 'N') === 'Y';
+        } catch (\Throwable $e) {
+            return $this->role === 'admin';
+        }
     }
 
     public function hasAccessRole($role)
