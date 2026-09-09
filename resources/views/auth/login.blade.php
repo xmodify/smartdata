@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -51,7 +54,7 @@
         }
 
         .card-login-header {
-            background: linear-gradient(135deg, #0284c7 0%, #16a34a 100%);
+            background: linear-gradient(135deg, #004b99 0%, #0284c7 50%, #38bdf8 100%);
             color: white;
             padding: 1.8rem;
             text-align: center;
@@ -81,7 +84,7 @@
         .form-label-custom-otp {
             font-weight: 700;
             font-size: 0.85rem;
-            color: #16a34a;
+            color: #0284c7;
             margin-bottom: 6px;
             display: block;
         }
@@ -125,14 +128,14 @@
 
         /* Buttons with Custom Premium Shape & Icons */
         .btn-login-original {
-            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%) !important;
+            background: linear-gradient(135deg, #0052cc 0%, #0268c7 100%) !important;
             border: none !important;
             color: #ffffff !important;
             padding: 10px 22px !important;
             border-radius: 8px !important; /* รูปทรงปุ่มใหม่โค้งมนสวยงาม */
             font-weight: 600 !important;
             font-size: 0.95rem !important;
-            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.18) !important;
+            box-shadow: 0 4px 12px rgba(0, 82, 204, 0.22) !important;
             transition: all 0.3s ease !important;
             display: inline-flex;
             align-items: center;
@@ -141,18 +144,18 @@
 
         .btn-login-original:hover {
             transform: translateY(-1px) !important;
-            box-shadow: 0 6px 16px rgba(13, 110, 253, 0.28) !important;
+            box-shadow: 0 6px 16px rgba(0, 82, 204, 0.35) !important;
         }
 
         .btn-provider-original {
-            background: linear-gradient(135deg, #198754 0%, #157347 100%) !important;
+            background: linear-gradient(135deg, #008751 0%, #006837 100%) !important;
             border: none !important;
             color: #ffffff !important;
             padding: 10px 22px !important;
             border-radius: 8px !important; /* รูปทรงปุ่มใหม่โค้งมนสวยงาม */
             font-weight: 600 !important;
             font-size: 0.95rem !important;
-            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.18) !important;
+            box-shadow: 0 4px 12px rgba(0, 135, 81, 0.25) !important;
             transition: all 0.3s ease !important;
             text-decoration: none !important;
             display: inline-flex;
@@ -162,8 +165,9 @@
 
         .btn-provider-original:hover {
             transform: translateY(-1px) !important;
-            box-shadow: 0 6px 16px rgba(25, 135, 84, 0.28) !important;
+            box-shadow: 0 6px 16px rgba(0, 135, 81, 0.38) !important;
             color: #ffffff !important;
+            background: linear-gradient(135deg, #00995c 0%, #00733d 100%) !important;
         }
 
         .btn-otp-original {
@@ -229,7 +233,7 @@
                         <div class="row align-items-center mb-1">
                             <!-- Left Column: Hospital Logo -->
                             <div class="col-md-5 text-center mb-4 mb-md-0">
-                                <img src="{{ asset('images/logo_smartdata.png') }}" style="max-width: 100%; height: auto; display: block; margin: 0 auto; padding: 10px;" alt="SmartData Logo">
+                                <img src="{{ asset('images/logo.png') }}" style="max-width: 175px; height: auto; display: block; margin: 0 auto; padding: 5px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));" alt="SmartData Logo">
                             </div>
                             
                             <!-- Right Column: Login Inputs -->
@@ -277,7 +281,7 @@
                                     </div>
                                     <div class="form-text text-muted text-center mt-2" style="font-size: 0.85rem;"><i class="fas fa-info-circle me-1"></i> กรอกรหัสที่ท่านได้รับผ่าน หมอพร้อม LineOA</div>
                                     <div class="d-flex justify-content-center gap-2 mt-3">
-                                        <button type="button" id="btn_verify_otp" class="btn btn-success px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #198754 0%, #157347 100%) !important; border: none !important;">
+                                        <button type="button" id="btn_verify_otp" class="btn btn-primary px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #0052cc 0%, #0268c7 100%) !important; border: none !important;">
                                             <i class="fas fa-check-circle me-1"></i> ยืนยันรหัส OTP
                                         </button>
                                         <button type="button" id="btn_cancel_otp" class="btn btn-outline-secondary px-3 fw-bold">

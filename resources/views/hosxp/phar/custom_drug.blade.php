@@ -43,6 +43,16 @@
             .input-group-date, .input-group-budget { width: 100% !important; }
         }
 
+        .dataTables_length select {
+            border-radius: 8px !important;
+            padding: 0.25rem 1.8rem 0.25rem 0.6rem !important;
+            border: 1px solid #d1d3e2 !important;
+            font-size: 0.85rem !important;
+            min-width: 65px;
+            display: inline-block;
+            margin: 0 4px;
+        }
+
         /* Custom Multi-select for Drugs (รูปที่ 2) */
         .dropdown-menu-multiselect {
             min-width: 360px;
@@ -819,6 +829,7 @@
                                 <th>ตัวยา</th>
                                 <th>วิธีใช้ยา</th>
                                 <th class="text-end">จำนวน</th>
+                                <th class="text-center">หน่วย</th>
                                 <th class="text-end">มูลค่า (บาท)</th>
                                 <th>แพทย์ผู้สั่ง</th>
                                 <th>สิทธิการรักษา</th>
@@ -878,7 +889,10 @@
                                         </div>
                                     </td>
                                     <td class="text-end fw-bold text-primary text-nowrap">
-                                        {{ number_format($pt->qty) }} <small class="text-muted">{{ $pt->units }}</small>
+                                        {{ number_format($pt->qty) }}
+                                    </td>
+                                    <td class="text-center text-nowrap">
+                                        <span class="badge bg-light text-secondary border px-2 py-1">{{ $pt->units ?: '-' }}</span>
                                     </td>
                                     <td class="text-end fw-bold text-success text-nowrap">
                                         {{ number_format($pt->sum_price, 2) }}
@@ -895,6 +909,15 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        <tfoot class="table-light fw-bold border-top border-2">
+                            <tr class="align-middle">
+                                <th colspan="7" class="text-end text-dark">รวมทั้งหมด:</th>
+                                <th class="text-end text-primary fw-bold" id="footer-total-qty">0</th>
+                                <th class="text-center text-muted">-</th>
+                                <th class="text-end text-success fw-bold" id="footer-total-price">0.00</th>
+                                <th colspan="3"></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -1107,7 +1130,8 @@
                         emptyTable: "ไม่พบข้อมูลการใช้ยาในช่วงเวลานี้"
                     },
                     order: [],
-                    pageLength: 10
+                    pageLength: 10,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]]
                 });
 
                 // 4. Initialize Patient Prescription DataTable
@@ -1127,6 +1151,7 @@
                                 const spText = activeSp === 'ALL' ? 'ทุกจุดบริการ' : activeSp;
                                 return 'รายชื่อผู้ป่วยที่ได้รับยา (จุดบริการ: ' + spText + ') - วันที่ {{ date('Y-m-d') }}';
                             },
+                            footer: true,
                             exportOptions: {
                                 columns: ':visible',
                                 modifier: {
@@ -1135,6 +1160,9 @@
                                 },
                                 format: {
                                     body: function (data, row, column, node) {
+                                        return node.innerText ? node.innerText.replace(/\n\s*\n/g, ' ').trim() : data;
+                                    },
+                                    footer: function (data, column, node) {
                                         return node.innerText ? node.innerText.replace(/\n\s*\n/g, ' ').trim() : data;
                                     }
                                 }
@@ -1149,7 +1177,36 @@
                         emptyTable: "ไม่พบข้อมูลรายการสั่งยา"
                     },
                     order: [],
-                    pageLength: 20
+                    pageLength: 10,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]],
+                    footerCallback: function (row, data, start, end, display) {
+                        const api = this.api();
+
+                        const parseNumber = function (val) {
+                            if (typeof val === 'number') return val;
+                            if (typeof val === 'string') {
+                                const clean = val.replace(/<[^>]*>/g, '').replace(/,/g, '').trim();
+                                const num = parseFloat(clean);
+                                return isNaN(num) ? 0 : num;
+                            }
+                            return 0;
+                        };
+
+                        // Column 7: จำนวน (Qty)
+                        const totalQty = api
+                            .column(7, { search: 'applied' })
+                            .data()
+                            .reduce((a, b) => a + parseNumber(b), 0);
+
+                        // Column 9: มูลค่า (บาท) (Price)
+                        const totalPrice = api
+                            .column(9, { search: 'applied' })
+                            .data()
+                            .reduce((a, b) => a + parseNumber(b), 0);
+
+                        $('#footer-total-qty').text(totalQty.toLocaleString());
+                        $('#footer-total-price').text(totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                    }
                 });
 
                 // Service Point Filter Buttons Logic

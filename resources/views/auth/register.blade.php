@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -45,7 +48,7 @@
         }
 
         .card-register-header {
-            background: linear-gradient(135deg, #0284c7 0%, #16a34a 100%);
+            background: linear-gradient(135deg, #004b99 0%, #0284c7 50%, #38bdf8 100%);
             color: white;
             padding: 1.8rem;
             text-align: center;
@@ -99,7 +102,7 @@
 
         /* Submit Button & Links */
         .btn-register-submit {
-            background: linear-gradient(135deg, #0284c7 0%, #16a34a 100%) !important;
+            background: linear-gradient(135deg, #004b99 0%, #0284c7 50%, #38bdf8 100%) !important;
             border: none !important;
             color: #ffffff !important;
             padding: 12px !important;

@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'SmartData')</title>
     <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -213,7 +216,7 @@
 
         /* Custom Gradients from previous design */
         .bg-gradient-primary-custom {
-            background: linear-gradient(135deg, #0268c7 0%, #17a6a7 100%);
+            background: linear-gradient(135deg, #004b99 0%, #0268c7 50%, #0ea5e9 100%);
         }
 
         .bg-pastel-blue {
@@ -351,7 +354,7 @@
             style="box-shadow: 0.15rem 0 1.75rem 0 rgba(58, 59, 69, 0.15); border-right: none;">
             <div class="sidebar-heading bg-gradient-primary-custom">
                 <a href="{{ route('dashboard') }}" class="sidebar-brand">
-                    <i class="fas fa-hospital-user me-2"></i> SmartData
+                    <img src="{{ asset('images/logo.png') }}" alt="SmartData Logo" class="me-2" style="height: 40px; width: 40px; object-fit: contain; background: #ffffff; border-radius: 50%; padding: 2px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);"> SmartData
                 </a>
             </div>
             <div class="list-group list-group-flush my-3">

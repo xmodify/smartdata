@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'SmartData | Admin')</title>
     <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
     
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -18,7 +21,7 @@
     @stack('styles')
     <style>
         .bg-gradient-primary-custom {
-            background: linear-gradient(135deg, #0268c7 0%, #17a6a7 100%);
+            background: linear-gradient(135deg, #004b99 0%, #0268c7 50%, #0ea5e9 100%);
         }
         .bg-gradient-success-custom {
             background: linear-gradient(135deg, #13855c 0%, #17a6a7 100%);
@@ -34,8 +37,8 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-success-custom shadow-sm">
         <div class="container-fluid px-md-5">
-            <a class="navbar-brand fw-bold" href="{{ route('admin.dashboard') }}">
-                <i class="fas fa-home me-2"></i>SmartData | Admin Panel
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ route('admin.dashboard') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="me-2" style="height: 34px; width: 34px; object-fit: contain; background: #ffffff; border-radius: 50%; padding: 2px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);">SmartData | Admin Panel
             </a>
             @auth
                 <div class="dropdown">
