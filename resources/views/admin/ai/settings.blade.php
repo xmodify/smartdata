@@ -62,7 +62,7 @@
 @endpush
 
 @section('content')
-<div class="container py-4">
+<div class="container py-4" style="max-width: 1040px;">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -127,30 +127,29 @@
         @endphp
 
         <!-- Unified AI & LLM Connection Card -->
-        <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <div>
-                            <h5 class="fw-bold mb-1 text-dark d-flex align-items-center">
-                                <i class="fas fa-cog text-warning me-2"></i>ตั้งค่า AI & LLM Connection
-                                <span id="header_provider_badge" class="badge {{ $activeProvider === 'gemini' ? 'bg-primary-subtle text-primary' : ($activeProvider === 'openai' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark') }} rounded-pill ms-2 fs-6 fw-normal px-3 py-1">
-                                    {{ $activeProvider === 'gemini' ? 'Google Gemini' : ($activeProvider === 'openai' ? 'OpenAI (ChatGPT)' : 'Local LLM (Ollama)') }}
-                                </span>
-                            </h5>
-                            <p class="text-muted small mb-0">ระบบเชื่อมต่อ AI สำหรับตอบคำถามค้นหาเวชระเบียน, Text-to-SQL และ RAG คลังความรู้</p>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button type="button" id="header_gemini_table_btn" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="openGeminiListModal()" style="{{ $activeProvider === 'gemini' ? '' : 'display: none;' }}">
-                                <i class="fas fa-list-ul me-1"></i> ดูตารางทุกโมเดล
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body p-4">
-                        <!-- Info Alert Banner matching Image 2 -->
-                        <div class="alert alert-info border-0 rounded-3 mb-4 py-2 px-3 small d-flex align-items-center" style="background-color: #e0f2fe; color: #0369a1;">
-                            <i class="fas fa-info-circle fs-5 me-2 text-primary"></i>
-                            <span>ปรับเปลี่ยนผู้ให้บริการ AI, Key หรือระบุโมเดล ค่าจะบันทึกลง <code>main_setting / ai_settings</code> (เฉพาะ Admin)</span>
-                        </div>
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h5 class="fw-bold mb-1 text-dark d-flex align-items-center">
+                        <i class="fas fa-cog text-warning me-2"></i>ตั้งค่า AI & LLM Connection
+                        <span id="header_provider_badge" class="badge {{ $activeProvider === 'gemini' ? 'bg-primary-subtle text-primary' : ($activeProvider === 'openai' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark') }} rounded-pill ms-2 fs-6 fw-normal px-3 py-1">
+                            {{ $activeProvider === 'gemini' ? 'Google Gemini' : ($activeProvider === 'openai' ? 'OpenAI (ChatGPT)' : 'Local LLM (Ollama)') }}
+                        </span>
+                    </h5>
+                    <p class="text-muted small mb-0">ระบบเชื่อมต่อ AI สำหรับตอบคำถามค้นหาเวชระเบียน, Text-to-SQL และ RAG คลังความรู้</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" id="header_gemini_table_btn" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="openGeminiListModal()" style="{{ $activeProvider === 'gemini' ? '' : 'display: none;' }}">
+                        <i class="fas fa-list-ul me-1"></i> ดูตารางทุกโมเดล
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <!-- Info Alert Banner matching Image 2 -->
+                <div class="alert alert-info border-0 rounded-3 mb-4 py-2 px-3 small d-flex align-items-center" style="background-color: #e0f2fe; color: #0369a1;">
+                    <i class="fas fa-info-circle fs-5 me-2 text-primary"></i>
+                    <span>ปรับเปลี่ยนผู้ให้บริการ AI, Key หรือระบุโมเดล ค่าจะบันทึกลง <code>main_setting / ai_settings</code> (เฉพาะ Admin)</span>
+                </div>
 
                         <div class="row g-3">
                             <!-- Row 1: Provider & Dynamic Base URL -->
@@ -421,50 +420,10 @@
             </div>
         </div>
 
-        <!-- พารามิเตอร์ RAG & SQL Card -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="fw-bold mb-0 text-dark">
-                        <i class="fas fa-cogs text-secondary me-2"></i>พารามิเตอร์ RAG & SQL
-                    </h5>
-                    <p class="text-muted small mb-0">กำหนดฐานข้อมูลเป้าหมายสำหรับการค้นหาเวชระเบียน และความละเอียดในการดึงเอกสาร RAG</p>
-                </div>
-            </div>
-            <div class="card-body px-4 pb-4">
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small text-muted">ฐานข้อมูลเริ่มต้นสำหรับ Text-to-SQL</label>
-                        <select name="sql_default_db" class="form-select bg-light border-0 shadow-sm py-2">
-                            <option value="hosxp" {{ ($settings['sql_default_db'] ?? 'hosxp') === 'hosxp' ? 'selected' : '' }}>🏥 HOSxP (Slave 1) - เวชระเบียน / ผู้ป่วย / คลินิก</option>
-                            <option value="backoffice" {{ ($settings['sql_default_db'] ?? '') === 'backoffice' ? 'selected' : '' }}>🏢 Backoffice - งานบริหาร / พัสดุ / บุคคล</option>
-                            <option value="mysql" {{ ($settings['sql_default_db'] ?? '') === 'mysql' ? 'selected' : '' }}>⚙️ SmartData - ฐานข้อมูลระบบภายใน</option>
-                        </select>
-                        <small class="text-muted">สามารถสลับฐานข้อมูลเป้าหมายได้อิสระในห้องแชท</small>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold small text-muted">Top-K Chunks (RAG)</label>
-                        <input type="number" name="rag_top_k" value="{{ $settings['rag_top_k'] ?? '4' }}" min="1" max="10" class="form-control bg-light border-0 shadow-sm py-2">
-                        <small class="text-muted">จำนวนท่อนเอกสารที่ดึงมาตอบ</small>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold small text-muted">Min Cosine Score (0 - 1)</label>
-                        <input type="number" step="0.05" name="rag_min_score" value="{{ $settings['rag_min_score'] ?? '0.60' }}" min="0.1" max="1.0" class="form-control bg-light border-0 shadow-sm py-2">
-                        <small class="text-muted">คะแนนความสอดคล้องขั้นต่ำ</small>
-                    </div>
-                </div>
-                <div class="alert alert-info border-0 rounded-3 mb-0 small">
-                    <i class="fas fa-info-circle me-1"></i> <strong>ระบบ Vector MySQL:</strong> เมื่อมีการสลับโมเดล Provider (เช่น จาก Gemini เป็น OpenAI) อย่าลืมกดปุ่ม <code>Re-Embed ทั้งหมด</code> ในหน้าจัดการคลังความรู้ เพื่อแปลงมิติ Vector ให้ตรงกับโมเดลใหม่
-                </div>
-            </div>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="text-center mt-4 mb-5">
-            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
-                <i class="fas fa-save me-2"></i> บันทึกการตั้งค่าทั้งหมด
-            </button>
-        </div>
+        <!-- Preserved Background Parameters -->
+        <input type="hidden" name="sql_default_db" value="{{ $settings['sql_default_db'] ?? 'hosxp' }}">
+        <input type="hidden" name="rag_top_k" value="{{ $settings['rag_top_k'] ?? '4' }}">
+        <input type="hidden" name="rag_min_score" value="{{ $settings['rag_min_score'] ?? '0.60' }}">
     </form>
 </div>
 
