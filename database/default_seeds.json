@@ -199,5 +199,111 @@
                 "active": "Y"
             }
         }
+    ],
+    "ai_settings": [
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "active_provider",
+                "key_value": "gemini",
+                "description": "โมเดลหลักที่ใช้งาน (gemini, openai, ollama)"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "gemini_api_key",
+                "key_value": "",
+                "description": "Google Gemini API Key"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "gemini_model",
+                "key_value": "gemini-2.0-flash",
+                "description": "โมเดลแชท Gemini"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "gemini_embed_model",
+                "key_value": "text-embedding-004",
+                "description": "โมเดล Embedding ของ Gemini"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "openai_api_key",
+                "key_value": "",
+                "description": "OpenAI API Key"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "openai_model",
+                "key_value": "gpt-4o-mini",
+                "description": "โมเดลแชท OpenAI"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "openai_embed_model",
+                "key_value": "text-embedding-3-small",
+                "description": "โมเดล Embedding ของ OpenAI"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "ollama_base_url",
+                "key_value": "http://localhost:11434",
+                "description": "URL ของ Ollama Local Server"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "ollama_model",
+                "key_value": "deepseek-r1:latest",
+                "description": "โมเดล Ollama Local"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "ollama_embed_model",
+                "key_value": "nomic-embed-text",
+                "description": "โมเดล Embedding ของ Ollama"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "rag_top_k",
+                "key_value": "4",
+                "description": "จำนวน Chunks ที่ดึงมาเป็นบริบท"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "rag_min_score",
+                "key_value": "0.60",
+                "description": "คะแนนความคล้ายคลึงขั้นต่ำ (0-1)"
+            }
+        },
+        {
+            "match_by": ["key_name"],
+            "data": {
+                "key_name": "sql_default_db",
+                "key_value": "hosxp",
+                "description": "ฐานข้อมูลเริ่มต้นสำหรับ Text-to-SQL (hosxp, backoffice, mysql)"
+            }
+        }
     ]
 }

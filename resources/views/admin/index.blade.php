@@ -73,6 +73,36 @@
             </a>
         </div>
 
+        <!-- AI Copilot Settings Card -->
+        <div class="col-md-5 col-lg-4">
+            <a href="{{ route('admin.ai.settings') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm glass-card border-hover-primary transition-all">
+                    <div class="card-body p-5 text-center">
+                        <div class="icon-shape bg-primary-subtle text-primary rounded-circle mb-4 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-robot fa-2x"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-3">ตั้งค่า AI Copilot</h3>
+                        <p class="text-muted mb-0">กำหนดค่า AI Engine (Gemini, OpenAI, Ollama) บันทึก API Key และทดสอบการเชื่อมต่อ</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- AI Knowledge Base Card -->
+        <div class="col-md-5 col-lg-4">
+            <a href="{{ route('admin.ai.knowledge') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm glass-card border-hover-info transition-all">
+                    <div class="card-body p-5 text-center">
+                        <div class="icon-shape bg-info-subtle text-info rounded-circle mb-4 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-book-medical fa-2x"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-3">คลังความรู้ AI (RAG)</h3>
+                        <p class="text-muted mb-0">อัปโหลดเอกสาร CPG, แปลงเป็น Vector ใน MySQL, Re-Embed และจัดการเอกสารโรงพยาบาล</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
         @if (auth()->user()->username === '1341800003078')
         <!-- License System Card -->
         <div class="col-md-5 col-lg-4">

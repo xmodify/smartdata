@@ -1668,5 +1668,399 @@
                 "primary": true
             }
         }
+    },
+    "ai_settings": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "key_name": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "key_value": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "description": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "ai_chat_sessions": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "user_id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "session_uuid": {
+                "type": "varchar",
+                "length": 64,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "title": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": "การสนทนาใหม่",
+                "extra": ""
+            },
+            "target_db": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": false,
+                "default": "hosxp",
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "ai_chat_messages": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "session_id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "role": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "user",
+                "extra": ""
+            },
+            "content": {
+                "type": "longtext",
+                "length": null,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "message_type": {
+                "type": "varchar",
+                "length": 30,
+                "nullable": false,
+                "default": "text",
+                "extra": ""
+            },
+            "generated_sql": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "query_result": {
+                "type": "longtext",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "target_db": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "sources": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "ai_knowledge_docs": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "title": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "category": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": false,
+                "default": "ทั่วไป",
+                "extra": ""
+            },
+            "filename": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "file_path": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "file_size": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": 0,
+                "extra": ""
+            },
+            "file_type": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "pdf",
+                "extra": ""
+            },
+            "status": {
+                "type": "varchar",
+                "length": 30,
+                "nullable": false,
+                "default": "unindexed",
+                "extra": ""
+            },
+            "error_message": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "chunks_count": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": 0,
+                "extra": ""
+            },
+            "embedded_model": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "uploaded_by": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "ai_knowledge_chunks": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "doc_id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "chunk_index": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": 0,
+                "extra": ""
+            },
+            "content": {
+                "type": "longtext",
+                "length": null,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "embedding": {
+                "type": "longtext",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "embedding_dim": {
+                "type": "int",
+                "length": 11,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "page_number": {
+                "type": "int",
+                "length": 11,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
     }
 }

@@ -313,6 +313,37 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'updateLicense'])->name('license.update');
         Route::delete('/{id}', [App\Http\Controllers\Admin\LicenseController::class, 'destroyLicense'])->name('license.destroy');
     });
+
+    // ─── SmartData Copilot AI Routes ──────────────────────────────────
+    Route::prefix('ai')->group(function () {
+        // Chat Interface
+        Route::get('/chat', [App\Http\Controllers\Ai\ChatController::class, 'index'])->name('ai.chat');
+        Route::post('/chat/message', [App\Http\Controllers\Ai\ChatController::class, 'sendMessage'])->name('ai.chat.message');
+        Route::post('/chat/session/new', [App\Http\Controllers\Ai\ChatController::class, 'newSession'])->name('ai.chat.session.new');
+        Route::get('/chat/session/{uuid}', [App\Http\Controllers\Ai\ChatController::class, 'loadSession'])->name('ai.chat.session.load');
+        Route::delete('/chat/session/{uuid}', [App\Http\Controllers\Ai\ChatController::class, 'deleteSession'])->name('ai.chat.session.delete');
+
+        // User Knowledge Library
+        Route::get('/knowledge', [App\Http\Controllers\Ai\KnowledgeController::class, 'index'])->name('ai.knowledge.index');
+        Route::get('/knowledge/{id}/view', [App\Http\Controllers\Ai\KnowledgeController::class, 'view'])->name('ai.knowledge.view');
+        Route::get('/knowledge/{id}/download', [App\Http\Controllers\Ai\KnowledgeController::class, 'download'])->name('ai.knowledge.download');
+    });
+
+    // Admin AI Management Routes
+    Route::prefix('admin/ai')->group(function () {
+        // AI Settings
+        Route::get('/settings', [App\Http\Controllers\Admin\AiSettingController::class, 'index'])->name('admin.ai.settings');
+        Route::post('/settings', [App\Http\Controllers\Admin\AiSettingController::class, 'update'])->name('admin.ai.settings.update');
+        Route::post('/settings/test', [App\Http\Controllers\Admin\AiSettingController::class, 'testConnection'])->name('admin.ai.settings.test');
+
+        // Knowledge Base Admin
+        Route::get('/knowledge', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'index'])->name('admin.ai.knowledge');
+        Route::post('/knowledge/upload', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'upload'])->name('admin.ai.knowledge.upload');
+        Route::post('/knowledge/{id}/embed', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'embed'])->name('admin.ai.knowledge.embed');
+        Route::post('/knowledge/re-embed-all', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'reEmbedAll'])->name('admin.ai.knowledge.reembed_all');
+        Route::delete('/knowledge/{id}', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'destroy'])->name('admin.ai.knowledge.destroy');
+        Route::post('/knowledge/test-search', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'testSearch'])->name('admin.ai.knowledge.test_search');
+    });
 });
 
 Route::get('/debug-log', function () {

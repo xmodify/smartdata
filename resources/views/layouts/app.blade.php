@@ -475,6 +475,14 @@
                         </div>
                         @endif
 
+                    <div class="sidebar-section-header">ระบบ AI & คลังความรู้</div>
+                    <a href="{{ route('ai.chat') }}" class="list-group-item list-group-item-action bg-transparent text-dark fw-bold">
+                        <i class="fas fa-robot me-2" style="color: #0d6efd;"></i> SmartData Copilot
+                    </a>
+                    <a href="{{ route('ai.knowledge.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
+                        <i class="fas fa-book-medical me-2" style="color: #0dcaf0;"></i> คลังความรู้โรงพยาบาล
+                    </a>
+
                     <div class="sidebar-section-header">ระบบ Dashboard</div>
                     <a href="{{ route('ipd.wait_dchsummary') }}" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">
                         <i class="fas fa-file-invoice me-2" style="color: #dc3545;"></i> ผู้ป่วยในรอสรุป Chart
@@ -505,6 +513,9 @@
 
                 <div class="d-flex align-items-center">
                     @auth
+                        <a href="{{ route('ai.chat') }}" class="btn btn-outline-light btn-sm rounded-pill me-2 d-none d-sm-inline-flex align-items-center px-3" title="เปิด SmartData Copilot">
+                            <i class="fas fa-robot me-1"></i> Copilot
+                        </a>
                         <div class="dropdown">
                             <a class="nav-link dropdown-toggle text-white fw-bold d-flex align-items-center" href="#"
                                 id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -702,6 +713,9 @@
             });
         });
     </script>
+    @auth
+        @include('ai.partials._floating_widget')
+    @endauth
     @stack('scripts')
 </body>
 

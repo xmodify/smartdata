@@ -53,6 +53,16 @@
                             </a>
                         </li>
                         <li>
+                            <a class="dropdown-item" href="{{ route('admin.ai.settings') }}">
+                                <i class="fas fa-robot me-2 text-info"></i> ตั้งค่า AI Copilot
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('admin.ai.knowledge') }}">
+                                <i class="fas fa-book-medical me-2 text-success"></i> จัดการคลังความรู้ AI
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                                 <i class="fas fa-key me-2 text-warning"></i> เปลี่ยนรหัสผ่าน
                             </a>
