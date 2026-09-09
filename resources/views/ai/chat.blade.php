@@ -98,6 +98,11 @@
                                 <option value="mysql">⚙️ SmartData (ระบบภายใน)</option>
                             </select>
                         </div>
+
+                        <!-- Hospital Knowledge Library Direct Link -->
+                        <a href="{{ route('ai.knowledge.index') }}" class="btn btn-outline-info btn-sm rounded-pill px-3 shadow-sm text-dark" title="เปิดห้องสมุดคลังความรู้ CPG & ระเบียบปฏิบัติ">
+                            <i class="fas fa-book-medical me-1 text-info"></i> คลังความรู้
+                        </a>
                     </div>
                 </div>
 

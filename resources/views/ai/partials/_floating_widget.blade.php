@@ -19,6 +19,9 @@
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
+                <a href="{{ route('ai.knowledge.index') }}" class="text-white text-opacity-75 hover-opacity-100 text-decoration-none" title="เปิดคลังความรู้ CPG & ระเบียบ">
+                    <i class="fas fa-book-medical small"></i>
+                </a>
                 <a href="{{ route('ai.chat') }}" class="text-white text-opacity-75 hover-opacity-100 text-decoration-none" title="เปิดหน้าจอเต็ม">
                     <i class="fas fa-external-link-alt small"></i>
                 </a>

@@ -436,6 +436,14 @@
                     @endif
 
                         <div class="sidebar-section-header">ระบบ SmartData</div>
+                        @if(\App\Models\AiSetting::isCopilotEnabled() || auth()->user()->hasAccessRole('admin'))
+                        <a href="{{ route('ai.chat') }}" class="list-group-item list-group-item-action bg-transparent text-dark fw-bold">
+                            <i class="fas fa-robot me-2" style="color: #0d6efd;"></i> SmartData Copilot
+                            @if(!\App\Models\AiSetting::isCopilotEnabled())
+                                <span class="badge bg-danger-subtle text-danger ms-1" style="font-size: 0.65rem;">ปิด</span>
+                            @endif
+                        </a>
+                        @endif
                         <a href="{{ url('/skpcard') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
                             <i class="fas fa-address-card me-2" style="color: #f6c23e;"></i> บัตรสังฆะประชาร่วมใจ
                         </a>
@@ -474,19 +482,6 @@
                             </div>
                         </div>
                         @endif
-
-                    <div class="sidebar-section-header">ระบบ AI & คลังความรู้</div>
-                    @if(\App\Models\AiSetting::isCopilotEnabled() || auth()->user()->hasAccessRole('admin'))
-                    <a href="{{ route('ai.chat') }}" class="list-group-item list-group-item-action bg-transparent text-dark fw-bold">
-                        <i class="fas fa-robot me-2" style="color: #0d6efd;"></i> SmartData Copilot
-                        @if(!\App\Models\AiSetting::isCopilotEnabled())
-                            <span class="badge bg-danger-subtle text-danger ms-1" style="font-size: 0.65rem;">ปิด</span>
-                        @endif
-                    </a>
-                    @endif
-                    <a href="{{ route('ai.knowledge.index') }}" class="list-group-item list-group-item-action bg-transparent text-dark">
-                        <i class="fas fa-book-medical me-2" style="color: #0dcaf0;"></i> คลังความรู้โรงพยาบาล
-                    </a>
 
                     <div class="sidebar-section-header">ระบบ Dashboard</div>
                     <a href="{{ route('ipd.wait_dchsummary') }}" target="_blank" class="list-group-item list-group-item-action bg-transparent text-dark">
