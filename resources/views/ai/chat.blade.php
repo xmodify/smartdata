@@ -72,55 +72,21 @@
                             <i class="fas fa-book-medical me-1 text-info"></i> คลังความรู้
                         </a>
 
-                        <!-- Advanced Mode / DB Dropdown (Minimalist) -->
+                        <!-- Target Database Selector Dropdown -->
                         <div class="dropdown">
-                            <button class="btn btn-light btn-sm rounded-pill px-3 text-secondary border shadow-xs dropdown-toggle" type="button" id="chatOptionsDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                                <i class="fas fa-sliders-h me-1 text-primary"></i> <span id="currentModeLabel">อัจฉริยะ (Auto)</span>
+                            <button class="btn btn-light btn-sm rounded-pill px-3 text-secondary border shadow-xs dropdown-toggle" type="button" id="targetDbDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-database me-1 text-primary"></i> <span id="currentDbLabel">ฐานข้อมูล: ตรวจหาอัตโนมัติ</span>
                             </button>
-                            <div class="dropdown-menu dropdown-menu-end p-3 shadow-lg border-0 rounded-4" style="width: 290px; font-size: 0.85rem;" aria-labelledby="chatOptionsDropdown">
-                                <div class="fw-bold text-dark mb-2 small"><i class="fas fa-magic text-primary me-1"></i> โหมดการตอบคำถาม</div>
-                                <div class="d-flex flex-column gap-1 mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="chat_mode" id="mode_smart" value="smart" checked onchange="updateModeDisplay('อัจฉริยะ (Auto)')">
-                                        <label class="form-check-label small cursor-pointer" for="mode_smart">
-                                            <strong>อัจฉริยะ (Auto)</strong> <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.68rem;">แนะนำ</span>
-                                            <div class="text-muted" style="font-size: 0.72rem;">วิเคราะห์และเลือกแหล่งข้อมูลให้อัตโนมัติ</div>
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="chat_mode" id="mode_sql" value="sql" onchange="updateModeDisplay('Text-to-SQL')">
-                                        <label class="form-check-label small cursor-pointer" for="mode_sql">
-                                            <strong>Text-to-SQL</strong>
-                                            <div class="text-muted" style="font-size: 0.72rem;">ค้นหาสถิติคนไข้จากฐานข้อมูลโดยตรง</div>
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="chat_mode" id="mode_rag" value="rag" onchange="updateModeDisplay('คลังความรู้')">
-                                        <label class="form-check-label small cursor-pointer" for="mode_rag">
-                                            <strong>คลังความรู้ (CPG)</strong>
-                                            <div class="text-muted" style="font-size: 0.72rem;">ค้นหาแนวทางเวชปฏิบัติจากเอกสาร</div>
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="chat_mode" id="mode_general" value="general" onchange="updateModeDisplay('คุยทั่วไป')">
-                                        <label class="form-check-label small cursor-pointer" for="mode_general">
-                                            <strong>คุยทั่วไป</strong>
-                                            <div class="text-muted" style="font-size: 0.72rem;">สนทนาแลกเปลี่ยนทั่วไป</div>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="dropdown-divider"></div>
-
-                                <div class="fw-bold text-dark mb-2 small"><i class="fas fa-database text-info me-1"></i> ฐานข้อมูลเป้าหมาย</div>
-                                <select id="target_db" class="form-select form-select-sm rounded-3 bg-light border-0">
-                                    <option value="auto" selected>🤖 ตรวจหา DB อัตโนมัติ</option>
-                                    <option value="hosxp">🏥 HOSxP (เวชระเบียน/คนไข้)</option>
-                                    <option value="backoffice">🏢 Backoffice (บริหาร/พัสดุ/บุคคล)</option>
-                                    <option value="mysql">⚙️ SmartData (ระบบภายใน)</option>
-                                </select>
-                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end p-2 shadow-lg border-0 rounded-4" id="targetDbDropdownMenu" style="min-width: 250px; font-size: 0.85rem;" aria-labelledby="targetDbDropdown">
+                                <li><h6 class="dropdown-header text-muted small fw-bold">เลือกฐานข้อมูลเป้าหมาย</h6></li>
+                                <li><a class="dropdown-item rounded-3 py-2 cursor-pointer active" href="javascript:void(0)" onclick="selectTargetDb('auto', 'ตรวจหาอัตโนมัติ', this)"><i class="fas fa-magic text-primary me-2"></i> <strong>ตรวจหาอัตโนมัติ (Auto)</strong> <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.68rem;">แนะนำ</span></a></li>
+                                <li><a class="dropdown-item rounded-3 py-2 cursor-pointer" href="javascript:void(0)" onclick="selectTargetDb('hosxp', 'HOSxP (คนไข้)', this)"><i class="fas fa-hospital text-danger me-2"></i> <strong>HOSxP</strong> (เวชระเบียน/คนไข้)</a></li>
+                                <li><a class="dropdown-item rounded-3 py-2 cursor-pointer" href="javascript:void(0)" onclick="selectTargetDb('backoffice', 'Backoffice', this)"><i class="fas fa-building text-warning me-2"></i> <strong>Backoffice</strong> (พัสดุ/บุคคล)</a></li>
+                                <li><a class="dropdown-item rounded-3 py-2 cursor-pointer" href="javascript:void(0)" onclick="selectTargetDb('mysql', 'SmartData', this)"><i class="fas fa-cog text-secondary me-2"></i> <strong>SmartData</strong> (ระบบภายใน)</a></li>
+                            </ul>
                         </div>
+                        <input type="hidden" id="target_db" value="auto">
+                        <input type="hidden" name="chat_mode" id="mode_smart" value="smart">
                     </div>
                 </div>
 
@@ -310,8 +276,8 @@ function handleChatSubmit(e) {
 
     appendUserMessage(message);
 
-    const mode = document.querySelector('input[name="chat_mode"]:checked').value;
-    const targetDb = document.getElementById('target_db').value;
+    const mode = (document.querySelector('input[name="chat_mode"]:checked') || document.querySelector('input[name="chat_mode"]'))?.value || 'smart';
+    const targetDb = document.getElementById('target_db')?.value || 'auto';
 
     const loadingBubble = appendLoadingBubble();
     scrollChatToBottom();
@@ -347,21 +313,31 @@ function handleChatSubmit(e) {
     });
 }
 
-function updateModeDisplay(label) {
-    const el = document.getElementById('currentModeLabel');
-    if (el) el.innerText = label;
+function selectTargetDb(dbValue, label, el) {
+    const dbInput = document.getElementById('target_db');
+    if (dbInput) dbInput.value = dbValue;
+    const lbl = document.getElementById('currentDbLabel');
+    if (lbl) lbl.innerText = 'ฐานข้อมูล: ' + label;
+    if (el) {
+        document.querySelectorAll('#targetDbDropdownMenu .dropdown-item').forEach(item => item.classList.remove('active'));
+        el.classList.add('active');
+    }
 }
 
-function sendQuickPrompt(promptText, choice = null) {
-    if (choice === 'rag' || choice === 'sql' || choice === 'smart' || choice === 'general') {
-        const modeRadio = document.getElementById('mode_' + choice);
-        if (modeRadio) {
-            modeRadio.checked = true;
-            updateModeDisplay(choice === 'rag' ? 'คลังความรู้' : (choice === 'sql' ? 'Text-to-SQL' : 'อัจฉริยะ (Auto)'));
+function sendQuickPrompt(promptText, targetDbChoice = null) {
+    if (targetDbChoice && targetDbChoice !== 'rag' && targetDbChoice !== 'sql' && targetDbChoice !== 'smart') {
+        const dbLabels = {
+            'auto': 'ตรวจหาอัตโนมัติ',
+            'hosxp': 'HOSxP (คนไข้)',
+            'backoffice': 'Backoffice',
+            'mysql': 'SmartData'
+        };
+        const dbInput = document.getElementById('target_db');
+        if (dbInput) dbInput.value = targetDbChoice;
+        const lbl = document.getElementById('currentDbLabel');
+        if (lbl && dbLabels[targetDbChoice]) {
+            lbl.innerText = 'ฐานข้อมูล: ' + dbLabels[targetDbChoice];
         }
-    } else if (choice) {
-        const dbSelect = document.getElementById('target_db');
-        if (dbSelect) dbSelect.value = choice;
     }
     document.getElementById('messageInput').value = promptText;
     document.getElementById('chatForm').dispatchEvent(new Event('submit'));
