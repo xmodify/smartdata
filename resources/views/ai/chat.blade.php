@@ -104,15 +104,18 @@
                         </p>
 
                         <div class="text-muted small fw-bold mb-3 text-uppercase">ตัวอย่างคำถามที่สามารถคลิกถามได้ทันที:</div>
-                        <div class="d-flex flex-wrap justify-content-center gap-2 mx-auto" style="max-width: 750px;">
-                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 bg-white shadow-sm" onclick="sendQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) วันนี้แยกตามสิทธิการรักษา')">
-                                <i class="fas fa-chart-pie me-1"></i> ยอดผู้ป่วยนอกวันนี้แยกตามสิทธิ
+                        <div class="d-flex flex-wrap justify-content-center gap-2 mx-auto" style="max-width: 800px;">
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 bg-white shadow-sm" onclick="sendQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) ย้อนหลัง 30 วัน แยกตามสิทธิการรักษา')">
+                                <i class="fas fa-chart-pie me-1"></i> ยอดผู้ป่วยนอกแยกตามสิทธิ (30 วัน)
                             </button>
                             <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 bg-white shadow-sm" onclick="sendQuickPrompt('5 อันดับโรคผู้ป่วยนอก (Top 5 OPD Dx) ที่มารับบริการมากที่สุดเดือนนี้')">
                                 <i class="fas fa-stethoscope me-1"></i> 5 อันดับโรคผู้ป่วยนอกเดือนนี้
                             </button>
-                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 py-2 bg-white shadow-sm" onclick="sendQuickPrompt('ขอรายชื่อเจ้าหน้าที่กลุ่มงานสารสนเทศทางการแพทย์ จาก Backoffice', 'backoffice')">
-                                <i class="fas fa-users me-1"></i> รายชื่อเจ้าหน้าที่กลุ่มงานไอที (Backoffice)
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 bg-white shadow-sm" onclick="sendQuickPrompt('จำนวนผู้ป่วยใน (IPD) กำลัง Admit แยกตามหอผู้ป่วยและอัตราครองเตียง')">
+                                <i class="fas fa-bed me-1"></i> ยอดผู้ป่วยใน IPD กำลัง Admit รายวอร์ด
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 py-2 bg-white shadow-sm" onclick="sendQuickPrompt('ขอสรุปจำนวนบุคลากรในโรงพยาบาลแยกตามกลุ่มงาน จาก Backoffice', 'backoffice')">
+                                <i class="fas fa-users me-1"></i> สรุปจำนวนบุคลากรแยกกลุ่มงาน (Backoffice)
                             </button>
                             <button type="button" class="btn btn-outline-info btn-sm rounded-pill px-3 py-2 bg-white shadow-sm" onclick="sendQuickPrompt('แนวทางการดูแลรักษาผู้ป่วย STEMI หรือ Stroke มีขั้นตอนอย่างไร', 'rag')">
                                 <i class="fas fa-book-medical me-1"></i> แนวทาง CPG การรักษา Stroke / STEMI

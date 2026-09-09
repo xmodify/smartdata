@@ -62,14 +62,17 @@
                     <span class="me-1">💡</span> คำถามแนะนำด่วน:
                 </div>
                 <div class="d-flex flex-column gap-2" id="widgetQuickChips">
-                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) วันนี้แยกตามสิทธิการรักษา')">
-                        <span class="me-2">📌</span> ยอดผู้ป่วยนอกวันนี้แยกตามสิทธิ
+                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) ย้อนหลัง 30 วัน แยกตามสิทธิการรักษา')">
+                        <span class="me-2">📌</span> ยอดผู้ป่วยนอก (OPD) แยกตามสิทธิ
                     </button>
                     <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('5 อันดับโรคผู้ป่วยนอกที่มารับบริการมากที่สุดเดือนนี้')">
                         <span class="me-2">💊</span> 5 อันดับโรคผู้ป่วยนอกสูงสุดเดือนนี้
                     </button>
-                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('จำนวนผู้ป่วยใน (IPD) กำลัง Admit ในหอผู้ป่วยและอัตราครองเตียง')">
-                        <span class="me-2">👛</span> ยอดผู้ป่วยใน IPD และอัตราครองเตียง
+                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('จำนวนผู้ป่วยใน (IPD) กำลัง Admit แยกตามหอผู้ป่วยและอัตราครองเตียง')">
+                        <span class="me-2">👛</span> ยอดผู้ป่วยใน IPD กำลัง Admit รายวอร์ด
+                    </button>
+                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอสรุปจำนวนบุคลากรในโรงพยาบาลแยกตามกลุ่มงาน จาก Backoffice')">
+                        <span class="me-2">👥</span> สรุปจำนวนบุคลากรแยกกลุ่มงาน (Backoffice)
                     </button>
                     <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('แนวทางการดูแลรักษาผู้ป่วย Stroke หรือ STEMI มีขั้นตอนอย่างไร')">
                         <span class="me-2">📊</span> แนวทางเวชปฏิบัติ CPG Stroke / STEMI
@@ -214,14 +217,17 @@ function resetWidgetConversation() {
                 <span class="me-1">💡</span> คำถามแนะนำด่วน:
             </div>
             <div class="d-flex flex-column gap-2" id="widgetQuickChips">
-                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) วันนี้แยกตามสิทธิการรักษา')">
-                    <span class="me-2">📌</span> ยอดผู้ป่วยนอกวันนี้แยกตามสิทธิ
+                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) ย้อนหลัง 30 วัน แยกตามสิทธิการรักษา')">
+                    <span class="me-2">📌</span> ยอดผู้ป่วยนอก (OPD) แยกตามสิทธิ
                 </button>
                 <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('5 อันดับโรคผู้ป่วยนอกที่มารับบริการมากที่สุดเดือนนี้')">
                     <span class="me-2">💊</span> 5 อันดับโรคผู้ป่วยนอกสูงสุดเดือนนี้
                 </button>
-                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('จำนวนผู้ป่วยใน (IPD) กำลัง Admit ในหอผู้ป่วยและอัตราครองเตียง')">
-                    <span class="me-2">👛</span> ยอดผู้ป่วยใน IPD และอัตราครองเตียง
+                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('จำนวนผู้ป่วยใน (IPD) กำลัง Admit แยกตามหอผู้ป่วยและอัตราครองเตียง')">
+                    <span class="me-2">👛</span> ยอดผู้ป่วยใน IPD กำลัง Admit รายวอร์ด
+                </button>
+                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอสรุปจำนวนบุคลากรในโรงพยาบาลแยกตามกลุ่มงาน จาก Backoffice')">
+                    <span class="me-2">👥</span> สรุปจำนวนบุคลากรแยกกลุ่มงาน (Backoffice)
                 </button>
                 <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('แนวทางการดูแลรักษาผู้ป่วย Stroke หรือ STEMI มีขั้นตอนอย่างไร')">
                     <span class="me-2">📊</span> แนวทางเวชปฏิบัติ CPG Stroke / STEMI
