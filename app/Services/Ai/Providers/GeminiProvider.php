@@ -146,4 +146,57 @@ class GeminiProvider implements LlmProviderInterface
             ];
         }
     }
+
+    /**
+     * Fetch all available models for this Gemini API Key.
+     */
+    public function listModels(): array
+    {
+        if (empty($this->apiKey)) {
+            throw new Exception('กรุณาระบุ Google Gemini API Key ก่อนดึงรายชื่อโมเดล');
+        }
+
+        $url = "{$this->baseUrl}/models?key={$this->apiKey}";
+        $response = Http::timeout(25)->get($url);
+
+        if (!$response->successful()) {
+            $errorMsg = $response->json('error.message') ?? $response->body();
+            throw new Exception("ดึงรายชื่อ Model ไม่สำเร็จ: " . $errorMsg);
+        }
+
+        $allModels = $response->json('models') ?? [];
+        $chatModels = [];
+        $embedModels = [];
+
+        foreach ($allModels as $m) {
+            $rawName = $m['name'] ?? '';
+            $cleanName = preg_replace('/^models\//', '', $rawName);
+            $methods = $m['supportedGenerationMethods'] ?? [];
+            $displayName = $m['displayName'] ?? $cleanName;
+            $desc = $m['description'] ?? '';
+
+            if (in_array('generateContent', $methods)) {
+                $chatModels[] = [
+                    'id' => $cleanName,
+                    'name' => $displayName,
+                    'description' => $desc
+                ];
+            }
+
+            if (in_array('embedContent', $methods)) {
+                $embedModels[] = [
+                    'id' => $cleanName,
+                    'name' => $displayName,
+                    'description' => $desc
+                ];
+            }
+        }
+
+        return [
+            'success' => true,
+            'chat_models' => $chatModels,
+            'embed_models' => $embedModels,
+            'total' => count($chatModels) + count($embedModels)
+        ];
+    }
 }

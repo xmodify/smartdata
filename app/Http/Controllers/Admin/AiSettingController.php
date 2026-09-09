@@ -100,4 +100,27 @@ class AiSettingController extends Controller
             ]);
         }
     }
+
+    public function getGeminiModels(Request $request)
+    {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $key = $request->input('gemini_api_key') ?: AiSetting::get('gemini_api_key', '');
+        if (empty($key)) {
+            return response()->json(['success' => false, 'message' => 'กรุณาระบุ Gemini API Key ก่อนดึงรายชื่อ Model']);
+        }
+
+        try {
+            $gemini = new GeminiProvider($key);
+            $result = $gemini->listModels();
+            return response()->json($result);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
 }

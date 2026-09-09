@@ -335,6 +335,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings', [App\Http\Controllers\Admin\AiSettingController::class, 'index'])->name('admin.ai.settings');
         Route::post('/settings', [App\Http\Controllers\Admin\AiSettingController::class, 'update'])->name('admin.ai.settings.update');
         Route::post('/settings/test', [App\Http\Controllers\Admin\AiSettingController::class, 'testConnection'])->name('admin.ai.settings.test');
+        Route::post('/settings/gemini-models', [App\Http\Controllers\Admin\AiSettingController::class, 'getGeminiModels'])->name('admin.ai.settings.gemini_models');
 
         // Knowledge Base Admin
         Route::get('/knowledge', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'index'])->name('admin.ai.knowledge');

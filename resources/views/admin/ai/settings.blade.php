@@ -124,13 +124,18 @@
             <!-- 1. Google Gemini Config -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <h5 class="fw-bold mb-0 text-dark">
                             <i class="fab fa-google text-primary me-2"></i>Google Gemini
                         </h5>
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="testConnection('gemini')">
-                            <i class="fas fa-plug me-1"></i> ทดสอบเชื่อมต่อ
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="fetchGeminiModels()">
+                                <i class="fas fa-list-ul me-1"></i> เช็ค Model
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="testConnection('gemini')">
+                                <i class="fas fa-plug me-1"></i> ทดสอบเชื่อมต่อ
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body px-4 pb-4">
                         <div class="mb-3">
@@ -143,13 +148,39 @@
                             <small class="text-muted">รับ API Key ได้ฟรีที่ <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-decoration-none">Google AI Studio</a></small>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Chat Model</label>
-                            <input type="text" id="gemini_model" name="gemini_model" value="{{ $settings['gemini_model'] ?? 'gemini-2.0-flash' }}" class="form-control bg-light border-0 shadow-sm" placeholder="gemini-2.0-flash">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold small text-muted mb-0">Chat Model</label>
+                                <span id="gemini-chat-model-badge" class="badge bg-light text-primary border small" style="display: none;"></span>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="gemini_model" name="gemini_model" value="{{ $settings['gemini_model'] ?? 'gemini-2.0-flash' }}" class="form-control bg-light border-0 shadow-sm" placeholder="gemini-2.0-flash" list="gemini_chat_models_datalist">
+                                <button class="btn btn-light border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    เลือกรุ่น
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0" id="gemini_chat_dropdown" style="max-height: 280px; overflow-y: auto;">
+                                    <li><h6 class="dropdown-header">โมเดลยอดนิยม</h6></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectGeminiChatModel('gemini-2.0-flash')"><strong>gemini-2.0-flash</strong> <span class="badge bg-primary-subtle text-primary ms-1">แนะนำ/เร็วสุด</span></a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectGeminiChatModel('gemini-2.0-flash-lite')">gemini-2.0-flash-lite</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectGeminiChatModel('gemini-1.5-flash')">gemini-1.5-flash</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectGeminiChatModel('gemini-1.5-pro')">gemini-1.5-pro</a></li>
+                                </ul>
+                            </div>
+                            <datalist id="gemini_chat_models_datalist"></datalist>
                             <small class="text-muted">แนะนำ: <code>gemini-2.0-flash</code> หรือ <code>gemini-1.5-pro</code></small>
                         </div>
                         <div class="mb-0">
                             <label class="form-label fw-bold small text-muted">Embedding Model (Vector)</label>
-                            <input type="text" id="gemini_embed_model" name="gemini_embed_model" value="{{ $settings['gemini_embed_model'] ?? 'text-embedding-004' }}" class="form-control bg-light border-0 shadow-sm" placeholder="text-embedding-004">
+                            <div class="input-group">
+                                <input type="text" id="gemini_embed_model" name="gemini_embed_model" value="{{ $settings['gemini_embed_model'] ?? 'text-embedding-004' }}" class="form-control bg-light border-0 shadow-sm" placeholder="text-embedding-004" list="gemini_embed_models_datalist">
+                                <button class="btn btn-light border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    เลือกรุ่น
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0" id="gemini_embed_dropdown" style="max-height: 250px; overflow-y: auto;">
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectGeminiEmbedModel('text-embedding-004')"><strong>text-embedding-004</strong> (768 มิติ)</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectGeminiEmbedModel('embedding-001')">embedding-001</a></li>
+                                </ul>
+                            </div>
+                            <datalist id="gemini_embed_models_datalist"></datalist>
                             <small class="text-muted">ขนาด 768 มิติ (Default: <code>text-embedding-004</code>)</small>
                         </div>
                         <div id="gemini-test-result" class="mt-3" style="display: none;"></div>
@@ -272,8 +303,52 @@
     </form>
 </div>
 
+<!-- Gemini Models List Modal -->
+<div class="modal fade" id="geminiModelsModal" tabindex="-1" aria-labelledby="geminiModelsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-gradient-primary-custom text-white border-0 py-3 px-4 rounded-top-4">
+                <h5 class="modal-title fw-bold" id="geminiModelsModalLabel">
+                    <i class="fab fa-google me-2"></i>รายชื่อโมเดล Google Gemini ที่สามารถใช้งานได้
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="input-group" style="max-width: 320px;">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="modelFilterInput" class="form-control bg-light border-0" placeholder="พิมพ์กรองชื่อ Model..." onkeyup="filterGeminiModelsTable()">
+                    </div>
+                    <span id="modalTotalModelsCount" class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">0 รุ่น</span>
+                </div>
+
+                <div class="table-responsive rounded-3 border">
+                    <table class="table table-hover align-middle mb-0 small" id="geminiModelsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Model ID</th>
+                                <th>ชื่อทางการ (Display Name)</th>
+                                <th>ประเภท</th>
+                                <th class="text-end">เลือกใช้งาน</th>
+                            </tr>
+                        </thead>
+                        <tbody id="geminiModelsTableBody">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light rounded-bottom-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+let cachedGeminiModels = [];
+
 function togglePassword(inputId, btn) {
     const input = document.getElementById(inputId);
     const icon = btn.querySelector('i');
@@ -286,6 +361,183 @@ function togglePassword(inputId, btn) {
         icon.classList.remove('fa-eye-slash');
         icon.classList.add('fa-eye');
     }
+}
+
+function selectGeminiChatModel(modelName) {
+    document.getElementById('gemini_model').value = modelName;
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'เลือก Chat Model: ' + modelName,
+        showConfirmButton: false,
+        timer: 2000
+    });
+}
+
+function selectGeminiEmbedModel(modelName) {
+    document.getElementById('gemini_embed_model').value = modelName;
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'เลือก Embedding Model: ' + modelName,
+        showConfirmButton: false,
+        timer: 2000
+    });
+}
+
+function fetchGeminiModels() {
+    const key = document.getElementById('gemini_api_key').value.trim();
+    if (!key) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'ยังไม่ได้ระบุ API Key',
+            text: 'กรุณากรอก Gemini API Key ก่อนดึงรายชื่อ Model'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'กำลังเชื่อมต่อ Google Gemini...',
+        text: 'กำลังดึงรายการ Model ที่ API Key นี้มีสิทธิ์เข้าถึง',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch('{{ route('admin.ai.settings.gemini_models') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ gemini_api_key: key })
+    })
+    .then(res => res.json())
+    .then(data => {
+        Swal.close();
+        if (data.success) {
+            cachedGeminiModels = data;
+            populateGeminiModelsUI(data);
+
+            const modal = new bootstrap.Modal(document.getElementById('geminiModelsModal'));
+            modal.show();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'ไม่สามารถดึง Model ได้',
+                text: data.message || 'โปรดตรวจสอบ API Key ของคุณ'
+            });
+        }
+    })
+    .catch(err => {
+        Swal.close();
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: err.message
+        });
+    });
+}
+
+function populateGeminiModelsUI(data) {
+    const tbody = document.getElementById('geminiModelsTableBody');
+    tbody.innerHTML = '';
+
+    const chatDatalist = document.getElementById('gemini_chat_models_datalist');
+    const embedDatalist = document.getElementById('gemini_embed_models_datalist');
+    const chatDropdown = document.getElementById('gemini_chat_dropdown');
+    const embedDropdown = document.getElementById('gemini_embed_dropdown');
+
+    chatDatalist.innerHTML = '';
+    embedDatalist.innerHTML = '';
+    chatDropdown.innerHTML = '<li><h6 class="dropdown-header">โมเดลที่พบบน API ของคุณ</h6></li>';
+    embedDropdown.innerHTML = '<li><h6 class="dropdown-header">โมเดล Embedding ที่พบ</h6></li>';
+
+    let total = 0;
+
+    // 1. Chat Models
+    if (data.chat_models && data.chat_models.length > 0) {
+        data.chat_models.forEach(m => {
+            total++;
+            // Table row
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><code class="fw-bold text-primary">${m.id}</code></td>
+                <td>
+                    <div class="fw-bold text-dark">${m.name || m.id}</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">${m.description || ''}</div>
+                </td>
+                <td><span class="badge bg-primary-subtle text-primary rounded-pill">Chat / Generation</span></td>
+                <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1" onclick="selectGeminiChatModel('${m.id}')" data-bs-dismiss="modal">
+                        เลือกใช้
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            // Datalist option
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.innerText = m.name || m.id;
+            chatDatalist.appendChild(opt);
+
+            // Dropdown item
+            const li = document.createElement('li');
+            li.innerHTML = `<a class="dropdown-item" href="javascript:void(0)" onclick="selectGeminiChatModel('${m.id}')"><strong>${m.id}</strong> <small class="text-muted">(${m.name || ''})</small></a>`;
+            chatDropdown.appendChild(li);
+        });
+    }
+
+    // 2. Embed Models
+    if (data.embed_models && data.embed_models.length > 0) {
+        data.embed_models.forEach(m => {
+            total++;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><code class="fw-bold text-info">${m.id}</code></td>
+                <td>
+                    <div class="fw-bold text-dark">${m.name || m.id}</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">${m.description || ''}</div>
+                </td>
+                <td><span class="badge bg-info-subtle text-info rounded-pill">Vector Embedding</span></td>
+                <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-info text-white rounded-pill px-3 py-1" onclick="selectGeminiEmbedModel('${m.id}')" data-bs-dismiss="modal">
+                        เลือกใช้
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            embedDatalist.appendChild(opt);
+
+            const li = document.createElement('li');
+            li.innerHTML = `<a class="dropdown-item" href="javascript:void(0)" onclick="selectGeminiEmbedModel('${m.id}')"><strong>${m.id}</strong></a>`;
+            embedDropdown.appendChild(li);
+        });
+    }
+
+    document.getElementById('modalTotalModelsCount').innerText = `${total} รุ่นที่รองรับ`;
+    const countBadge = document.getElementById('gemini-chat-model-badge');
+    if (countBadge) {
+        countBadge.style.display = 'inline-block';
+        countBadge.innerText = `${data.chat_models.length} รุ่นพร้อมใช้`;
+    }
+}
+
+function filterGeminiModelsTable() {
+    const filter = document.getElementById('modelFilterInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#geminiModelsTableBody tr');
+    rows.forEach(r => {
+        const text = r.innerText.toLowerCase();
+        r.style.display = text.includes(filter) ? '' : 'none';
+    });
 }
 
 function testConnection(provider) {
