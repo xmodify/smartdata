@@ -72,7 +72,10 @@ class GeminiProvider implements LlmProviderInterface
 
         $response = Http::withoutVerifying()
             ->timeout(60)
-            ->withHeaders(['Content-Type' => 'application/json'])
+            ->withHeaders([
+                'Content-Type' => 'application/json',
+                'x-goog-api-key' => $this->apiKey
+            ])
             ->post($url, $payload);
 
         if (!$response->successful()) {
@@ -99,7 +102,10 @@ class GeminiProvider implements LlmProviderInterface
 
         $response = Http::withoutVerifying()
             ->timeout(30)
-            ->withHeaders(['Content-Type' => 'application/json'])
+            ->withHeaders([
+                'Content-Type' => 'application/json',
+                'x-goog-api-key' => $this->apiKey
+            ])
             ->post($url, [
                 'model' => "models/{$this->embedModel}",
                 'content' => [
@@ -159,7 +165,10 @@ class GeminiProvider implements LlmProviderInterface
         }
 
         $url = "{$this->baseUrl}/models?key={$this->apiKey}";
-        $response = Http::withoutVerifying()->timeout(25)->get($url);
+        $response = Http::withoutVerifying()
+            ->timeout(25)
+            ->withHeaders(['x-goog-api-key' => $this->apiKey])
+            ->get($url);
 
         if (!$response->successful()) {
             $errorMsg = $response->json('error.message') ?? $response->body();
