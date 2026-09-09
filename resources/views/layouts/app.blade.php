@@ -707,7 +707,7 @@
         });
     </script>
     @auth
-        @if(\App\Models\AiSetting::isCopilotEnabled() && auth()->user()->hasAccessCopilot())
+        @if(\App\Models\AiSetting::isCopilotEnabled() && auth()->user()->hasAccessCopilot() && !request()->routeIs('ai.chat*'))
             @include('ai.partials._floating_widget')
         @endif
     @endauth

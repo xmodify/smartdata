@@ -124,8 +124,8 @@
 
 <script>
 let widgetSessionUuid = 'widget-' + Math.random().toString(36).substr(2, 9);
-let isWidgetOpen = false;
-const smartdataLogoUrl = "{{ asset('images/logo.png') }}";
+window.smartdataLogoUrl = window.smartdataLogoUrl || "{{ asset('images/logo.png') }}";
+var smartdataLogoUrl = window.smartdataLogoUrl;
 
 function toggleCopilotWidget() {
     const chatWindow = document.getElementById('copilot-chat-window');
@@ -235,14 +235,38 @@ function handleWidgetSubmit(e) {
             target_db: targetDb
         })
     })
-    .then(res => res.json())
     .then(data => {
         loading.remove();
         let reply = data.content || '';
-        if (data.mode === 'sql' && data.count !== undefined) {
-            reply += `\n(ดึงข้อมูลสำเร็จ ${data.count} รายการ จากฐานข้อมูล ${data.target_db || 'HOSxP'})`;
+        let extraHtml = '';
+
+        if (data.mode === 'sql') {
+            if (data.rows && data.rows.length > 0 && data.columns && data.columns.length > 1) {
+                let ths = data.columns.map(c => `<th class="p-1 px-2 text-nowrap">${escapeHtmlWidget(c)}</th>`).join('');
+                let trs = data.rows.slice(0, 12).map(r => {
+                    let tds = data.columns.map(c => `<td class="p-1 px-2 text-nowrap">${escapeHtmlWidget(String(r[c] !== null ? r[c] : ''))}</td>`).join('');
+                    return `<tr>${tds}</tr>`;
+                }).join('');
+
+                extraHtml = `
+                    <div class="table-responsive rounded-3 border bg-white mt-2 shadow-sm" style="max-height: 220px; font-size: 0.76rem;">
+                        <table class="table table-sm table-striped table-hover mb-0">
+                            <thead class="sticky-top" style="background: #e8f0fe; color: #094a88;">
+                                <tr>${ths}</tr>
+                            </thead>
+                            <tbody>${trs}</tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-1 text-muted" style="font-size: 0.7rem;">
+                        <span><i class="fas fa-database text-primary me-1"></i> ${(data.target_db || 'HOSxP').toUpperCase()} • ${data.count || data.rows.length} รายการ</span>
+                    </div>
+                `;
+            } else if (data.count !== undefined) {
+                reply += `\n(ดึงข้อมูลสำเร็จ ${data.count} รายการ จากฐานข้อมูล ${data.target_db || 'HOSxP'})`;
+            }
         }
-        appendWidgetMessage('assistant', reply);
+
+        appendWidgetMessage('assistant', reply, extraHtml);
     })
     .catch(err => {
         loading.remove();
@@ -255,7 +279,7 @@ function sendWidgetQuickPrompt(text) {
     document.getElementById('widgetChatForm').dispatchEvent(new Event('submit'));
 }
 
-function appendWidgetMessage(role, text) {
+function appendWidgetMessage(role, text, extraHtml = '') {
     const container = document.getElementById('widgetChatContainer');
     const div = document.createElement('div');
 
@@ -266,7 +290,10 @@ function appendWidgetMessage(role, text) {
         div.className = 'd-flex justify-content-start mb-3 align-items-start';
         div.innerHTML = `
             <img src="${smartdataLogoUrl}" class="rounded-circle shadow-sm me-2 border bg-white flex-shrink-0" style="width: 28px; height: 28px; object-fit: contain; padding: 1px;" alt="SmartData">
-            <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-dark" style="max-width: 82%; line-height: 1.45; word-break: break-word; white-space: pre-wrap; border-top-left-radius: 4px !important;">${escapeHtmlWidget(text)}</div>
+            <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-dark" style="max-width: 88%; line-height: 1.45; word-break: break-word; border-top-left-radius: 4px !important;">
+                <div style="white-space: pre-wrap;">${escapeHtmlWidget(text)}</div>
+                ${extraHtml}
+            </div>
         `;
     }
 

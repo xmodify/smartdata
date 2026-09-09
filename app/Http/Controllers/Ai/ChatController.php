@@ -108,6 +108,18 @@ class ChatController extends Controller
             ['title' => mb_substr($messageText, 0, 35) . '...', 'target_db' => $targetDb]
         );
 
+        // Load recent conversation messages before this new message for context
+        $recentMessages = $session->messages()
+            ->orderBy('created_at', 'desc')
+            ->take(6)
+            ->get()
+            ->reverse()
+            ->values();
+
+        // Check if there was an active target_db from previous SQL query in this session
+        $lastSqlMsg = $recentMessages->where('message_type', 'sql_query')->last();
+        $previousDb = $lastSqlMsg?->target_db ?? ($session->target_db !== 'auto' ? $session->target_db : null);
+
         // Update session title if first message
         if ($session->messages()->count() === 0) {
             $session->update([
@@ -125,16 +137,56 @@ class ChatController extends Controller
             'target_db' => $targetDb
         ]);
 
-        // Decide execution routing
+        // Decide execution routing with multi-turn context
         $detectedMode = $mode;
         if ($mode === 'smart') {
-            $detectedMode = $this->detectIntent($messageText);
+            $detectedMode = $this->detectIntent($messageText, $session, $recentMessages);
         }
 
         try {
             if ($detectedMode === 'sql') {
-                // Run Text-to-SQL
-                $sqlResult = $this->sqlService->query($messageText, $targetDb);
+                // Determine effective target database connection (with multi-turn inheritance)
+                $effectiveTargetDb = $targetDb;
+                if ($effectiveTargetDb === 'auto' && !empty($previousDb)) {
+                    $hosxpSpecific = ['คนไข้', 'ผู้ป่วย', 'opd', 'ipd', 'er', 'hn', 'vn', 'an', 'โรค', 'เตียง', 'คลินิก', 'วอร์ด', 'ยา', 'หมอ', 'แพทย์', 'admit', 'refer'];
+                    $hasHosxpKeyword = false;
+                    $qLower = mb_strtolower($messageText);
+                    foreach ($hosxpSpecific as $hkw) {
+                        if (mb_strpos($qLower, $hkw) !== false) {
+                            $hasHosxpKeyword = true;
+                            break;
+                        }
+                    }
+
+                    $boSpecific = ['พัสดุ', 'บุคลากร', 'พนักงาน', 'เจ้าหน้าที่', 'เงินเดือน', 'วันลา', 'ครุภัณฑ์', 'จัดซื้อ', 'จัดจ้าง'];
+                    $hasBoKeyword = false;
+                    foreach ($boSpecific as $bkw) {
+                        if (mb_strpos($qLower, $bkw) !== false) {
+                            $hasBoKeyword = true;
+                            break;
+                        }
+                    }
+
+                    if ($previousDb === 'backoffice' && !$hasHosxpKeyword) {
+                        $effectiveTargetDb = 'backoffice';
+                    } elseif ($previousDb === 'hosxp' && !$hasBoKeyword) {
+                        $effectiveTargetDb = 'hosxp';
+                    }
+                }
+
+                // Prepare history payload for Text-to-SQL context
+                $sqlHistory = [];
+                foreach ($recentMessages->take(-4) as $m) {
+                    $sqlHistory[] = [
+                        'role' => $m->role,
+                        'content' => $m->content,
+                        'sql' => $m->generated_sql,
+                        'target_db' => $m->target_db
+                    ];
+                }
+
+                // Run Text-to-SQL with context and inherited DB
+                $sqlResult = $this->sqlService->query($messageText, $effectiveTargetDb, $sqlHistory);
 
                 if ($sqlResult['success']) {
                     $assistantMsg = AiChatMessage::create([
@@ -303,27 +355,45 @@ class ChatController extends Controller
 
         $session = AiChatSession::where('session_uuid', $uuid)
             ->where('user_id', auth()->id())
-            ->firstOrFail();
+            ->first();
 
-        $session->messages()->delete();
-        $session->delete();
+        if ($session) {
+            $session->messages()->delete();
+            $session->delete();
+        }
 
         return response()->json(['success' => true]);
     }
 
     /**
-     * Smart intent detector
+     * Smart intent detector with multi-turn conversation context awareness
      */
-    protected function detectIntent(string $text): string
+    protected function detectIntent(string $text, ?AiChatSession $session = null, $recentMessages = null): string
     {
-        $q = mb_strtolower($text);
+        $q = mb_strtolower(trim($text));
 
-        // SQL Intent keywords
+        // RAG Intent keywords (highest priority for guidelines, manuals, CPG, and policy docs)
+        $ragKeywords = [
+            'คู่มือ', 'ระเบียบ', 'แนวทาง', 'ขั้นตอน', 'cpg', 'เอกสาร', 'นโยบาย', 'เกณฑ์',
+            'มาตรฐาน', 'วิธีปฏิบัติ', 'ประกาศ', 'คำสั่ง', 'ข้อกำหนด', 'นิยาม', 'หนังสือสั่งการ'
+        ];
+
+        foreach ($ragKeywords as $kw) {
+            if (mb_strpos($q, $kw) !== false) {
+                return 'rag';
+            }
+        }
+
+        // Broad SQL Intent keywords
         $sqlKeywords = [
-            'กี่คน', 'จำนวน', 'สถิติ', 'ยอด', 'เท่าไหร่', 'รายชื่อ', 'คนไข้', 'ผู้ป่วย',
+            'กี่คน', 'กี่ราย', 'กี่ประเภท', 'กี่รายการ', 'กี่ใบ', 'กี่ตัว', 'กี่อัน', 'กี่เตียง', 'กี่ครั้ง', 'กี่เคส', 'กี่แห่ง',
+            'จำนวน', 'สถิติ', 'ยอด', 'เท่าไหร่', 'รายชื่อ', 'คนไข้', 'ผู้ป่วย', 'บุคลากร', 'เจ้าหน้าที่', 'พนักงาน',
             'opd', 'ipd', 'er', 'vn', 'hn', 'an', 'โรค', 'icd', 'pttype', 'สิทธิ',
             'ค่ารักษา', 'วันนี้', 'เดือนนี้', 'ปีนี้', 'ปีงบ', 'refer', 'admit', 'เตียง',
-            'พัสดุ', 'บุคลากร', 'เงินเดือน', 'วันลา', 'ครุภัณฑ์', 'จัดซื้อ'
+            'พัสดุ', 'เงินเดือน', 'วันลา', 'ครุภัณฑ์', 'จัดซื้อ', 'จัดจ้าง', 'เบิกจ่าย', 'สต็อก', 'คงเหลือ',
+            'แยกตาม', 'แบ่งตาม', 'ตามแผนก', 'ตามตำแหน่ง', 'ตามประเภท', 'ตามตึก', 'ตามวอร์ด', 'ตามกลุ่มงาน', 'ตามฝ่าย',
+            'อันดับ', 'สูงสุด', 'ต่ำสุด', 'มากที่สุด', 'น้อยที่สุด', 'เฉลี่ย', 'รวมทั้งสิ้น', 'ทั้งหมด',
+            'มีใครบ้าง', 'มีอะไรบ้าง', 'ใครบ้าง', 'อะไรบ้าง', 'ไหนบ้าง', 'คนไหน', 'ตึกไหน', 'ห้องไหน', 'กลุ่มไหน', 'ฝ่ายไหน'
         ];
 
         foreach ($sqlKeywords as $kw) {
@@ -332,15 +402,25 @@ class ChatController extends Controller
             }
         }
 
-        // RAG Intent keywords
-        $ragKeywords = [
-            'คู่มือ', 'ระเบียบ', 'แนวทาง', 'ขั้นตอน', 'cpg', 'เอกสาร', 'นโยบาย', 'เกณฑ์',
-            'มาตรฐาน', 'วิธีปฏิบัติ', 'ประกาศ', 'คำสั่ง', 'ข้อกำหนด', 'นิยาม'
-        ];
+        // Multi-turn context check:
+        // If the session has a recent SQL query, short follow-ups or analytical questions should stay in SQL mode!
+        if ($recentMessages && $recentMessages->isNotEmpty()) {
+            $lastAssistant = $recentMessages->where('role', 'assistant')->last();
+            if ($lastAssistant && $lastAssistant->message_type === 'sql_query') {
+                $followUpPatterns = [
+                    'กี่', 'ประเภท', 'กลุ่ม', 'แผนก', 'ฝ่าย', 'ตำแหน่ง', 'ใคร', 'อะไร', 'ไหน', 'แยก',
+                    'ขอ', 'ดู', 'มี', 'แล้ว', 'สรุป', 'และ', 'อันดับ', 'top', 'ล่ะ', 'บ้าง', 'เท่าไร'
+                ];
+                foreach ($followUpPatterns as $pat) {
+                    if (mb_strpos($q, $pat) !== false) {
+                        return 'sql';
+                    }
+                }
 
-        foreach ($ragKeywords as $kw) {
-            if (mb_strpos($q, $kw) !== false) {
-                return 'rag';
+                // If user typed a very short prompt in SQL mode (e.g. "พยาบาล", "ICU", "ปี 67"), treat as SQL follow-up
+                if (mb_strlen($q) <= 25) {
+                    return 'sql';
+                }
             }
         }
 

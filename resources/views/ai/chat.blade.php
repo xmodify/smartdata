@@ -19,12 +19,12 @@
                 <div class="flex-grow-1 overflow-auto p-2" id="sessionsList">
                     <div class="text-muted small px-2 py-1 fw-bold text-uppercase">ประวัติการสนทนา</div>
                     @forelse($sessions as $s)
-                    <div class="session-item p-2 rounded-3 mb-1 d-flex align-items-center justify-content-between cursor-pointer {{ ($currentSession && $currentSession->session_uuid === $s->session_uuid) ? 'bg-primary-subtle text-primary fw-bold' : 'text-dark hover-bg-light' }}" onclick="switchSession('{{ $s->session_uuid }}')">
+                    <div class="session-item p-2 rounded-3 mb-1 d-flex align-items-center justify-content-between cursor-pointer {{ ($currentSession && $currentSession->session_uuid === $s->session_uuid) ? 'bg-primary-subtle text-primary fw-bold' : 'text-dark hover-bg-light' }}" data-uuid="{{ $s->session_uuid }}" onclick="switchSession('{{ $s->session_uuid }}')">
                         <div class="text-truncate flex-grow-1 me-2 small" title="{{ $s->title }}">
                             <i class="far fa-comment-dots me-1 text-secondary"></i> {{ $s->title }}
                         </div>
-                        <button type="button" class="btn btn-link btn-sm text-muted p-0 delete-session-btn" onclick="event.stopPropagation(); deleteSession('{{ $s->session_uuid }}')" title="ลบ">
-                            <i class="fas fa-times small"></i>
+                        <button type="button" class="btn btn-link btn-sm text-muted p-1 delete-session-btn hover-danger" onclick="event.stopPropagation(); deleteSession('{{ $s->session_uuid }}')" title="ลบการสนทนานี้">
+                            <i class="fas fa-trash-alt fa-xs"></i>
                         </button>
                     </div>
                     @empty
@@ -205,10 +205,10 @@
 
                 <!-- Input Footer -->
                 <div class="p-3 border-top bg-white">
-                    <form id="chatForm" onsubmit="handleChatSubmit(event)">
+                    <form id="chatForm" onsubmit="handleChatSubmit(event); return false;" action="javascript:void(0);">
                         <div class="input-group shadow-sm rounded-4 overflow-hidden border">
                             <textarea id="messageInput" class="form-control border-0 py-3 px-4 bg-light" rows="1" placeholder="พิมพ์คำถามภาษาไทย เช่น ขอยอดผู้ป่วยนอกวันนี้, รายชื่อเจ้าหน้าที่, หรือแนวทาง CPG... (กด Enter เพื่อส่ง, Shift+Enter ขึ้นบรรทัดใหม่)" style="resize: none;"></textarea>
-                            <button type="submit" id="sendBtn" class="btn btn-primary px-4 border-0 d-flex align-items-center justify-content-center">
+                            <button type="button" id="sendBtn" class="btn btn-primary px-4 border-0 d-flex align-items-center justify-content-center" onclick="handleChatSubmit(event)">
                                 <i class="fas fa-paper-plane fa-lg"></i>
                             </button>
                         </div>
@@ -236,19 +236,23 @@
     color: #ffffff !important;
     font-weight: 600;
 }
+.hover-danger:hover {
+    color: #dc3545 !important;
+}
 </style>
 @endpush
 
 @push('scripts')
 <script>
-const isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
-let currentSessionUuid = '{{ $currentSession->session_uuid ?? "" }}';
-const smartdataLogoUrl = "{{ asset('images/logo.png') }}";
+var isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
+var currentSessionUuid = '{{ $currentSession->session_uuid ?? "" }}';
+window.smartdataLogoUrl = window.smartdataLogoUrl || "{{ asset('images/logo.png') }}";
+var smartdataLogoUrl = window.smartdataLogoUrl;
 
 document.getElementById('messageInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+        handleChatSubmit(e);
     }
 });
 
@@ -259,10 +263,14 @@ document.getElementById('messageInput').addEventListener('input', function() {
 });
 
 function handleChatSubmit(e) {
-    e.preventDefault();
+    if (e) {
+        e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+    }
+
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
-    if (!message) return;
+    if (!message) return false;
 
     input.value = '';
     input.style.height = 'auto';
@@ -278,6 +286,10 @@ function handleChatSubmit(e) {
 
     const loadingBubble = appendLoadingBubble();
     scrollChatToBottom();
+
+    if (!currentSessionUuid) {
+        currentSessionUuid = 'sess-' + Math.random().toString(36).substr(2, 9);
+    }
 
     // Send AJAX request
     fetch('{{ route('ai.chat.message') }}', {
@@ -299,6 +311,9 @@ function handleChatSubmit(e) {
         loadingBubble.remove();
         appendAssistantMessage(data);
         scrollChatToBottom();
+        if (data.session_uuid) {
+            currentSessionUuid = data.session_uuid;
+        }
     })
     .catch(err => {
         loadingBubble.remove();
@@ -308,6 +323,8 @@ function handleChatSubmit(e) {
         });
         scrollChatToBottom();
     });
+
+    return false;
 }
 
 function selectTargetDb(dbValue, label, el) {
@@ -488,22 +505,64 @@ function switchSession(uuid) {
 }
 
 function deleteSession(uuid) {
-    if (!confirm('ต้องการลบประวัติการสนทนานี้ใช่หรือไม่?')) return;
+    const doDelete = function() {
+        const deleteUrl = "{{ route('ai.chat.session.delete', ['uuid' => '___UUID___']) }}".replace('___UUID___', encodeURIComponent(uuid));
 
-    fetch('{{ url('/ai/chat/session') }}/' + uuid, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                _method: 'DELETE',
+                _token: '{{ csrf_token() }}'
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.success) {
+                if (currentSessionUuid === uuid) {
+                    window.location.href = '{{ route('ai.chat') }}';
+                } else {
+                    const item = document.querySelector(`.session-item[data-uuid="${uuid}"]`);
+                    if (item) {
+                        item.remove();
+                    } else {
+                        window.location.href = '{{ route('ai.chat') }}';
+                    }
+                }
+            } else {
+                alert('ไม่สามารถลบการสนทนาได้: ' + (data.content || 'เกิดข้อผิดพลาด'));
+            }
+        })
+        .catch(err => {
+            console.error('Delete error:', err);
             window.location.href = '{{ route('ai.chat') }}';
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'ต้องการลบประวัติการสนทนานี้?',
+            text: 'ข้อมูลคำถามและผลลัพธ์ในเซสชันนี้จะถูกลบถาวร',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'ใช่, ลบเลย',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                doDelete();
+            }
+        });
+    } else {
+        if (confirm('ต้องการลบประวัติการสนทนานี้ใช่หรือไม่?')) {
+            doDelete();
         }
-    });
+    }
 }
 
 function copySql(btn) {

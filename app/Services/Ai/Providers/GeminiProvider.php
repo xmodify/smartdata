@@ -13,11 +13,11 @@ class GeminiProvider implements LlmProviderInterface
     protected string $embedModel;
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
-    public function __construct(string $apiKey, string $model = 'gemini-2.0-flash', string $embedModel = 'text-embedding-004')
+    public function __construct(string $apiKey, string $model = 'gemini-3.6-flash', string $embedModel = 'gemini-embedding-001')
     {
         $this->apiKey = trim($apiKey);
-        $this->model = trim($model) ?: 'gemini-2.0-flash';
-        $this->embedModel = trim($embedModel) ?: 'text-embedding-004';
+        $this->model = trim($model) ?: 'gemini-3.6-flash';
+        $this->embedModel = trim($embedModel) ?: 'gemini-embedding-001';
     }
 
     public function getProviderName(): string
@@ -70,26 +70,54 @@ class GeminiProvider implements LlmProviderInterface
 
         $url = "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}";
 
-        $response = Http::withoutVerifying()
-            ->timeout(60)
-            ->withHeaders([
-                'Content-Type' => 'application/json',
-                'x-goog-api-key' => $this->apiKey
-            ])
-            ->post($url, $payload);
+        // Attempt request with retry for high-demand spikes (503/429)
+        $maxAttempts = 2;
+        $attempt = 0;
+        $lastError = '';
 
-        if (!$response->successful()) {
-            $errorMsg = $response->json('error.message') ?? $response->body();
-            throw new Exception("Gemini API Error: " . $errorMsg);
+        while ($attempt < $maxAttempts) {
+            $attempt++;
+            try {
+                $response = Http::withoutVerifying()
+                    ->timeout(60)
+                    ->withHeaders([
+                        'Content-Type' => 'application/json',
+                        'x-goog-api-key' => $this->apiKey
+                    ])
+                    ->post($url, $payload);
+
+                if ($response->successful()) {
+                    $result = $response->json();
+                    $candidates = $result['candidates'] ?? [];
+                    if (!empty($candidates[0]['content']['parts'][0]['text'])) {
+                        return trim($candidates[0]['content']['parts'][0]['text']);
+                    }
+                    return 'ขออภัย ไม่สามารถสร้างคำตอบได้ในขณะนี้';
+                }
+
+                $status = $response->status();
+                $lastError = $response->json('error.message') ?? $response->body();
+
+                // If transient high-demand or rate-limited, wait briefly and try fallback model if available
+                if (in_array($status, [429, 503]) && $attempt < $maxAttempts) {
+                    usleep(1200000); // 1.2s
+                    // Fallback to fast & available flash-lite if 3.7 spikes or hits rate limits
+                    if (str_contains($this->model, '3.7') || str_contains($this->model, '3.6')) {
+                        $url = "{$this->baseUrl}/models/gemini-3.1-flash-lite:generateContent?key={$this->apiKey}";
+                    }
+                    continue;
+                }
+
+                throw new Exception("Gemini API Error: " . $lastError);
+            } catch (Exception $e) {
+                if ($attempt >= $maxAttempts) {
+                    throw $e;
+                }
+                usleep(1000000);
+            }
         }
 
-        $result = $response->json();
-        $candidates = $result['candidates'] ?? [];
-        if (!empty($candidates[0]['content']['parts'][0]['text'])) {
-            return trim($candidates[0]['content']['parts'][0]['text']);
-        }
-
-        return 'ขออภัย ไม่สามารถสร้างคำตอบได้ในขณะนี้';
+        return 'ขออภัย ไม่สามารถสร้างคำตอบได้ในขณะนี้: ' . $lastError;
     }
 
     public function embed(string $text): array

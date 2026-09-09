@@ -321,7 +321,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/chat/message', [App\Http\Controllers\Ai\ChatController::class, 'sendMessage'])->name('ai.chat.message');
         Route::post('/chat/session/new', [App\Http\Controllers\Ai\ChatController::class, 'newSession'])->name('ai.chat.session.new');
         Route::get('/chat/session/{uuid}', [App\Http\Controllers\Ai\ChatController::class, 'loadSession'])->name('ai.chat.session.load');
-        Route::delete('/chat/session/{uuid}', [App\Http\Controllers\Ai\ChatController::class, 'deleteSession'])->name('ai.chat.session.delete');
+        Route::match(['DELETE', 'POST'], '/chat/session/{uuid}', [App\Http\Controllers\Ai\ChatController::class, 'deleteSession'])->name('ai.chat.session.delete');
 
         // User Knowledge Library
         Route::get('/knowledge', [App\Http\Controllers\Ai\KnowledgeController::class, 'index'])->name('ai.knowledge.index');
