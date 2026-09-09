@@ -29,8 +29,8 @@ class ChatController extends Controller
      */
     public function index(Request $request)
     {
-        if (!\App\Models\AiSetting::isCopilotEnabled() && auth()->user()->role !== 'admin') {
-            return redirect()->route('dashboard')->with('error', 'ระบบ SmartData Copilot ปิดให้บริการชั่วคราวโดยผู้ดูแลระบบ');
+        if (!\App\Models\AiSetting::isCopilotEnabled()) {
+            return redirect()->route('ai.knowledge.index')->with('warning', 'ระบบ SmartData Copilot ปิดให้บริการชั่วคราวโดยผู้ดูแลระบบ');
         }
 
         $userId = auth()->id();
@@ -78,7 +78,7 @@ class ChatController extends Controller
             'session_uuid' => 'required|string',
         ]);
 
-        if (!\App\Models\AiSetting::isCopilotEnabled() && auth()->user()->role !== 'admin') {
+        if (!\App\Models\AiSetting::isCopilotEnabled()) {
             return response()->json([
                 'success' => false,
                 'content' => 'ระบบ SmartData Copilot ปิดให้บริการชั่วคราวโดยผู้ดูแลระบบ'
