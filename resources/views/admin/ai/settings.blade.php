@@ -143,9 +143,6 @@
                             <button type="button" id="header_gemini_table_btn" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="openGeminiListModal()" style="{{ $activeProvider === 'gemini' ? '' : 'display: none;' }}">
                                 <i class="fas fa-list-ul me-1"></i> ดูตารางทุกโมเดล
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="testActiveConnection()">
-                                <i class="fas fa-satellite-dish me-1"></i> ((•)) ทดสอบเชื่อมต่อทันที
-                            </button>
                         </div>
                     </div>
                     <div class="card-body p-4">
@@ -310,45 +307,6 @@
                                 <small class="text-muted d-block mt-2">แปลงเอกสารเป็น Vector เพื่อการค้นหาความหมาย (Semantic Search)</small>
                             </div>
                         </div>
-
-                        <!-- Presets Box (Token Quota Comparison) -->
-                        <div class="mt-4 p-3 rounded-3 bg-light-subtle border">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="small fw-bold text-dark"><i class="fas fa-bolt text-warning me-1"></i> แนะนำชุดโมเดลตามโควต้า Token (คลิกเพื่อเลือกทันที):</span>
-                            </div>
-                            <div class="row g-2">
-                                <div class="col-md-4">
-                                    <div class="p-2 rounded-3 border bg-white cursor-pointer gemini-preset-item hover-shadow h-100" onclick="applyGeminiPreset('gemini-2.0-flash', 'text-embedding-004', 'ชุดมาตรฐาน Flash 2.0', 'เร็วสุด ตอบไวใน 1 วิ • ฟรี 1,500 RPD / 1M TPM • เหมาะกับดึงข้อมูล SQL คนไข้ และ CPG')">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span class="badge bg-success-subtle text-success">แนะนำอันดับ 1</span>
-                                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill py-0 px-2" style="font-size: 0.72rem;">ใช้ชุดนี้</button>
-                                        </div>
-                                        <strong class="text-dark small d-block">Flash 2.0 (เร็ว + โควต้าฟรีเยอะ)</strong>
-                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>gemini-2.0-flash</code> | Embed: <code>text-embedding-004</code></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="p-2 rounded-3 border bg-white cursor-pointer gemini-preset-item hover-shadow h-100" onclick="applyGeminiPreset('gemini-2.0-flash-lite', 'text-embedding-004', 'ชุดประหยัด Token (Lite)', 'กิน Token น้อยสุด ตอบไว • เหมาะสำหรับบุคลากรใช้งานพร้อมกันจำนวนมาก')">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span class="badge bg-info-subtle text-info">ประหยัด Token</span>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill py-0 px-2" style="font-size: 0.72rem;">ใช้ชุดนี้</button>
-                                        </div>
-                                        <strong class="text-dark small d-block">Flash 2.0 Lite (สเปกเบา)</strong>
-                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>gemini-2.0-flash-lite</code> | Embed: <code>text-embedding-004</code></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="p-2 rounded-3 border bg-white cursor-pointer gemini-preset-item hover-shadow h-100" onclick="applyGeminiPreset('gemini-1.5-pro', 'text-embedding-004', 'ชุดวิเคราะห์เชิงลึก (Pro 1.5)', 'ความจุสูงถึง 2,000,000 Tokens • อ่านเอกสาร CPG หรือระเบียบเล่มหนา')">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span class="badge bg-primary-subtle text-primary">วิเคราะห์ลึก</span>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill py-0 px-2" style="font-size: 0.72rem;">ใช้ชุดนี้</button>
-                                        </div>
-                                        <strong class="text-dark small d-block">Pro 1.5 (ความจุ 2 ล้าน Tokens)</strong>
-                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>gemini-1.5-pro</code> | Embed: <code>text-embedding-004</code></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -396,34 +354,6 @@
                             <small class="text-muted d-block mt-2">ขนาด 1,536 มิติ (Default: <code>text-embedding-3-small</code>)</small>
                         </div>
 
-                        <!-- OpenAI Presets -->
-                        <div class="col-12 mt-3">
-                            <label class="form-label fw-bold small text-muted mb-2">
-                                <i class="fas fa-magic text-warning me-1"></i> ⚡ แนะนำโมเดลตามการใช้งาน (คลิกเพื่อเลือกทันที):
-                            </label>
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOpenAiPreset('gpt-4o-mini', 'text-embedding-3-small', 'GPT-4o-mini (คุ้มค่า)', 'โมเดลราคาประหยัด ประมวลผลเร็ว')">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span class="badge bg-success-subtle text-success rounded-pill fw-bold" style="font-size: 0.72rem;">⭐ แนะนำ / ประหยัด</span>
-                                            <span class="badge bg-white text-muted border" style="font-size: 0.68rem;">128k Tokens</span>
-                                        </div>
-                                        <strong class="text-dark small d-block">GPT-4o-mini (เร็ว & ประหยัด)</strong>
-                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>gpt-4o-mini</code> | Embed: <code>text-embedding-3-small</code></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOpenAiPreset('gpt-4o', 'text-embedding-3-small', 'GPT-4o (เรือธง)', 'โมเดลเรือธง ความแม่นยำสูงสุด')">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span class="badge bg-primary-subtle text-primary rounded-pill fw-bold" style="font-size: 0.72rem;">👑 โมเดลเรือธง</span>
-                                            <span class="badge bg-white text-muted border" style="font-size: 0.68rem;">128k Tokens</span>
-                                        </div>
-                                        <strong class="text-dark small d-block">GPT-4o (แม่นยำสูงสุด)</strong>
-                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>gpt-4o</code> | Embed: <code>text-embedding-3-small</code></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -470,35 +400,6 @@
                             <small class="text-muted d-block mt-2">แนะนำ: <code>nomic-embed-text</code> หรือ <code>bge-m3</code></small>
                         </div>
 
-                        <!-- Ollama Presets -->
-                        <div class="col-12 mt-3">
-                            <label class="form-label fw-bold small text-muted mb-2">
-                                <i class="fas fa-magic text-warning me-1"></i> ⚡ แนะนำโมเดลตามการใช้งาน (คลิกเพื่อเลือกทันที):
-                            </label>
-                            <div class="row g-2">
-                                <div class="col-md-4">
-                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOllamaPreset('deepseek-r1:latest', 'nomic-embed-text', 'DeepSeek-R1', 'โมเดลเน้นการคิดวิเคราะห์ขั้นสูง')">
-                                        <span class="badge bg-warning-subtle text-dark rounded-pill fw-bold mb-1" style="font-size: 0.72rem;">🧠 วิเคราะห์เหตุผล</span>
-                                        <strong class="text-dark small d-block">DeepSeek-R1</strong>
-                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>deepseek-r1:latest</code> | Embed: <code>nomic-embed-text</code></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOllamaPreset('qwen2.5:latest', 'nomic-embed-text', 'Qwen 2.5', 'โมเดลภาษาไทยยอดนิยม ตอบได้เป็นธรรมชาติ')">
-                                        <span class="badge bg-success-subtle text-success rounded-pill fw-bold mb-1" style="font-size: 0.72rem;">🇹🇭 ภาษาไทยดีเยี่ยม</span>
-                                        <strong class="text-dark small d-block">Qwen 2.5</strong>
-                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>qwen2.5:latest</code> | Embed: <code>nomic-embed-text</code></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card border rounded-3 p-2 h-100 cursor-pointer hover-shadow transition-all bg-light" style="cursor: pointer;" onclick="applyOllamaPreset('typhoon2:latest', 'nomic-embed-text', 'Typhoon 2', 'โมเดลภาษาไทยเฉพาะทางโดย SCB 10X')">
-                                        <span class="badge bg-primary-subtle text-primary rounded-pill fw-bold mb-1" style="font-size: 0.72rem;">🇹🇭 ภาษาไทย SCB 10X</span>
-                                        <strong class="text-dark small d-block">Typhoon 2</strong>
-                                        <div class="text-muted" style="font-size: 0.72rem;">Chat: <code>typhoon2:latest</code> | Embed: <code>nomic-embed-text</code></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -1082,55 +983,6 @@ function filterGeminiModelsTable() {
     });
 }
 
-function applyGeminiPreset(chatModel, embedModel, name, desc) {
-    selectGeminiChatModel(chatModel);
-    selectGeminiEmbedModel(embedModel);
-
-    document.querySelectorAll('.gemini-preset-item').forEach(el => el.classList.remove('border-primary', 'bg-primary-subtle'));
-    if (window.event && window.event.currentTarget) {
-        window.event.currentTarget.classList.add('border-primary', 'bg-primary-subtle');
-    }
-
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'success',
-        title: 'เลือก ' + name + ' แล้ว!',
-        html: '<small class="text-muted">' + desc + '<br><b class="text-primary">อย่าลืมกดปุ่ม "บันทึกการตั้งค่า"</b></small>',
-        showConfirmButton: false,
-        timer: 3500
-    });
-}
-
-function applyOpenAiPreset(chatModel, embedModel, name, desc) {
-    selectOpenAiChat(chatModel);
-    selectOpenAiEmbed(embedModel);
-
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'success',
-        title: 'เลือก ' + name + ' แล้ว!',
-        html: '<small class="text-muted">' + desc + '<br><b class="text-success">อย่าลืมกดปุ่ม "บันทึกการตั้งค่า"</b></small>',
-        showConfirmButton: false,
-        timer: 3500
-    });
-}
-
-function applyOllamaPreset(chatModel, embedModel, name, desc) {
-    selectOllamaChat(chatModel);
-    selectOllamaEmbed(embedModel);
-
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'success',
-        title: 'เลือก ' + name + ' แล้ว!',
-        html: '<small class="text-muted">' + desc + '<br><b class="text-warning">อย่าลืมกดปุ่ม "บันทึกการตั้งค่า"</b></small>',
-        showConfirmButton: false,
-        timer: 3500
-    });
-}
 
 function testConnection(provider) {
     const resultBox = document.getElementById('active-test-result') || document.getElementById(provider + '-test-result');
