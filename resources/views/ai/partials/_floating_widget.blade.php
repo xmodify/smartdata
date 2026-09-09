@@ -1,66 +1,90 @@
-<!-- SmartData Copilot Floating Widget -->
+<!-- SmartData Copilot Floating Widget (RiMS Style) -->
 <div id="smartdata-copilot-widget" style="position: fixed; bottom: 25px; right: 25px; z-index: 1060; font-family: inherit;">
-    <!-- Floating Trigger Button -->
-    <button id="copilot-trigger-btn" type="button" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0" style="width: 60px; height: 60px; background: #ffffff; border: 3px solid #ffffff; box-shadow: 0 4px 18px rgba(13, 110, 253, 0.4); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: hidden;" onclick="toggleCopilotWidget()" title="ถาม SmartData Copilot">
-        <img src="{{ asset('images/logo.png') }}" id="copilot-btn-img" alt="SmartData Copilot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-        <i class="fas fa-times fa-2x text-white d-none" id="copilot-btn-close"></i>
-    </button>
+    <!-- Floating Trigger Button with AI Badge -->
+    <div class="position-relative d-inline-block">
+        <button id="copilot-trigger-btn" type="button" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0" style="width: 60px; height: 60px; background: #ffffff; border: 3px solid #ffffff; box-shadow: 0 6px 24px rgba(9, 74, 136, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: hidden;" onclick="toggleCopilotWidget()" title="SmartData Copilot">
+            <img src="{{ asset('images/logo.png') }}" id="copilot-btn-img" alt="SmartData Copilot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            <i class="fas fa-times fa-2x text-white d-none" id="copilot-btn-close"></i>
+        </button>
+        <!-- Red AI Pill Badge (RiMS Style) -->
+        <span class="badge rounded-pill bg-danger position-absolute" style="top: -3px; right: -3px; font-size: 0.65rem; font-weight: 800; padding: 3px 6px; box-shadow: 0 2px 6px rgba(220, 53, 69, 0.5); border: 2px solid #ffffff; pointer-events: none; letter-spacing: 0.5px;">AI</span>
+    </div>
 
-    <!-- Floating Chat Window (Drawer) -->
-    <div id="copilot-chat-window" class="card border-0 shadow-2xl rounded-4 overflow-hidden" style="display: none; position: absolute; bottom: 75px; right: 0; width: 380px; max-width: calc(100vw - 35px); height: 530px; max-height: calc(100vh - 120px); z-index: 1061; flex-direction: column;">
-        <!-- Header -->
-        <div class="card-header text-white border-0 py-3 px-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #0d6efd 0%, #0250c5 100%);">
+    <!-- Floating Chat Window (Drawer - RiMS Style) -->
+    <div id="copilot-chat-window" class="card border-0 rounded-4 overflow-hidden" style="display: none; position: absolute; bottom: 75px; right: 0; width: 400px; max-width: calc(100vw - 30px); height: 590px; max-height: calc(100vh - 105px); z-index: 1061; flex-direction: column; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0,0,0,0.05); border-radius: 20px !important;">
+        <!-- Header: Deep Hospital Navy Blue -->
+        <div class="card-header text-white border-0 py-3 px-3 d-flex justify-content-between align-items-center" style="background: #094a88;">
             <div class="d-flex align-items-center">
-                <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 me-2 shadow-sm" style="width: 34px; height: 34px; object-fit: contain;" alt="SmartData">
+                <!-- Avatar with Online Glowing Dot -->
+                <div class="position-relative me-2 flex-shrink-0" style="width: 38px; height: 38px;">
+                    <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 shadow-sm w-100 h-100" style="object-fit: contain;" alt="SmartData">
+                    <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background-color: #22c55e; border: 2px solid #094a88; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></span>
+                </div>
                 <div>
-                    <h6 class="fw-bold mb-0 text-white leading-tight">SmartData Copilot</h6>
-                    <small class="text-white-50" style="font-size: 0.7rem;">ผู้ช่วยอัจฉริยะ (SQL & CPG)</small>
+                    <h6 class="fw-bold mb-0 text-white" style="font-size: 0.98rem; letter-spacing: 0.3px;">SmartData Copilot</h6>
+                    <div class="text-white-50" style="font-size: 0.72rem; line-height: 1.25;">ผู้ช่วย AI: วิเคราะห์เวชระเบียน HOSxP • SQL • CPG คู่มือ สธ.</div>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <a href="{{ route('ai.knowledge.index') }}" class="text-white text-opacity-75 hover-opacity-100 text-decoration-none" title="เปิดคลังความรู้ CPG & ระเบียบ">
-                    <i class="fas fa-book-medical small"></i>
+            <!-- Header Actions: Trash, Settings, Expand, Close -->
+            <div class="d-flex align-items-center gap-1">
+                <button type="button" class="btn btn-link text-white-50 p-1 text-decoration-none hover-white" onclick="clearWidgetChat()" title="ล้างการสนทนา">
+                    <i class="far fa-trash-alt small"></i>
+                </button>
+                @if(auth()->check() && auth()->user()->role === 'admin')
+                <a href="{{ route('admin.ai.settings') }}" class="text-white-50 text-decoration-none p-1 hover-white" title="ตั้งค่า AI Engine">
+                    <i class="fas fa-cog small"></i>
                 </a>
-                <a href="{{ route('ai.chat') }}" class="text-white text-opacity-75 hover-opacity-100 text-decoration-none" title="เปิดหน้าจอเต็ม">
+                @endif
+                <a href="{{ route('ai.chat') }}" class="text-white-50 text-decoration-none p-1 hover-white" title="เปิดหน้าจอเต็ม">
                     <i class="fas fa-external-link-alt small"></i>
                 </a>
-                <button type="button" class="btn-close btn-close-white p-1" style="font-size: 0.75rem;" onclick="toggleCopilotWidget()" aria-label="Close"></button>
+                <button type="button" class="btn btn-link text-white-50 p-1 text-decoration-none hover-white ms-1" onclick="toggleCopilotWidget()" title="ปิดหน้าต่าง">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         </div>
 
-        <!-- Hidden Auto Target DB -->
+        <!-- Hidden Target DB -->
         <input type="hidden" id="widget_target_db" value="auto">
 
         <!-- Message Body -->
         <div class="card-body p-3 overflow-auto flex-grow-1" id="widgetChatContainer" style="background: #f8fafc; font-size: 0.85rem;">
-            <div class="d-flex justify-content-start mb-3">
-                <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 shadow-sm me-2 border flex-shrink-0" style="width: 28px; height: 28px; object-fit: contain;" alt="SmartData">
-                <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-dark" style="max-width: 82%; line-height: 1.45;">
-                    สวัสดีครับ! ผมคือ <strong>SmartData Copilot</strong> ถามสถิติคนไข้, แปลง SQL, หรือค้นหาแนวทาง CPG โรงพยาบาลได้เลยครับ
+            <!-- Welcome Card (RiMS Style) -->
+            <div class="card border border-light-subtle rounded-4 shadow-sm bg-white p-3 mb-3" id="widgetWelcomeCard" style="border-radius: 16px !important;">
+                <div class="fw-bold text-dark mb-2 d-flex align-items-center" style="font-size: 0.95rem;">
+                    สวัสดีครับ! ผมคือ SmartData Copilot 🩺 ✨
                 </div>
-            </div>
-
-            <!-- Quick Chips -->
-            <div id="widgetQuickChips" class="mb-3">
-                <div class="text-muted small mb-1" style="font-size: 0.7rem;">คำถามแนะนำ:</div>
-                <div class="d-flex flex-wrap gap-1">
-                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill py-0 px-2 text-start" style="font-size: 0.75rem;" onclick="sendWidgetQuickPrompt('ขอยอดผู้ป่วยนอกวันนี้แยกตามสิทธิ')">
-                        ยอด OPD วันนี้
+                <p class="text-secondary small mb-3" style="font-size: 0.8rem; line-height: 1.55;">
+                    ผู้ช่วย AI อัจฉริยะประจำโรงพยาบาล พร้อมวิเคราะห์ข้อมูลเวชระเบียน HOSxP, เขียนคำสั่ง SQL ค้นหาสถิติผู้ป่วย OPD/IPD, งาน Backoffice และสรุปแนวทาง CPG คู่มือระเบียบ สธ. สามารถพิมพ์สอบถามได้เลยครับ
+                </p>
+                <hr class="my-2 border-secondary-subtle opacity-25">
+                <div class="small fw-bold text-muted mb-2 d-flex align-items-center" style="font-size: 0.75rem;">
+                    <span class="me-1">💡</span> คำถามแนะนำด่วน:
+                </div>
+                <div class="d-flex flex-column gap-2" id="widgetQuickChips">
+                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) วันนี้แยกตามสิทธิการรักษา')">
+                        <span class="me-2">📌</span> ยอดผู้ป่วยนอกวันนี้แยกตามสิทธิ
                     </button>
-                    <button type="button" class="btn btn-outline-info btn-sm rounded-pill py-0 px-2 text-start" style="font-size: 0.75rem;" onclick="sendWidgetQuickPrompt('แนวทางรักษาผู้ป่วย Stroke')">
-                        CPG Stroke
+                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('5 อันดับโรคผู้ป่วยนอกที่มารับบริการมากที่สุดเดือนนี้')">
+                        <span class="me-2">💊</span> 5 อันดับโรคผู้ป่วยนอกสูงสุดเดือนนี้
+                    </button>
+                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('จำนวนผู้ป่วยใน (IPD) กำลัง Admit ในหอผู้ป่วยและอัตราครองเตียง')">
+                        <span class="me-2">👛</span> ยอดผู้ป่วยใน IPD และอัตราครองเตียง
+                    </button>
+                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('แนวทางการดูแลรักษาผู้ป่วย Stroke หรือ STEMI มีขั้นตอนอย่างไร')">
+                        <span class="me-2">📊</span> แนวทางเวชปฏิบัติ CPG Stroke / STEMI
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Footer Input -->
-        <div class="card-footer p-2 bg-white border-top">
+        <!-- Footer Input (RiMS Style) -->
+        <div class="card-footer p-3 bg-white border-top border-light-subtle">
             <form id="widgetChatForm" onsubmit="handleWidgetSubmit(event)">
-                <div class="input-group">
-                    <input type="text" id="widgetMessageInput" class="form-control form-control-sm border-0 bg-light px-3" placeholder="พิมพ์คำถามที่นี่..." autocomplete="off">
-                    <button type="submit" class="btn btn-primary btn-sm px-3">
-                        <i class="fas fa-paper-plane"></i>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="text" id="widgetMessageInput" class="form-control rounded-pill border py-2 px-3 shadow-none flex-grow-1" placeholder="พิมพ์คำถามที่นี่... (กด Enter เพื่อส่ง)" style="font-size: 0.85rem; border-color: #d1d5db; background: #ffffff;" autocomplete="off">
+                    <button type="submit" class="btn rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 42px; height: 42px; background: #094a88; color: #ffffff; border: none; transition: transform 0.2s ease;">
+                        <i class="fas fa-paper-plane" style="font-size: 0.9rem;"></i>
                     </button>
                 </div>
             </form>
@@ -73,12 +97,28 @@
     transform: scale(1.08);
 }
 @keyframes copilotPulse {
-    0% { box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.5); }
-    70% { box-shadow: 0 0 0 15px rgba(13, 110, 253, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(13, 110, 253, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(9, 74, 136, 0.55); }
+    70% { box-shadow: 0 0 0 15px rgba(9, 74, 136, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(9, 74, 136, 0); }
 }
 #copilot-trigger-btn {
     animation: copilotPulse 3s infinite;
+}
+.widget-chip-btn {
+    background: #ffffff;
+    border-color: #e2e8f0 !important;
+    color: #334155;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+.widget-chip-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1 !important;
+    color: #094a88;
+    transform: translateX(4px);
+}
+.hover-white:hover {
+    color: #ffffff !important;
 }
 </style>
 
@@ -98,7 +138,7 @@ function toggleCopilotWidget() {
         chatWindow.style.display = 'flex';
         btnImg.classList.add('d-none');
         btnClose.classList.remove('d-none');
-        triggerBtn.style.background = 'linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%)';
+        triggerBtn.style.background = '#094a88';
         triggerBtn.style.border = '3px solid #ffffff';
         document.getElementById('widgetMessageInput').focus();
     } else {
@@ -110,6 +150,61 @@ function toggleCopilotWidget() {
     }
 }
 
+function clearWidgetChat() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'เริ่มการสนทนาใหม่?',
+            text: 'ระบบจะล้างข้อความในหน้าต่างแชทนี้และเริ่มต้นใหม่',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'ใช่, เริ่มใหม่',
+            cancelButtonText: 'ยกเลิก',
+            confirmButtonColor: '#094a88'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                resetWidgetConversation();
+            }
+        });
+    } else {
+        if (confirm('ต้องการล้างการสนทนาและเริ่มต้นใหม่หรือไม่?')) {
+            resetWidgetConversation();
+        }
+    }
+}
+
+function resetWidgetConversation() {
+    widgetSessionUuid = 'widget-' + Math.random().toString(36).substr(2, 9);
+    const container = document.getElementById('widgetChatContainer');
+    container.innerHTML = `
+        <div class="card border border-light-subtle rounded-4 shadow-sm bg-white p-3 mb-3" id="widgetWelcomeCard" style="border-radius: 16px !important;">
+            <div class="fw-bold text-dark mb-2 d-flex align-items-center" style="font-size: 0.95rem;">
+                สวัสดีครับ! ผมคือ SmartData Copilot 🩺 ✨
+            </div>
+            <p class="text-secondary small mb-3" style="font-size: 0.8rem; line-height: 1.55;">
+                ผู้ช่วย AI อัจฉริยะประจำโรงพยาบาล พร้อมวิเคราะห์ข้อมูลเวชระเบียน HOSxP, เขียนคำสั่ง SQL ค้นหาสถิติผู้ป่วย OPD/IPD, งาน Backoffice และสรุปแนวทาง CPG คู่มือระเบียบ สธ. สามารถพิมพ์สอบถามได้เลยครับ
+            </p>
+            <hr class="my-2 border-secondary-subtle opacity-25">
+            <div class="small fw-bold text-muted mb-2 d-flex align-items-center" style="font-size: 0.75rem;">
+                <span class="me-1">💡</span> คำถามแนะนำด่วน:
+            </div>
+            <div class="d-flex flex-column gap-2" id="widgetQuickChips">
+                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) วันนี้แยกตามสิทธิการรักษา')">
+                    <span class="me-2">📌</span> ยอดผู้ป่วยนอกวันนี้แยกตามสิทธิ
+                </button>
+                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('5 อันดับโรคผู้ป่วยนอกที่มารับบริการมากที่สุดเดือนนี้')">
+                    <span class="me-2">💊</span> 5 อันดับโรคผู้ป่วยนอกสูงสุดเดือนนี้
+                </button>
+                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('จำนวนผู้ป่วยใน (IPD) กำลัง Admit ในหอผู้ป่วยและอัตราครองเตียง')">
+                    <span class="me-2">👛</span> ยอดผู้ป่วยใน IPD และอัตราครองเตียง
+                </button>
+                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('แนวทางการดูแลรักษาผู้ป่วย Stroke หรือ STEMI มีขั้นตอนอย่างไร')">
+                    <span class="me-2">📊</span> แนวทางเวชปฏิบัติ CPG Stroke / STEMI
+                </button>
+            </div>
+        </div>
+    `;
+}
+
 function handleWidgetSubmit(e) {
     e.preventDefault();
     const input = document.getElementById('widgetMessageInput');
@@ -117,10 +212,6 @@ function handleWidgetSubmit(e) {
     if (!text) return;
 
     input.value = '';
-
-    // Hide quick chips
-    const chips = document.getElementById('widgetQuickChips');
-    if (chips) chips.style.display = 'none';
 
     // Append user bubble
     appendWidgetMessage('user', text);
@@ -169,13 +260,13 @@ function appendWidgetMessage(role, text) {
     const div = document.createElement('div');
 
     if (role === 'user') {
-        div.className = 'd-flex justify-content-end mb-2';
-        div.innerHTML = `<div class="px-3 py-2 rounded-4 text-white shadow-sm" style="max-width: 82%; background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%); line-height: 1.45; word-break: break-word; white-space: pre-wrap;">${escapeHtmlWidget(text)}</div>`;
+        div.className = 'd-flex justify-content-end mb-3';
+        div.innerHTML = `<div class="px-3 py-2 rounded-4 text-white shadow-sm" style="max-width: 82%; background: #094a88; line-height: 1.45; word-break: break-word; white-space: pre-wrap; border-bottom-right-radius: 4px !important;">${escapeHtmlWidget(text)}</div>`;
     } else {
-        div.className = 'd-flex justify-content-start mb-2';
+        div.className = 'd-flex justify-content-start mb-3 align-items-start';
         div.innerHTML = `
             <img src="${smartdataLogoUrl}" class="rounded-circle shadow-sm me-2 border bg-white flex-shrink-0" style="width: 28px; height: 28px; object-fit: contain; padding: 1px;" alt="SmartData">
-            <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-dark" style="max-width: 82%; line-height: 1.45; word-break: break-word; white-space: pre-wrap;">${escapeHtmlWidget(text)}</div>
+            <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-dark" style="max-width: 82%; line-height: 1.45; word-break: break-word; white-space: pre-wrap; border-top-left-radius: 4px !important;">${escapeHtmlWidget(text)}</div>
         `;
     }
 
@@ -186,10 +277,10 @@ function appendWidgetMessage(role, text) {
 function appendWidgetLoading() {
     const container = document.getElementById('widgetChatContainer');
     const div = document.createElement('div');
-    div.className = 'd-flex justify-content-start mb-2';
+    div.className = 'd-flex justify-content-start mb-3 align-items-start';
     div.innerHTML = `
         <img src="${smartdataLogoUrl}" class="rounded-circle shadow-sm me-2 border bg-white flex-shrink-0 fa-spin" style="width: 28px; height: 28px; object-fit: contain; padding: 1px;" alt="SmartData">
-        <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-muted small">
+        <div class="px-3 py-2 rounded-4 shadow-sm bg-white border text-muted small d-flex align-items-center">
             กำลังประมวลผล...
         </div>
     `;
