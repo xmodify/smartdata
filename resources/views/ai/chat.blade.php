@@ -323,7 +323,21 @@ function handleChatSubmit(e) {
             target_db: targetDb
         })
     })
-    .then(res => res.json())
+    .then(async res => {
+        let data = {};
+        try {
+            data = await res.json();
+        } catch (e) {
+            data = {
+                success: false,
+                content: 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ (HTTP ' + res.status + ')'
+            };
+        }
+        if (!res.ok && !data.content) {
+            data.content = data.message || ('เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ (HTTP ' + res.status + ')');
+        }
+        return data;
+    })
     .then(data => {
         loadingBubble.remove();
         appendAssistantMessage(data);
@@ -336,7 +350,7 @@ function handleChatSubmit(e) {
         loadingBubble.remove();
         appendAssistantMessage({
             success: false,
-            content: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์: ' + err.message
+            content: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์: ' + (err.message || 'กรุณาลองใหม่อีกครั้ง')
         });
         scrollChatToBottom();
     });
@@ -497,12 +511,30 @@ function appendAssistantMessage(data) {
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>');
 
+    let bodyHtml = '';
+    if (data.success === false) {
+        bodyHtml = `
+            <div class="alert alert-warning py-2 px-3 mb-2 rounded-3 border-warning border-opacity-50 small d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle text-warning me-2 fs-6"></i>
+                <div class="text-dark">${formattedContent || 'ไม่สามารถประมวลผลคำตอบได้ในขณะนี้ กรุณาลองใหม่อีกครั้งครับ'}</div>
+            </div>
+        `;
+    } else if (!formattedContent && !extraHtml) {
+        bodyHtml = `
+            <div class="text-muted small py-1">
+                <i class="fas fa-info-circle me-1"></i> ไม่พบข้อมูลตอบกลับ
+            </div>
+        `;
+    } else {
+        bodyHtml = `<div class="message-text mb-2 text-dark" style="white-space: pre-wrap;">${formattedContent}</div>`;
+    }
+
     div.innerHTML = `
-        <div class="me-3">
+        <div class="me-3 flex-shrink-0">
             <img src="${smartdataLogoUrl}" class="rounded-circle bg-white p-1 shadow-sm border" style="width: 36px; height: 36px; object-fit: contain;" alt="SmartData">
         </div>
         <div class="assistant-bubble p-3 rounded-4 shadow-sm bg-white border" style="max-width: 85%;">
-            <div class="message-text mb-2" style="white-space: pre-wrap;">${formattedContent}</div>
+            ${bodyHtml}
             ${extraHtml}
         </div>
     `;

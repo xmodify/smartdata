@@ -183,8 +183,7 @@ class ChatController extends Controller
             $detectedMode = $this->detectIntent($messageText, $session, $recentMessages);
         }
 
-        try {
-            if ($detectedMode === 'sql') {
+        if ($detectedMode === 'sql') {
                 // Determine effective target database connection (with multi-turn inheritance)
                 $effectiveTargetDb = $targetDb;
                 if ($effectiveTargetDb === 'auto' && !empty($previousDb)) {

@@ -268,7 +268,7 @@ function handleWidgetSubmit(e) {
     .then(async response => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(data.message || ('Server error ' + response.status));
+            throw new Error(data.content || data.message || ('Server error ' + response.status));
         }
         return data;
     })
@@ -362,6 +362,10 @@ function appendWidgetMessage(role, text, extraHtml = '') {
         let formattedText = escapeHtmlWidget(text)
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+        if (!formattedText && !extraHtml) {
+            formattedText = '<span class="text-muted small">ไม่พบข้อความตอบกลับ</span>';
+        }
 
         div.className = 'd-flex justify-content-start mb-3 align-items-start';
         div.innerHTML = `
