@@ -165,7 +165,11 @@ class ChatController extends Controller
                         }
                     }
 
-                    $boSpecific = ['พัสดุ', 'บุคลากร', 'พนักงาน', 'เจ้าหน้าที่', 'เงินเดือน', 'วันลา', 'ครุภัณฑ์', 'จัดซื้อ', 'จัดจ้าง'];
+                    $boSpecific = [
+                        'พัสดุ', 'บุคลากร', 'พนักงาน', 'เจ้าหน้าที่', 'เงินเดือน', 'วันลา', 'ครุภัณฑ์', 'จัดซื้อ', 'จัดจ้าง',
+                        'คลัง', 'คลังพัสดุ', 'คลังยา', 'สต็อก', 'คงคลัง', 'เบิกพัสดุ', 'เบิกยา', 'รับเข้าคลัง', 'จ่ายออกจากคลัง', 'คลังย่อย',
+                        'ซ่อม', 'แจ้งซ่อม', 'คอมพิวเตอร์', 'ไอที', 'รถยนต์', 'ขอใช้รถ', 'ห้องประชุม', 'ความเสี่ยง', 'ค่าเสื่อม'
+                    ];
                     $hasBoKeyword = false;
                     foreach ($boSpecific as $bkw) {
                         if (mb_strpos($qLower, $bkw) !== false) {
@@ -295,10 +299,15 @@ class ChatController extends Controller
    - สิทธิการรักษาและการกำหนดกลุ่มราคา: `pttype` (สิทธิบัตรทอง, ข้าราชการ, ประกันสังคม, อปท., จ่ายเงินเอง, ระดับราคา price_type), `pttype_price_group` (กลุ่มราคาตามสิทธิ), `pttype_items_price` (ตารางกำหนดราคาค่ายาและค่ารักษาเฉพาะรายสิทธิ x รายการ icode มีความสำคัญสูงสุด Override), `visit_pttype` (สิทธิรายครั้ง รพ. ต้นสังกัด)
    - ข้อมูลพื้นฐานและการตั้งค่า (Master Data): `drugitems` (คลังยา, ระดับราคาขาย unitprice1-5, ราคาทุน unitcost, รหัส 24 หลัก TMT, บัญชียาหลัก ED/NED), `nondrugitems` (ค่าบริการ, ระดับราคา price1-5, หมวดรายได้, รหัสเบิกตรง Billcode, ADP Code สปสช.), `income` (หมวดรายได้หลัก 16 หมวด), `icd9cm1` (หัตถการ ICD-9-CM), `lab_items` (รายการตรวจแล็บ, ค่าอ้างอิงปกติ Reference Range), `doctor` (แพทย์, เลขที่ใบประกอบวิชาชีพ ว.), `spclty` (สาขาความเชี่ยวชาญ), `opduser` (ผู้ใช้งานระบบ HOSxP)
    - การส่งออก 43 แฟ้ม และตารางมาตรฐาน provis_: `provis_instype` (การเชื่อมโยงสิทธิ pttype กับมาตรฐาน 43 แฟ้ม PERSON/CHARGE), `provis_vaccine` (รหัสวัคซีนมาตรฐาน แฟ้ม EPI), `provis_ncd_clinic` (รหัสคลินิกเรื้อรัง แฟ้ม CHRONIC), `provis_lab_code` (รหัสแล็บติดตามเรื้อรัง แฟ้ม LABFU), `provis_fp_type` (รหัสวิธีคุมกำเนิด แฟ้ม FP), `provis_typedis` (ประเภทความพิการ แฟ้ม DISABILITY), `person` (ข้อมูลประชากรในเขตรับผิดชอบ แฟ้ม PERSON), `type_area` (สถานะการอยู่อาศัย Type Area 1-4)
-2. ฐานข้อมูล Backoffice (งานบริหารโรงพยาบาล):
-   - บุคลากร: `hrd_person` (ข้อมูลเจ้าหน้าที่), `hrd_position` (ตำแหน่งสายงาน), `hrd_department` (กลุ่มงาน/ฝ่าย)
-   - การลา: `hrd_leave_over` (ประวัติการลา), `gleave_type` (ประเภทวันลา เช่น ลาป่วย ลากิจ ลาพักผ่อน)
-   - พัสดุ: `supplies` (ครุภัณฑ์และพัสดุ), `supplies_types` (ประเภทครุภัณฑ์)
+2. ฐานข้อมูล Backoffice (ระบบบริหารงานโรงพยาบาล v5.6.1.1):
+   - คลังพัสดุและเบิกจ่าย: `warehouse_store` (คลังหลัก), `warehouse_treasury` (คลังย่อย), `warehouse_request` / `warehouse_request_sub` (ใบขอเบิกและรายการขอเบิกพัสดุ), `warehouse_treasury_pay` (การตัดจ่ายพัสดุ), `warehouse_check_receive` (การตรวจรับเข้าคลัง)
+   - คลังยาและเวชภัณฑ์: `medicine_drug` (ทะเบียนยา), `medicine_warehouse_items` (สต็อกคงคลังยา), `medicine_warehouse_request` / `medicine_warehouse_request_list` (ใบขอเบิกยา), `medicine_warehouse_receive` (การรับยาเข้าคลัง), `medicine_warehouse_export` (การจ่ายยาออกจากคลัง)
+   - งานพัสดุและจัดซื้อ: `supplies` (พัสดุ/ครุภัณฑ์), `supplies_con` / `supplies_con_list` (สัญญาและรายการจัดซื้อจัดจ้าง), `supplies_vendor` (บริษัทคู่ค้า)
+   - ทรัพย์สินและครุภัณฑ์: `asset_article` (ทะเบียนครุภัณฑ์), `asset_depreciate` (ค่าเสื่อมราคา), `asset_dispose` (แทงจำหน่าย)
+   - ซ่อมบำรุงและศูนย์คอมฯ: `informrepair_index` (แจ้งซ่อมบำรุงทั่วไป), `informcom_repair` (แจ้งซ่อมคอมพิวเตอร์และอุปกรณ์ไอที), `informcom_service` (บริการศูนย์คอม)
+   - ยานพาหนะและห้องประชุม: `vehicle_car_reserve` (ขอใช้รถส่วนกลาง), `vehicle_car_refer` (รถส่งต่อผู้ป่วย Refer), `meetingroom_service` (จองห้องประชุม)
+   - บุคลากร/ลงเวลา/การลา: `hrd_person` (ข้อมูลเจ้าหน้าที่), `hrd_position` (ตำแหน่งสายงาน), `hrd_department` (กลุ่มงาน/ฝ่าย), `checkin_device_time_attendance` (บันทึกเวลาสแกนนิ้ว/ใบหน้า), `gleave_register` / `gleave_over` (ประวัติการลา), `salary_all` (เงินเดือนและค่าตอบแทน)
+   - ความเสี่ยง: `risk_rep` (รายงานอุบัติการณ์ความเสี่ยง)
 3. ฐานข้อมูล SmartData:
    - `users` (ผู้ใช้งาน), `lend_items` / `lend_transactions` (ระบบยืมคืนอุปกรณ์), `customer_complains` (ข้อร้องเรียน)";
 

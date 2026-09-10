@@ -31,7 +31,13 @@ class TextToSqlService
         // Auto-detect from keywords
         $q = mb_strtolower($question);
         
-        $boKeywords = ['พัสดุ', 'บุคลากร', 'พนักงาน', 'เจ้าหน้าที่', 'วันลา', 'เงินเดือน', 'ครุภัณฑ์', 'เบิก', 'สัญญา', 'จัดซื้อ', 'จัดจ้าง', 'hr', 'สารบรรณ', 'ลาป่วย', 'ลากิจ', 'hrd_', 'ฝ่าย', 'กลุ่มงาน'];
+        $boKeywords = [
+            'พัสดุ', 'บุคลากร', 'พนักงาน', 'เจ้าหน้าที่', 'วันลา', 'เงินเดือน', 'ครุภัณฑ์', 'เบิก', 'สัญญา', 'จัดซื้อ', 'จัดจ้าง', 'hr', 'สารบรรณ', 'ลาป่วย', 'ลากิจ', 'hrd_', 'ฝ่าย', 'กลุ่มงาน',
+            'คลัง', 'คลังพัสดุ', 'คลังยา', 'สต็อก', 'คงคลัง', 'เบิกพัสดุ', 'เบิกยา', 'รับเข้าคลัง', 'จ่ายออกจากคลัง', 'คลังย่อย',
+            'ซ่อม', 'แจ้งซ่อม', 'ช่าง', 'คอมพิวเตอร์', 'ไอที', 'งานซ่อม', 'เครื่องมือแพทย์',
+            'รถยนต์', 'ขอใช้รถ', 'รถตู้', 'รถส่งต่อ', 'ยานพาหนะ', 'จองห้องประชุม', 'ห้องประชุม',
+            'อุบัติการณ์', 'ความเสี่ยง', 'จ่ายกลาง', 'ค่าเสื่อม', 'ทะเบียนครุภัณฑ์', 'แทงจำหน่าย'
+        ];
         foreach ($boKeywords as $kw) {
             if (mb_strpos($q, $kw) !== false) {
                 return 'backoffice';
@@ -336,19 +342,67 @@ Schema ข้อมูลที่สามารถใช้ได้:
     {
         if ($connection === 'backoffice') {
             return "
--- ฐานข้อมูล Backoffice (งานบริหารบุคคล, สารบรรณ, พัสดุ, ครุภัณฑ์)
-- hrd_person: ข้อมูลบุคลากร/เจ้าหน้าที่ (ID, HR_CID as เลขบัตรประชาชน, HR_PREFIX_ID as คำนำหน้า, HR_FNAME as ชื่อ, HR_LNAME as นามสกุล, HR_DEPARTMENT_ID as รหัสกลุ่มงาน/ฝ่าย, HR_DEPARTMENT_SUB_ID as รหัสงานย่อย, HR_PERSON_TYPE_ID as รหัสประเภทบุคลากร, HR_POSITION_ID as รหัสตำแหน่งสายงาน, HR_STATUS_ID as สถานะการทำงาน [1=ปฏิบัติงานปกติ], SEX, BIRTHDAY, START_WORK_DATE)
-- hrd_person_type: ประเภทบุคลากร (HR_PERSON_TYPE_ID, HR_PERSON_TYPE_NAME เช่น ข้าราชการ, ลูกจ้างประจำ, พนักงานราชการ, พนักงานกระทรวงสาธารณสุข, ลูกจ้างรายเดือน, ลูกจ้างรายวัน, ผู้พิเศษ)
+-- ฐานข้อมูล Backoffice (ระบบบริหารงานโรงพยาบาล v5.6.1.1)
+
+1. คลังพัสดุ และการเบิกจ่ายพัสดุ (Warehouse & Inventory):
+- warehouse_store: คลังพัสดุหลัก (STORE_ID, STORE_NAME, STORE_TYPE_ID)
+- warehouse_treasury: คลังย่อย/คลังประจำหน่วยงาน (TREASURY_ID, TREASURY_NAME, HR_DEPARTMENT_SUB_SUB_ID)
+- warehouse_request: ใบขอเบิกพัสดุ (WAREHOUSE_ID, WAREHOUSE_REQUEST_CODE [เลขที่ใบเบิก เช่น 'RE-690441'], WAREHOUSE_DATE_WANT [วันที่ต้องการ YYYY-MM-DD], WAREHOUSE_DATE_TIME_SAVE [วันเวลาบันทึก], WAREHOUSE_SAVE_HR_NAME [ชื่อผู้บันทึก/ขอเบิก], WAREHOUSE_STATUS [สถานะใบเบิก เช่น 'Approve','Pending'], INVEN_ID [คลังย่อย])
+- warehouse_request_sub: รายการพัสดุในใบขอเบิก (WAREHOUSE_REQUEST_SUB_ID, WAREHOUSE_REQUEST_ID [เชื่อม warehouse_request.WAREHOUSE_ID], WAREHOUSE_REQUEST_SUB_DETAIL_ID [รหัสพัสดุเชื่อม supplies.ID], WAREHOUSE_REQUEST_SUB_AMOUNT [จำนวนที่ขอเบิก], WAREHOUSE_REQUEST_SUB_PRICE [ราคาต่อหน่วย], WAREHOUSE_REQUEST_SUB_SUM_PRICE [ราคารวม])
+- warehouse_treasury_pay: การตัดจ่ายพัสดุจากคลังย่อย (TREASURT_PAY_ID, TREASURT_PAY_NAME [หน่วยงาน], TREASURT_PAY_REQUEST_HR_NAME [ผู้เบิก], objective_text [วัตถุประสงค์], created_at)
+- warehouse_check_receive: การตรวจรับพัสดุเข้าคลัง (RECEIVE_CHECK_ID, RECEIVE_CHECK_CODE [เลขที่รับเข้า], RECEIVE_CHECK_DATE [วันที่รับ], SUPPLIER_NAME [ผู้จำหน่าย], TOTAL_PRICE [มูลค่ารวม])
+
+2. คลังยาและเวชภัณฑ์ (Medicine & Pharmacy Stock):
+- medicine_drug: ทะเบียนยาและเวชภัณฑ์ (id, generic_name [ชื่อสามัญ], trade_name [ชื่อทางการค้า], thai_name [ชื่อไทย], tpu_number [รหัส TPU], icode [รหัสเชื่อม HOSxP], med_warehouse_id [คลังยาหลัก])
+- medicine_warehouse_items: รายการยาคงคลัง (id, warehouse_id [คลัง], distributor_id [ผู้จัดจำหน่าย], created_at)
+- medicine_warehouse_request: ใบขอเบิกยาและเวชภัณฑ์ (id, code [เลขที่ใบเบิก เช่น 'RE-6901002'], status ['Approve','Pending'], reason [เหตุผล], request_date [วันที่ขอ], pay_date [วันที่จ่าย], warehouse_id [คลังหลัก], treasury_id [คลังย่อย], value [มูลค่ารวม], created_at)
+- medicine_warehouse_request_list: รายการยาที่ขอเบิก (id, request_id [เชื่อม medicine_warehouse_request], medicine_id [รหัสยาเชื่อม medicine_drug.id], req_qty [จำนวนขอเบิก], pay_qty [จำนวนจ่ายจริง], unit_price [ราคาต่อหน่วย], value [มูลค่า])
+- medicine_warehouse_receive: การรับยาเข้าคลัง (id, code [เลขที่รับเข้า], warehouse_id, po_code [เลขที่ PO], invoice_code [ใบส่งของ], distributor_id, receive_datetime [วันที่รับ], value [มูลค่า])
+- medicine_warehouse_export: การจ่ายยาออกจากคลังไปยังคลังย่อย/ตึก (id, req_id, treasury_id [คลังย่อย], medicine_id [รหัสยา], quantity [จำนวนจ่าย], price [ราคา], created_at)
+- medicine_purchase_order: การสั่งซื้อยาและเวชภัณฑ์ (id, po_code, order_date, vendor_id, total_price, delivery_date)
+
+3. พัสดุและการจัดซื้อจัดจ้าง (Supplies & Procurement):
+- supplies: ทะเบียนพัสดุ (ID, SUP_FSN_NUM [รหัส FSN], SUP_NAME [ชื่อพัสดุ], SUP_TYPE_ID [หมวดพัสดุ], PRICE_LAST [ราคาซื้อล่าสุด], PRICE_CENTER [ราคากลาง])
+- supplies_con: สัญญาจัดซื้อจัดจ้าง/โครงการ (ID, CON_NUM [เลขที่สัญญา/ข้อตกลง], CON_YEAR_ID [ปีงบประมาณ พ.ศ. เช่น '2569'], DATE_REGIS [วันที่ลงทะเบียน], DEP_REQUEST_NAME [ฝ่ายที่ขอซื้อ], PERSON_REQUEST_NAME [ผู้ขอซื้อ], CON_PROJECT_NAME [ชื่อโครงการ], EGP_PLAN_NAME)
+- supplies_con_list: รายการสิ่งของในสัญญาจัดซื้อ (ID, CON_ID [เชื่อม supplies_con.ID], SUP_NAME [ชื่อรายการสินค้า], SUP_TOTAL [จำนวน], PRICE_PER_UNIT [ราคาต่อหน่วย], PRICE_SUM [ราคารวม])
+- supplies_vendor: ทะเบียนบริษัทคู่ค้า/ผู้จัดจำหน่ายพัสดุ (VENDOR_ID, VENDOR_NAME, VENDOR_PHONE)
+
+4. งานทรัพย์สินและครุภัณฑ์ (Assets & Depreciate):
+- asset_article: ทะเบียนครุภัณฑ์โรงพยาบาล (ARTICLE_ID, ARTICLE_NUM [เลขครุภัณฑ์ เช่น '3920-005-1103/10'], ARTICLE_NAME [ชื่อครุภัณฑ์], SUPPLIER_ID [ผู้ขาย], RECEIVE_DATE [วันที่ได้มา], PRICE_PER_UNIT [ราคาต่อหน่วย], LOCATION_ID [สถานที่ตั้ง], STATUS_ID [สถานะ: 1=ปกติ, 2=ชำรุด, 3=ส่งซ่อม, 4=แทงจำหน่าย])
+- asset_depreciate: ค่าเสื่อมราคาครุภัณฑ์ (ARTICLE_ID, YEAR_ID [ปีงบประมาณ], DEPRECIATE_PRICE [ค่าเสื่อมปีนี้], VALUE_REMAIN [มูลค่าคงเหลือ])
+- asset_dispose: ทะเบียนครุภัณฑ์ที่แทงจำหน่าย (ARTICLE_ID, DISPOSE_DATE, DISPOSE_REASON)
+
+5. งานซ่อมบำรุง / ศูนย์คอมพิวเตอร์ / ศูนย์เครื่องมือแพทย์ (Maintenance & Repairs):
+- informrepair_index: การแจ้งซ่อมบำรุงทั่วไปและอาคารสถานที่ (ID, REPAIR_ID [เลขที่แจ้งซ่อม เช่น 'R69-00530'], YEAR_ID [ปีงบประมาณ], REPAIR_NAME [ชื่อเรื่อง/สิ่งที่ชำรุด], SYMPTOM [อาการชำรุด], USRE_REQUEST_NAME [ผู้แจ้งซ่อม], DATE_TIME_REQUEST [วันเวลาแจ้ง], REPAIR_STATUS [สถานะการซ่อม เช่น 'REQUEST','SUCCESS'], STATUS)
+- informcom_repair: การแจ้งซ่อมคอมพิวเตอร์และอุปกรณ์ไอที (ID, REPAIR_ID [เลขที่แจ้งซ่อมคอม เช่น 'C69-00009'], YEAR_ID, ARTICLE_ID [รหัสครุภัณฑ์ที่ซ่อม], USRE_REQUEST_NAME [ผู้แจ้ง], REPAIR_NAME [เรื่องที่แจ้ง], SYMPTOM [อาการเสีย], DATE_TIME_REQUEST [วันเวลาแจ้ง], REPAIR_STATUS [สถานะการซ่อม เช่น 'REQUEST','RECEIVE','SUCCESS'], REPAIR_STATUS_SUB)
+- informcom_service: งานบริการศูนย์คอมพิวเตอร์ (ID, SERVICE_NAME, USER_REQUEST_NAME, DATE_TIME_REQUEST)
+
+6. งานยานพาหนะ (Vehicle & Ambulance Refer):
+- vehicle_car_reserve: การขอใช้รถยนต์ส่วนกลาง/รถตู้ (RESERVE_ID, RESERVE_PERSON_NAME [ผู้ขอใช้รถ], RESERVE_LOCATION [สถานที่ไป], DATE_TIME_REQUEST, DATE_BEGIN, DATE_END, STATUS)
+- vehicle_car_refer: การใช้รถพยาบาลส่งต่อผู้ป่วยฉุกเฉิน Refer (REFER_ID, REFER_LOCATION [รพ.ปลายทาง], DRIVER_NAME [พนักงานขับรถ], NURSE_NAME [พยาบาลเวร], USER_CREATED_NAME, DATE_TIME_REQUEST)
+
+7. งานจองห้องประชุม (Meeting Room):
+- meetingroom_service: การจองห้องประชุม (ID, ROOM_ID [รหัสห้องประชุม], PERSON_REQUEST_NAME [ผู้ขอใช้], SERVICE_STORY [หัวข้อ/วาระประชุม], DATE_BEGIN [วันที่เริ่ม], DATE_END [วันที่สิ้นสุด], TIME_BEGIN [เวลาเริ่ม], TIME_END [เวลาสิ้นสุด], TOTAL_PEOPLE [จำนวนผู้เข้าประชุม])
+
+8. บุคลากร, เงินเดือน, ลงเวลาสแกนนิ้ว, และการลา (HR, Payroll & Attendance):
+- hrd_person: ข้อมูลบุคลากร/เจ้าหน้าที่ (ID, HR_CID as เลขบัตรประชาชน, HR_PREFIX_ID as คำนำหน้า, HR_FNAME as ชื่อ, HR_LNAME as นามสกุล, HR_DEPARTMENT_ID as รหัสกลุ่มงาน, HR_DEPARTMENT_SUB_ID as รหัสงานย่อย, HR_PERSON_TYPE_ID as รหัสประเภทบุคลากร, HR_POSITION_ID as รหัสตำแหน่งสายงาน, HR_STATUS_ID as สถานะการทำงาน [1=ปฏิบัติงานปกติ], SEX, BIRTHDAY, START_WORK_DATE)
+- hrd_person_type: ประเภทบุคลากร (HR_PERSON_TYPE_ID, HR_PERSON_TYPE_NAME เช่น ข้าราชการ, ลูกจ้างประจำ, พนักงานราชการ, พนักงานกระทรวงสาธารณสุข, ลูกจ้างรายเดือน, ลูกจ้างรายวัน)
 - hrd_position: ตำแหน่งสายงาน/วิชาชีพ (HR_POSITION_ID, HR_POSITION_NAME เช่น พยาบาลวิชาชีพ, นายแพทย์, เจ้าพนักงานสาธารณสุข, เภสัชกร, นักวิชาการสาธารณสุข)
 - hrd_department: กลุ่มงาน/ฝ่าย (HR_DEPARTMENT_ID, HR_DEPARTMENT_NAME เช่น กลุ่มงานการพยาบาล, กลุ่มงานบริหารทั่วไป, กลุ่มงานบริการทางการแพทย์, กลุ่มงานสุขภาพดิจิทัล)
-- hrd_department_sub: ฝ่ายย่อย/งาน (HR_DEPARTMENT_SUB_ID, HR_DEPARTMENT_SUB_NAME, HR_DEPARTMENT_ID)
-- hrd_prefix: คำนำหน้าชื่อ (HR_PREFIX_ID, HR_PREFIX_NAME เช่น นาย, นาง, นางสาว, นพ., พญ.)
 - hrd_status: สถานะเจ้าหน้าที่ (HR_STATUS_ID, HR_STATUS_NAME เช่น 1=ปฏิบัติงานปกติ, 2=ลาศึกษาต่อ, 3=ลาออก, 4=เกษียณ)
-- hrd_leave_over: ประวัติการลา (ID, PERSON_ID, LEAVE_TYPE_ID, LEAVE_DATE_BEGIN, LEAVE_DATE_END, LEAVE_DAYS)
+- checkin_device_time_attendance: ประวัติการสแกนลายนิ้วมือ/ใบหน้า (id, person_id, time_attendance [วันเวลาที่สแกน])
+- gleave_register: รายการยื่นใบลา (ID, PERSON_ID [เชื่อม hrd_person.ID], LEAVE_TYPE_ID, LEAVE_DATE_BEGIN, LEAVE_DATE_END, LEAVE_DAYS [จำนวนวันลา], STATUS [สถานะอนุมัติ])
+- gleave_over: ประวัติวันลาสะสม (ID, PERSON_ID, LEAVE_TYPE_ID, LEAVE_DAYS)
 - gleave_type: ประเภทวันลา (LEAVE_TYPE_ID, LEAVE_TYPE_NAME เช่น ลาป่วย, ลากิจ, ลาพักผ่อน, ลาคลอด)
-- supplies: ข้อมูลพัสดุ/ครุภัณฑ์ (ID, NUM as รหัสครุภัณฑ์, NAME as ชื่อพัสดุ, BUY_DATE as วันที่ซื้อ, PRICE as ราคา, STATUS_ID as สถานะ)
-- supplies_types: ประเภทพัสดุครุภัณฑ์ (SUP_TYPE_ID, SUP_TYPE_NAME)
-* กฎสำคัญ Backoffice: เจ้าหน้าที่ไอทีหรือสารสนเทศ สังกัดกลุ่มงานชื่อ 'กลุ่มงานสุขภาพดิจิทัล'
+- salary_all: บัญชีเงินเดือนและค่าตอบแทน (ID, YEAR_ID [ปีงบประมาณ เช่น 2569], MONTH_ID [รหัสเดือน 1-12], PERSON_ID, TOTAL_RECEIVE [ยอดรับรวม], TOTAL_PAY [ยอดหักรวม], NET_SALARY [รับสุทธิ])
+
+9. รายงานความเสี่ยงและอุบัติการณ์ (Risk Incident):
+- risk_rep: รายงานอุบัติการณ์ความเสี่ยง (RISKREP_ID, RISKREP_DATESAVE [วันที่รายงาน], RISKREP_LOCAL [สถานที่เกิดเหตุ], RISKREP_TYPE [ประเภทความเสี่ยง], RISKREP_USEREFFECT [ระดับความรุนแรง], RISKREP_STARTDATE [วันที่เกิดเหตุ], RISKREP_TIME [เวลาเกิดเหตุ])
+
+* กฎสำคัญ Backoffice:
+- เจ้าหน้าที่ไอทีหรือสารสนเทศ สังกัดกลุ่มงานชื่อ 'กลุ่มงานสุขภาพดิจิทัล'
+- คลังพัสดุทั่วไปใช้ตารางตระกูล warehouse_* ส่วนคลังยาและเวชภัณฑ์ใช้ตารางตระกูล medicine_warehouse_*
+- ปีงบประมาณใน Backoffice ส่วนใหญ่ใช้ พ.ศ. เช่น 2568, 2569 ในคอลัมน์ YEAR_ID หรือ CON_YEAR_ID
 ";
         }
 
@@ -380,7 +434,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
   * รหัสแผนกหลัก main_dep: '002'=OPD ทั่วไป, '011'=NCD คลินิกเรื้อรัง, '032'=ARI ทางเดินหายใจ, '033'=ไตเทียม รพ., '024'=ไตเทียมนอก
 
 3. ผู้ป่วยใน (IPD):
-- ipt: การรับไว้รักษา (an, hn, vn, regdate [วันที่รับไว้], regtime, dchdate [วันที่จำหน่าย], dchtime, dchstts, dchtype ['04'=Refer], dch_doctor, ward, pttype, spclty, adjrw, confirm_discharge ['N'=ครองเตียงอยู่ หรือ dchdate IS NULL])
+- ipt: การรับไว้รักษา (an, hn, vn, regdate [วันที่รับไว้], regtime, dchdate [วันที่จำหน่าย], dchtime, dchstts, dchtype ['04'=Refer], dch_doctor, ward, pttype, spclty, adjrw, confirm_discharge ['N'=ครองเตียงอยู่ หรือ dchdate IS NULL], prediag [อาการแรกรับ], provision_dx [การวินิจฉัยแรกรับก่อน Admit ที่แพทย์สั่ง เช่น 'Sepsis c UTI', 'Pneumonia'], provision_dx_icd [รหัส ICD-10 แรกรับ เช่น 'A419', 'J189'])
 - an_stat: สถิติผู้ป่วยใน (an, hn, regdate, dchdate, pdx [รหัสโรคหลักเมื่อจำหน่าย], admdate [วันนอน admit], hospital_admdate, income, rcpt_money, inc12 [ค่ายา], inc03 [ค่าแล็บ], ward, age_y, admit_hour, adjrw)
 - iptadm: เตียงและห้องพักผู้ป่วยใน (an, bedno, roomno)
 - iptbedmove: ประวัติการย้ายเตียง/วอร์ด IPD (an, movedate, movetime, nbedno, nward)
@@ -492,15 +546,41 @@ Schema ข้อมูลที่สามารถใช้ได้:
    - การค้นหาแล็บด้วย AN ของผู้ป่วยใน: HOSxP จะบันทึก AN ไว้ในฟิลด์ vn ของ lab_head ดังนั้นต้องเขียนเงื่อนไขเป็น:
      `WHERE (lh.vn = ? OR lh.vn IN (SELECT vn FROM ipt WHERE an = ?))`
 2. คนไข้ที่กำลังนอน รพ. (Admit อยู่ขณะนี้):
-   - เงื่อนไขครองเตียง: `WHERE i.confirm_discharge = 'N'` (หรือ `i.dchdate IS NULL`)
-   - คนไข้ที่นอนอยู่ ชาร์ตยังไม่สรุป ทำให้ `an_stat.pdx` ยังว่าง!
-   - การหาโรคคนไข้ที่กำลังนอน รพ. ให้ใช้ Fallback ลำดับความสมบูรณ์ (COALESCE):
-     COALESCE(
-       (SELECT CONCAT('[', id.icd10, '] ', icd.name) FROM iptdiag id LEFT JOIN icd101 icd ON icd.code = id.icd10 WHERE id.an = i.an AND id.diagtype = 1 LIMIT 1),
-       (SELECT idd.diag_text FROM ipt_doctor_diag idd WHERE idd.an = i.an AND idd.diagtype = 1 LIMIT 1),
-       (SELECT CONCAT('[', v.pdx, '] ', icd2.name) FROM vn_stat v LEFT JOIN icd101 icd2 ON icd2.code = v.pdx WHERE v.vn = i.vn LIMIT 1),
-       'อยู่ระหว่างการวินิจฉัย'
-     ) AS 'โรค/การวินิจฉัย'
+   - เงื่อนไขครองเตียง: `WHERE (i.confirm_discharge = 'N' OR i.dchdate IS NULL)`
+   - สำคัญมากที่สุดตามโครงสร้าง HOSxP:
+     * ตาราง `an_stat` เป็นตารางสรุปตอนจำหน่าย (Discharge) ขณะคนไข้นอนจะยังไม่มีข้อมูลเด็ดขาด!
+     * ตาราง `iptdiag` และ `ipt_doctor_diag` ขณะคนไข้นอนส่วนใหญ่ยังไม่ได้บันทึก เพราะต้องรอแพทย์สรุปชาร์ตตอนจำหน่าย
+     * ข้อมูลการวินิจฉัยโรคขณะคนไข้กำลังนอน Admit อยู่ จะบันทึกไว้ในตาราง `ipt` โดยตรง คือ:
+       (1) `i.provision_dx` = การวินิจฉัยแรกรับทางคลินิกที่แพทย์ลงตอนสั่ง Admit (เช่น 'Sepsis c UTI', 'Pneumonia', 'CHF')
+       (2) `i.provision_dx_icd` = รหัส ICD-10 แรกรับตอนสั่ง Admit (เช่น 'A419', 'J189')
+       (3) `i.prediag` = อาการแรกรับและประวัติส่งต่อ
+       (4) `v.pdx` จาก `LEFT JOIN vn_stat v ON v.vn = i.vn` (รหัสโรคแรกรับจาก OPD/ER ก่อนส่งขึ้นตึก)
+   - ตัวอย่างคำสั่งมาตรฐานเมื่อค้นหาคนไข้ที่กำลัง Admit ด้วยโรคเฉพาะเจาะจง (เช่น Sepsis):
+     SELECT 
+       i.an AS 'เลข AN',
+       i.hn AS 'เลข HN',
+       CONCAT(p.pname, p.fname, ' ', p.lname) AS 'ชื่อ-นามสกุล',
+       w.name AS 'หอผู้ป่วย',
+       i.regdate AS 'วันที่รับไว้รักษา',
+       COALESCE(
+         NULLIF(i.provision_dx, ''),
+         (SELECT CONCAT('[', i.provision_dx_icd, '] ', icd.name) FROM icd101 icd WHERE icd.code = i.provision_dx_icd),
+         (SELECT CONCAT('[', v.pdx, '] ', icd2.name) FROM icd101 icd2 WHERE icd2.code = v.pdx LIMIT 1),
+         i.prediag,
+         'อยู่ระหว่างการวินิจฉัย'
+       ) AS 'การวินิจฉัยแรกรับ (Provisional Dx)'
+     FROM ipt i
+     JOIN patient p ON p.hn = i.hn
+     LEFT JOIN ward w ON w.ward = i.ward
+     LEFT JOIN vn_stat v ON v.vn = i.vn
+     WHERE (i.confirm_discharge = 'N' OR i.dchdate IS NULL)
+       AND (
+           i.provision_dx LIKE '%sepsis%' OR i.provision_dx LIKE '%septic%' OR i.provision_dx LIKE '%ติดเชื้อในกระแส%'
+           OR i.provision_dx_icd LIKE 'A41%' OR i.provision_dx_icd = 'R572'
+           OR i.prediag LIKE '%sepsis%' OR i.prediag LIKE '%ติดเชื้อในกระแส%'
+           OR v.pdx LIKE 'A41%' OR v.pdx = 'R572'
+           OR EXISTS (SELECT 1 FROM iptdiag id WHERE id.an = i.an AND (id.icd10 LIKE 'A41%' OR id.icd10 = 'R572'))
+       )
 3. ผู้ป่วยในที่จำหน่ายแล้ว (Discharged IPD):
    - หาโรคหลักโดย JOIN an_stat a ON i.an = a.an แล้วใช้ a.pdx (หรือ LEFT JOIN icd101 icd ON a.pdx = icd.code)
 4. ตัวชี้วัดคุณภาพโรงพยาบาล (Hospital Indicators):
