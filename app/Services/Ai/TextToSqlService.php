@@ -420,8 +420,13 @@ Schema ข้อมูลที่สามารถใช้ได้:
 - nondrugitems: ค่าบริการและเวชภัณฑ์มิใช่ยา (icode, name, price, unitcost, income)
   * หมวดรายได้ income: '02'=อุปกรณ์/อวัยวะเทียม, '03'=แล็บ (LAB), '12'=ยา, '13'=ทันตกรรม, '14'=กายภาพบำบัด, '15'=แพทย์แผนไทย
 - xray_items: เอกซเรย์ (icode, name, xray_items_group [3=CT Scan])
+- xray_head: ใบสั่งตรวจเอกซเรย์ (vn, hn, order_date, order_time) **ไม่มีฟิลด์ an เด็ดขาด! ให้เชื่อมด้วย xh.vn**
 - lab_head: สั่งตรวจแล็บ (vn, hn, lab_order_number, order_date, order_time, doctor_code, form_name, confirm_report)
-- lab_order: รายการและผลการตรวจแล็บ (lab_order_number, lab_items_code, lab_order_result [ค่าผลตรวจแล็บ เช่น 120, Negative, ปกติ], lab_order_remark, confirm ['Y'/'N'])
+  * **สำคัญมาก: ตาราง lab_head ไม่มีคอลัมน์ an เด็ดขาด! (ห้าม WHERE lh.an = ...)**
+  * การเชื่อมโยงแล็บของผู้ป่วยใน (IPD ด้วย AN): รหัส AN จะถูกบันทึกไว้ในฟิลด์ vn (lh.vn = an) หรือเชื่อมโยงผ่าน ipt.vn เสมอ ให้ใช้เงื่อนไข: `WHERE (lh.vn = :an OR lh.vn IN (SELECT vn FROM ipt WHERE an = :an))`
+- lab_order: รายการและผลการตรวจแล็บ (lab_order_number, lab_items_code, lab_order_result [ค่าผลตรวจแล็บ], lab_order_remark, confirm ['Y'/'N'])
+  * เชื่อมโยงกับ lab_head ด้วย: `lo.lab_order_number = lh.lab_order_number`
+  * เชื่อมโยงกับ lab_items ด้วย: `li.lab_items_code = lo.lab_items_code` (ห้ามนำ lab_items_code ไปเท่ากับ lab_order_number เด็ดขาด!)
 - lab_items: รายการตรวจแล็บ (lab_items_code, lab_items_name, lab_items_unit, lab_items_normal_value [ค่าปกติอ้างอิง], icode, price, provis_lab_code)
 
 8. นัดหมาย และ คิวตรวจ:
@@ -483,6 +488,9 @@ Schema ข้อมูลที่สามารถใช้ได้:
 * กฎสำคัญ Hospital Domain Rules & Best Practices:
 1. ตาราง ipt ไม่มีฟิลด์ pdx และไม่มีฟิลด์ bedno เด็ดขาด!
    - หากต้องการเตียงผู้ป่วยใน ให้ LEFT JOIN iptadm adm ON i.an = adm.an แล้วใช้ adm.bedno
+   - ตาราง lab_head และ xray_head ไม่มีฟิลด์ an เด็ดขาด! (ห้าม WHERE lh.an = ... หรือ xh.an = ...)
+   - การค้นหาแล็บด้วย AN ของผู้ป่วยใน: HOSxP จะบันทึก AN ไว้ในฟิลด์ vn ของ lab_head ดังนั้นต้องเขียนเงื่อนไขเป็น:
+     `WHERE (lh.vn = ? OR lh.vn IN (SELECT vn FROM ipt WHERE an = ?))`
 2. คนไข้ที่กำลังนอน รพ. (Admit อยู่ขณะนี้):
    - เงื่อนไขครองเตียง: `WHERE i.confirm_discharge = 'N'` (หรือ `i.dchdate IS NULL`)
    - คนไข้ที่นอนอยู่ ชาร์ตยังไม่สรุป ทำให้ `an_stat.pdx` ยังว่าง!
@@ -531,13 +539,13 @@ Schema ข้อมูลที่สามารถใช้ได้:
 7. รหัสโรคสำคัญ: Stroke (I64, I619, I639) | Sepsis (A419, A415) | Septic Shock (R572) | Pneumonia (J189, J180) | MI (I219) | CHF (I500, I509) | COPD (J449) | Asthma (J459) | Head Injury (S099, S060)
 8. การสืบค้นติดตามผู้ป่วยรายบุคคลด้วย HN หรือ AN (Patient Follow-up & PDPA Privacy):
    - การสื่อสารด้วย HN หรือ AN เป็นมาตรการตามหลัก Pseudonymization (ข้อมูลรหัสเทียมภายนอกไม่สามารถระบุตัวตนบุคคลได้ ปลอดภัยตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล PDPA)
-   - ติดตามผลแล็บคนไข้ราย HN/AN:
+    - ติดตามผลแล็บคนไข้ราย HN หรือ AN (ตาราง lab_head ไม่มีคอลัมน์ an เด็ดขาด! ค้นหาด้วย AN ให้ใช้ WHERE lh.vn = :an OR lh.vn IN (SELECT vn FROM ipt WHERE an = :an)):
      SELECT lh.order_date, lh.order_time, li.lab_items_name, lo.lab_order_result, li.lab_items_unit, li.lab_items_normal_value
      FROM lab_head lh
      JOIN lab_order lo ON lo.lab_order_number = lh.lab_order_number
      JOIN lab_items li ON li.lab_items_code = lo.lab_items_code
-     WHERE lh.hn = ?
-     ORDER BY lh.order_date DESC, lh.order_time DESC LIMIT 25
+     WHERE (lh.vn = ? OR lh.vn IN (SELECT vn FROM ipt WHERE an = ?))
+     ORDER BY lh.order_date DESC, lh.order_time DESC LIMIT 50
    - ติดตามรายการยาที่คนไข้ได้รับราย HN/AN:
      SELECT o.rxdate, o.rxtime, d.name AS drug_name, o.qty, d.units, o.unitprice, o.sum_price
      FROM opitemrece o
