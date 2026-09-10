@@ -150,10 +150,24 @@
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            @php
+                                                $isCodeOrId = function($name) {
+                                                    return (bool) preg_match('/(hn|an|vn|cid|pid|code|icode|tmt|billcode|adp|idcard|phone|tel|year|bed|ward|dept|clinic|เลข|รหัส|ปี|เบอร์|โทร|เตียง|ลำดับ)/i', $name);
+                                                };
+                                                $isMoneyOrQty = function($name) {
+                                                    return (bool) preg_match('/(จำนวน|ราคา|ยอด|บาท|มูลค่า|ผลรวม|จ่าย|ค้าง|ต้นทุน|count|qty|amount|price|cost|total|sum|adjrw|cmi)/i', $name);
+                                                };
+                                            @endphp
                                             @foreach($msg->query_result as $row)
                                             <tr>
-                                                @foreach($row as $cell)
-                                                <td>{{ is_numeric($cell) ? number_format($cell) : $cell }}</td>
+                                                @foreach($row as $colName => $cell)
+                                                @php
+                                                    $displayCell = $cell;
+                                                    if (is_numeric($cell) && !$isCodeOrId($colName) && $isMoneyOrQty($colName)) {
+                                                        $displayCell = is_float($cell + 0) ? number_format($cell, 2) : number_format($cell);
+                                                    }
+                                                @endphp
+                                                <td>{{ $displayCell }}</td>
                                                 @endforeach
                                             </tr>
                                             @endforeach

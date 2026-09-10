@@ -277,7 +277,7 @@
                                     <label for="otp" class="form-label-custom-otp">รหัส OTP</label>
                                     <div class="input-wrapper">
                                         <i class="fa-solid fa-key input-icon"></i>
-                                        <input id="otp" type="text" class="form-control form-input-custom text-center fw-bold" style="font-size: 1.25rem; letter-spacing: 4px;" maxlength="6" placeholder="รหัส OTP 6 หลัก">
+                                        <input id="otp" type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" class="form-control form-input-custom text-center fw-bold" style="font-size: 1.25rem; letter-spacing: 4px;" maxlength="6" placeholder="รหัส OTP 6 หลัก">
                                     </div>
                                     <div class="form-text text-muted text-center mt-2" style="font-size: 0.85rem;"><i class="fas fa-info-circle me-1"></i> กรอกรหัสที่ท่านได้รับผ่าน หมอพร้อม LineOA</div>
                                     <div class="d-flex justify-content-center gap-2 mt-3">
@@ -415,6 +415,10 @@
 
                             // Show OTP input block
                             document.getElementById('otp_verify_block').style.display = 'block';
+                            const loginOtpInput = document.getElementById('otp');
+                            if (loginOtpInput) {
+                                setTimeout(() => loginOtpInput.focus(), 200);
+                            }
                         }
                     } else {
                         Swal.fire({

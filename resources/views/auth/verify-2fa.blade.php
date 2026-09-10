@@ -112,6 +112,13 @@
             color: #157347 !important;
             text-decoration: underline;
         }
+        #btn_paste_otp {
+            transition: all 0.2s ease;
+        }
+        #btn_paste_otp:hover {
+            background-color: #198754 !important;
+            color: #ffffff !important;
+        }
     </style>
 </head>
 <body>
@@ -131,13 +138,15 @@
         <form method="POST" action="{{ route('login.verify_2fa') }}">
             @csrf
 
-            <div class="mb-4">
-                <input id="otp" type="text" 
+            <div class="mb-2">
+                <input id="otp" type="tel" 
+                       inputmode="numeric" 
+                       pattern="[0-9]*" 
                        class="form-control otp-input-field @error('otp') is-invalid @enderror" 
                        name="otp" 
                        maxlength="6" 
                        required 
-                       autocomplete="off" 
+                       autocomplete="one-time-code" 
                        autofocus 
                        placeholder="X X X X X X">
 
@@ -146,6 +155,13 @@
                         <strong>{{ $message }}</strong>
                     </span>
                 @enderror
+            </div>
+
+            <!-- Quick Paste Action Button for Mobile -->
+            <div class="d-flex justify-content-center mb-4">
+                <button type="button" id="btn_paste_otp" class="btn btn-outline-success btn-sm rounded-pill px-3 py-1 fw-medium shadow-xs" style="font-size: 0.85rem; border-color: #198754; color: #198754; background: #f0fdf4;">
+                    <i class="far fa-clipboard me-1"></i> วางรหัสจากคลิปบอร์ด
+                </button>
             </div>
 
             <div class="d-grid gap-2 mb-3">
@@ -166,6 +182,123 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const otpInput = document.getElementById('otp');
+        const verifyFormEl = document.querySelector('form');
+        const btnPasteOtp = document.getElementById('btn_paste_otp');
+
+        // Helper to extract 6 digits and normalize bold/unicode/thai numbers
+        function extractOtp(raw) {
+            if (!raw) return '';
+            let str = String(raw);
+
+            // Convert mathematical bold sans-serif digits (from LineOA: 𝟬-𝟵)
+            const boldSans = ['𝟬','𝟭','𝟮','𝟯','𝟰','𝟱','𝟲','𝟳','𝟴','𝟵'];
+            boldSans.forEach((b, i) => { str = str.replaceAll(b, i.toString()); });
+
+            // Convert mathematical bold serif digits (𝟎-𝟗)
+            const boldSerif = ['𝟎','𝟏','𝟐','𝟑','𝟒','𝟓','𝟔','𝟕','𝟖','𝟗'];
+            boldSerif.forEach((b, i) => { str = str.replaceAll(b, i.toString()); });
+
+            // Convert Thai digits (๐-๙)
+            const thaiDigits = ['๐','๑','๒','๓','๔','๕','๖','๗','๘','๙'];
+            thaiDigits.forEach((t, i) => { str = str.replaceAll(t, i.toString()); });
+
+            // Convert fullwidth digits (０-９)
+            str = str.replace(/[\uFF10-\uFF19]/g, function(ch) {
+                return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0);
+            });
+
+            // Match exact 6-digit sequence first (handles messages like "รหัส 2FA คือ 123456")
+            const match = str.match(/\b\d{6}\b/) || str.match(/\d{6}/);
+            if (match) {
+                return match[0];
+            }
+
+            // Fallback: strip all non-digits and slice first 6
+            return str.replace(/[^0-9]/g, '').slice(0, 6);
+        }
+
+        function submitOtpForm() {
+            if (verifyFormEl) {
+                if (typeof verifyFormEl.requestSubmit === 'function') {
+                    verifyFormEl.requestSubmit();
+                } else {
+                    verifyFormEl.submit();
+                }
+            }
+        }
+
+        // Auto-focus helper with mobile virtual keyboard activation
+        function focusOtpInput() {
+            if (otpInput && document.visibilityState !== 'hidden') {
+                otpInput.focus({ preventScroll: true });
+                setTimeout(function() {
+                    otpInput.focus({ preventScroll: true });
+                }, 150);
+            }
+        }
+
+        // Focus initially on load
+        focusOtpInput();
+
+        // Re-focus whenever user returns from another app (MorProm / Line OA)
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                focusOtpInput();
+            }
+        });
+        window.addEventListener('focus', focusOtpInput);
+        window.addEventListener('pageshow', focusOtpInput);
+
+        // Input handler: normalize and auto-submit on 6 digits
+        if (otpInput) {
+            otpInput.addEventListener('input', function() {
+                const cleaned = extractOtp(this.value);
+                if (this.value !== cleaned) {
+                    this.value = cleaned;
+                }
+                if (this.value.length === 6) {
+                    submitOtpForm();
+                }
+            });
+
+            // Paste handler: handles paste directly into input
+            otpInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+                const cleaned = extractOtp(pasteData);
+                if (cleaned) {
+                    this.value = cleaned;
+                    this.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+        }
+
+        // Quick Paste Button Handler
+        if (btnPasteOtp) {
+            btnPasteOtp.addEventListener('click', async function() {
+                try {
+                    if (navigator.clipboard && navigator.clipboard.readText) {
+                        const clipText = await navigator.clipboard.readText();
+                        const cleaned = extractOtp(clipText);
+                        if (cleaned && cleaned.length >= 4) {
+                            otpInput.value = cleaned;
+                            otpInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            btnPasteOtp.innerHTML = '<i class="fas fa-check text-success me-1"></i> วางรหัสแล้ว';
+                            setTimeout(function() {
+                                btnPasteOtp.innerHTML = '<i class="far fa-clipboard me-1"></i> วางรหัสจากคลิปบอร์ด';
+                            }, 2000);
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    // Clipboard permission prompt denied or unsupported
+                }
+                // Fallback: focus input so mobile keyboard / native paste menu appears
+                focusOtpInput();
+            });
+        }
+
         @if($errors->any())
             Swal.fire({
                 icon: 'error',
@@ -173,20 +306,10 @@
                 text: "{{ $errors->first() }}",
                 confirmButtonText: 'ตกลง',
                 confirmButtonColor: '#dc3545'
+            }).then(() => {
+                focusOtpInput();
             });
         @endif
- 
-        // Auto numeric input only & auto-submit on 6 digits
-        const otpInput = document.getElementById('otp');
-        const verifyFormEl = document.querySelector('form');
-        if (otpInput) {
-            otpInput.addEventListener('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, '');
-                if (this.value.length === 6 && verifyFormEl) {
-                    verifyFormEl.requestSubmit();
-                }
-            });
-        }
 
         // Countdown Timer Logic
         let remainingSeconds = parseInt('{{ $remainingSeconds }}');
@@ -248,6 +371,7 @@
                                 // Reset timer back to 120 seconds
                                 remainingSeconds = 120;
                                 startCountdown();
+                                focusOtpInput();
                             });
                         } else {
                             SwendError(data.message);
@@ -269,6 +393,7 @@
                 confirmButtonColor: '#dc3545'
             }).then(() => {
                 showResendLink();
+                focusOtpInput();
             });
         }
 

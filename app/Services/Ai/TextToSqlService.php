@@ -105,6 +105,7 @@ class TextToSqlService
 5. ใช้ชื่อฟิลด์ภาษาอังกฤษตาม Schema ที่ให้มาด้านล่าง
 6. เขียนคำสั่ง SQL ที่มีประสิทธิภาพ พร้อมตั้งชื่อ Alias คอลัมน์เป็นภาษาไทยที่อ่านง่าย เช่น `count(*) as 'จำนวนคน'`
 7. หากคำถามถามเรื่องประเภท หรือถามต่อเนื่องว่า 'กี่ประเภท' หรือ 'แยกตาม...' ให้เขียนคำสั่งที่แจกแจงตามประเภทนั้นๆ พร้อมนับจำนวน (GROUP BY และ COUNT) เพื่อให้ผู้ใช้เห็นรายละเอียดและจำนวนครบถ้วน
+8. ห้ามใส่เครื่องหมายจุลภาคหรือฟังก์ชัน FORMAT(...) กับรหัสประจำตัว (Identifiers) เด็ดขาด เช่น HN, AN, VN, CID, รหัสยา icode, รหัสแล็บ, เลขเตียง, ปี พ.ศ. เพราะไม่ใช่จำนวนนับหรือราคาเงิน ให้คงค่าเดิมไว้เสมอ
 
 Schema ข้อมูลที่สามารถใช้ได้:
 {$schemaContext}
@@ -267,52 +268,65 @@ Schema ข้อมูลที่สามารถใช้ได้:
             return "ขออภัยครับ จากการสืบค้นฐานข้อมูล {$dbName} ในระบบ ไม่พบข้อมูลตามเงื่อนไขหรือช่วงเวลาที่ระบุครับ 🙏{$hint}";
         }
 
+        $isCodeCol = function ($name) {
+            return (bool) preg_match('/(hn|an|vn|cid|pid|code|icode|tmt|billcode|adp|idcard|phone|tel|year|bed|ward|dept|clinic|เลข|รหัส|ปี|เบอร์|โทร|เตียง|ลำดับ)/i', $name);
+        };
+        $isMeasureCol = function ($name) {
+            return (bool) preg_match('/(จำนวน|ราคา|ยอด|บาท|มูลค่า|ผลรวม|จ่าย|ค้าง|ต้นทุน|count|qty|amount|price|cost|total|sum|adjrw|cmi)/i', $name);
+        };
+
+        $keys = array_keys($rows[0]);
+        $firstCol = $keys[0] ?? '';
+        $secondCol = $keys[1] ?? '';
+        // Only consider 2nd col a measure if it's explicitly named like count/sum/qty/price and NOT a code/ID
+        $isSecondColMeasure = !empty($secondCol) && $isMeasureCol($secondCol) && !$isCodeCol($secondCol);
+
         // If single row with 1-3 columns, format directly
         if ($count === 1 && count($rows[0]) <= 3) {
             $parts = [];
             foreach ($rows[0] as $k => $v) {
-                $formattedVal = is_numeric($v) ? number_format($v) : $v;
+                if (is_numeric($v) && !$isCodeCol($k) && $isMeasureCol($k)) {
+                    $formattedVal = is_float($v + 0) ? number_format($v, 2) : number_format($v);
+                } else {
+                    $formattedVal = $v;
+                }
                 $parts[] = "{$k}: **{$formattedVal}**";
             }
             return "ผลลัพธ์จากฐานข้อมูล {$dbName}: " . implode(' | ', $parts);
         }
 
-        // Multiple rows (2-10): Provide conversational breakdown with numbers
-        if ($count > 1 && $count <= 10) {
+        // Multiple rows (2-10): Only provide breakdown if it's an aggregation (e.g. group by + count/amount)
+        if ($count > 1 && $count <= 10 && $isSecondColMeasure) {
             $lines = [];
             foreach ($rows as $row) {
                 $vals = array_values($row);
-                if (count($vals) >= 2) {
-                    $name = $vals[0];
-                    $num = is_numeric($vals[1]) ? number_format($vals[1]) : $vals[1];
-                    $lines[] = "- {$name}: **{$num}**";
-                } elseif (count($vals) === 1) {
-                    $lines[] = "- " . $vals[0];
-                }
+                $name = $vals[0];
+                $val1 = $vals[1] ?? '';
+                $num = (is_numeric($val1) && !$isCodeCol($secondCol)) ? (is_float($val1 + 0) ? number_format($val1, 2) : number_format($val1)) : $val1;
+                $lines[] = "- {$name}: **{$num}**";
             }
             if (!empty($lines)) {
                 return "ผลลัพธ์จากฐานข้อมูล {$dbName} (พบทั้งหมด **{$count}** รายการ):\n" . implode("\n", $lines);
             }
         }
 
-        // More than 10 rows: Provide top 5 and indicate remaining in table
-        if ($count > 10) {
+        // More than 10 rows with measure
+        if ($count > 10 && $isSecondColMeasure) {
             $sampleLines = [];
             $topRows = array_slice($rows, 0, 5);
             foreach ($topRows as $row) {
                 $vals = array_values($row);
-                if (count($vals) >= 2) {
-                    $name = $vals[0];
-                    $num = is_numeric($vals[1]) ? number_format($vals[1]) : $vals[1];
-                    $sampleLines[] = "- {$name}: **{$num}**";
-                }
+                $name = $vals[0];
+                $val1 = $vals[1] ?? '';
+                $num = (is_numeric($val1) && !$isCodeCol($secondCol)) ? (is_float($val1 + 0) ? number_format($val1, 2) : number_format($val1)) : $val1;
+                $sampleLines[] = "- {$name}: **{$num}**";
             }
             $sampleText = !empty($sampleLines) ? ":\n" . implode("\n", $sampleLines) . "\n- *(และรายการอื่น ๆ รวมทั้งหมด {$count} รายการ ดังตารางด้านล่าง)*" : "";
             return "ผลลัพธ์จากฐานข้อมูล {$dbName} พบทั้งหมด **{$count}** รายการ{$sampleText}";
         }
 
-        // General summary
-        return "สืบค้นข้อมูลจากฐานข้อมูล {$dbName} สำเร็จ พบผลลัพธ์ทั้งหมด **{$count}** รายการ ดังแสดงในตารางด้านล่าง";
+        // General summary for entity/patient record listings (AN, HN, visits, appointments, details)
+        return "ผลลัพธ์จากฐานข้อมูล {$dbName} (พบทั้งหมด **{$count}** รายการ) ดังแสดงในตารางด้านล่าง";
     }
 
     /**

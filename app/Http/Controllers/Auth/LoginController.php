@@ -126,6 +126,10 @@ class LoginController extends Controller
 
     public function verifyOtpPasswordless(Request $request)
     {
+        $rawOtp = $request->input('otp');
+        $cleanOtp = $this->normalizeOtp($rawOtp);
+        $request->merge(['otp' => $cleanOtp]);
+
         $request->validate([
             'username' => 'required',
             'otp' => 'required|numeric'
@@ -190,6 +194,10 @@ class LoginController extends Controller
 
     public function verify2fa(Request $request)
     {
+        $rawOtp = $request->input('otp');
+        $cleanOtp = $this->normalizeOtp($rawOtp);
+        $request->merge(['otp' => $cleanOtp]);
+
         $request->validate([
             'otp' => 'required|numeric'
         ]);
@@ -232,6 +240,30 @@ class LoginController extends Controller
         $normal = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
         $bold = ['𝟬', '𝟭', '𝟮', '𝟯', '𝟰', '𝟱', '𝟲', '𝟳', '𝟴', '𝟵'];
         return str_replace($normal, $bold, $str);
+    }
+
+    private function normalizeOtp($str)
+    {
+        if (empty($str)) {
+            return '';
+        }
+        $bold = ['𝟬', '𝟭', '𝟮', '𝟯', '𝟰', '𝟱', '𝟲', '𝟳', '𝟴', '𝟵'];
+        $boldSerif = ['𝟎', '𝟏', '𝟐', '𝟑', '𝟒', '𝟓', '𝟔', '𝟕', '𝟖', '𝟗'];
+        $thai = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
+        $normal = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+        $str = str_replace($bold, $normal, (string)$str);
+        $str = str_replace($boldSerif, $normal, $str);
+        $str = str_replace($thai, $normal, $str);
+
+        if (preg_match('/\b\d{6}\b/', $str, $matches)) {
+            return $matches[0];
+        }
+        if (preg_match('/\d{6}/', $str, $matches)) {
+            return $matches[0];
+        }
+
+        return substr(preg_replace('/[^0-9]/', '', $str), 0, 6);
     }
 
     private function sendMophAlertOTP($cid, $otp, $alertId = null)
