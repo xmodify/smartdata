@@ -138,7 +138,7 @@
         <form method="POST" action="{{ route('login.verify_2fa') }}">
             @csrf
 
-            <div class="mb-2">
+            <div class="mb-4">
                 <input id="otp" type="tel" 
                        inputmode="numeric" 
                        pattern="[0-9]*" 
@@ -155,13 +155,6 @@
                         <strong>{{ $message }}</strong>
                     </span>
                 @enderror
-            </div>
-
-            <!-- Quick Paste Action Button for Mobile -->
-            <div class="d-flex justify-content-center mb-4">
-                <button type="button" id="btn_paste_otp" class="btn btn-outline-success btn-sm rounded-pill px-3 py-1 fw-medium shadow-xs" style="font-size: 0.85rem; border-color: #198754; color: #198754; background: #f0fdf4;">
-                    <i class="far fa-clipboard me-1"></i> วางรหัสจากคลิปบอร์ด
-                </button>
             </div>
 
             <div class="d-grid gap-2 mb-3">
@@ -184,7 +177,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         const otpInput = document.getElementById('otp');
         const verifyFormEl = document.querySelector('form');
-        const btnPasteOtp = document.getElementById('btn_paste_otp');
 
         // Helper to extract 6 digits and normalize bold/unicode/thai numbers
         function extractOtp(raw) {
@@ -274,30 +266,6 @@
             });
         }
 
-        // Quick Paste Button Handler
-        if (btnPasteOtp) {
-            btnPasteOtp.addEventListener('click', async function() {
-                try {
-                    if (navigator.clipboard && navigator.clipboard.readText) {
-                        const clipText = await navigator.clipboard.readText();
-                        const cleaned = extractOtp(clipText);
-                        if (cleaned && cleaned.length >= 4) {
-                            otpInput.value = cleaned;
-                            otpInput.dispatchEvent(new Event('input', { bubbles: true }));
-                            btnPasteOtp.innerHTML = '<i class="fas fa-check text-success me-1"></i> วางรหัสแล้ว';
-                            setTimeout(function() {
-                                btnPasteOtp.innerHTML = '<i class="far fa-clipboard me-1"></i> วางรหัสจากคลิปบอร์ด';
-                            }, 2000);
-                            return;
-                        }
-                    }
-                } catch (err) {
-                    // Clipboard permission prompt denied or unsupported
-                }
-                // Fallback: focus input so mobile keyboard / native paste menu appears
-                focusOtpInput();
-            });
-        }
 
         @if($errors->any())
             Swal.fire({

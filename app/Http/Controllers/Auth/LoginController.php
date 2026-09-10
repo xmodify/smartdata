@@ -281,8 +281,8 @@ class LoginController extends Controller
         // 1. ข้อความสำหรับ Line OA (ส่งเข้า Line Chat bubble - รองรับ Unicode Bold)
         $lineMessage = "รหัสยืนยันตัวตน (2FA) สำหรับเข้าระบบ SmartData ของท่านคือ {$boldOtp}";
         
-        // 2. ชื่อรายการในกล่องข้อความ สำหรับส่งเข้า Application หมอพร้อม (ห้ามมี Emoji 4-byte)
-        $appMessageText = "รหัส OTP เข้าสู่ระบบ SmartData";
+        // 2. ชื่อรายการในกล่องข้อความ สำหรับส่งเข้า Application หมอพร้อม (ต้องมีรหัส OTP เพื่อให้ระบบแจ้งเตือนและแอปหมอพร้อมคัดลอกรหัสให้อัตโนมัติเหมือน h-rims)
+        $appMessageText = "รหัส OTP ของท่านคือ {$otp}";
         
         // 3. ข้อความ HTML แสดงข้างในกล่องข้อความ Application หมอพร้อม (ใช้แท็กมาตรฐาน <div>, <strong>, <small> ปราศจาก Emoji 4-byte)
         $messageHtml = "<div>รหัสยืนยันตัวตน (2FA) สำหรับเข้าระบบ SmartData ของท่านคือ <strong>{$otp}</strong><br><br><small>รหัสนี้มีอายุการใช้งาน 120 วินาที เพื่อความปลอดภัยกรุณาอย่าเปิดเผยรหัสนี้แก่บุคคลอื่น</small></div>";
