@@ -45,8 +45,21 @@ class TextToSqlService
             }
         }
 
-        // HOSxP explicit keywords
-        $hosxpKeywords = ['คนไข้', 'ผู้ป่วย', 'opd', 'ipd', 'er', 'vn', 'hn', 'an', 'โรค', 'icd', 'pttype', 'สิทธิ', 'ค่ารักษา', 'refer', 'admit', 'เตียง', 'คลินิก', 'วอร์ด', 'ยา', 'หมอ', 'แพทย์'];
+        // HOSxP explicit keywords (All clinical departments, master data, 43 files & hospital workflows)
+        $hosxpKeywords = [
+            'คนไข้', 'ผู้ป่วย', 'opd', 'ipd', 'er', 'vn', 'hn', 'an', 'โรค', 'icd', 'pttype', 'สิทธิ', 'ค่ารักษา',
+            'refer', 'admit', 'เตียง', 'คลินิก', 'วอร์ด', 'ยา', 'หมอ', 'แพทย์', 'ทันตกรรม', 'ทำฟัน', 'ฟัน',
+            'กายภาพ', 'กายภาพบำบัด', 'แพทย์แผนไทย', 'แผนไทย', 'คลอด', 'ห้องคลอด', 'ทารก', 'ฉุกเฉิน', 'อุบัติเหตุ',
+            'ems', 'แล็บ', 'lab', 'xray', 'เอ็กซเรย์', 'ct scan', 'เสียชีวิต', 'ตาย', 'นัด', 'ใบนัด', 'นัดหมาย',
+            'แพ้ยา', 'เบาหวาน', 'ความดัน', 'ไต', 'stroke', 'สโตรก', 'sepsis', 'หัวใจ', 'ปอด', 'รีเฟอร์', 'ส่งต่อ',
+            'ครองเตียง', 'ชาร์ต', 'chart', 'revisit', 'readmit', 'cmi', 'adjrw', 'คิว', 'วัณโรค', 'หอบหืด',
+            '43 แฟ้ม', '43แฟ้ม', 'provis', 'provis_', 'tmt', 'billcode', 'adp', 'eclaim', 'e-claim', 'csop', 'fdh',
+            'ราคายา', 'ค่ายา', 'ค่าบริการ', 'บัญชียา', 'ed', 'ned', 'หัตถการ', 'icd9', 'lab_items', 'opduser',
+            'type area', 'typearea', 'ประชากร', 'วัคซีน', 'epi', 'chronic', 'labfu', 'disability', 'ความพิการ',
+            'เลข ว', 'ตั้งค่าสิทธิ', 'หมวดรายได้', 'ต้นทุนยา', 'ราคาขายยา',
+            'pttype_price_group', 'price_group', 'price_type', 'กลุ่มราคา', 'ราคาตามสิทธิ', 'unitprice2', 'unitprice3', 'price2', 'price3', 'ราคานอกเวลา', 'ราคาต่างชาติ',
+            'pttype_items_price', 'ราคาเฉพาะสิทธิ', 'ตั้งราคาเฉพาะรายการ'
+        ];
         foreach ($hosxpKeywords as $kw) {
             if (mb_strpos($q, $kw) !== false) {
                 return 'hosxp';
@@ -338,30 +351,192 @@ Schema ข้อมูลที่สามารถใช้ได้:
 
         // Default: HOSxP
         return "
--- ฐานข้อมูล HOSxP (ระบบบริการผู้ป่วย, เวชระเบียน, การเงินโรงพยาบาล)
-- patient: ข้อมูลประชากร/ผู้ป่วย (hn, fname as ชื่อ, lname as นามสกุล, sex as เพศ [1=ชาย, 2=หญิง], birthday as วันเกิด, cid, addrpart, mojupart, amphur, changwat)
-- ovst: ข้อมูลการมาตรวจผู้ป่วยนอก (vn, hn, vstdate as วันที่ตรวจ [YYYY-MM-DD], vsttime as เวลาตรวจ, cur_dep as แผนกที่ตรวจ, pttype as สิทธิการรักษา, main_dep)
-- vn_stat: สถิติผู้ป่วยนอกและค่าใช้จ่าย (vn, hn, vstdate as วันที่ตรวจ, pdx as รหัสโรคหลัก ICD10, dx0, dx1, dx2, dx3, dx4, dx5, sex, age_y as อายุเป็นปี, pttype, income as ค่าใช้จ่ายรวม, uc_money as เบิกได้, paid_money as ชำระเอง)
-- ipt: ผู้ป่วยในรับ admit (an, hn, vn, regdate as วันที่รับไว้, regtime, dchdate as วันที่จำหน่าย [ถ้ายังนอน รพ. dchdate IS NULL], dchtime, dchstts as สถานะจำหน่าย, dchtype as ประเภทจำหน่าย, ward as รหัสหอผู้ป่วย, pttype, spclty)
-- iptadm: เตียงและห้องพักผู้ป่วยใน (an, bedno as เลขที่เตียง, roomno as ห้องพัก)
-- an_stat: สถิติผู้ป่วยใน (an, hn, regdate, dchdate, pdx as รหัสโรคหลัก, income as ยอดเงินรวม, ward, age_y)
-- ovstdiag: การวินิจฉัยโรค OPD (vn, hn, icd10 as รหัสโรค, diagtype as ประเภทการวินิจฉัย [1=Principle Dx, 2=Co-morbidity, 3=Complication], vstdate)
-- iptdiag: การวินิจฉัยโรค IPD (an, hn, icd10, diagtype)
-- er_regist: ผู้ป่วยฉุกเฉิน ER (vn, hn, vstdate, vsttime, er_emergency_type [1=กู้ชีพ Resuscitation, 2=ฉุกเฉินเร่งด่วน Emergency, 3=ฉุกเฉิน Urgent, 4=กึ่งฉุกเฉิน Semi-urgent, 5=ไม่ฉุกเฉิน Non-urgent])
-- referout: การส่งต่อผู้ป่วยไป รพ. อื่น (vn, hn, refer_date as วันที่ส่งต่อ, refer_hospcode as รหัสสถานพยาบาลปลายทาง, refer_point, with_ambulance)
-- pttype: ตารางสิทธิการรักษา (pttype as รหัสสิทธิ, name as ชื่อสิทธิการรักษา, pcode)
-- clinic: แผนก/คลินิก (clinic as รหัสคลินิก, name as ชื่อคลินิก)
-- ward: ตึกผู้ป่วยใน/หอผู้ป่วย (ward as รหัสวอร์ด, name as ชื่อหอผู้ป่วย, bedcount as จำนวนเตียงทั้งหมด)
-- icd101: พจนานุกรมรหัสโรค ICD-10 (code as รหัสโรค, name as ชื่อโรคอังกฤษ, tname as ชื่อโรคภาษาไทย)
-- drugitems: คลังรายการยา (icode as รหัสยา, name as ชื่อยา, generic_name, units)
-- opitemrece: รายการจ่ายยาและค่าบริการ (vn, an, hn, icode, qty, unitprice, sum_price, rxdate)
-- doctor: แพทย์และบุคลากรทางการแพทย์ (code as รหัสแพทย์, name as ชื่อแพทย์)
-* กฎสำคัญ HOSxP:
+-- ฐานข้อมูล HOSxP (ระบบบริการผู้ป่วย, เวชระเบียน, การเงิน และตัวชี้วัดโรงพยาบาล)
+
+1. ผู้ป่วยและประชากร:
+- patient: ข้อมูลผู้ป่วย (hn, cid, pname, fname, lname, sex [1=ชาย, 2=หญิง], birthday, addrpart, mojupart, amphur, changwat, chwpart, amppart, tmbpart, moopart, hcode, pttype, drugallergy)
+- hospcode: สถานพยาบาล/รพ.สต. (hospcode, name, hosptype)
+
+2. ผู้ป่วยนอก (OPD):
+- ovst: การมารับบริการ (vn, hn, vstdate [YYYY-MM-DD], vsttime, cur_dep, main_dep, pttype, ovstost ['99'=เสร็จสิ้น], oqueue, main_dep_queue, ovstist ['08'=ALS, '09'=FR, '10'=ILS สำหรับ EMS], an)
+- vn_stat: สถิติผู้ป่วยนอกและการเงิน (vn, hn, vstdate, pdx [รหัสโรคหลัก ICD-10], dx0, dx1, dx2, dx3, dx4, dx5, sex, age_y, pttype, income [ค่าบริการรวม], uc_money [เบิกได้], paid_money [ชำระเอง], inc12 [ค่ายา], inc03 [ค่าแล็บ], lastvisit_hour [ชม. ที่มาตรวจครั้งก่อน], old_diagnosis ['Y'=โรคเดิม], dx_doctor)
+- opdscreen: คัดกรองและสัญญาณชีพ (vn, hn, cc [อาการสำคัญ Chief Complaint], bps, bpd, bw [น้ำหนัก], height [ส่วนสูง], hr, pulse, temperature)
+- ovstdiag: การวินิจฉัยโรค OPD (vn, hn, icd10, diagtype [1=Principle Dx, 2=Co-morbidity, 3=Complication], vstdate)
+- kskdepartment: แผนกตรวจ (depcode, department)
+  * รหัสแผนกหลัก main_dep: '002'=OPD ทั่วไป, '011'=NCD คลินิกเรื้อรัง, '032'=ARI ทางเดินหายใจ, '033'=ไตเทียม รพ., '024'=ไตเทียมนอก
+
+3. ผู้ป่วยใน (IPD):
+- ipt: การรับไว้รักษา (an, hn, vn, regdate [วันที่รับไว้], regtime, dchdate [วันที่จำหน่าย], dchtime, dchstts, dchtype ['04'=Refer], dch_doctor, ward, pttype, spclty, adjrw, confirm_discharge ['N'=ครองเตียงอยู่ หรือ dchdate IS NULL])
+- an_stat: สถิติผู้ป่วยใน (an, hn, regdate, dchdate, pdx [รหัสโรคหลักเมื่อจำหน่าย], admdate [วันนอน admit], hospital_admdate, income, rcpt_money, inc12 [ค่ายา], inc03 [ค่าแล็บ], ward, age_y, admit_hour, adjrw)
+- iptadm: เตียงและห้องพักผู้ป่วยใน (an, bedno, roomno)
+- iptbedmove: ประวัติการย้ายเตียง/วอร์ด IPD (an, movedate, movetime, nbedno, nward)
+- iptdiag: การวินิจฉัยโรค IPD (an, hn, icd10, diagtype [1=Principle Dx])
+- ipt_doctor_diag: แพทย์บันทึกการวินิจฉัย/สรุปชาร์ต EMR (an, diag_text [ข้อความวินิจฉัยโรคทางคลินิกที่แพทย์บันทึกแรกรับและระหว่างรักษา], audit_diag_text, audit_ok ['Y'=Audit ผ่าน], diagtype [1=โรคหลัก])
+- ipt_doctor_list: แพทย์ผู้ดูแล IPD (an, doctor, ipt_doctor_type_id, active_doctor ['Y'])
+- iptoprt: หัตถการและผ่าตัด IPD (an, icd9 [รหัสหัตถการ ICD-9-CM])
+- doctor_operation: หัตถการ OPD (vn, icd9)
+- ward: หอผู้ป่วย (ward, name, bedcount [จำนวนเตียงทั้งหมด])
+  * รหัสวอร์ด: '01'=สามัญ, '02'=ห้องคลอด (LR), '03'=VIP, '10'=ICU (หรือดูเตียง nbedno LIKE 'ICU%'), '06'=Homeward
+- dchstts: สถานะการจำหน่าย (dchstts, name เช่น หาย, ดีขึ้น, ไม่ทุเลา, เสียชีวิต)
+- dchtype: ประเภทการจำหน่าย (dchtype, name เช่น 01=With Approval, 04=Refer ส่งต่อไป รพ. อื่น)
+
+4. งานบริการเฉพาะทาง (Specialty Clinics & Units):
+- dtmain: ทันตกรรม Dental (vn, hn) *เงื่อนไขผู้รับบริการ: `vn IN (SELECT vn FROM dtmain)`
+- physic_list: กายภาพบำบัด Physical Therapy (vn, hn) *เงื่อนไขผู้รับบริการ: `EXISTS (SELECT 1 FROM physic_list WHERE vn = o.vn)`
+- health_med_service: แพทย์แผนไทย (vn, hn) *เงื่อนไขผู้รับบริการ: `EXISTS (SELECT 1 FROM health_med_service WHERE vn = o.vn)`
+- ipt_pregnancy: การคลอดในห้องคลอด LR (an, deliver_type [1=คลอดธรรมชาติ Normal, 2=คลอดผิดปกติ/ผ่าคลอด, 3=แท้ง/อื่นๆ])
+- person_anc_service: บริการฝากครรภ์ ANC (vn, hn)
+- clinic: คลินิกเฉพาะโรค (clinic, name)
+  * รหัสคลินิกเรื้อรัง NCD: '001'=เบาหวาน (DM), '002'=ความดันโลหิตสูง (HT), '007'=ไตเรื้อรัง CKD, '009'=วัณโรค/Asthma, '012'=สุขภาพจิต, '013'=ฟอกไต HD, '014'=ฟอกไต CAPD, '020'=บำบัดยาเสพติด, '021'=COPD, '028'=โรคหลอดเลือดสมอง Stroke, '029'=หัวใจล้มเหลว, '032'=CKD 4-5
+- clinicmember: ทะเบียนผู้ป่วยคลินิกโรคเรื้อรัง NCD (hn, clinic, regdate, lastvisit, dchdate, clinic_member_status_id, last_fbs_value [ค่าน้ำตาล], last_hba1c_value, last_ua_value, last_bp_bps_value [ความดันตัวบน], doctor, send_to_pcu_hcode)
+- clinic_member_status: สถานะผู้ป่วยคลินิกเรื้อรัง (clinic_member_status_id, clinic_member_status_name)
+
+5. งานอุบัติเหตุ-ฉุกเฉิน (ER & EMS):
+- er_regist: ผู้ป่วยฉุกเฉิน ER (vn, hn, vstdate, vsttime, enter_er_time, finish_time, er_emergency_type, er_doctor)
+- er_emergency_type: ระดับความเร่งด่วน ER (er_emergency_type, name [1=กู้ชีพ Resuscitate, 2=ฉุกเฉินเร่งด่วน Emergency, 3=ฉุกเฉิน Urgency, 4=กึ่งฉุกเฉิน Semi-Urgency, 5=ไม่ฉุกเฉิน Non-Urgency])
+
+6. เภสัชกรรม ยา และการแพ้ยา:
+- drugitems: คลังยา (icode, name, generic_name, units, strength) *รหัสยา icode ขึ้นต้นด้วย '1%'
+- opitemrece: รายการสั่งยาและค่าบริการ (vn, an, hn, icode, qty, unitprice, sum_price, rxdate, rxtime, doctor)
+- opd_allergy: ประวัติแพ้ยา (hn, report_date, agent [ชื่อยาที่แพ้], symptom [อาการแพ้], seriousness_id, allergy_result_id)
+- allergy_seriousness: ความรุนแรงการแพ้ยา (seriousness_id, seiousness_name)
+- allergy_result: ผลการประเมินการแพ้ยา (allergy_result_id, result_name)
+
+7. ชันสูตร รังสี และค่าบริการ:
+- nondrugitems: ค่าบริการและเวชภัณฑ์มิใช่ยา (icode, name, price, unitcost, income)
+  * หมวดรายได้ income: '02'=อุปกรณ์/อวัยวะเทียม, '03'=แล็บ (LAB), '12'=ยา, '13'=ทันตกรรม, '14'=กายภาพบำบัด, '15'=แพทย์แผนไทย
+- xray_items: เอกซเรย์ (icode, name, xray_items_group [3=CT Scan])
+- lab_head: สั่งตรวจแล็บ (vn, hn, lab_order_number, order_date, order_time, doctor_code, form_name, confirm_report)
+- lab_order: รายการและผลการตรวจแล็บ (lab_order_number, lab_items_code, lab_order_result [ค่าผลตรวจแล็บ เช่น 120, Negative, ปกติ], lab_order_remark, confirm ['Y'/'N'])
+- lab_items: รายการตรวจแล็บ (lab_items_code, lab_items_name, lab_items_unit, lab_items_normal_value [ค่าปกติอ้างอิง], icode, price, provis_lab_code)
+
+8. นัดหมาย และ คิวตรวจ:
+- oapp: ใบนัดผู้ป่วย (vn, hn, nextdate [วันที่นัด], nexttime, clinic, doctor, app_cause [เหตุผลที่นัด])
+- opd_qs_slot: คิวตรวจ OPD (vn, queue_slot_number)
+
+9. การส่งต่อ และ ระบาดวิทยา:
+- referout: ส่งต่อไป รพ. อื่น (vn, hn, refer_date, refer_time, refer_hospcode, refer_point ['OPD','ER','IPD'], department, pdx, with_ambulance)
+- referin: รับส่งต่อจาก รพ. อื่น (vn, hn, refer_date, refer_time, refer_hospcode, pre_diagnosis, icd10 [as pdx_refer], refer_point)
+- death: การเสียชีวิต (hn, an, death_date, death_time, death_cause, death_diag_1 [รหัสโรค ICD10 ที่เสียชีวิต], death_place ['1'=เสียชีวิตใน รพ.])
+- surveil_member: ผู้ป่วยโรคเฝ้าระวังทางระบาดวิทยา 506 (hn, vn, an, code506, report_date, begin_date)
+- name506: พจนานุกรมโรคเฝ้าระวัง 506 (code, name)
+
+10. สิทธิการรักษาและการกำหนดกลุ่มราคา (Pttype & Price Group):
+- pttype: ตารางสิทธิการรักษา (pttype, name, hipdata_code, pcode, paidst, isuse ['Y'/'N'], expire_date, price_type [ระดับราคา 1-5], pttype_price_group_id [เชื่อม pttype_price_group], pttype_sks_code)
+  * hipdata_code: 'UCS'/'DIS'=บัตรทอง, 'OFC'/'BKK'/'BMT'=ข้าราชการ/เบิกตรง, 'SSS'/'SSI'=ประกันสังคม, 'LGO'=อปท., 'NRD'/'NRH'=ไร้สัญชาติ/ต่างด้าวไร้สิทธิ, 'A1'/'A9' หรือ paidst IN ('01','03')=ชำระเงินเอง
+- pttype_price_group: ตารางกลุ่มการคิดราคาตามสิทธิ (pttype_price_group_id, name, price_type [1=ราคาปกติ, 2=ราคานอกเวลา/เบิกได้, 3=ราคาต่างด้าว/ต่างชาติ, 4, 5])
+- pttype_price_policy: นโยบายการกำหนดราคาตามสิทธิ (pttype, price_type, discount_percent)
+- pttype_items_price: ตารางกำหนดราคาค่ายาและค่ารักษาเฉพาะรายสิทธิและรายรายการ icode (pttype, icode, price, price2, price3, paidst, claim_code)
+  * ความสำคัญสูงสุด (Override Priority 1): หากรายการ icode ใดมีการกำหนดราคาใน pttype_items_price ระบบ HOSxP จะดึงราคานี้มาใช้ก่อนเสมอ เหนือกว่า pttype_price_group และ drugitems.unitprice / nondrugitems.price
+- visit_pttype: สิทธิตอนตรวจ OPD (vn, pttype, hospmain [รหัส รพ. ตามสิทธิ เช่น '10989'=รพ.หัวตะพาน In-CUP])
+- ipt_pttype: สิทธิตอน Admit IPD (an, pttype, hospmain)
+- icd101: พจนานุกรมรหัสโรค ICD-10 (code, name, tname)
+
+11. ข้อมูลพื้นฐานและการตั้งค่าระบบ (Master Data & Settings สำหรับ Admin):
+- drugitems: คลังยาและการกำหนดราคาขายหลายระดับตามกลุ่มสิทธิ (icode, name, generic_name, strength, units, unitcost [ราคาทุน], unitprice [ราคาขายระดับ 1 ปกติ], unitprice2 [ราคาขายระดับ 2 นอกเวลา/เบิกได้], unitprice3 [ราคาขายระดับ 3 ต่างด้าว/ต่างชาติ], unitprice4 [ราคา 4], unitprice5 [ราคา 5], drugaccount [1=ED ในบัญชียาหลัก, 2=NED นอกบัญชี], hospital_drug_code [รหัสยามาตรฐาน 24 หลัก TMT สำหรับส่งออก e-Claim], did [รหัสยามาตรฐาน สธ.], nhso_adp_code [รหัสเบิก สปสช.], warn_text, pregnancy_category)
+  * การคิดค่ายาตามสิทธิ: ระบบ HOSxP จะดึงราคา unitprice, unitprice2, unitprice3... ตามฟิลด์ price_type ของ pttype หรือ pttype_price_group ของผู้ป่วย
+- drugitems_price_group: ตารางกำหนดราคายาเฉพาะกลุ่มราคา (icode, pttype_price_group_id, unitprice)
+- nondrugitems: ค่าบริการ ค่ารักษาพยาบาล และหัตถการหลายระดับราคา (icode, name, unitcost [ราคาทุน], price [ราคาปกติระดับ 1], price2 [ราคานอกเวลาระดับ 2], price3 [ราคาต่างด้าวระดับ 3], price4 [ราคา 4], price5 [ราคา 5], income [หมวดรายได้], billcode [รหัสเบิกจ่ายตรง CSOP], nhso_adp_code [รหัสเบิก สปสช. E-Claim], cgd_code, istype)
+  * การคิดค่าบริการตามสิทธิ: ระบบ HOSxP จะดึงราคา price, price2, price3... ตาม price_type ของ pttype หรือ pttype_price_group
+- nondrugitems_price_group: ตารางกำหนดค่าบริการเฉพาะกลุ่มราคา (icode, pttype_price_group_id, price)
+- income: หมวดรายได้หลักโรงพยาบาล (income, name เช่น 01=ค่าห้อง, 02=อุปกรณ์, 03=แล็บ, 12=ยา, 13=ทันตกรรม, 14=กายภาพ, 15=แพทย์แผนไทย)
+- icd9cm1: พจนานุกรมรหัสหัตถการและผ่าตัด ICD-9-CM มาตรฐาน (code, name)
+- lab_items: รายการตรวจแล็บ (lab_items_code, lab_items_name, lab_items_unit, lab_items_normal_value [ค่าปกติอ้างอิง Reference Range], icode [เชื่อม nondrugitems.icode], price, provis_lab_code)
+- doctor: แพทย์และบุคลากรทางการแพทย์ (code, name, licence_no [เลขที่ใบอนุญาต ว./ท./พ./ภ. สำหรับส่งออกแฟ้ม PROVIDER], spclty, active ['Y'/'N'], cid)
+- spclty: สาขาความเชี่ยวชาญแพทย์ (spclty, name เช่น 01=อายุรกรรม, 02=ศัลยกรรม, 03=สูติ-นรีเวช, 04=กุมารเวชกรรม, 05=ออร์โธปิดิกส์)
+- opduser: บัญชีผู้ใช้งานระบบ HOSxP (loginname, name, groupname, department, account_disable ['Y'/'N'])
+
+12. โครงสร้างการส่งออก 43 แฟ้ม และตารางมาตรฐาน provis_:
+- provis_instype: รหัสสิทธิการรักษามาตรฐาน 43 แฟ้ม สนย. (code, name) เชื่อมโยงกับ pttype (สำหรับแฟ้ม PERSON, CHARGE_OPD, CHARGE_IPD)
+- provis_vaccine: รหัสวัคซีนมาตรฐาน 43 แฟ้ม แฟ้ม EPI (code, name เช่น 010=BCG, 041=DTP-HB1, 081=OPV1, 061=MMR, 073=HPV)
+- provis_ncd_clinic: รหัสคลินิกโรคเรื้อรัง 43 แฟ้ม แฟ้ม CHRONIC (code, name เช่น 01=เบาหวาน, 02=ความดัน, 03=หัวใจ, 04=Stroke, 07=CKD)
+- provis_lab_code: รหัสแล็บตรวจติดตามโรคเรื้อรัง 43 แฟ้ม แฟ้ม LABFU (code, name เช่น FBS, HbA1c, Bun, Cr, eGFR, TC, TG, HDL, LDL)
+- provis_fp_type: รหัสวิธีวางแผนครอบครัว แฟ้ม FP (code, name เช่น 1=ยาเม็ด, 2=ยาฉีด, 3=ห่วง, 4=ยาฝัง, 5=ถุงยาง, 6=หมันชาย, 7=หมันหญิง)
+- provis_typedis: รหัสประเภทความพิการ แฟ้ม DISABILITY (code, name เช่น 1=มองเห็น, 2=ได้ยิน, 3=กายภาพ/เคลื่อนไหว, 4=จิตใจ, 5=สติปัญญา, 6=ออทิสติก)
+- provis_title: รหัสคำนำหน้าชื่อมาตรฐาน 43 แฟ้ม (title_code, title_name)
+- provis_marriage: รหัสสถานภาพสมรสมาตรฐาน 43 แฟ้ม (marriage_code, marriage_name)
+- provis_occupation: รหัสอาชีพมาตรฐาน 43 แฟ้ม (occupation_code, occupation_name)
+- provis_accident_code: รหัสสาเหตุการเกิดอุบัติเหตุ แฟ้ม ACCIDENT (code, name)
+- person: ข้อมูลประชากรในเขตรับผิดชอบสำหรับ 43 แฟ้ม แฟ้ม PERSON (person_id, hn, cid, pname, fname, lname, birthdate, sex, house_id, discharge_status, type_area)
+  * รหัส type_area: 1=มีชื่อและตัวอยู่จริง, 2=มีชื่อแต่ตัวไม่อยู่, 3=ตัวอยู่จริงไม่มีชื่อในทะเบียนบ้าน, 4=ประชากรแฝง/นอกเขต
+- person_chronic: ทะเบียนผู้ป่วยโรคเรื้อรังระดับบุคคล แฟ้ม CHRONIC (person_id, hn, chronic_diag, clinic_code)
+- person_disability: ข้อมูลคนพิการระดับบุคคล แฟ้ม DISABILITY (person_id, typedis, disabcode)
+- person_vaccine: ข้อมูลประวัติการรับวัคซีนระดับบุคคล แฟ้ม EPI (person_id, vaccine_code, vaccine_date)
+- village: ข้อมูลหมู่บ้าน (village_id, village_moo, village_name)
+- house: ข้อมูลหลังคาเรือน (house_id, village_id, house_address)
+
+---------------------------------------------------------
+* กฎสำคัญ Hospital Domain Rules & Best Practices:
 1. ตาราง ipt ไม่มีฟิลด์ pdx และไม่มีฟิลด์ bedno เด็ดขาด!
-2. หากต้องการรหัสโรคหลักของผู้ป่วยใน (IPD) ต้อง JOIN an_stat a ON i.an = a.an แล้วใช้ a.pdx (เช่น LEFT JOIN icd101 icd ON a.pdx = icd.code) หรือ JOIN iptdiag id ON i.an = id.an AND id.diagtype = 1 แล้วใช้ id.icd10
-3. หากต้องการเตียงผู้ป่วยใน ให้ JOIN iptadm adm ON i.an = adm.an แล้วใช้ adm.bedno
-4. หากต้องการนับผู้ป่วยครองเตียง/Admit ขณะนี้ ให้ใช้ COUNT(DISTINCT i.an) WHERE i.dchdate IS NULL และอัตราครองเตียงให้คำนวณร่วมกับ ward.bedcount
-5. กรณีค้นหาผู้ป่วยหนัก หรือ ICU ให้ค้นหาจากชื่อหอผู้ป่วย เช่น w.name LIKE '%ผู้ป่วยหนัก%' OR w.name LIKE '%ICU%' OR w.name LIKE '%วิกฤต%'
+   - หากต้องการเตียงผู้ป่วยใน ให้ LEFT JOIN iptadm adm ON i.an = adm.an แล้วใช้ adm.bedno
+2. คนไข้ที่กำลังนอน รพ. (Admit อยู่ขณะนี้):
+   - เงื่อนไขครองเตียง: `WHERE i.confirm_discharge = 'N'` (หรือ `i.dchdate IS NULL`)
+   - คนไข้ที่นอนอยู่ ชาร์ตยังไม่สรุป ทำให้ `an_stat.pdx` ยังว่าง!
+   - การหาโรคคนไข้ที่กำลังนอน รพ. ให้ใช้ Fallback ลำดับความสมบูรณ์ (COALESCE):
+     COALESCE(
+       (SELECT CONCAT('[', id.icd10, '] ', icd.name) FROM iptdiag id LEFT JOIN icd101 icd ON icd.code = id.icd10 WHERE id.an = i.an AND id.diagtype = 1 LIMIT 1),
+       (SELECT idd.diag_text FROM ipt_doctor_diag idd WHERE idd.an = i.an AND idd.diagtype = 1 LIMIT 1),
+       (SELECT CONCAT('[', v.pdx, '] ', icd2.name) FROM vn_stat v LEFT JOIN icd101 icd2 ON icd2.code = v.pdx WHERE v.vn = i.vn LIMIT 1),
+       'อยู่ระหว่างการวินิจฉัย'
+     ) AS 'โรค/การวินิจฉัย'
+3. ผู้ป่วยในที่จำหน่ายแล้ว (Discharged IPD):
+   - หาโรคหลักโดย JOIN an_stat a ON i.an = a.an แล้วใช้ a.pdx (หรือ LEFT JOIN icd101 icd ON a.pdx = icd.code)
+4. ตัวชี้วัดคุณภาพโรงพยาบาล (Hospital Indicators):
+   - Re-admit ภายใน 28 วันด้วยโรคเดิม (IPD):
+     FROM ipt ipt_new
+     INNER JOIN iptdiag diag_new ON diag_new.an = ipt_new.an AND diag_new.diagtype = '1'
+     INNER JOIN ipt ipt_old ON ipt_old.hn = ipt_new.hn AND ipt_old.an <> ipt_new.an
+     INNER JOIN iptdiag diag_old ON diag_old.an = ipt_old.an AND diag_old.diagtype = '1' AND diag_old.icd10 = diag_new.icd10
+     WHERE ipt_new.regdate BETWEEN ? AND ?
+       AND TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) BETWEEN 1 AND 28
+   - Re-visit ภายใน 48 ชม. ด้วยโรคเดิม (ER/OPD):
+     FROM ovst o JOIN vn_stat v ON v.vn = o.vn WHERE v.lastvisit_hour <= 48 AND v.old_diagnosis = 'Y'
+   - Refer Out ภายใน 4 ชม. หรือ 24 ชม. หลัง Admit:
+     FROM ipt i JOIN an_stat a ON i.an = a.an WHERE i.dchtype = '04' AND a.admit_hour <= 4 (หรือ <= 24)
+   - ค่าดัชนีกลุ่มวินิจฉัยโรคร่วมเฉลี่ย (CMI): `ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2)`
+   - ชาร์ตรอแพทย์สรุป: `NOT EXISTS (SELECT 1 FROM ipt_doctor_diag idd WHERE idd.an = i.an AND idd.diag_text <> '')`
+   - ชาร์ตรอ Audit: `EXISTS (SELECT 1 FROM ipt_doctor_diag idd WHERE idd.an = i.an AND idd.diag_text <> '' AND (idd.audit_ok IS NULL OR idd.audit_ok <> 'Y'))`
+5. การตรวจสอบความพร้อมการส่งออก 43 แฟ้ม และการตั้งค่าระบบ (43 Files Audit & Master Settings):
+   - ตรวจสอบรายการที่ตั้งราคาเฉพาะสิทธิใน pttype_items_price: `SELECT p.pttype, t.name as pttype_name, p.icode, COALESCE(d.name, n.name) as item_name, p.price, COALESCE(d.unitprice, n.price) as standard_price, COALESCE(d.unitcost, n.unitcost) as unitcost FROM pttype_items_price p LEFT JOIN pttype t ON t.pttype = p.pttype LEFT JOIN drugitems d ON d.icode = p.icode LEFT JOIN nondrugitems n ON n.icode = p.icode`
+   - ตรวจสอบสิทธิที่มีการตั้งราคาพิเศษเฉพาะรายการมากที่สุด: `SELECT p.pttype, t.name, count(p.icode) as custom_item_count FROM pttype_items_price p LEFT JOIN pttype t ON t.pttype = p.pttype GROUP BY p.pttype, t.name`
+   - ตรวจสอบกลุ่มราคา pttype_price_group และจำนวนสิทธิที่ผูก: `SELECT g.pttype_price_group_id, g.name, g.price_type, count(p.pttype) as pttype_count FROM pttype_price_group g LEFT JOIN pttype p ON p.pttype_price_group_id = g.pttype_price_group_id GROUP BY g.pttype_price_group_id, g.name, g.price_type`
+   - ตรวจสอบสิทธิที่ยังไม่ได้กำหนดระดับราคา (price_type หรือ pttype_price_group_id): `SELECT pttype, name, price_type, pttype_price_group_id FROM pttype WHERE isuse = 'Y' AND (price_type IS NULL OR price_type = '' OR price_type = '0')`
+   - ตรวจสอบราคายาในกลุ่มราคา 1, 2, 3 ที่ต่ำกว่าราคาทุน: `SELECT icode, name, unitcost, unitprice, unitprice2, unitprice3 FROM drugitems WHERE (unitprice < unitcost OR (unitprice2 > 0 AND unitprice2 < unitcost) OR (unitprice3 > 0 AND unitprice3 < unitcost)) AND unitcost > 0`
+   - ตรวจสอบค่าบริการ/หัตถการที่ราคาตามสิทธิผิดปกติหรือต่ำกว่าทุน: `SELECT icode, name, price, price2, price3, unitcost FROM nondrugitems WHERE (price < unitcost OR (price2 > 0 AND price2 < unitcost)) AND unitcost > 0`
+   - ตรวจสอบยาที่ยังไม่ใส่รหัส TMT 24 หลัก: `SELECT icode, name, units FROM drugitems WHERE (hospital_drug_code IS NULL OR hospital_drug_code = '') AND (istype = '01' OR istype IS NULL)`
+   - ตรวจสอบค่าบริการ/แล็บ/หัตถการที่ยังไม่ได้ใส่ billcode หรือ nhso_adp_code: `SELECT icode, name, price, income FROM nondrugitems WHERE (billcode IS NULL OR billcode = '') AND (nhso_adp_code IS NULL OR nhso_adp_code = '')`
+   - ตรวจสอบสิทธิที่เปิดใช้งานแต่ยังไม่ผูก hipdata_code หรือ provis_instype: `SELECT pttype, name, hipdata_code, pcode FROM pttype WHERE isuse = 'Y' AND (hipdata_code IS NULL OR hipdata_code = '')`
+   - ตรวจสอบแพทย์/ผู้ให้บริการที่ Active แต่ยังไม่มีเลข ว. (licence_no) สำหรับแฟ้ม PROVIDER: `SELECT code, name, cid FROM doctor WHERE active = 'Y' AND (licence_no IS NULL OR licence_no = '')`
+   - ตรวจสอบประชากร 43 แฟ้ม แยกตาม Type Area: `SELECT type_area, count(*) as count FROM person GROUP BY type_area`
+   - ตรวจสอบประชากรที่ CID ว่างหรือไม่ครบ 13 หลัก (แฟ้ม PERSON): `SELECT person_id, fname, lname, cid, type_area FROM person WHERE cid IS NULL OR LENGTH(cid) <> 13`
+   - ตรวจสอบประชากรที่ยังไม่ได้ระบุ Type Area: `SELECT person_id, fname, lname, cid FROM person WHERE type_area IS NULL OR type_area = ''`
+   - ตรวจสอบรายการแล็บที่ยังไม่ผูกรหัส provis_lab_code (แฟ้ม LABFU): `SELECT lab_items_code, lab_items_name, provis_lab_code FROM lab_items WHERE provis_lab_code IS NULL OR provis_lab_code = ''`
+   - ตรวจสอบคลินิก NCD ที่ยังไม่ผูกรหัส provis_ncd_clinic (แฟ้ม CHRONIC): `SELECT clinic, name, provis_ncd_clinic_code FROM clinic WHERE provis_ncd_clinic_code IS NULL OR provis_ncd_clinic_code = ''`
+   - ตรวจสอบวัคซีนที่ยังไม่ผูกรหัส provis_vaccine (แฟ้ม EPI): `SELECT vaccine_code, vaccine_name, provis_vaccine_code FROM vaccine WHERE provis_vaccine_code IS NULL OR provis_vaccine_code = ''`
+6. ผู้ป่วยหนัก ICU: ค้นหาจาก `iptbedmove.nbedno LIKE 'ICU%'` หรือ `i.ward = '10'` หรือ `w.name LIKE '%ICU%' OR w.name LIKE '%วิกฤต%'`
+7. รหัสโรคสำคัญ: Stroke (I64, I619, I639) | Sepsis (A419, A415) | Septic Shock (R572) | Pneumonia (J189, J180) | MI (I219) | CHF (I500, I509) | COPD (J449) | Asthma (J459) | Head Injury (S099, S060)
+8. การสืบค้นติดตามผู้ป่วยรายบุคคลด้วย HN หรือ AN (Patient Follow-up & PDPA Privacy):
+   - การสื่อสารด้วย HN หรือ AN เป็นมาตรการตามหลัก Pseudonymization (ข้อมูลรหัสเทียมภายนอกไม่สามารถระบุตัวตนบุคคลได้ ปลอดภัยตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล PDPA)
+   - ติดตามผลแล็บคนไข้ราย HN/AN:
+     SELECT lh.order_date, lh.order_time, li.lab_items_name, lo.lab_order_result, li.lab_items_unit, li.lab_items_normal_value
+     FROM lab_head lh
+     JOIN lab_order lo ON lo.lab_order_number = lh.lab_order_number
+     JOIN lab_items li ON li.lab_items_code = lo.lab_items_code
+     WHERE lh.hn = ?
+     ORDER BY lh.order_date DESC, lh.order_time DESC LIMIT 25
+   - ติดตามรายการยาที่คนไข้ได้รับราย HN/AN:
+     SELECT o.rxdate, o.rxtime, d.name AS drug_name, o.qty, d.units, o.unitprice, o.sum_price
+     FROM opitemrece o
+     JOIN drugitems d ON d.icode = o.icode
+     WHERE (o.hn = ? OR o.an = ?) AND o.icode LIKE '1%'
+     ORDER BY o.rxdate DESC, o.rxtime DESC LIMIT 30
+   - ติดตามค่ารักษาพยาบาลราย HN/AN:
+     SELECT i.name AS income_group, SUM(o.sum_price) AS total_amount, SUM(o.qty) AS item_count
+     FROM opitemrece o
+     JOIN income i ON i.income = o.income
+     WHERE o.hn = ? OR o.an = ?
+     GROUP BY i.name ORDER BY total_amount DESC
+   - มาตรการ PDPA: ห้าม SELECT เลขบัตรประชาชน (cid), เบอร์โทร, หรือที่อยู่ เว้นแต่ผู้ใช้ระบุโดยตรง เพื่อป้องกันการเปิดเผยข้อมูลส่วนบุคคลที่ระบุตัวตนโดยตรง
 ";
     }
 }
