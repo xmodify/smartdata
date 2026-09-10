@@ -25,16 +25,11 @@
                     <div class="text-white-50" style="font-size: 0.72rem; line-height: 1.25;">ผู้ช่วย AI: วิเคราะห์เวชระเบียน HOSxP • SQL • CPG คู่มือ สธ.</div>
                 </div>
             </div>
-            <!-- Header Actions: Trash, Settings, Expand, Close -->
+            <!-- Header Actions: Trash, Expand, Close -->
             <div class="d-flex align-items-center gap-1">
                 <button type="button" class="btn btn-link text-white-50 p-1 text-decoration-none hover-white" onclick="clearWidgetChat()" title="ล้างการสนทนา">
                     <i class="far fa-trash-alt small"></i>
                 </button>
-                @if(auth()->check() && auth()->user()->role === 'admin')
-                <a href="{{ route('admin.ai.settings') }}" class="text-white-50 text-decoration-none p-1 hover-white" title="ตั้งค่า AI Engine">
-                    <i class="fas fa-cog small"></i>
-                </a>
-                @endif
                 <a href="{{ route('ai.chat') }}" class="text-white-50 text-decoration-none p-1 hover-white" title="เปิดหน้าจอเต็ม">
                     <i class="fas fa-external-link-alt small"></i>
                 </a>
