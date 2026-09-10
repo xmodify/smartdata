@@ -41,6 +41,7 @@ class AiSettingController extends Controller
             'ollama_base_url',
             'ollama_model',
             'ollama_embed_model',
+            'copilot_max_concurrent',
             'rag_top_k',
             'rag_min_score',
             'sql_default_db',

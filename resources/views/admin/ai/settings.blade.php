@@ -120,6 +120,27 @@
                     <input class="form-check-input ms-0" type="checkbox" name="copilot_enabled" id="copilot_enabled" value="Y" {{ $isCopilotEnabled ? 'checked' : '' }} style="width: 3.5rem; height: 1.8rem; cursor: pointer;">
                 </div>
             </div>
+            <!-- Concurrency Limiter Footer -->
+            <div class="card-footer bg-light border-0 px-4 py-3 border-top">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="fw-bold small text-dark d-flex align-items-center">
+                            <i class="fas fa-shield-alt text-primary me-2"></i>
+                            ระบบควบคุมคิวและจำกัดคำขอพร้อมกัน (Concurrency Limiter & Server Protection)
+                        </div>
+                        <div class="text-muted small" style="font-size: 0.78rem;">
+                            จำกัดจำนวนผู้ใช้งานที่ส่งคำถาม AI และสืบค้น SQL พร้อมกันในเสี้ยววินาทีเดียวกัน เพื่อป้องกันเซิร์ฟเวอร์โรงพยาบาลและฐานข้อมูล HOSxP ทำงานหนักเกินไป (ค่าแนะนำ: 3 - 8 คำขอ)
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                        <div class="input-group input-group-sm ms-auto" style="max-width: 180px;">
+                            <span class="input-group-text bg-white border-secondary-subtle">สูงสุด</span>
+                            <input type="number" name="copilot_max_concurrent" class="form-control text-center fw-bold text-primary" min="1" max="20" value="{{ $settings['copilot_max_concurrent'] ?? 5 }}">
+                            <span class="input-group-text bg-white border-secondary-subtle">คำขอ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         @php

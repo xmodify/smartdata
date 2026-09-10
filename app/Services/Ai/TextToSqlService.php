@@ -112,6 +112,7 @@ class TextToSqlService
 6. เขียนคำสั่ง SQL ที่มีประสิทธิภาพ พร้อมตั้งชื่อ Alias คอลัมน์เป็นภาษาไทยที่อ่านง่าย เช่น `count(*) as 'จำนวนคน'`
 7. หากคำถามถามเรื่องประเภท หรือถามต่อเนื่องว่า 'กี่ประเภท' หรือ 'แยกตาม...' ให้เขียนคำสั่งที่แจกแจงตามประเภทนั้นๆ พร้อมนับจำนวน (GROUP BY และ COUNT) เพื่อให้ผู้ใช้เห็นรายละเอียดและจำนวนครบถ้วน
 8. ห้ามใส่เครื่องหมายจุลภาคหรือฟังก์ชัน FORMAT(...) กับรหัสประจำตัว (Identifiers) เด็ดขาด เช่น HN, AN, VN, CID, รหัสยา icode, รหัสแล็บ, เลขเตียง, ปี พ.ศ. เพราะไม่ใช่จำนวนนับหรือราคาเงิน ให้คงค่าเดิมไว้เสมอ
+9. ห้ามแสดงรหัส ID ดิบๆ ที่มีตาราง Lookup กำกับเด็ดขาด (เช่น ระดับความรุนแรงความเสี่ยง, โปรแกรมความเสี่ยง, หน่วยงาน/แผนก, สถานที่, สถานะ, ชื่อพัสดุ) ให้ทำการ JOIN ตาราง Lookup ที่เกี่ยวข้องเสมอ เพื่อดึงชื่อและคำอธิบายภาษาไทยมาแสดงผลให้อ่านเข้าใจง่าย
 
 Schema ข้อมูลที่สามารถใช้ได้:
 {$schemaContext}
@@ -173,6 +174,13 @@ Schema ข้อมูลที่สามารถใช้ได้:
 
         // Execute SQL on connection
         try {
+            // Protect hospital database with query statement timeout (Max 8 seconds)
+            try {
+                DB::connection($connection)->statement('SET SESSION max_statement_time = 8;');
+            } catch (\Throwable $te) {
+                // Ignore if connection does not support max_statement_time
+            }
+
             $startTime = microtime(true);
             $results = DB::connection($connection)->select($sql);
             $executionMs = round((microtime(true) - $startTime) * 1000);
@@ -200,7 +208,13 @@ Schema ข้อมูลที่สามารถใช้ได้:
         } catch (Exception $e) {
             $rawError = $e->getMessage();
             $dbName = strtoupper($connection);
-            $politeMsg = "ขออภัยครับ ระบบไม่พบข้อมูลหรือเกิดข้อขัดข้องในการสืบค้นจากฐานข้อมูล {$dbName} ในขณะนี้ครับ 🙏\n\n💡 *คำแนะนำ: โครงสร้างคำถามอาจยังไม่สอดคล้องกับตารางข้อมูล ท่านสามารถลองปรับเปลี่ยนคำค้นหา หรือสอบถามเจ้าหน้าที่ผู้ดูแลระบบ (Admin) เพื่อตรวจสอบคำสั่งสืบค้นได้ครับ*";
+
+            // Detect query timeout (MariaDB max_statement_time 1969 or MySQL 3024)
+            if (stripos($rawError, 'max_statement_time') !== false || stripos($rawError, 'max_execution_time') !== false || stripos($rawError, 'interrupted') !== false) {
+                $politeMsg = "ขออภัยครับ คำสั่งสืบค้นนี้ใช้เวลาประมวลผลนานเกินกำหนด (มากกว่า 8 วินาที) ระบบได้ตัดการทำงานอัตโนมัติเพื่อความปลอดภัยของฐานข้อมูล {$dbName} ครับ 🙏\n\n💡 *คำแนะนำ: กรุณาระบุเงื่อนไขวันที่ หรือระบุช่วงเวลาให้แคบลง เพื่อให้การสืบค้นรวดเร็วยิ่งขึ้นครับ*";
+            } else {
+                $politeMsg = "ขออภัยครับ ระบบไม่พบข้อมูลหรือเกิดข้อขัดข้องในการสืบค้นจากฐานข้อมูล {$dbName} ในขณะนี้ครับ 🙏\n\n💡 *คำแนะนำ: โครงสร้างคำถามอาจยังไม่สอดคล้องกับตารางข้อมูล ท่านสามารถลองปรับเปลี่ยนคำค้นหา หรือสอบถามเจ้าหน้าที่ผู้ดูแลระบบ (Admin) เพื่อตรวจสอบคำสั่งสืบค้นได้ครับ*";
+            }
 
             return [
                 'success' => false,
@@ -266,12 +280,15 @@ Schema ข้อมูลที่สามารถใช้ได้:
     {
         $count = count($rows);
         $dbName = strtoupper($connection);
+        $dateScope = $this->detectDateRange($sql, $question);
+        $dateScopePrefix = $dateScope ? " [{$dateScope}]" : "";
+
         if ($count === 0) {
             $hint = "";
             if (mb_strpos($question, 'วันนี้') !== false || mb_strpos($sql, 'CURDATE()') !== false) {
                 $hint = "\n\n💡 *คำแนะนำ: เนื่องจากเงื่อนไขสืบค้นระบุเป็น 'วันนี้' หากอยู่นอกเวลาทำการหรือยังไม่มีการบันทึกข้อมูล สามารถลองสอบถามโดยระบุเป็น 'เดือนนี้' หรือ 'ย้อนหลัง 30 วัน' ได้ครับ*";
             }
-            return "ขออภัยครับ จากการสืบค้นฐานข้อมูล {$dbName} ในระบบ ไม่พบข้อมูลตามเงื่อนไขหรือช่วงเวลาที่ระบุครับ 🙏{$hint}";
+            return "ขออภัยครับ จากการสืบค้นฐานข้อมูล {$dbName}{$dateScopePrefix} ในระบบ ไม่พบข้อมูลตามเงื่อนไขหรือช่วงเวลาที่ระบุครับ 🙏{$hint}";
         }
 
         $isCodeCol = function ($name) {
@@ -298,7 +315,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
                 }
                 $parts[] = "{$k}: **{$formattedVal}**";
             }
-            return "ผลลัพธ์จากฐานข้อมูล {$dbName}: " . implode(' | ', $parts);
+            return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix}: " . implode(' | ', $parts);
         }
 
         // Multiple rows (2-10): Only provide breakdown if it's an aggregation (e.g. group by + count/amount)
@@ -312,7 +329,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
                 $lines[] = "- {$name}: **{$num}**";
             }
             if (!empty($lines)) {
-                return "ผลลัพธ์จากฐานข้อมูล {$dbName} (พบทั้งหมด **{$count}** รายการ):\n" . implode("\n", $lines);
+                return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix} (พบทั้งหมด **{$count}** รายการ):\n" . implode("\n", $lines);
             }
         }
 
@@ -328,11 +345,91 @@ Schema ข้อมูลที่สามารถใช้ได้:
                 $sampleLines[] = "- {$name}: **{$num}**";
             }
             $sampleText = !empty($sampleLines) ? ":\n" . implode("\n", $sampleLines) . "\n- *(และรายการอื่น ๆ รวมทั้งหมด {$count} รายการ ดังตารางด้านล่าง)*" : "";
-            return "ผลลัพธ์จากฐานข้อมูล {$dbName} พบทั้งหมด **{$count}** รายการ{$sampleText}";
+            return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix} พบทั้งหมด **{$count}** รายการ{$sampleText}";
         }
 
         // General summary for entity/patient record listings (AN, HN, visits, appointments, details)
-        return "ผลลัพธ์จากฐานข้อมูล {$dbName} (พบทั้งหมด **{$count}** รายการ) ดังแสดงในตารางด้านล่าง";
+        return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix} (พบทั้งหมด **{$count}** รายการ) ดังแสดงในตารางด้านล่าง";
+    }
+
+    /**
+     * Extract human-readable Thai date range / period from SQL query or user question.
+     */
+    protected function detectDateRange(string $sql, string $question): ?string
+    {
+        $formatThaiDate = function ($ymd) {
+            if (!$ymd || !preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $ymd, $m)) {
+                return $ymd;
+            }
+            $y = (int)$m[1] + 543;
+            $months = [
+                '01' => 'ม.ค.', '02' => 'ก.พ.', '03' => 'มี.ค.', '04' => 'เม.ย.',
+                '05' => 'พ.ค.', '06' => 'มิ.ย.', '07' => 'ก.ค.', '08' => 'ส.ค.',
+                '09' => 'ก.ย.', '10' => 'ต.ค.', '11' => 'พ.ย.', '12' => 'ธ.ค.'
+            ];
+            $d = (int)$m[3];
+            $monthName = $months[$m[2]] ?? $m[2];
+            return "{$d} {$monthName} {$y}";
+        };
+
+        // 1. Explicit BETWEEN 'YYYY-MM-DD' AND 'YYYY-MM-DD'
+        if (preg_match("/BETWEEN\s+'(\d{4}-\d{2}-\d{2})'\s+AND\s+'(\d{4}-\d{2}-\d{2})'/i", $sql, $m)) {
+            return "ช่วงวันที่ " . $formatThaiDate($m[1]) . " ถึง " . $formatThaiDate($m[2]);
+        }
+
+        // 2. >= 'YYYY-MM-DD' AND <= 'YYYY-MM-DD'
+        if (preg_match("/>=\s*'(\d{4}-\d{2}-\d{2})'\s+AND\s+<=\s*'(\d{4}-\d{2}-\d{2})'/i", $sql, $m)) {
+            return "ช่วงวันที่ " . $formatThaiDate($m[1]) . " ถึง " . $formatThaiDate($m[2]);
+        }
+
+        // 3. >= 'YYYY-MM-DD' AND < 'YYYY-MM-DD'
+        if (preg_match("/>=\s*'(\d{4}-\d{2}-\d{2})'\s+AND\s+<\s*'(\d{4}-\d{2}-\d{2})'/i", $sql, $m)) {
+            try {
+                $end = new \DateTime($m[2]);
+                $end->modify('-1 day');
+                return "ช่วงวันที่ " . $formatThaiDate($m[1]) . " ถึง " . $formatThaiDate($end->format('Y-m-d'));
+            } catch (\Exception $e) {
+                return "ช่วงวันที่ " . $formatThaiDate($m[1]);
+            }
+        }
+
+        // 4. Dynamic expressions: INTERVAL 1 MONTH / เดือนที่แล้ว
+        if (stripos($sql, 'INTERVAL 1 MONTH') !== false || mb_strpos($question, 'เดือนที่แล้ว') !== false) {
+            $lastMonth = new \DateTime('first day of last month');
+            $lastMonthEnd = new \DateTime('last day of last month');
+            return "ช่วงวันที่ " . $formatThaiDate($lastMonth->format('Y-m-d')) . " ถึง " . $formatThaiDate($lastMonthEnd->format('Y-m-d')) . " (เดือนที่แล้ว)";
+        }
+
+        // 5. Dynamic expressions: เดือนนี้
+        if (mb_strpos($question, 'เดือนนี้') !== false || (stripos($sql, 'MONTH(') !== false && stripos($sql, 'CURDATE()') !== false)) {
+            $thisMonth = new \DateTime('first day of this month');
+            $today = new \DateTime();
+            return "ช่วงวันที่ " . $formatThaiDate($thisMonth->format('Y-m-d')) . " ถึง " . $formatThaiDate($today->format('Y-m-d')) . " (เดือนนี้)";
+        }
+
+        // 6. เมื่อวาน / INTERVAL 1 DAY
+        if (mb_strpos($question, 'เมื่อวาน') !== false || stripos($sql, 'CURDATE() - INTERVAL 1 DAY') !== false || stripos($sql, 'INTERVAL 1 DAY') !== false) {
+            $yesterday = new \DateTime('-1 day');
+            return "ประจำวันที่ " . $formatThaiDate($yesterday->format('Y-m-d')) . " (เมื่อวานนี้)";
+        }
+
+        // 7. Single explicit date = 'YYYY-MM-DD'
+        if (preg_match("/=\s*'(\d{4}-\d{2}-\d{2})'/i", $sql, $m)) {
+            return "ประจำวันที่ " . $formatThaiDate($m[1]);
+        }
+
+        // 8. วันนี้ / CURDATE()
+        if (mb_strpos($question, 'วันนี้') !== false || stripos($sql, 'CURDATE()') !== false || stripos($sql, 'CURRENT_DATE') !== false) {
+            $today = new \DateTime();
+            return "ประจำวันที่ " . $formatThaiDate($today->format('Y-m-d')) . " (วันนี้)";
+        }
+
+        // 9. ปีงบประมาณ
+        if (preg_match('/(256\d)/', $question, $qm)) {
+            return "ประจำปีงบประมาณ {$qm[1]}";
+        }
+
+        return null;
     }
 
     /**
@@ -396,13 +493,79 @@ Schema ข้อมูลที่สามารถใช้ได้:
 - gleave_type: ประเภทวันลา (LEAVE_TYPE_ID, LEAVE_TYPE_NAME เช่น ลาป่วย, ลากิจ, ลาพักผ่อน, ลาคลอด)
 - salary_all: บัญชีเงินเดือนและค่าตอบแทน (ID, YEAR_ID [ปีงบประมาณ เช่น 2569], MONTH_ID [รหัสเดือน 1-12], PERSON_ID, TOTAL_RECEIVE [ยอดรับรวม], TOTAL_PAY [ยอดหักรวม], NET_SALARY [รับสุทธิ])
 
-9. รายงานความเสี่ยงและอุบัติการณ์ (Risk Incident):
-- risk_rep: รายงานอุบัติการณ์ความเสี่ยง (RISKREP_ID, RISKREP_DATESAVE [วันที่รายงาน], RISKREP_LOCAL [สถานที่เกิดเหตุ], RISKREP_TYPE [ประเภทความเสี่ยง], RISKREP_USEREFFECT [ระดับความรุนแรง], RISKREP_STARTDATE [วันที่เกิดเหตุ], RISKREP_TIME [เวลาเกิดเหตุ])
+9. ระบบรายงานอุบัติการณ์และความเสี่ยงโรงพยาบาล (Hospital Risk Management System):
+- risk_rep: รายงานอุบัติการณ์ความเสี่ยง (
+    RISKREP_ID [รหัสอุบัติการณ์ PK],
+    RISKREP_NO [เลขที่รายงาน เช่น 'R69-00270'],
+    RISKREP_DATESAVE [วันที่บันทึกรายงาน YYYY-MM-DD เช่น '2026-08-15'],
+    RISKREP_STARTDATE [วันที่เกิดอุบัติการณ์],
+    RISKREP_TIME [เวลาเกิดเหตุ เช่น '10:00:00'],
+    RISKREP_DETAILRISK [รายละเอียดเหตุการณ์ความเสี่ยง],
+    RISKREP_BASICMANAGE [การแก้ไขปัญหาเบื้องต้น],
+    RISKREP_LEVEL [รหัสระดับความรุนแรง เชื่อม risk_rep_level.RISK_REP_LEVEL_ID],
+    RISK_REPPROGRAM_ID [รหัสโปรแกรมความเสี่ยงหลัก เชื่อม risk_rep_program.RISK_REPPROGRAM_ID],
+    RISK_REPPROGRAMSUB_ID [รหัสโปรแกรมความเสี่ยงย่อย เชื่อม risk_rep_program_sub.RISK_REPPROGRAMSUB_ID],
+    RISK_REPPROGRAMSUBSUB_ID [รหัสโปรแกรมความเสี่ยงย่อยเฉพาะ เชื่อม risk_rep_program_subsub.RISK_REPPROGRAMSUBSUB_ID],
+    RISKREP_DEPARTMENT_SUB [รหัสหน่วยงานที่เกิดเหตุ/รายงาน เชื่อม risk_rep_department_sub หรือ hrd_department_sub],
+    RISKREP_LOCATION_ID [รหัสสถานที่เกิดเหตุ เชื่อม risk_rep_location.RISK_LOCATION_ID],
+    RISK_REPTYPERESON_ID [รหัสสาเหตุความเสี่ยง เชื่อม risk_rep_typereason.RISK_REPTYPERESON_ID],
+    RISK_REPTYPERESONSYS_ID [รหัสระบบสาเหตุความเสี่ยง เชื่อม risk_rep_typereason_sys.RISK_REPTYPERESONSYS_ID],
+    RISKREP_STATUS [สถานะความเสี่ยง เช่น 'REPORT', 'SUCCESS'],
+    LEADER_PERSON_NAME [ชื่อหัวหน้า/ผู้รับผิดชอบ],
+    RISKREP_USEREFFECT_FULLNAME [ชื่อผู้ได้รับผลกระทบ],
+    BUDGET_YEAR [ปีงบประมาณ พ.ศ. เช่น 2569]
+  )
+- risk_rep_level: ตารางระดับความรุนแรงของอุบัติการณ์ความเสี่ยง (Lookup ระดับความรุนแรง):
+  * RISK_REP_LEVEL_ID [รหัสระดับ PK ใช้เชื่อมกับ risk_rep.RISKREP_LEVEL]
+  * RISK_REP_LEVEL_CODE [เช่น '00001', '00002']
+  * RISK_REP_LEVEL_NAME [ชื่อระดับตัวอักษรหรือตัวเลข เช่น 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', '1', '2', '3', '4', '5']
+  * RISK_REP_LEVEL_DETAIL [คำอธิบายความหมายระดับความรุนแรงภาษาไทย]:
+    - A = '(เกิดที่นี่) เกิดเหตุการณ์ขึ้นจากตัวเองและค้นพบได้ด้วยตัวเอง สามารถปรับแก้ไขได้ ไม่ส่งผลกระทบถึงผู้อื่น'
+    - B = '(เกิดที่ไกล) เกิดเหตุการณ์ส่งต่อไปที่ผู้อื่น แต่ตรวจพบแก้ไขได้ ยังไม่มีผลกระทบถึงผู้ป่วยหรือบุคลากร'
+    - C = '(เกิดกับใคร) เกิดเหตุการณ์มีผลกระทบถึงผู้ป่วยหรือบุคลากร แต่ไม่เกิดอันตรายหรือเสียหาย'
+    - D = '(ให้ระวัง) มีผลกระทบถึงผู้ป่วยหรือบุคลากร ต้องให้การดูแลเฝ้าระวังเป็นพิเศษ'
+    - E = '(ต้องรักษา) เกิดอันตรายชั่วคราวที่ต้องแก้ไข/รักษาเพิ่มมากขึ้น'
+    - F = '(เยียวยานาน) ต้องรักษาหรือนอนโรงพยาบาลนานขึ้น'
+    - G = '(ต้องพิการ) ทำให้เกิดความพิการถาวรหรือเสียชื่อเสียง/มีเรื่องร้องเรียน'
+    - H = '(ต้องการปั๊ม) มีผลทำให้ต้องทำการช่วยชีวิต CPR'
+    - I = '(จำใจลา) เป็นสาเหตุทำให้เสียชีวิต'
+    - 1 = 'ผลกระทบมูลค่าความเสียหาย 0-1,000 บาท'
+    - 2 = 'ผลกระทบมูลค่าความเสียหาย 1,001-10,000 บาท'
+- risk_rep_program: ตารางโปรแกรมความเสี่ยงหลัก (RISK_REPPROGRAM_ID [PK], RISK_REPPROGRAM_NAME เช่น '1.โปรแกรมด้านคลินิก', '2.โปรแกรมความคลาดเคลื่อนทางยา', '3.โปรแกรมการควบคุมและป้องกันการติดเชื้อในโรงพยาบาล', '4.โปรแกรมสิ่งแวดล้อม ความปลอดภัย สาธารณูปโภค', '5.โปรแกรมด้านเครื่องมือ อุปกรณ์การแพทย์')
+- risk_rep_program_sub: ตารางโปรแกรมความเสี่ยงย่อย (RISK_REPPROGRAMSUB_ID [PK], RISK_REPPROGRAMSUB_NAME, RISK_REPPROGRAM_ID)
+- risk_rep_department_sub: ตารางหน่วยงานความเสี่ยง (RISK_REP_DEPARTMENT_SUBID [PK], RISK_REP_DEPARTMENT_SUBNAME เช่น 'งานการพยาบาลผู้ป่วยใน', 'งานเทคนิคการแพทย์', 'งานป้องกันและควบคุมโรค', 'องค์กรแพทย์')
+- risk_rep_location: ตารางสถานที่เกิดเหตุ (RISK_LOCATION_ID [PK], RISK_LOCATION_NAME เช่น 'OPD', 'IPD', 'ห้องคลอด', 'ห้องฉุกเฉิน')
+- risk_rep_typereason: ตารางสาเหตุความเสี่ยง (RISK_REPTYPERESON_ID [PK], RISK_REPTYPERESON_NAME เช่น 'ผู้ป่วย', 'บุคลากร', 'เครื่องมือ')
+- risk_rep_typereason_sys: ตารางระบบสาเหตุความเสี่ยง (RISK_REPTYPERESONSYS_ID [PK], RISK_REPTYPERESONSYS_NAME)
+- risk_status: ตารางสถานะความเสี่ยง (RISK_STATUS_ID, RISK_STATUS_NAME, RISK_STATUS_NAME_TH เช่น 'รายงาน', 'ดำเนินการ', 'เสร็จสิ้น')
 
-* กฎสำคัญ Backoffice:
-- เจ้าหน้าที่ไอทีหรือสารสนเทศ สังกัดกลุ่มงานชื่อ 'กลุ่มงานสุขภาพดิจิทัล'
-- คลังพัสดุทั่วไปใช้ตารางตระกูล warehouse_* ส่วนคลังยาและเวชภัณฑ์ใช้ตารางตระกูล medicine_warehouse_*
-- ปีงบประมาณใน Backoffice ส่วนใหญ่ใช้ พ.ศ. เช่น 2568, 2569 ในคอลัมน์ YEAR_ID หรือ CON_YEAR_ID
+* กฎสำคัญ Backoffice & Lookup Tables:
+1. การสอบถามระดับความรุนแรงความเสี่ยง (Risk Severity Level):
+   - ห้ามแสดงค่า RISKREP_LEVEL เป็นตัวเลข ID ดิบๆ เด็ดขาด!
+   - ต้อง LEFT JOIN risk_rep_level lvl ON lvl.RISK_REP_LEVEL_ID = r.RISKREP_LEVEL
+   - ให้แสดงผลชื่อระดับและคำอธิบายภาษาไทยเสมอ เช่น:
+     COALESCE(CONCAT('ระดับ ', lvl.RISK_REP_LEVEL_NAME, ' : ', lvl.RISK_REP_LEVEL_DETAIL), 'ไม่ระบุระดับความรุนแรง') AS 'ระดับความรุนแรง'
+   - ตัวอย่างคำสั่งเมื่อถาม 'บันทึกความเสี่ยงแยกตามระดับความรุนแรง':
+     SELECT 
+       COALESCE(CONCAT('ระดับ ', lvl.RISK_REP_LEVEL_NAME, ' : ', lvl.RISK_REP_LEVEL_DETAIL), 'ไม่ระบุระดับความรุนแรง') AS 'ระดับความรุนแรง',
+       COUNT(*) AS 'จำนวนอุบัติการณ์'
+     FROM risk_rep r
+     LEFT JOIN risk_rep_level lvl ON lvl.RISK_REP_LEVEL_ID = r.RISKREP_LEVEL
+     WHERE r.RISKREP_DATESAVE BETWEEN ? AND ?
+     GROUP BY r.RISKREP_LEVEL, lvl.RISK_REP_LEVEL_NAME, lvl.RISK_REP_LEVEL_DETAIL
+     ORDER BY COUNT(*) DESC
+2. การสอบถามโปรแกรมความเสี่ยง / เรื่องความเสี่ยง:
+   - ต้อง LEFT JOIN risk_rep_program prog ON prog.RISK_REPPROGRAM_ID = r.RISK_REPPROGRAM_ID แล้วดึง prog.RISK_REPPROGRAM_NAME
+3. การสอบถามหน่วยงานที่เกิดเหตุ/รายงานในระบบความเสี่ยง:
+   - ให้ LEFT JOIN risk_rep_department_sub rdep ON rdep.RISK_REP_DEPARTMENT_SUBID = r.RISKREP_DEPARTMENT_SUB
+     LEFT JOIN hrd_department_sub hrd ON hrd.HR_DEPARTMENT_SUB_ID = r.RISKREP_DEPARTMENT_SUB
+     แล้วใช้ COALESCE(rdep.RISK_REP_DEPARTMENT_SUBNAME, hrd.HR_DEPARTMENT_SUB_NAME, 'ไม่ระบุ') AS 'หน่วยงาน'
+4. การสอบถามสถานที่เกิดเหตุความเสี่ยง:
+   - ต้อง LEFT JOIN risk_rep_location loc ON loc.RISK_LOCATION_ID = r.RISKREP_LOCATION_ID แล้วดึง loc.RISK_LOCATION_NAME
+5. คลังพัสดุทั่วไปใช้ตารางตระกูล warehouse_* ส่วนคลังยาและเวชภัณฑ์ใช้ตารางตระกูล medicine_warehouse_*
+   - เบิกพัสดุ: warehouse_request_sub ต้อง JOIN supplies s ON s.ID = sub.WAREHOUSE_REQUEST_SUB_DETAIL_ID เพื่อดึงชื่อพัสดุ s.SUP_NAME (ห้ามแสดงแค่ ID)
+6. เจ้าหน้าที่ไอทีหรือสารสนเทศ สังกัดกลุ่มงานชื่อ 'กลุ่มงานสุขภาพดิจิทัล' ใน hrd_department
+7. ปีงบประมาณใน Backoffice ส่วนใหญ่ใช้ พ.ศ. เช่น 2568, 2569 ในคอลัมน์ YEAR_ID, CON_YEAR_ID, BUDGET_YEAR
 ";
         }
 

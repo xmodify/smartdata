@@ -10,6 +10,7 @@ use App\Models\AiKnowledgeDoc;
 use App\Services\Ai\AiManager;
 use App\Services\Ai\TextToSqlService;
 use App\Services\Ai\VectorRagService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Exception;
 
@@ -103,10 +104,49 @@ class ChatController extends Controller
         $targetDb = $request->input('target_db', 'auto'); // auto, hosxp, backoffice, mysql
         $docId = $request->filled('doc_id') ? (int) $request->input('doc_id') : null;
 
-        $session = AiChatSession::firstOrCreate(
-            ['session_uuid' => $sessionUuid, 'user_id' => $userId],
-            ['title' => mb_substr($messageText, 0, 35) . '...', 'target_db' => $targetDb]
-        );
+        // 1. User Anti-Spam / In-Flight Lock: Prevent double clicks or rapid spamming by the same user
+        $userLock = Cache::lock("copilot_user_active_{$userId}", 45);
+        if (!$userLock->get()) {
+            return response()->json([
+                'success' => false,
+                'content' => 'ระบบกำลังประมวลผลคำถามก่อนหน้าของคุณอยู่ กรุณารอสักครู่ครับ ⏳'
+            ], 429);
+        }
+
+        // 2. System-wide Concurrency Limiter: Limit simultaneous AI queries across the entire hospital server
+        $maxConcurrent = (int) \App\Models\AiSetting::get('copilot_max_concurrent', 5);
+        if ($maxConcurrent < 1) {
+            $maxConcurrent = 5;
+        }
+
+        $slotLock = null;
+        $waitStart = microtime(true);
+        $maxWaitSeconds = 6.0; // Wait up to 6 seconds for a slot to free up
+
+        while ((microtime(true) - $waitStart) < $maxWaitSeconds) {
+            for ($i = 1; $i <= $maxConcurrent; $i++) {
+                $candidate = Cache::lock("copilot_concurrency_slot_{$i}", 45);
+                if ($candidate->get()) {
+                    $slotLock = $candidate;
+                    break 2;
+                }
+            }
+            usleep(200000); // Backoff 200ms
+        }
+
+        if (!$slotLock) {
+            $userLock->release();
+            return response()->json([
+                'success' => false,
+                'content' => 'ขณะนี้มีผู้ใช้งาน SmartData Copilot พร้อมกันจำนวนมาก ระบบกำลังจัดคิวให้บริการ กรุณารอสักครู่ (ประมาณ 3-5 วินาที) แล้วลองส่งใหม่อีกครั้งครับ 🙏 ⏳'
+            ], 429);
+        }
+
+        try {
+            $session = AiChatSession::firstOrCreate(
+                ['session_uuid' => $sessionUuid, 'user_id' => $userId],
+                ['title' => mb_substr($messageText, 0, 35) . '...', 'target_db' => $targetDb]
+            );
 
         // Load recent conversation messages before this new message for context
         $recentMessages = $session->messages()
@@ -335,6 +375,9 @@ class ChatController extends Controller
                 'success' => false,
                 'content' => 'ขออภัยครับ ระบบเกิดข้อขัดข้องชั่วคราวในการประมวลผล: ' . $e->getMessage()
             ], 500);
+        } finally {
+            $slotLock?->release();
+            $userLock?->release();
         }
     }
 
