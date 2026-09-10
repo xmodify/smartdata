@@ -304,6 +304,49 @@ Schema ข้อมูลที่สามารถใช้ได้:
         // Only consider 2nd col a measure if it's explicitly named like count/sum/qty/price and NOT a code/ID
         $isSecondColMeasure = !empty($secondCol) && $isMeasureCol($secondCol) && !$isCodeCol($secondCol);
 
+        // Generate smart follow-up suggestions based on query and tables
+        $followUpHints = [];
+        $sqlLower = mb_strtolower($sql);
+        $qLower = mb_strtolower($question);
+
+        if (str_contains($sqlLower, 'asset_article') || str_contains($qLower, 'คอม') || str_contains($qLower, 'ครุภัณฑ์')) {
+            $followUpHints = [
+                'ขอดูรายการแยกตามแผนก/ตึกที่ตั้งใช้งาน',
+                'ขอดูรายละเอียดเลขครุภัณฑ์และวันที่ตรวจรับ',
+                'มีประวัติการแจ้งซ่อมคอมพิวเตอร์ในปีนี้กี่ครั้ง'
+            ];
+        } elseif (str_contains($sqlLower, 'supplies') || str_contains($sqlLower, 'warehouse') || str_contains($qLower, 'วัสดุ') || str_contains($qLower, 'เบิก')) {
+            $followUpHints = [
+                'ขอยอดการเบิกจ่ายพัสดุย้อนหลัง 30 วัน แยกตามหน่วยงาน',
+                '10 อันดับวัสดุที่มีการเบิกใช้สูงสุดในเดือนนี้',
+                'ขอดูรายการวัสดุสิ้นเปลืองแยกตามหมวดหมู่'
+            ];
+        } elseif (str_contains($sqlLower, 'risk_rep') || str_contains($qLower, 'เสี่ยง')) {
+            $followUpHints = [
+                'ขอดูอุบัติการณ์ความเสี่ยงระดับรุนแรง (ระดับ E ถึง I)',
+                'สรุปอุบัติการณ์แยกตามโปรแกรมความเสี่ยงหลัก 5 ด้าน',
+                'สรุปความเสี่ยงแยกตามสถานที่เกิดเหตุ'
+            ];
+        } elseif (str_contains($sqlLower, 'ovst') || str_contains($sqlLower, 'vn_stat') || str_contains($qLower, 'opd') || str_contains($qLower, 'คนไข้')) {
+            $followUpHints = [
+                'ขอยอดผู้ป่วยนอกแยกตามสิทธิการรักษา',
+                '5 อันดับโรคหลักที่มีผู้มารับบริการมากที่สุด',
+                'ขอยอดผู้ป่วยแยกตามช่วงเวลาเข้าตรวจ'
+            ];
+        } elseif (str_contains($sqlLower, 'ipt') || str_contains($sqlLower, 'an_stat') || str_contains($qLower, 'ipd')) {
+            $followUpHints = [
+                'จำนวนผู้ป่วยในกำลังครองเตียงแยกตามหอผู้ป่วย',
+                'ยอดผู้ป่วยใน Refer ส่งต่อไป รพ. อื่น',
+                'ค่าเฉลี่ยวันนอน (LOS) และค่ารักษาเฉลี่ย'
+            ];
+        }
+
+        $hintText = '';
+        if (!empty($followUpHints)) {
+            $hintItems = array_map(fn($h) => "  • *\"{$h}\"*", $followUpHints);
+            $hintText = "\n\n💡 **คำถามแนะนำเพื่อเจาะลึกข้อมูลต่อ:**\n" . implode("\n", $hintItems);
+        }
+
         // If single row with 1-3 columns, format directly
         if ($count === 1 && count($rows[0]) <= 3) {
             $parts = [];
@@ -315,10 +358,51 @@ Schema ข้อมูลที่สามารถใช้ได้:
                 }
                 $parts[] = "{$k}: **{$formattedVal}**";
             }
-            return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix}: " . implode(' | ', $parts);
+            return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix}: " . implode(' | ', $parts) . $hintText;
         }
 
-        // Multiple rows (2-10): Only provide breakdown if it's an aggregation (e.g. group by + count/amount)
+        // Calculate total sum across measure column if available
+        $totalSum = 0;
+        $hasNumericSum = false;
+        if ($isSecondColMeasure) {
+            $hasNumericSum = true;
+            foreach ($rows as $r) {
+                $val = array_values($r)[1] ?? null;
+                if (is_numeric($val)) {
+                    $totalSum += ($val + 0);
+                } else {
+                    $hasNumericSum = false;
+                    break;
+                }
+            }
+        }
+
+        // Check if there are status columns (e.g. ใช้งานปกติ, จำหน่ายแล้ว)
+        $statusSummary = '';
+        $activeCol = null;
+        $disposedCol = null;
+        foreach ($keys as $k) {
+            if (mb_strpos($k, 'ปกติ') !== false || mb_strpos($k, 'ใช้งาน') !== false) $activeCol = $k;
+            if (mb_strpos($k, 'จำหน่าย') !== false) $disposedCol = $k;
+        }
+        if ($activeCol && $disposedCol) {
+            $activeTotal = array_sum(array_column($rows, $activeCol));
+            $disposedTotal = array_sum(array_column($rows, $disposedCol));
+            $allTotal = $activeTotal + $disposedTotal;
+            if ($allTotal > 0) {
+                $actPct = round(($activeTotal / $allTotal) * 100, 1);
+                $disPct = round(($disposedTotal / $allTotal) * 100, 1);
+                $statusSummary = "\n- สภาพความพร้อมใช้งาน: ใช้งานปกติ **" . number_format($activeTotal) . "** ({$actPct}%) | จำหน่ายแล้ว **" . number_format($disposedTotal) . "** ({$disPct}%)";
+            }
+        }
+
+        $totalSummaryLine = "";
+        if ($hasNumericSum && $totalSum > 0) {
+            $formattedTotal = is_float($totalSum) ? number_format($totalSum, 2) : number_format($totalSum);
+            $totalSummaryLine = "\n- **ยอดรวมทั้งสิ้น:** **{$formattedTotal}** (จัดกลุ่มได้ **{$count}** รายการ){$statusSummary}";
+        }
+
+        // Multiple rows (2-10): Provide breakdown
         if ($count > 1 && $count <= 10 && $isSecondColMeasure) {
             $lines = [];
             foreach ($rows as $row) {
@@ -328,9 +412,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
                 $num = (is_numeric($val1) && !$isCodeCol($secondCol)) ? (is_float($val1 + 0) ? number_format($val1, 2) : number_format($val1)) : $val1;
                 $lines[] = "- {$name}: **{$num}**";
             }
-            if (!empty($lines)) {
-                return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix} (พบทั้งหมด **{$count}** รายการ):\n" . implode("\n", $lines);
-            }
+            return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix} (พบ **{$count}** รายการ):{$totalSummaryLine}\n" . implode("\n", $lines) . $hintText;
         }
 
         // More than 10 rows with measure
@@ -344,12 +426,12 @@ Schema ข้อมูลที่สามารถใช้ได้:
                 $num = (is_numeric($val1) && !$isCodeCol($secondCol)) ? (is_float($val1 + 0) ? number_format($val1, 2) : number_format($val1)) : $val1;
                 $sampleLines[] = "- {$name}: **{$num}**";
             }
-            $sampleText = !empty($sampleLines) ? ":\n" . implode("\n", $sampleLines) . "\n- *(และรายการอื่น ๆ รวมทั้งหมด {$count} รายการ ดังตารางด้านล่าง)*" : "";
-            return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix} พบทั้งหมด **{$count}** รายการ{$sampleText}";
+            $sampleText = !empty($sampleLines) ? ":{$totalSummaryLine}\n" . implode("\n", $sampleLines) . "\n- *(และรายการอื่น ๆ รวมทั้งหมด {$count} รายการ ดังตารางด้านล่าง)*" : "";
+            return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix} พบทั้งหมด **{$count}** รายการ{$sampleText}{$hintText}";
         }
 
         // General summary for entity/patient record listings (AN, HN, visits, appointments, details)
-        return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix} (พบทั้งหมด **{$count}** รายการ) ดังแสดงในตารางด้านล่าง";
+        return "ผลลัพธ์จากฐานข้อมูล {$dbName}{$dateScopePrefix} (พบทั้งหมด **{$count}** รายการ) ดังแสดงในตารางด้านล่าง{$hintText}";
     }
 
     /**
@@ -459,15 +541,28 @@ Schema ข้อมูลที่สามารถใช้ได้:
 - medicine_purchase_order: การสั่งซื้อยาและเวชภัณฑ์ (id, po_code, order_date, vendor_id, total_price, delivery_date)
 
 3. พัสดุและการจัดซื้อจัดจ้าง (Supplies & Procurement):
-- supplies: ทะเบียนพัสดุ (ID, SUP_FSN_NUM [รหัส FSN], SUP_NAME [ชื่อพัสดุ], SUP_TYPE_ID [หมวดพัสดุ], PRICE_LAST [ราคาซื้อล่าสุด], PRICE_CENTER [ราคากลาง])
+- supplies: ทะเบียนวัสดุ/พัสดุโรงพยาบาล (ID, SUP_FSN_NUM [รหัส FSN], SUP_NAME [ชื่อวัสดุพัสดุ], SUP_TYPE_ID [รหัสหมวด เชื่อม supplies_type.SUP_TYPE_ID], PRICE_LAST [ราคาซื้อล่าสุด], PRICE_CENTER [ราคากลาง])
+- supplies_type: หมวดหมู่ประเภทพัสดุ/วัสดุ (SUP_TYPE_ID [PK], SUP_TYPE_NAME เช่น 'วัสดุการแพทย์ทั่วไป', 'วัสดุทันตกรรม', 'วัสดุวิทยาศาสตร์หรือการแพทย์', 'วัสดุงานบ้านงานครัว', 'วัสดุบริโภค', 'วัสดุคอมพิวเตอร์', 'วัสดุสำนักงาน', 'ครุภัณฑ์การแพทย์', 'ครุภัณฑ์สำนักงาน', 'ครุภัณฑ์คอมพิวเตอร์')
 - supplies_con: สัญญาจัดซื้อจัดจ้าง/โครงการ (ID, CON_NUM [เลขที่สัญญา/ข้อตกลง], CON_YEAR_ID [ปีงบประมาณ พ.ศ. เช่น '2569'], DATE_REGIS [วันที่ลงทะเบียน], DEP_REQUEST_NAME [ฝ่ายที่ขอซื้อ], PERSON_REQUEST_NAME [ผู้ขอซื้อ], CON_PROJECT_NAME [ชื่อโครงการ], EGP_PLAN_NAME)
 - supplies_con_list: รายการสิ่งของในสัญญาจัดซื้อ (ID, CON_ID [เชื่อม supplies_con.ID], SUP_NAME [ชื่อรายการสินค้า], SUP_TOTAL [จำนวน], PRICE_PER_UNIT [ราคาต่อหน่วย], PRICE_SUM [ราคารวม])
 - supplies_vendor: ทะเบียนบริษัทคู่ค้า/ผู้จัดจำหน่ายพัสดุ (VENDOR_ID, VENDOR_NAME, VENDOR_PHONE)
 
-4. งานทรัพย์สินและครุภัณฑ์ (Assets & Depreciate):
-- asset_article: ทะเบียนครุภัณฑ์โรงพยาบาล (ARTICLE_ID, ARTICLE_NUM [เลขครุภัณฑ์ เช่น '3920-005-1103/10'], ARTICLE_NAME [ชื่อครุภัณฑ์], SUPPLIER_ID [ผู้ขาย], RECEIVE_DATE [วันที่ได้มา], PRICE_PER_UNIT [ราคาต่อหน่วย], LOCATION_ID [สถานที่ตั้ง], STATUS_ID [สถานะ: 1=ปกติ, 2=ชำรุด, 3=ส่งซ่อม, 4=แทงจำหน่าย])
-- asset_depreciate: ค่าเสื่อมราคาครุภัณฑ์ (ARTICLE_ID, YEAR_ID [ปีงบประมาณ], DEPRECIATE_PRICE [ค่าเสื่อมปีนี้], VALUE_REMAIN [มูลค่าคงเหลือ])
-- asset_dispose: ทะเบียนครุภัณฑ์ที่แทงจำหน่าย (ARTICLE_ID, DISPOSE_DATE, DISPOSE_REASON)
+4. งานทรัพย์สินและครุภัณฑ์ (Assets & Articles):
+- asset_article: ทะเบียนครุภัณฑ์โรงพยาบาล (รายชิ้น มีเลขครุภัณฑ์และสถานที่ตั้งชัดเจน) (
+    ARTICLE_ID [รหัสครุภัณฑ์ PK],
+    ARTICLE_NUM [เลขครุภัณฑ์ เช่น '7440-001-0006/11'],
+    ARTICLE_NAME [ชื่อครุภัณฑ์ เช่น 'เครื่องคอมพิวเตอร์ All In One สำหรับงานประมวลผล', 'เครื่องคอมพิวเตอร์ สําหรับงานประมวลผล แบบที่ 1', 'เครื่องคอมพิวเตอร์ สำหรับงานสำนักงาน', 'เครื่องคอมพิวเตอร์โน้ตบุ๊ก สำหรับงานประมวลผล', 'เครื่องคอมพิวเตอร์แม่ข่าย แบบที่ 1'],
+    DECLINE_ID [รหัสประเภทครุภัณฑ์ เชื่อม supplies_decline.DECLINE_ID: โดย 18='ครุภัณฑ์คอมพิวเตอร์', 5='ครุภัณฑ์สำนักงาน', 6='ครุภัณฑ์ยานพาหนะและขนส่ง', 17='ครุภัณฑ์วิทยาศาสตร์และการแพทย์'],
+    STATUS_ID [สถานะครุภัณฑ์ เชื่อม asset_status.STATUS_ID: โดย 1='ปกติ', 2='จำหน่ายแล้ว' (แทงจำหน่าย), 3='รอจำหน่าย', 4='ถูกยืม'],
+    PRICE_PER_UNIT [ราคาต่อหน่วย/มูลค่า],
+    RECEIVE_DATE [วันที่ได้มา/ตรวจรับ],
+    DEP_SUB_SUB_NAME [ชื่อหน่วยงาน/งานย่อยที่ครอบครองหรือสถานที่ตั้ง เช่น 'กลุ่มงานการพยาบาล', 'ศูนย์คอมพิวเตอร์', 'ห้องฉุกเฉิน', 'งานเทคนิคการแพทย์'],
+    SERIAL_NO [หมายเลขซีเรียลเครื่อง]
+  )
+- supplies_decline: ประเภทหมวดหมู่ครุภัณฑ์ (DECLINE_ID [PK], DECLINE_NAME เช่น 18='ครุภัณฑ์คอมพิวเตอร์', 5='ครุภัณฑ์สำนักงาน', 6='ครุภัณฑ์ยานพาหนะ', 17='ครุภัณฑ์วิทยาศาสตร์และการแพทย์')
+- asset_status: สถานะครุภัณฑ์ (STATUS_ID [PK], STATUS_NAME เช่น 1='ปกติ', 2='จำหน่ายแล้ว', 3='รอจำหน่าย', 4='ถูกยืม')
+- asset_depreciate: ค่าเสื่อมราคาครุภัณฑ์ (DEP_ID, DEP_ASSET_ID, DEP_YEAR [ปีงบ], DEP_PRICE, DEP_VALUE [มูลค่าคงเหลือ])
+- asset_dispose: ทะเบียนครุภัณฑ์ที่แทงจำหน่าย (DISPOSE_ID, ARTICLE_ID, DISPOSE_DATE, DISPOSE_REASON)
 
 5. งานซ่อมบำรุง / ศูนย์คอมพิวเตอร์ / ศูนย์เครื่องมือแพทย์ (Maintenance & Repairs):
 - informrepair_index: การแจ้งซ่อมบำรุงทั่วไปและอาคารสถานที่ (ID, REPAIR_ID [เลขที่แจ้งซ่อม เช่น 'R69-00530'], YEAR_ID [ปีงบประมาณ], REPAIR_NAME [ชื่อเรื่อง/สิ่งที่ชำรุด], SYMPTOM [อาการชำรุด], USRE_REQUEST_NAME [ผู้แจ้งซ่อม], DATE_TIME_REQUEST [วันเวลาแจ้ง], REPAIR_STATUS [สถานะการซ่อม เช่น 'REQUEST','SUCCESS'], STATUS)
@@ -566,6 +661,68 @@ Schema ข้อมูลที่สามารถใช้ได้:
    - เบิกพัสดุ: warehouse_request_sub ต้อง JOIN supplies s ON s.ID = sub.WAREHOUSE_REQUEST_SUB_DETAIL_ID เพื่อดึงชื่อพัสดุ s.SUP_NAME (ห้ามแสดงแค่ ID)
 6. เจ้าหน้าที่ไอทีหรือสารสนเทศ สังกัดกลุ่มงานชื่อ 'กลุ่มงานสุขภาพดิจิทัล' ใน hrd_department
 7. ปีงบประมาณใน Backoffice ส่วนใหญ่ใช้ พ.ศ. เช่น 2568, 2569 ในคอลัมน์ YEAR_ID, CON_YEAR_ID, BUDGET_YEAR
+8. การสอบถามเครื่องคอมพิวเตอร์และครุภัณฑ์ (Assets & Equipment) ใน Backoffice:
+   - ตารางหลักคือ `asset_article`
+   - หากถามเกี่ยวกับเครื่องคอมพิวเตอร์ ให้กรองด้วย `(a.ARTICLE_NAME LIKE '%คอมพิวเตอร์%' OR a.DECLINE_ID = 18)`
+   - สรุปภาพรวมแบบฉลาด (Smart Executive View): ให้แสดงทั้ง 'ประเภทครุภัณฑ์', 'จำนวนทั้งหมด', 'ใช้งานปกติ', 'จำหน่ายแล้ว' เสมอ เพื่อให้เห็นภาพรวมสถานะทันที:
+     SELECT 
+       a.ARTICLE_NAME AS 'ประเภทครุภัณฑ์',
+       COUNT(a.ARTICLE_ID) AS 'จำนวนทั้งหมด',
+       SUM(CASE WHEN a.STATUS_ID = 1 THEN 1 ELSE 0 END) AS 'ใช้งานปกติ',
+       SUM(CASE WHEN a.STATUS_ID = 2 THEN 1 ELSE 0 END) AS 'จำหน่ายแล้ว'
+     FROM asset_article a
+     WHERE a.ARTICLE_NAME LIKE '%คอมพิวเตอร์%' OR a.DECLINE_ID = 18
+     GROUP BY a.ARTICLE_NAME
+     ORDER BY COUNT(a.ARTICLE_ID) DESC;
+   - หากถามค้นหารายละเอียดครุภัณฑ์ (เช่น ขอดูรายการ, เลขครุภัณฑ์, สถานที่ตั้ง, หรือแยกตามแผนก):
+     SELECT 
+       a.ARTICLE_NUM AS 'เลขครุภัณฑ์',
+       a.ARTICLE_NAME AS 'ชื่อครุภัณฑ์',
+       COALESCE(s.STATUS_NAME, 'ไม่ระบุ') AS 'สถานะ',
+       COALESCE(a.DEP_SUB_SUB_NAME, 'ไม่ระบุ') AS 'หน่วยงานที่ครอบครอง',
+       a.RECEIVE_DATE AS 'วันที่รับ',
+       a.PRICE_PER_UNIT AS 'ราคา'
+     FROM asset_article a
+     LEFT JOIN asset_status s ON s.STATUS_ID = a.STATUS_ID
+     WHERE (a.ARTICLE_NAME LIKE '%คอมพิวเตอร์%' OR a.DECLINE_ID = 18)
+     ORDER BY a.ARTICLE_NAME ASC
+     LIMIT 50;
+9. การสอบถามพัสดุและวัสดุสิ้นเปลือง (Supplies & Materials) ใน Backoffice:
+   - ตารางหลักของวัสดุคือ `supplies` และเชื่อมหมวดหมู่วัสดุด้วย `supplies_type` (`s.SUP_TYPE_ID = t.SUP_TYPE_ID`)
+   - หากถาม 'วัสดุมีกี่หมวด' หรือ 'แยกตามหมวดหมู่วัสดุ':
+     SELECT 
+       COALESCE(t.SUP_TYPE_NAME, 'ไม่ระบุหมวด') AS 'หมวดหมู่วัสดุ',
+       COUNT(s.ID) AS 'จำนวนรายการพัสดุ'
+     FROM supplies s
+     LEFT JOIN supplies_type t ON t.SUP_TYPE_ID = s.SUP_TYPE_ID
+     GROUP BY s.SUP_TYPE_ID, t.SUP_TYPE_NAME
+     ORDER BY COUNT(s.ID) DESC;
+   - หากถามค้นหารายการวัสดุ/สเปก/ราคา:
+     SELECT 
+       s.SUP_FSN_NUM AS 'รหัส FSN',
+       s.SUP_NAME AS 'ชื่อวัสดุพัสดุ',
+       t.SUP_TYPE_NAME AS 'หมวดหมู่',
+       s.PRICE_LAST AS 'ราคาซื้อล่าสุด'
+     FROM supplies s
+     LEFT JOIN supplies_type t ON t.SUP_TYPE_ID = s.SUP_TYPE_ID
+     WHERE s.SUP_NAME LIKE '%...%'
+     LIMIT 50;
+10. การขอเบิกพัสดุ/ตัดจ่ายพัสดุคลัง (Warehouse Requisition & Disbursement):
+   - เชื่อมต่อระหว่างใบขอเบิก `warehouse_request` กับรายการพัสดุ `warehouse_request_sub` และชื่อวัสดุ `supplies`:
+     SELECT 
+       w.WAREHOUSE_REQUEST_CODE AS 'เลขที่ใบเบิก',
+       w.WAREHOUSE_DATE_TIME_SAVE AS 'วันที่ขอเบิก',
+       w.WAREHOUSE_SAVE_HR_NAME AS 'ผู้ขอเบิก',
+       w.WAREHOUSE_DEP_SUB_SUB_NAME AS 'หน่วยงานที่เบิก',
+       s.SUP_NAME AS 'รายการวัสดุ',
+       sub.WAREHOUSE_REQUEST_SUB_AMOUNT AS 'จำนวนขอเบิก',
+       sub.WAREHOUSE_REQUEST_SUB_PRICE AS 'ราคาต่อหน่วย',
+       sub.WAREHOUSE_REQUEST_SUB_SUM_PRICE AS 'ราคารวม'
+     FROM warehouse_request_sub sub
+     JOIN warehouse_request w ON w.WAREHOUSE_ID = sub.WAREHOUSE_REQUEST_ID
+     JOIN supplies s ON s.ID = sub.WAREHOUSE_REQUEST_SUB_DETAIL_ID
+     ORDER BY w.WAREHOUSE_DATE_TIME_SAVE DESC
+     LIMIT 50;
 ";
         }
 

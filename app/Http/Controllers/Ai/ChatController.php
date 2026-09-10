@@ -180,7 +180,7 @@ class ChatController extends Controller
         // Decide execution routing with multi-turn context
         $detectedMode = $mode;
         if ($mode === 'smart') {
-            $detectedMode = $this->detectIntent($messageText, $session, $recentMessages);
+            $detectedMode = $this->detectIntent($messageText, $session, $recentMessages, $targetDb);
         }
 
         if ($detectedMode === 'sql') {
@@ -471,11 +471,11 @@ class ChatController extends Controller
     /**
      * Smart intent detector with multi-turn conversation context awareness
      */
-    protected function detectIntent(string $text, ?AiChatSession $session = null, $recentMessages = null): string
+    protected function detectIntent(string $text, ?AiChatSession $session = null, $recentMessages = null, string $targetDb = 'auto'): string
     {
         $q = mb_strtolower(trim($text));
 
-        // RAG Intent keywords (highest priority for guidelines, manuals, CPG, and policy docs)
+        // 1. RAG Intent keywords (highest priority for guidelines, manuals, CPG, and policy docs)
         $ragKeywords = [
             'คู่มือ', 'ระเบียบ', 'แนวทาง', 'ขั้นตอน', 'cpg', 'เอกสาร', 'นโยบาย', 'เกณฑ์',
             'มาตรฐาน', 'วิธีปฏิบัติ', 'ประกาศ', 'คำสั่ง', 'ข้อกำหนด', 'นิยาม', 'หนังสือสั่งการ'
@@ -487,11 +487,11 @@ class ChatController extends Controller
             }
         }
 
-        // Meta capability and schema overview questions -> General mode
+        // 2. Meta capability and greeting questions -> General mode
         $metaKeywords = [
             'เข้าถึงตารางไหน', 'มีตารางอะไร', 'ตารางไหนได้บ้าง', 'ดึงตารางไหน', 'ดูตารางไหน',
             'สืบค้นตารางไหน', 'รายชื่อตาราง', 'ตารางทั้งหมด', 'ช่วยอะไรได้บ้าง', 'ทำอะไรได้บ้าง',
-            'คุณคือใคร', 'คุณทำอะไรได้', 'สอบถามเรื่องอะไรได้บ้าง'
+            'คุณคือใคร', 'คุณทำอะไรได้', 'สอบถามเรื่องอะไรได้บ้าง', 'สวัสดี'
         ];
         foreach ($metaKeywords as $mkw) {
             if (mb_strpos($q, $mkw) !== false) {
@@ -499,23 +499,40 @@ class ChatController extends Controller
             }
         }
 
-        // Broad SQL Intent keywords
+        // 3. If user explicitly selected a target database (e.g. backoffice, hosxp, mysql), intent is SQL by default!
+        if (!empty($targetDb) && $targetDb !== 'auto') {
+            return 'sql';
+        }
+
+        // 4. Broad SQL Intent keywords
         $sqlKeywords = [
-            'กี่คน', 'กี่ราย', 'กี่ประเภท', 'กี่รายการ', 'กี่ใบ', 'กี่ตัว', 'กี่อัน', 'กี่เตียง', 'กี่ครั้ง', 'กี่เคส', 'กี่แห่ง',
-            'จำนวน', 'สถิติ', 'ยอด', 'เท่าไหร่', 'รายชื่อ', 'คนไข้', 'ผู้ป่วย', 'บุคลากร', 'เจ้าหน้าที่', 'พนักงาน',
+            // Questions asking for numbers/quantities
+            'กี่', 'จำนวน', 'สถิติ', 'ยอด', 'เท่าไหร่', 'เท่าใด', 'เท่าไร', 'มีเท่า', 'มีกี่', 'มีไหม', 'มีมั้ย', 'มีหรือไม่',
+            'รายชื่อ', 'คนไข้', 'ผู้ป่วย', 'บุคลากร', 'เจ้าหน้าที่', 'พนักงาน',
+            // OPD / IPD / Clinical
             'opd', 'ipd', 'er', 'vn', 'hn', 'an', 'โรค', 'icd', 'pttype', 'สิทธิ',
             'ค่ารักษา', 'วันนี้', 'เดือนนี้', 'ปีนี้', 'ปีงบ', 'refer', 'admit', 'เตียง',
             'ทันตกรรม', 'ทำฟัน', 'ฟัน', 'กายภาพ', 'กายภาพบำบัด', 'แผนไทย', 'แพทย์แผนไทย', 'คลอด', 'ห้องคลอด', 'ทารก',
             'ฉุกเฉิน', 'อุบัติเหตุ', 'ems', 'แล็บ', 'lab', 'xray', 'เอ็กซเรย์', 'ct scan', 'เสียชีวิต', 'ตาย',
             'นัด', 'ใบนัด', 'นัดหมาย', 'แพ้ยา', 'เบาหวาน', 'ความดัน', 'ไต', 'stroke', 'สโตรก', 'sepsis', 'หัวใจ', 'ปอด',
             'รีเฟอร์', 'ส่งต่อ', 'ครองเตียง', 'ชาร์ต', 'chart', 'revisit', 'readmit', 'cmi', 'adjrw', 'คิว', 'วัณโรค', 'หอบหืด',
-            'พัสดุ', 'เงินเดือน', 'วันลา', 'ครุภัณฑ์', 'จัดซื้อ', 'จัดจ้าง', 'เบิกจ่าย', 'สต็อก', 'คงเหลือ',
+            // Backoffice / Assets / Procurement / Repairs / Vehicles
+            'คอมพิวเตอร์', 'คอม', 'โน้ตบุ๊ก', 'notebook', 'แท็บเล็ต', 'tablet', 'pc', 'server', 'เครื่องพิมพ์', 'printer', 'จอ',
+            'เครื่อง', 'อุปกรณ์', 'เครื่องมือ', 'ครุภัณฑ์', 'ทรัพย์สิน',
+            'พัสดุ', 'คลัง', 'เบิกจ่าย', 'ใบเบิก', 'ขอเบิก', 'จัดซื้อ', 'จัดจ้าง', 'สัญญา', 'สต็อก', 'คงเหลือ',
+            'แจ้งซ่อม', 'ช่างซ่อม', 'ซ่อมบำรุง', 'ซ่อม',
+            'ยานพาหนะ', 'รถยนต์', 'รถตู้', 'รถพยาบาล', 'รถ',
+            'ห้องประชุม', 'จองห้อง',
+            'เงินเดือน', 'วันลา', 'ลงเวลา', 'สแกนนิ้ว',
+            'ความเสี่ยง', 'อุบัติการณ์', 'risk',
+            // Standards & Codes
             '43 แฟ้ม', '43แฟ้ม', 'provis', 'provis_', 'tmt', 'billcode', 'adp', 'eclaim', 'e-claim', 'csop', 'fdh',
             'สิทธิการรักษา', 'กองทุน', 'person', 'typearea', 'type_area', 'ค่ายา', 'ราคายา', 'หัตถการ', 'หมวดรายได้', 'เลข ว', 'ตั้งค่า',
             'pttype_price_group', 'price_group', 'price_type', 'กลุ่มราคา', 'ราคาตามสิทธิ', 'unitprice2', 'unitprice3', 'price2', 'price3', 'ราคานอกเวลา', 'ราคาต่างชาติ',
             'pttype_items_price', 'ราคาเฉพาะสิทธิ', 'ตั้งราคาเฉพาะรายการ',
-            'แยกตาม', 'แบ่งตาม', 'ตามแผนก', 'ตามตำแหน่ง', 'ตามประเภท', 'ตามตึก', 'ตามวอร์ด', 'ตามกลุ่มงาน', 'ตามฝ่าย',
-            'อันดับ', 'สูงสุด', 'ต่ำสุด', 'มากที่สุด', 'น้อยที่สุด', 'เฉลี่ย', 'รวมทั้งสิ้น', 'ทั้งหมด',
+            // Grouping / Aggregation
+            'แยก', 'แยกตาม', 'แยกประเภท', 'แบ่งตาม', 'แบ่งประเภท', 'จำแนก', 'ตามแผนก', 'ตามตำแหน่ง', 'ตามประเภท', 'ตามตึก', 'ตามวอร์ด', 'ตามกลุ่มงาน', 'ตามฝ่าย', 'ตามสถานะ',
+            'อันดับ', 'สูงสุด', 'ต่ำสุด', 'มากที่สุด', 'น้อยที่สุด', 'เฉลี่ย', 'รวมทั้งสิ้น', 'ทั้งหมด', 'สรุป',
             'มีใครบ้าง', 'มีอะไรบ้าง', 'ใครบ้าง', 'อะไรบ้าง', 'ไหนบ้าง', 'คนไหน', 'ตึกไหน', 'ห้องไหน', 'กลุ่มไหน', 'ฝ่ายไหน'
         ];
 
@@ -525,7 +542,7 @@ class ChatController extends Controller
             }
         }
 
-        // Multi-turn context check:
+        // 5. Multi-turn context check:
         // If the session has a recent SQL query, short follow-ups or analytical questions should stay in SQL mode!
         if ($recentMessages && $recentMessages->isNotEmpty()) {
             $lastAssistant = $recentMessages->where('role', 'assistant')->last();
