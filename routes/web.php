@@ -320,6 +320,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/chat', [App\Http\Controllers\Ai\ChatController::class, 'index'])->name('ai.chat');
         Route::post('/chat/message', [App\Http\Controllers\Ai\ChatController::class, 'sendMessage'])->name('ai.chat.message');
         Route::post('/chat/session/new', [App\Http\Controllers\Ai\ChatController::class, 'newSession'])->name('ai.chat.session.new');
+        Route::match(['DELETE', 'POST'], '/chat/sessions/clear-all', [App\Http\Controllers\Ai\ChatController::class, 'clearAllSessions'])->name('ai.chat.session.clear_all');
         Route::get('/chat/session/{uuid}', [App\Http\Controllers\Ai\ChatController::class, 'loadSession'])->name('ai.chat.session.load');
         Route::match(['DELETE', 'POST'], '/chat/session/{uuid}', [App\Http\Controllers\Ai\ChatController::class, 'deleteSession'])->name('ai.chat.session.delete');
 

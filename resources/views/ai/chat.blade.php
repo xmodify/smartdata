@@ -34,16 +34,11 @@
                     @endforelse
                 </div>
 
-                <!-- Bottom Links -->
+                <!-- Bottom: Single Clear History Button -->
                 <div class="p-3 border-top bg-light-subtle">
-                    <a href="{{ route('ai.knowledge.index') }}" class="d-flex align-items-center text-decoration-none text-muted small mb-2">
-                        <i class="fas fa-book-medical me-2 text-info"></i> คลังความรู้โรงพยาบาล
-                    </a>
-                    @if(auth()->user()->role === 'admin')
-                    <a href="{{ route('admin.ai.settings') }}" class="d-flex align-items-center text-decoration-none text-muted small">
-                        <i class="fas fa-sliders-h me-2 text-primary"></i> ตั้งค่า AI Engine
-                    </a>
-                    @endif
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill w-100 py-2 shadow-xs d-flex align-items-center justify-content-center" onclick="clearAllSessions()" title="ล้างประวัติการสนทนาทั้งหมดของคุณ">
+                        <i class="fas fa-trash-alt me-2"></i> ล้างประวัติสนทนาทั้งหมด
+                    </button>
                 </div>
             </div>
         </div>
@@ -625,6 +620,56 @@ function deleteSession(uuid) {
     } else {
         if (confirm('ต้องการลบประวัติการสนทนานี้ใช่หรือไม่?')) {
             doDelete();
+        }
+    }
+}
+
+function clearAllSessions() {
+    const doClearAll = function() {
+        fetch('{{ route('ai.chat.session.clear_all') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                _method: 'DELETE',
+                _token: '{{ csrf_token() }}'
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.success) {
+                window.location.href = '{{ route('ai.chat') }}';
+            } else {
+                alert('ไม่สามารถล้างประวัติได้: ' + (data.content || 'เกิดข้อผิดพลาด'));
+            }
+        })
+        .catch(err => {
+            console.error('Clear all error:', err);
+            window.location.href = '{{ route('ai.chat') }}';
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'ล้างประวัติสนทนาทั้งหมด?',
+            text: 'ประวัติการสนทนาทั้งหมดของคุณจะถูกลบถาวร (ไม่มีผลกระทบต่อผู้ใช้งานท่านอื่น)',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'ใช่, ล้างประวัติทั้งหมด',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                doClearAll();
+            }
+        });
+    } else {
+        if (confirm('ต้องการล้างประวัติการสนทนาทั้งหมดของคุณใช่หรือไม่? (ประวัติจะถูกลบถาวร)')) {
+            doClearAll();
         }
     }
 }

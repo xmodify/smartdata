@@ -449,6 +449,26 @@ class ChatController extends Controller
     }
 
     /**
+     * Clear all chat sessions for current user
+     */
+    public function clearAllSessions()
+    {
+        if (!\App\Models\AiSetting::isCopilotEnabled() || !auth()->check() || !auth()->user()->hasAccessCopilot()) {
+            return response()->json(['success' => false, 'content' => 'คุณไม่มีสิทธิ์เข้าใช้งานระบบ SmartData Copilot'], 403);
+        }
+
+        $userId = auth()->id();
+        $sessions = AiChatSession::where('user_id', $userId)->get();
+
+        foreach ($sessions as $session) {
+            $session->messages()->delete();
+            $session->delete();
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Smart intent detector with multi-turn conversation context awareness
      */
     protected function detectIntent(string $text, ?AiChatSession $session = null, $recentMessages = null): string
