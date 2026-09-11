@@ -769,6 +769,11 @@ Schema ข้อมูลที่สามารถใช้ได้:
 - dchtype: ประเภทการจำหน่าย (dchtype, name เช่น 01=With Approval, 04=Refer ส่งต่อไป รพ. อื่น)
 
 4. งานบริการเฉพาะทาง (Specialty Clinics & Units):
+- operation_list: บันทึกการผ่าตัด ห้องผ่าตัด OR (operation_id, hn, vn, an, operation_date, operation_time, room_id, status_id [1=รอผ่าตัด, 2=กำลังผ่าตัด, 3=ผ่าตัดเสร็จแล้ว], emergency_id [1=Emergency, 2=Elective], patient_department ['OPD','IPD'], request_doctor, operation_name, operation_detail_name, blood_loss, operation_list_anes_type_id, operation_anes_physical_status_id)
+- operation_team: ทีมผ่าตัดและแพทย์ผู้ทำการผ่าตัด (operation_id, doctor [เชื่อม doctor.code], position_id [1=ผู้ทำการผ่าตัด/ศัลยแพทย์ Surgeon, 2=Instrument Nurse, 3=Circulate Nurse, 5=Scrub Nurse])
+- operation_detail: รายการหัตถการผ่าตัด (operation_id, operation_item_id, icdcode [รหัส ICD-9-CM], price)
+- operation_item: ทะเบียนรายการผ่าตัด (operation_item_id, name, icode, price, icd9)
+- operation_room: ห้องผ่าตัด (room_id, room_name เช่น ห้องผ่าตัด 1, 2, 3)
 - dtmain: ทันตกรรม Dental (vn, hn) *เงื่อนไขผู้รับบริการ: `vn IN (SELECT vn FROM dtmain)`
 - physic_list: กายภาพบำบัด Physical Therapy (vn, hn) *เงื่อนไขผู้รับบริการ: `EXISTS (SELECT 1 FROM physic_list WHERE vn = o.vn)`
 - health_med_service: แพทย์แผนไทย (vn, hn) *เงื่อนไขผู้รับบริการ: `EXISTS (SELECT 1 FROM health_med_service WHERE vn = o.vn)`

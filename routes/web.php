@@ -134,6 +134,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\LrController::class, 'index'])->name('hosxp.lr.index');
     });
 
+    // Operation (OR) Routes
+    Route::prefix('hosxp/operation')->group(function () {
+        Route::get('/', [App\Http\Controllers\Hosxp\OperationController::class, 'index'])->name('hosxp.operation.index');
+    });
+
     // Physic Routes
     Route::prefix('hosxp/physic')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\PhysicController::class, 'index'])->name('hosxp.physic.index');
@@ -345,6 +350,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/knowledge/re-embed-all', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'reEmbedAll'])->name('admin.ai.knowledge.reembed_all');
         Route::delete('/knowledge/{id}', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'destroy'])->name('admin.ai.knowledge.destroy');
         Route::post('/knowledge/test-search', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'testSearch'])->name('admin.ai.knowledge.test_search');
+
+        // Knowledge Base Categories (CRUD)
+        Route::post('/knowledge/categories', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'storeCategory'])->name('admin.ai.knowledge.categories.store');
+        Route::put('/knowledge/categories/{id}', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'updateCategory'])->name('admin.ai.knowledge.categories.update');
+        Route::delete('/knowledge/categories/{id}', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'destroyCategory'])->name('admin.ai.knowledge.categories.destroy');
     });
 });
 

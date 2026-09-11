@@ -23,6 +23,7 @@
                                 ['url' => '/hosxp/er', 'label' => 'อุบัติเหตุ-ฉุกเฉิน', 'icon' => 'fa-truck-medical', 'color' => '#e74a3b'],
                                 ['url' => '/hosxp/phar', 'label' => 'เภสัชกรรม', 'icon' => 'fa-pills', 'color' => '#f6c23e'],
                                 ['url' => '/hosxp/physic', 'label' => 'กายภาพบำบัด', 'icon' => 'fa-walking', 'color' => '#fd7e14'],
+                                ['url' => '/hosxp/operation', 'label' => 'ผ่าตัด', 'icon' => 'fa-procedures', 'color' => '#e83e8c'],
                                 ['url' => '/hosxp/hmed', 'label' => 'แพทย์แผนไทย', 'icon' => 'fa-leaf', 'color' => '#20c997'],
                                 ['url' => '/hosxp/dent', 'label' => 'ทันตกรรม', 'icon' => 'fa-tooth', 'color' => '#6610f2'],
                                 ['url' => '/hosxp/ncd', 'label' => 'คลินิกโรคเรื้อรัง', 'icon' => 'fa-clipboard-list', 'color' => '#f6c23e'],

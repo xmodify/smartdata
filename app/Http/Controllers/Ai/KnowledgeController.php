@@ -34,9 +34,9 @@ class KnowledgeController extends Controller
 
         $docs = $query->orderBy('created_at', 'desc')->paginate(12)->withQueryString();
 
-        $categories = AiKnowledgeDoc::select('category')
-            ->distinct()
-            ->pluck('category');
+        $dbCategories = \App\Models\AiKnowledgeCategory::orderBy('name')->pluck('name')->toArray();
+        $docCategories = AiKnowledgeDoc::select('category')->distinct()->pluck('category')->toArray();
+        $categories = array_values(array_unique(array_filter(array_merge($dbCategories, $docCategories))));
 
         return view('ai.knowledge', compact('docs', 'categories', 'search', 'category'));
     }

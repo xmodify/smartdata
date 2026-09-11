@@ -22,6 +22,9 @@
             <a href="{{ route('ai.knowledge.index') }}" target="_blank" class="btn btn-outline-primary rounded-pill px-3">
                 <i class="fas fa-external-link-alt me-1"></i> มุมมองผู้ใช้ (User Library)
             </a>
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                <i class="fas fa-tags me-1"></i> จัดการหมวดหมู่ ({{ $categories->count() }})
+            </button>
             <button type="button" class="btn btn-outline-info rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#testSearchModal">
                 <i class="fas fa-search me-1"></i> ทดสอบสืบค้น Vector
             </button>
@@ -246,15 +249,18 @@
                         <input type="text" name="title" class="form-control bg-light border-0 shadow-sm" placeholder="เช่น CPG แนวทางการรักษาโรคหลอดเลือดสมอง (Stroke) 2568" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">หมวดหมู่เอกสาร</label>
-                        <input type="text" name="category" class="form-control bg-light border-0 shadow-sm" placeholder="เช่น แนวทางการรักษา CPG, นโยบายโรงพยาบาล, คู่มือระบบ" list="categoryList" required>
-                        <datalist id="categoryList">
-                            <option value="แนวทางการรักษา CPG">
-                            <option value="นโยบายและความปลอดภัย">
-                            <option value="คู่มือระบบสารสนเทศ">
-                            <option value="ระเบียบและข้อบังคับ">
-                            <option value="มาตรฐานงานบริการ">
-                        </datalist>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label fw-bold small text-muted mb-0">หมวดหมู่เอกสาร *</label>
+                            <a href="javascript:void(0)" class="small text-decoration-none text-success fw-bold" onclick="openCategoryModalFromUpload()">
+                                <i class="fas fa-cog me-1"></i> จัดการหมวดหมู่
+                            </a>
+                        </div>
+                        <select name="category" id="upload_category_select" class="form-select bg-light border-0 shadow-sm" required>
+                            <option value="" disabled selected>-- เลือกหมวดหมู่เอกสาร --</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->name }}">{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted">เลือกไฟล์เอกสาร (PDF, DOCX, TXT, MD)</label>
@@ -279,6 +285,141 @@
         </div>
     </div>
 </div>
+
+<!-- Manage Categories Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-success text-white border-0 rounded-top-4">
+                <h5 class="modal-title fw-bold" id="categoryModalLabel">
+                    <i class="fas fa-tags me-2"></i>จัดการหมวดหมู่เอกสารคลังความรู้ AI
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Add New Category Card -->
+                <div class="card border-0 bg-light rounded-4 p-3 mb-4">
+                    <h6 class="fw-bold text-dark mb-2">
+                        <i class="fas fa-plus-circle text-success me-1"></i> เพิ่มหมวดหมู่เอกสารใหม่
+                    </h6>
+                    <form action="{{ route('admin.ai.knowledge.categories.store') }}" method="POST">
+                        @csrf
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-5">
+                                <input type="text" name="name" class="form-control border-0 shadow-sm" placeholder="ชื่อหมวดหมู่ เช่น แนวทางการรักษา CPG *" required>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" name="description" class="form-control border-0 shadow-sm" placeholder="คำอธิบาย (ถ้ามี)">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-success rounded-pill w-100 shadow-sm">
+                                    <i class="fas fa-plus me-1"></i> บันทึก
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Existing Categories Table -->
+                <h6 class="fw-bold text-dark mb-3">
+                    <i class="fas fa-list me-1 text-primary"></i> รายการหมวดหมู่ทั้งหมด ({{ $categories->count() }})
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ชื่อหมวดหมู่</th>
+                                <th>คำอธิบาย</th>
+                                <th class="text-center">จำนวนเอกสาร</th>
+                                <th class="text-end">การจัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($categories as $cat)
+                            <tr>
+                                <td>
+                                    <span class="badge px-2 py-1 rounded-pill" style="background-color: {{ $cat->color ?? '#10b981' }}; color: #fff; font-size: 0.85rem;">
+                                        <i class="fas {{ $cat->icon ?? 'fa-folder' }} me-1"></i> {{ $cat->name }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">
+                                    {{ $cat->description ?: '-' }}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">
+                                        {{ $cat->docs_count ?? 0 }} เล่ม
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 me-1" 
+                                            onclick="openEditCategoryModal({{ $cat->id }}, '{{ addslashes($cat->name) }}', '{{ addslashes($cat->description ?? '') }}', '{{ $cat->color ?? '#10b981' }}')">
+                                        <i class="fas fa-edit"></i> แก้ไข
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" 
+                                            onclick="confirmDeleteCategory({{ $cat->id }}, '{{ addslashes($cat->name) }}', {{ $cat->docs_count ?? 0 }})">
+                                        <i class="fas fa-trash"></i> ลบ
+                                    </button>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">ยังไม่มีหมวดหมู่เอกสาร</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light rounded-bottom-4">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">ปิด</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-primary text-white border-0 rounded-top-4">
+                <h5 class="modal-title fw-bold" id="editCategoryModalLabel">
+                    <i class="fas fa-edit me-2"></i>แก้ไขหมวดหมู่เอกสาร
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editCategoryForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">ชื่อหมวดหมู่ *</label>
+                        <input type="text" name="name" id="edit_category_name" class="form-control bg-light border-0 shadow-sm" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">คำอธิบาย</label>
+                        <input type="text" name="description" id="edit_category_description" class="form-control bg-light border-0 shadow-sm">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">สีหมวดหมู่</label>
+                        <input type="color" name="color" id="edit_category_color" class="form-control form-control-color border-0 shadow-sm" value="#10b981">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow">
+                        <i class="fas fa-save me-1"></i> บันทึกการแก้ไข
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Delete Category Form -->
+<form id="deleteCategoryForm" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
 
 <!-- Test Search Modal -->
 <div class="modal fade" id="testSearchModal" tabindex="-1" aria-labelledby="testSearchModalLabel" aria-hidden="true">
@@ -310,6 +451,59 @@
 
 @push('scripts')
 <script>
+function openCategoryModalFromUpload() {
+    const uploadModalEl = document.getElementById('uploadModal');
+    const uploadModal = bootstrap.Modal.getInstance(uploadModalEl);
+    if (uploadModal) {
+        uploadModal.hide();
+    }
+    const catModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+    catModal.show();
+}
+
+function openEditCategoryModal(id, name, desc, color) {
+    document.getElementById('edit_category_name').value = name;
+    document.getElementById('edit_category_description').value = desc;
+    document.getElementById('edit_category_color').value = color || '#10b981';
+    document.getElementById('editCategoryForm').action = `{{ url('admin/ai/knowledge/categories') }}/${id}`;
+    
+    const catModalEl = document.getElementById('categoryModal');
+    const catModal = bootstrap.Modal.getInstance(catModalEl);
+    if (catModal) catModal.hide();
+
+    const editModal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+    editModal.show();
+}
+
+function confirmDeleteCategory(id, name, docsCount) {
+    if (docsCount > 0) {
+        Swal.fire({
+            title: 'ไม่สามารถลบหมวดหมู่นี้ได้',
+            html: `หมวดหมู่ <strong>"${name}"</strong> มีเอกสารผูกอยู่ <strong>${docsCount} เล่ม</strong><br><small class="text-danger">กรุณาย้ายหรือลบเอกสารในหมวดนี้ก่อนทำการลบหมวดหมู่</small>`,
+            icon: 'warning',
+            confirmButtonColor: '#0d6efd',
+            confirmButtonText: 'รับทราบ'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'ยืนยันการลบหมวดหมู่?',
+        html: `ต้องการลบหมวดหมู่ <strong>"${name}"</strong> ใช่หรือไม่?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fas fa-trash me-1"></i> ลบหมวดหมู่',
+        cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('deleteCategoryForm');
+            form.action = `{{ url('admin/ai/knowledge/categories') }}/${id}`;
+            form.submit();
+        }
+    });
+}
 function confirmDelete(btn, title) {
     Swal.fire({
         title: 'ยืนยันการลบเอกสาร?',

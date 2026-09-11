@@ -313,5 +313,16 @@
                 "description": "ฐานข้อมูลเริ่มต้นสำหรับ Text-to-SQL (hosxp, backoffice, mysql)"
             }
         }
+    ],
+    "ai_knowledge_categories": [
+        {
+            "match_by": ["name"],
+            "data": {
+                "name": "แนวทางการรักษา CPG",
+                "description": "แนวทางเวชปฏิบัติ Clinical Practice Guidelines การรักษาโรคต่างๆ",
+                "color": "#10b981",
+                "icon": "fa-book-medical"
+            }
+        }
     ]
 }
