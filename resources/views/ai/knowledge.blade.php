@@ -20,7 +20,7 @@
                 @if(\App\Models\AiSetting::isCopilotEnabled() && auth()->check() && auth()->user()->hasAccessCopilot())
                 <div class="col-lg-4 text-center text-lg-end mt-3 mt-lg-0">
                     <a href="{{ route('ai.chat') }}" class="btn btn-light btn-lg rounded-pill px-4 shadow-sm text-primary fw-bold d-inline-flex align-items-center">
-                        <img src="{{ asset('images/logo.png') }}" class="rounded-circle me-2" style="width: 28px; height: 28px; object-fit: contain;" alt="SmartData"> เปิด SmartData Copilot
+                        <img src="{{ file_exists(public_path('images/donkey.jpg')) ? asset('images/donkey.jpg') : asset('images/logo.png') }}" class="rounded-circle me-2" style="width: 28px; height: 28px; object-fit: cover;" alt="ดองกี้"> เปิดถาม ดองกี้ AI
                     </a>
                 </div>
                 @endif
@@ -112,8 +112,8 @@
 
                             @if(\App\Models\AiSetting::isCopilotEnabled() && auth()->check() && auth()->user()->hasAccessCopilot())
                             <!-- Ask AI About This Doc -->
-                            <a href="{{ route('ai.chat') }}?doc_id={{ $doc->id }}&message={{ urlencode('ช่วยสรุปสาระสำคัญของเอกสาร "' . $doc->title . '" ให้หน่อย') }}" class="btn btn-light rounded-pill btn-sm px-2 text-info d-inline-flex align-items-center" title="ถาม SmartData Copilot เกี่ยวกับเล่มนี้">
-                                <img src="{{ asset('images/logo.png') }}" class="rounded-circle" style="width: 20px; height: 20px; object-fit: contain;" alt="SmartData">
+                            <a href="{{ route('ai.chat') }}?doc_id={{ $doc->id }}&message={{ urlencode('ช่วยสรุปสาระสำคัญของเอกสาร "' . $doc->title . '" ให้หน่อย') }}" class="btn btn-light rounded-pill btn-sm px-2 text-info d-inline-flex align-items-center" title="ถาม ดองกี้ AI เกี่ยวกับเล่มนี้">
+                                <img src="{{ file_exists(public_path('images/donkey.jpg')) ? asset('images/donkey.jpg') : asset('images/logo.png') }}" class="rounded-circle" style="width: 20px; height: 20px; object-fit: cover;" alt="ดองกี้">
                             </a>
                             @endif
                         </div>

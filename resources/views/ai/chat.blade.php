@@ -1,8 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'SmartData Copilot - AI Hospital Assistant')
+@section('title', 'ดองกี้ - ผู้ช่วย AI โรงพยาบาล')
 
 @section('content')
+@php
+    $donkeyImgUrl = file_exists(public_path('images/donkey.jpg')) ? asset('images/donkey.jpg') . '?v=' . filemtime(public_path('images/donkey.jpg')) : asset('images/logo.png');
+@endphp
 <div class="container-fluid px-3 px-md-4 py-3" style="height: calc(100vh - 85px);">
     <div class="row h-100 g-3">
         <!-- Sidebar: Chat History -->
@@ -49,9 +52,9 @@
                 <!-- Chat Header Toolbar -->
                 <div class="px-4 py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center bg-white gap-2">
                     <div class="d-flex align-items-center">
-                        <img src="{{ asset('images/logo.png') }}" class="rounded-circle me-3 shadow-sm bg-white p-1 border" style="width: 42px; height: 42px; object-fit: contain;" alt="SmartData Copilot">
+                        <img src="{{ $donkeyImgUrl }}" class="rounded-circle me-3 shadow-sm bg-white p-1 border" style="width: 42px; height: 42px; object-fit: cover;" alt="ดองกี้">
                         <div>
-                            <h5 class="fw-bold mb-0 text-dark">SmartData Copilot</h5>
+                            <h5 class="fw-bold mb-0 text-dark">ดองกี้</h5>
                             <span class="badge bg-success-subtle text-success rounded-pill px-2 py-0 small">
                                 <i class="fas fa-circle fa-2xs me-1"></i> Online พร้อมใช้งาน
                             </span>
@@ -90,10 +93,10 @@
                     <div id="welcomeHero" class="text-center py-5 my-auto">
                         <div class="mb-4">
                             <div class="d-inline-flex p-3 rounded-circle shadow-sm bg-white border" style="width: 90px; height: 90px;">
-                                <img src="{{ asset('images/logo.png') }}" class="w-100 h-100 object-fit-contain" alt="SmartData Copilot">
+                                <img src="{{ $donkeyImgUrl }}" class="w-100 h-100 rounded-circle" style="object-fit: cover;" alt="ดองกี้">
                             </div>
                         </div>
-                        <h3 class="fw-bold text-dark mb-2">ยินดีต้อนรับสู่ SmartData Copilot</h3>
+                        <h3 class="fw-bold text-dark mb-2">ยินดีต้อนรับสู่ ดองกี้</h3>
                         <p class="text-muted mb-4 mx-auto" style="max-width: 550px;">
                             ผู้ช่วย AI วิเคราะห์ข้อมูลสุขภาพ แปลงภาษาไทยเป็น SQL ค้นหาสถิติคนไข้ HOSxP, ข้อมูล Backoffice และตอบคำถามจากคลังความรู้ CPG โรงพยาบาล
                         </p>
@@ -129,7 +132,7 @@
                         @else
                         <div class="d-flex justify-content-start mb-4">
                             <div class="me-3">
-                                <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 shadow-sm border" style="width: 36px; height: 36px; object-fit: contain;" alt="SmartData">
+                                <img src="{{ $donkeyImgUrl }}" class="rounded-circle bg-white p-1 shadow-sm border" style="width: 36px; height: 36px; object-fit: cover;" alt="ดองกี้">
                             </div>
                             <div class="assistant-bubble p-3 rounded-4 shadow-sm bg-white border" style="max-width: 85%;">
                                 <div class="message-text mb-2" style="white-space: pre-wrap;">{!! nl2br(preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', e($msg->content))) !!}</div>
@@ -258,7 +261,7 @@
 <script>
 var isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
 var currentSessionUuid = '{{ $currentSession->session_uuid ?? "" }}';
-window.smartdataLogoUrl = window.smartdataLogoUrl || "{{ asset('images/logo.png') }}";
+window.smartdataLogoUrl = "{{ $donkeyImgUrl }}";
 var smartdataLogoUrl = window.smartdataLogoUrl;
 
 document.getElementById('messageInput').addEventListener('keydown', function(e) {

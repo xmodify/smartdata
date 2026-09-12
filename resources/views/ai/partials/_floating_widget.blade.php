@@ -1,9 +1,12 @@
 <!-- SmartData Copilot Floating Widget (RiMS Style) -->
+@php
+    $donkeyImgUrl = file_exists(public_path('images/donkey.jpg')) ? asset('images/donkey.jpg') . '?v=' . filemtime(public_path('images/donkey.jpg')) : asset('images/logo.png');
+@endphp
 <div id="smartdata-copilot-widget" style="position: fixed; bottom: 25px; right: 25px; z-index: 9999; font-family: inherit;">
     <!-- Floating Trigger Button with AI Badge -->
     <div class="position-relative d-inline-block">
-        <button id="copilot-trigger-btn" type="button" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0" style="width: 60px; height: 60px; background: #ffffff; border: 3px solid #ffffff; box-shadow: 0 6px 24px rgba(9, 74, 136, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: hidden; cursor: pointer;" onclick="toggleCopilotWidget()" title="SmartData Copilot">
-            <img src="{{ asset('images/logo.png') }}" id="copilot-btn-img" alt="SmartData Copilot" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; pointer-events: none;">
+        <button id="copilot-trigger-btn" type="button" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0" style="width: 60px; height: 60px; background: #ffffff; border: 3px solid #ffffff; box-shadow: 0 6px 24px rgba(9, 74, 136, 0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: hidden; cursor: pointer;" onclick="toggleCopilotWidget()" title="ดองกี้ AI">
+            <img src="{{ $donkeyImgUrl }}" id="copilot-btn-img" alt="ดองกี้ AI" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; pointer-events: none;">
             <i class="fas fa-times fa-2x text-white d-none" id="copilot-btn-close" style="pointer-events: none;"></i>
         </button>
         <!-- Red AI Pill Badge (RiMS Style) -->
@@ -17,11 +20,11 @@
             <div class="d-flex align-items-center">
                 <!-- Avatar with Online Glowing Dot -->
                 <div class="position-relative me-2 flex-shrink-0" style="width: 38px; height: 38px;">
-                    <img src="{{ asset('images/logo.png') }}" class="rounded-circle bg-white p-1 shadow-sm w-100 h-100" style="object-fit: contain;" alt="SmartData">
+                    <img src="{{ $donkeyImgUrl }}" class="rounded-circle bg-white p-1 shadow-sm w-100 h-100" style="object-fit: cover;" alt="ดองกี้">
                     <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background-color: #22c55e; border: 2px solid #094a88; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></span>
                 </div>
                 <div>
-                    <h6 class="fw-bold mb-0 text-white" style="font-size: 0.98rem; letter-spacing: 0.3px;">SmartData Copilot</h6>
+                    <h6 class="fw-bold mb-0 text-white" style="font-size: 0.98rem; letter-spacing: 0.3px;">ดองกี้</h6>
                     <div class="text-white-50" style="font-size: 0.72rem; line-height: 1.25;">ผู้ช่วย AI: วิเคราะห์เวชระเบียน HOSxP • SQL • CPG คู่มือ สธ.</div>
                 </div>
             </div>
@@ -47,7 +50,7 @@
             <!-- Welcome Card (RiMS Style) -->
             <div class="card border border-light-subtle rounded-4 shadow-sm bg-white p-3 mb-3" id="widgetWelcomeCard" style="border-radius: 16px !important;">
                 <div class="fw-bold text-dark mb-2 d-flex align-items-center" style="font-size: 0.95rem;">
-                    สวัสดีครับ! ผมคือ SmartData Copilot 🩺 ✨
+                    สวัสดีครับ! ผมคือ ดองกี้ 🫏 ✨
                 </div>
                 <p class="text-secondary small mb-3" style="font-size: 0.8rem; line-height: 1.55;">
                     ผู้ช่วย AI อัจฉริยะประจำโรงพยาบาล พร้อมวิเคราะห์ข้อมูลเวชระเบียน HOSxP, เขียนคำสั่ง SQL ค้นหาสถิติผู้ป่วย OPD/IPD, งาน Backoffice และสรุปแนวทาง CPG คู่มือระเบียบ สธ. สามารถพิมพ์สอบถามได้เลยครับ
@@ -138,7 +141,7 @@
 <script>
 window.isWidgetOpen = false;
 let widgetSessionUuid = 'widget-' + Math.random().toString(36).substr(2, 9);
-window.smartdataLogoUrl = window.smartdataLogoUrl || "{{ asset('images/logo.png') }}";
+window.smartdataLogoUrl = "{{ $donkeyImgUrl }}";
 var smartdataLogoUrl = window.smartdataLogoUrl;
 const isWidgetAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
 
@@ -203,7 +206,7 @@ function resetWidgetConversation() {
     container.innerHTML = `
         <div class="card border border-light-subtle rounded-4 shadow-sm bg-white p-3 mb-3" id="widgetWelcomeCard" style="border-radius: 16px !important;">
             <div class="fw-bold text-dark mb-2 d-flex align-items-center" style="font-size: 0.95rem;">
-                สวัสดีครับ! ผมคือ SmartData Copilot 🩺 ✨
+                สวัสดีครับ! ผมคือ ดองกี้ 🫏 ✨
             </div>
             <p class="text-secondary small mb-3" style="font-size: 0.8rem; line-height: 1.55;">
                 ผู้ช่วย AI อัจฉริยะประจำโรงพยาบาล พร้อมวิเคราะห์ข้อมูลเวชระเบียน HOSxP, เขียนคำสั่ง SQL ค้นหาสถิติผู้ป่วย OPD/IPD, งาน Backoffice และสรุปแนวทาง CPG คู่มือระเบียบ สธ. สามารถพิมพ์สอบถามได้เลยครับ

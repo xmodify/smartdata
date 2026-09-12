@@ -123,7 +123,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
         if (!empty($history)) {
             $contextStr = "บริบทการสนทนาก่อนหน้านี้ในเซสชันนี้:\n";
             foreach ($history as $h) {
-                $roleName = ($h['role'] === 'user') ? 'ผู้ใช้' : 'Copilot';
+                $roleName = ($h['role'] === 'user') ? 'ผู้ใช้' : 'ดองกี้';
                 $contextStr .= "- {$roleName}: " . ($h['content'] ?? '') . "\n";
                 if (!empty($h['sql'])) {
                     $contextStr .= "  [SQL ก่อนหน้า]: {$h['sql']}\n";

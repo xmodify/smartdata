@@ -46,9 +46,9 @@
                         <a href="{{ route('ai.chat') }}" 
                            class="btn btn-sm rounded-pill px-3 py-1 me-2 me-md-3 shadow-sm d-inline-flex align-items-center text-decoration-none fw-bold {{ request()->routeIs('ai.chat*') ? 'bg-white text-success border border-2 border-white' : 'btn-light text-success' }}" 
                            style="background: #ffffff; color: #198754; font-size: 0.82rem; letter-spacing: 0.2px; transition: all 0.25s ease;" 
-                           title="เปิด SmartData Copilot (หน้าต่างเต็ม)">
-                            <img src="{{ asset('images/logo.png') }}" class="rounded-circle me-1" style="width: 20px; height: 20px; object-fit: contain;" alt="Copilot">
-                            <span class="d-none d-sm-inline fw-bold text-dark">Copilot</span>
+                           title="เปิด ดองกี้ AI Copilot (หน้าต่างเต็ม)">
+                            <img src="{{ file_exists(public_path('images/donkey.jpg')) ? asset('images/donkey.jpg') . '?v=' . filemtime(public_path('images/donkey.jpg')) : asset('images/logo.png') }}" class="rounded-circle me-1" style="width: 20px; height: 20px; object-fit: cover;" alt="ดองกี้">
+                            <span class="d-none d-sm-inline fw-bold text-dark">ดองกี้</span>
                             <span class="badge rounded-pill bg-danger ms-1 px-1 py-0" style="font-size: 0.62rem; font-weight: 800; letter-spacing: 0.5px;">AI</span>
                         </a>
                     @endif
