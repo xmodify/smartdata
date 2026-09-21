@@ -102,9 +102,12 @@
                         </p>
 
                         <div class="text-muted small fw-bold mb-3 text-uppercase">ตัวอย่างคำถามที่สามารถคลิกถามได้ทันที:</div>
-                        <div class="d-flex flex-wrap justify-content-center gap-2 mx-auto" style="max-width: 800px;">
-                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 bg-white shadow-sm" onclick="sendQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) ย้อนหลัง 30 วัน แยกตามสิทธิการรักษา')">
-                                <i class="fas fa-chart-pie me-1"></i> ยอดผู้ป่วยนอกแยกตามสิทธิ (30 วัน)
+                        <div class="d-flex flex-wrap justify-content-center gap-2 mx-auto" style="max-width: 860px;">
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 py-2 bg-white shadow-sm fw-medium" onclick="sendQuickPrompt('ขอกราฟสรุป 10 อันดับโรคผู้ป่วยนอก (OPD) ที่มารับบริการมากที่สุดเดือนนี้')">
+                                <i class="bi bi-bar-chart-fill text-success me-1"></i> กราฟ 10 อันดับโรค OPD เดือนนี้
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 bg-white shadow-sm fw-medium" onclick="sendQuickPrompt('ขอกราฟสรุปยอดผู้ป่วยนอก (OPD) ย้อนหลัง 30 วัน แยกตามสิทธิการรักษา')">
+                                <i class="bi bi-pie-chart-fill text-primary me-1"></i> กราฟยอดผู้ป่วยนอกแยกตามสิทธิ (30 วัน)
                             </button>
                             <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 bg-white shadow-sm" onclick="sendQuickPrompt('5 อันดับโรคผู้ป่วยนอก (Top 5 OPD Dx) ที่มารับบริการมากที่สุดเดือนนี้')">
                                 <i class="fas fa-stethoscope me-1"></i> 5 อันดับโรคผู้ป่วยนอกเดือนนี้
@@ -138,48 +141,33 @@
                                 <div class="message-text mb-2" style="white-space: pre-wrap;">{!! nl2br(preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', e($msg->content))) !!}</div>
 
                                 @if(!empty($msg->query_result) && is_array($msg->query_result))
-                                <div class="table-responsive rounded-3 border bg-light mt-2" style="max-height: 350px;">
-                                    <table class="table table-sm table-striped table-hover mb-0 small">
-                                        <thead class="table-primary sticky-top">
-                                            <tr>
-                                                @foreach(array_keys($msg->query_result[0] ?? []) as $col)
-                                                <th>{{ $col }}</th>
-                                                @endforeach
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @php
-                                                $isCodeOrId = function($name) {
-                                                    return (bool) preg_match('/(hn|an|vn|cid|pid|code|icode|tmt|billcode|adp|idcard|phone|tel|year|bed|ward|dept|clinic|เลข|รหัส|ปี|เบอร์|โทร|เตียง|ลำดับ)/i', $name);
-                                                };
-                                                $isMoneyOrQty = function($name) {
-                                                    return (bool) preg_match('/(จำนวน|ราคา|ยอด|บาท|มูลค่า|ผลรวม|จ่าย|ค้าง|ต้นทุน|count|qty|amount|price|cost|total|sum|adjrw|cmi)/i', $name);
-                                                };
-                                            @endphp
-                                            @foreach($msg->query_result as $row)
-                                            <tr>
-                                                @foreach($row as $colName => $cell)
-                                                @php
-                                                    $displayCell = $cell;
-                                                    if (is_numeric($cell) && !$isCodeOrId($colName) && $isMoneyOrQty($colName)) {
-                                                        $displayCell = is_float($cell + 0) ? number_format($cell, 2) : number_format($cell);
-                                                    }
-                                                @endphp
-                                                <td>{{ $displayCell }}</td>
-                                                @endforeach
-                                            </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
-                                    <span class="badge bg-light text-muted border">
-                                        <i class="fas fa-database text-primary me-1"></i> {{ strtoupper($msg->target_db ?: 'HOSxP') }} • {{ count($msg->query_result) }} รายการ
-                                    </span>
-                                    <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="exportTableToCsv(this)">
-                                        <i class="fas fa-file-excel me-1"></i> ส่งออก CSV
-                                    </button>
-                                </div>
+                                @php
+                                    $histCols = array_keys($msg->query_result[0] ?? []);
+                                    $prevPrompt = $currentSession->messages->where('id', '<', $msg->id)->where('role', 'user')->last()?->content ?? '';
+                                @endphp
+                                <div class="copilot-vis-container" id="container-vis-hist-{{ $msg->id }}"></div>
+                                <script>
+                                    (function() {
+                                        const initFn = function() {
+                                            if (typeof renderVisContainer === 'function') {
+                                                renderVisContainer('container-vis-hist-{{ $msg->id }}', {
+                                                    columns: @json($histCols),
+                                                    rows: @json($msg->query_result),
+                                                    total_rows: {{ count($msg->query_result) }},
+                                                    target_db: '{{ $msg->target_db ?: "hosxp" }}',
+                                                    content: @json($msg->content)
+                                                }, @json($prevPrompt));
+                                            } else {
+                                                setTimeout(initFn, 80);
+                                            }
+                                        };
+                                        if (document.readyState === 'loading') {
+                                            document.addEventListener('DOMContentLoaded', initFn);
+                                        } else {
+                                            initFn();
+                                        }
+                                    })();
+                                </script>
                                 @endif
 
                                 @if(auth()->user()->role === 'admin' && $msg->message_type === 'sql_query' && $msg->generated_sql)
@@ -239,6 +227,7 @@
 </div>
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
 <style>
 .hover-bg-light:hover {
     background-color: #f1f5f9;
@@ -254,10 +243,105 @@
 .hover-danger:hover {
     color: #dc3545 !important;
 }
+
+/* SmartData Interactive Visualization Styles (RiMS Chart.js Style) */
+.table-card-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #ffffff;
+    overflow: hidden;
+    margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+.table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.table-responsive-custom {
+    max-height: 380px;
+    overflow: auto;
+}
+.chart-view-panel {
+    padding: 14px 16px;
+    background: #ffffff;
+}
+.chart-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+.chart-canvas-wrapper {
+    position: relative;
+    width: 100%;
+    height: 360px;
+    max-height: 420px;
+}
+.chart-stats-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+}
+.chart-stat-item {
+    font-size: 0.76rem;
+    padding: 5px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+}
+.chart-stat-item strong {
+    color: #0f172a;
+}
+.data-table-copilot {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.82rem;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.data-table-copilot thead th {
+    position: sticky;
+    top: 0;
+    background: #e2e8f0;
+    color: #1e293b;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-bottom: 2px solid #cbd5e1;
+    white-space: nowrap;
+    z-index: 2;
+}
+.data-table-copilot tbody td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+}
+.data-table-copilot tbody tr:hover {
+    background-color: #f8fafc;
+}
 </style>
 @endpush
 
 @push('scripts')
+<!-- Offline Local Vendors: SheetJS for Excel and Chart.js -->
+<script src="{{ asset('vendor/xlsx.full.min.js') }}"></script>
+<script src="{{ asset('vendor/chartjs/chart.umd.js') }}"></script>
 <script>
 var isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
 var currentSessionUuid = '{{ $currentSession->session_uuid ?? "" }}';
@@ -286,6 +370,8 @@ function handleChatSubmit(e) {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
     if (!message) return false;
+
+    window.lastUserQuestion = message;
 
     input.value = '';
     input.style.height = 'auto';
@@ -421,75 +507,43 @@ function appendAssistantMessage(data) {
     div.className = 'd-flex justify-content-start mb-4';
 
     let extraHtml = '';
+    let visContainerId = null;
 
-    // If SQL query result
-    if (data.mode === 'sql') {
-        if (data.rows && data.rows.length > 0) {
-            let tableHeaders = '';
-            data.columns.forEach(col => {
-                tableHeaders += `<th>${escapeHtml(col)}</th>`;
-            });
+    // If SQL query result with rows
+    if (data.mode === 'sql' && data.rows && data.rows.length > 0) {
+        visContainerId = 'container-vis-' + Math.random().toString(36).substring(2, 9);
+        extraHtml += `<div class="copilot-vis-container w-100" id="${visContainerId}"></div>`;
+    }
 
-            let tableRows = '';
-            data.rows.forEach(row => {
-                tableRows += '<tr>';
-                data.columns.forEach(col => {
-                    const val = row[col];
-                    tableRows += `<td>${escapeHtml(String(val !== null ? val : ''))}</td>`;
-                });
-                tableRows += '</tr>';
-            });
-
-            extraHtml += `
-                <div class="table-responsive rounded-3 border bg-light mt-2" style="max-height: 350px;">
-                    <table class="table table-sm table-striped table-hover mb-0 small">
-                        <thead class="table-primary sticky-top">
-                            <tr>${tableHeaders}</tr>
-                        </thead>
-                        <tbody>${tableRows}</tbody>
-                    </table>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
-                    <span class="badge bg-light text-muted border">
-                        <i class="fas fa-database text-primary me-1"></i> ${(data.target_db || 'HOSxP').toUpperCase()} • ${data.count || data.rows.length} รายการ
-                    </span>
-                    <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="exportTableToCsv(this)">
-                        <i class="fas fa-file-excel me-1"></i> ส่งออก CSV
-                    </button>
+    // Show SQL only for Admin in a collapsed details toggle
+    if (isAdmin && data.sql) {
+        let errorAlert = '';
+        if (data.raw_error) {
+            errorAlert = `
+                <div class="p-2 mb-2 rounded bg-danger bg-opacity-25 border border-danger border-opacity-50 text-white small" style="font-size: 0.72rem; white-space: pre-wrap;">
+                    <div class="fw-bold text-warning mb-1"><i class="fas fa-exclamation-triangle me-1"></i> ข้อมูลทางเทคนิคสำหรับ Admin (Technical Error):</div>
+                    <div class="font-monospace text-light opacity-75">${escapeHtml(data.raw_error)}</div>
                 </div>
             `;
         }
 
-        // Show SQL only for Admin in a collapsed details toggle
-        if (isAdmin && data.sql) {
-            let errorAlert = '';
-            if (data.raw_error) {
-                errorAlert = `
-                    <div class="p-2 mb-2 rounded bg-danger bg-opacity-25 border border-danger border-opacity-50 text-white small" style="font-size: 0.72rem; white-space: pre-wrap;">
-                        <div class="fw-bold text-warning mb-1"><i class="fas fa-exclamation-triangle me-1"></i> ข้อมูลทางเทคนิคสำหรับ Admin (Technical Error):</div>
-                        <div class="font-monospace text-light opacity-75">${escapeHtml(data.raw_error)}</div>
+        extraHtml += `
+            <details class="mt-2 text-muted">
+                <summary class="small cursor-pointer user-select-none text-muted" style="font-size: 0.75rem;">
+                    <i class="fas fa-terminal me-1"></i> คำสั่ง SQL ที่ใช้สืบค้น (สำหรับ Admin)
+                </summary>
+                <div class="sql-box rounded-3 p-2 bg-dark text-light mt-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge bg-secondary" style="font-size: 0.68rem;">${(data.target_db || 'HOSxP').toUpperCase()}</span>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="copySql(this)">
+                            <i class="fas fa-copy me-1"></i> Copy SQL
+                        </button>
                     </div>
-                `;
-            }
-
-            extraHtml += `
-                <details class="mt-2 text-muted">
-                    <summary class="small cursor-pointer user-select-none text-muted" style="font-size: 0.75rem;">
-                        <i class="fas fa-terminal me-1"></i> คำสั่ง SQL ที่ใช้สืบค้น (สำหรับ Admin)
-                    </summary>
-                    <div class="sql-box rounded-3 p-2 bg-dark text-light mt-1">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="badge bg-secondary" style="font-size: 0.68rem;">${(data.target_db || 'HOSxP').toUpperCase()}</span>
-                            <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.68rem;" onclick="copySql(this)">
-                                <i class="fas fa-copy me-1"></i> Copy SQL
-                            </button>
-                        </div>
-                        ${errorAlert}
-                        <pre class="mb-0 font-monospace small text-info" style="white-space: pre-wrap; font-size: 0.75rem;"><code>${escapeHtml(data.sql)}</code></pre>
-                    </div>
-                </details>
-            `;
-        }
+                    ${errorAlert}
+                    <pre class="mb-0 font-monospace small text-info" style="white-space: pre-wrap; font-size: 0.75rem;"><code>${escapeHtml(data.sql)}</code></pre>
+                </div>
+            </details>
+        `;
     }
 
     // If RAG source citations
@@ -531,13 +585,17 @@ function appendAssistantMessage(data) {
         <div class="me-3 flex-shrink-0">
             <img src="${smartdataLogoUrl}" class="rounded-circle bg-white p-1 shadow-sm border" style="width: 36px; height: 36px; object-fit: contain;" alt="SmartData">
         </div>
-        <div class="assistant-bubble p-3 rounded-4 shadow-sm bg-white border" style="max-width: 85%;">
+        <div class="assistant-bubble p-3 rounded-4 shadow-sm bg-white border" style="max-width: 88%; width: 100%;">
             ${bodyHtml}
             ${extraHtml}
         </div>
     `;
 
     container.appendChild(div);
+
+    if (visContainerId) {
+        renderVisContainer(visContainerId, data, window.lastUserQuestion || data.user_prompt || '');
+    }
 }
 
 function scrollChatToBottom() {
@@ -686,6 +744,626 @@ function copySql(btn) {
             btn.innerHTML = originalHtml;
         }, 2000);
     });
+}
+
+// ==============================================================
+// SmartData Interactive Visualization System (RiMS Copilot Style)
+// ==============================================================
+
+const COLUMN_TITLE_MAP = {
+    // General / Common Aliases
+    'id': 'ลำดับ',
+    'count': 'จำนวน',
+    'total': 'ยอดรวม',
+    'total_cases': 'จำนวนคนไข้ (ราย)',
+    'case_count': 'จำนวนคนไข้ (ราย)',
+    'visit_count': 'จำนวนครั้งบริการ (ครั้ง)',
+    'patient_count': 'จำนวนผู้ป่วย (คน)',
+    'admit_count': 'จำนวน Admit (ราย)',
+    'death_count': 'จำนวนผู้เสียชีวิต (ราย)',
+    'refer_count': 'จำนวนส่งต่อ (ครั้ง)',
+    'total_amount': 'ยอดเงินรวม (บาท)',
+    'total_income': 'รายได้รวม (บาท)',
+    'total_price': 'ราคารวม (บาท)',
+    'sum_price': 'ยอดรวม (บาท)',
+    'unitcost': 'ราคาทุน (บาท)',
+    'unitprice': 'ราคาขาย (บาท)',
+    'paid': 'ชำระแล้ว (บาท)',
+    'remain': 'คงค้าง (บาท)',
+    'balance': 'คงเหลือ (บาท)',
+    'los': 'วันนอนเฉลี่ย (วัน)',
+    'avg_los': 'วันนอนเฉลี่ย (วัน)',
+    'cmi': 'ค่า CMI',
+    'adjrw': 'น้ำหนักสัมพัทธ์ (AdjRW)',
+
+    // HOSxP Clinical & Master Data
+    'hn': 'เลข HN',
+    'an': 'เลข AN',
+    'vn': 'เลข VN',
+    'cid': 'เลขบัตรประชาชน',
+    'patient_name': 'ชื่อ-นามสกุล',
+    'pttype': 'รหัสสิทธิ',
+    'pttype_name': 'สิทธิการรักษา',
+    'pdx': 'รหัสโรคหลัก (ICD-10)',
+    'diag_name': 'ชื่อการวินิจฉัยโรค',
+    'disease_name': 'ชื่อโรค',
+    'clinic': 'รหัสคลินิก',
+    'clinic_name': 'ชื่อคลินิก',
+    'ward': 'รหัสหอผู้ป่วย',
+    'ward_name': 'หอผู้ป่วย',
+    'doctor': 'รหัสแพทย์',
+    'doctor_name': 'ชื่อแพทย์',
+    'dept_name': 'แผนก/จุดบริการ',
+    'department': 'แผนก/จุดบริการ',
+    'drug_name': 'ชื่อยา',
+    'icode': 'รหัสรายการ (icode)',
+    'item_name': 'ชื่อรายการ',
+    'income': 'หมวดรายได้',
+    'income_name': 'ชื่อหมวดรายได้',
+    'vstdate': 'วันที่รับบริการ',
+    'regdate': 'วันที่รับไว้รักษา (Admit)',
+    'dchdate': 'วันที่จำหน่าย',
+    'rxdate': 'วันที่สั่งยา',
+    'qty': 'จำนวน',
+    'units': 'หน่วยนับ',
+    'bedno': 'เลขเตียง',
+
+    // Backoffice
+    'person_id': 'รหัสบุคลากร',
+    'staff_name': 'ชื่อบุคลากร',
+    'department_name': 'กลุ่มงาน/ฝ่าย',
+    'position_name': 'ตำแหน่ง',
+    'article_name': 'ชื่อครุภัณฑ์',
+    'article_num': 'เลขครุภัณฑ์',
+    'supplies_name': 'ชื่อพัสดุ',
+    'total_qty': 'จำนวนรวม',
+    'total_cost': 'มูลค่ารวม (บาท)',
+    'risk_count': 'จำนวนอุบัติการณ์',
+    'risk_level': 'ระดับความรุนแรง',
+    'risk_program': 'โปรแกรมความเสี่ยง',
+    'incident_date': 'วันที่เกิดเหตุ',
+
+    // Period
+    'vst_month': 'เดือนที่มารับบริการ',
+    'month_name': 'เดือน',
+    'year_name': 'ปีงบประมาณ',
+    'fiscal_year': 'ปีงบประมาณ'
+};
+
+function formatColumnHeader(col) {
+    if (!col) return '';
+    const clean = String(col).trim();
+    if (COLUMN_TITLE_MAP[clean]) return COLUMN_TITLE_MAP[clean];
+    const lower = clean.toLowerCase();
+    if (COLUMN_TITLE_MAP[lower]) return COLUMN_TITLE_MAP[lower];
+
+    let label = clean
+        .replace(/^total_/i, 'ยอดรวม ')
+        .replace(/^sum_/i, 'ยอดรวม ')
+        .replace(/^count_/i, 'จำนวน ')
+        .replace(/^avg_/i, 'เฉลี่ย ')
+        .replace(/_/g, ' ');
+    return label;
+}
+
+function formatCellValue(val, col) {
+    if (val === null || val === undefined || val === '') return '-';
+    const colLower = String(col || '').toLowerCase();
+    if (colLower.includes('year') || colLower.includes('code') || colLower.includes('cid') || colLower === 'id' || colLower.includes('no') || colLower.includes('phone') || colLower.includes('hn') || colLower.includes('an') || colLower.includes('vn')) {
+        return escapeHtml(val);
+    }
+    if (typeof val === 'number' || (!isNaN(val) && !isNaN(parseFloat(val)) && isFinite(val) && String(val).trim() !== '')) {
+        const num = parseFloat(val);
+        if (String(val).includes('.') || colLower.includes('amount') || colLower.includes('cost') || colLower.includes('price') || colLower.includes('income') || colLower.includes('debt') || colLower.includes('balance') || colLower.includes('cmi') || colLower.includes('adjrw') || colLower.includes('rate') || colLower.includes('percent')) {
+            return num.toLocaleString('th-TH', { minimumFractionDigits: (num % 1 !== 0) ? 2 : 0, maximumFractionDigits: 2 });
+        }
+        return num.toLocaleString('th-TH');
+    }
+    return escapeHtml(val);
+}
+
+function detectChartableColumns(columns, rows) {
+    if (!rows || rows.length === 0 || !columns || columns.length === 0) return null;
+
+    const numericCols = [];
+    const labelCols = [];
+
+    columns.forEach(col => {
+        let numCount = 0;
+        let strCount = 0;
+        const sampleSize = Math.min(rows.length, 20);
+        for (let i = 0; i < sampleSize; i++) {
+            const val = rows[i][col];
+            if (val !== null && val !== undefined && val !== '') {
+                const cleaned = String(val).replace(/,/g, '').trim();
+                if (!isNaN(Number(cleaned)) && isFinite(Number(cleaned))) {
+                    numCount++;
+                } else {
+                    strCount++;
+                }
+            }
+        }
+        const isLikelyId = /(_id|^id$|code$|icode$|cid$|vn$|an$|hn$|no$|เลขที่|รหัส|เบอร์|โทร|phone|tel|year$|ปี)/i.test(col);
+        if (numCount > sampleSize * 0.7 && !isLikelyId) {
+            numericCols.push(col);
+        } else {
+            labelCols.push(col);
+        }
+    });
+
+    if (numericCols.length === 0 || labelCols.length === 0) {
+        return null;
+    }
+
+    return {
+        labelCol: labelCols[0],
+        numericCols: numericCols,
+        defaultMetric: numericCols[numericCols.length - 1]
+    };
+}
+
+function renderVisContainer(containerId, data, userPrompt = '') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const rows = data.rows || [];
+    const columns = data.columns || (rows.length > 0 ? Object.keys(rows[0]) : []);
+    if (!rows || rows.length === 0 || !columns || columns.length === 0) return;
+
+    const visId = 'vis-' + Math.random().toString(36).substring(2, 9);
+    const tableId = 'table-' + visId;
+    window[tableId + '_data'] = rows;
+
+    const chartInfo = detectChartableColumns(columns, rows);
+    let chartToolbarHtml = '';
+    let chartPanelHtml = '';
+
+    const promptText = (userPrompt || window.lastUserQuestion || '').toLowerCase();
+    const wantsChart = Boolean(chartInfo && (/กราฟ|chart|แผนภูมิ|พล็อต|plot|สัดส่วน|เปรียบเทียบ|แนวโน้ม/i.test(promptText) || (data.content && /กราฟ|chart|แผนภูมิ/i.test(data.content))));
+
+    if (chartInfo) {
+        window['chartData_' + visId] = {
+            rows: rows,
+            columns: columns,
+            columnLabels: data.column_labels || {},
+            labelCol: chartInfo.labelCol,
+            numericCols: chartInfo.numericCols,
+            currentMetric: chartInfo.defaultMetric,
+            currentType: 'bar_h',
+            currentTop: 10,
+            chartInstance: null
+        };
+
+        // Metric dropdown options
+        let metricOptions = chartInfo.numericCols.map(c => {
+            const lbl = (data.column_labels && data.column_labels[c]) ? data.column_labels[c] : formatColumnHeader(c);
+            const isSelected = c === chartInfo.defaultMetric ? 'selected' : '';
+            return `<option value="${escapeHtml(c)}" ${isSelected}>${escapeHtml(lbl)}</option>`;
+        }).join('');
+
+        const metricSelectorHtml = chartInfo.numericCols.length > 1 ? `
+            <div class="d-flex align-items-center gap-1">
+                <span class="text-muted small" style="font-size: 0.72rem;">ตัวชี้วัด:</span>
+                <select class="form-select form-select-sm py-0 px-2 shadow-none" style="font-size: 0.75rem; width: auto; height: 26px; border-radius: 6px;" onchange="changeChartMetric('${visId}', this.value)">
+                    ${metricOptions}
+                </select>
+            </div>
+        ` : '';
+
+        chartToolbarHtml = `
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-sm btn-light border py-1 px-2.5 fw-medium ${wantsChart ? '' : 'active bg-white text-primary shadow-sm'}" id="btn-tab-table-${visId}" onclick="switchVisualizationView('${visId}', 'table')">
+                    <i class="bi bi-table text-primary me-1"></i> ตาราง (${(data.total_rows || rows.length).toLocaleString('th-TH')})
+                </button>
+                <button type="button" class="btn btn-sm btn-light border py-1 px-2.5 fw-medium ${wantsChart ? 'active bg-white text-success shadow-sm' : ''}" id="btn-tab-chart-${visId}" onclick="switchVisualizationView('${visId}', 'chart')">
+                    <i class="bi bi-bar-chart-fill text-success me-1"></i> กราฟสรุป <span class="badge bg-success text-white ms-1" style="font-size: 0.6rem; padding: 2px 5px;">AI</span>
+                </button>
+            </div>
+        `;
+
+        chartPanelHtml = `
+            <div id="panel-chart-${visId}" class="chart-view-panel ${wantsChart ? '' : 'd-none'}">
+                <div class="chart-toolbar">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <!-- Chart Type Buttons -->
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-sm btn-primary py-0 px-2 small shadow-none active" title="กราฟแท่งแนวนอน (อ่านชื่อยาวสะดวก)" onclick="changeChartType('${visId}', 'bar_h', this)">
+                                <i class="bi bi-bar-chart-steps me-1"></i>แท่งแนวนอน
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 small shadow-none" title="กราฟแท่งแนวตั้ง" onclick="changeChartType('${visId}', 'bar_v', this)">
+                                <i class="bi bi-bar-chart me-1"></i>แท่งแนวตั้ง
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 small shadow-none" title="กราฟวงกลม/โดนัท" onclick="changeChartType('${visId}', 'doughnut', this)">
+                                <i class="bi bi-pie-chart me-1"></i>โดนัท
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 small shadow-none" title="กราฟเส้นแนวโน้ม" onclick="changeChartType('${visId}', 'line', this)">
+                                <i class="bi bi-graph-up me-1"></i>เส้น
+                            </button>
+                        </div>
+                        ${metricSelectorHtml}
+                    </div>
+
+                    <!-- Top N Selector -->
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="text-muted small" style="font-size: 0.72rem;">แสดง:</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 small shadow-none" onclick="changeChartTopN('${visId}', 5, this)">Top 5</button>
+                            <button type="button" class="btn btn-sm btn-secondary active py-0 px-2 small shadow-none" onclick="changeChartTopN('${visId}', 10, this)">Top 10</button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 small shadow-none" onclick="changeChartTopN('${visId}', 20, this)">Top 20</button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 small shadow-none" onclick="changeChartTopN('${visId}', 'all', this)">ทั้งหมด</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <div class="chart-canvas-wrapper">
+                    <canvas id="canvas-${visId}"></canvas>
+                </div>
+
+                <!-- Stats summary card -->
+                <div class="chart-stats-card" id="stats-${visId}"></div>
+            </div>
+        `;
+    }
+
+    let headers = columns.map(col => {
+        const label = (data.column_labels && data.column_labels[col]) ? data.column_labels[col] : formatColumnHeader(col);
+        return `<th class="text-nowrap">${escapeHtml(label)}</th>`;
+    }).join('');
+
+    let rowsHtml = rows.slice(0, 100).map(r => {
+        let cells = columns.map(col => `<td>${formatCellValue(r[col], col)}</td>`).join('');
+        return `<tr>${cells}</tr>`;
+    }).join('');
+
+    const targetDbName = String(data.target_db || data.db_target || 'HOSxP').toUpperCase();
+
+    const fullHtml = `
+        <div class="table-card-container">
+            <div class="table-toolbar">
+                <div class="d-flex align-items-center gap-2">
+                    ${chartToolbarHtml || `<span class="small fw-bold text-dark"><i class="bi bi-table text-primary me-1"></i> ตาราง (${(data.total_rows || rows.length).toLocaleString('th-TH')} รายการ)</span>`}
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 small ${wantsChart ? 'd-none' : ''}" id="btn-export-excel-${visId}" onclick="exportTableToExcel('${tableId}', '${escapeHtml(targetDbName)}')">
+                        <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+                    </button>
+                    ${chartInfo ? `
+                    <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 small ${wantsChart ? '' : 'd-none'}" id="btn-download-png-${visId}" onclick="downloadChartImage('${visId}')">
+                        <i class="bi bi-camera me-1"></i> เซฟรูปกราฟ (PNG)
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+            <div id="panel-table-${visId}" class="table-responsive-custom ${wantsChart ? 'd-none' : ''}">
+                <table class="data-table-copilot" id="${tableId}">
+                    <thead><tr>${headers}</tr></thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>
+            ${chartPanelHtml}
+            <div class="d-flex justify-content-between align-items-center p-2 bg-light border-top text-muted" style="font-size: 0.72rem;">
+                <span><i class="bi bi-database text-primary me-1"></i> ฐานข้อมูล: ${escapeHtml(targetDbName)} • ${rows.length.toLocaleString('th-TH')} รายการ</span>
+                <span>SmartData AI Visualizer</span>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = fullHtml;
+
+    if (chartInfo && wantsChart) {
+        setTimeout(() => {
+            renderVisualizationChart(visId);
+        }, 80);
+    }
+}
+
+function switchVisualizationView(visId, mode) {
+    const config = window['chartData_' + visId];
+    if (!config) return;
+
+    const tableBtn = document.getElementById(`btn-tab-table-${visId}`);
+    const chartBtn = document.getElementById(`btn-tab-chart-${visId}`);
+    const tablePanel = document.getElementById(`panel-table-${visId}`);
+    const chartPanel = document.getElementById(`panel-chart-${visId}`);
+    const exportBtn = document.getElementById(`btn-export-excel-${visId}`);
+    const pngBtn = document.getElementById(`btn-download-png-${visId}`);
+
+    if (mode === 'chart') {
+        if (tableBtn) tableBtn.classList.remove('active', 'bg-white', 'text-primary', 'shadow-sm');
+        if (chartBtn) chartBtn.classList.add('active', 'bg-white', 'text-success', 'shadow-sm');
+        if (tablePanel) tablePanel.classList.add('d-none');
+        if (chartPanel) chartPanel.classList.remove('d-none');
+        if (exportBtn) exportBtn.classList.add('d-none');
+        if (pngBtn) pngBtn.classList.remove('d-none');
+
+        setTimeout(() => { renderVisualizationChart(visId); }, 50);
+    } else {
+        if (tableBtn) tableBtn.classList.add('active', 'bg-white', 'text-primary', 'shadow-sm');
+        if (chartBtn) chartBtn.classList.remove('active', 'bg-white', 'text-success', 'shadow-sm');
+        if (tablePanel) tablePanel.classList.remove('d-none');
+        if (chartPanel) chartPanel.classList.add('d-none');
+        if (exportBtn) exportBtn.classList.remove('d-none');
+        if (pngBtn) pngBtn.classList.add('d-none');
+    }
+}
+
+function changeChartType(visId, type, btn) {
+    const config = window['chartData_' + visId];
+    if (!config) return;
+    config.currentType = type;
+
+    const parent = btn.closest('.btn-group');
+    if (parent) {
+        parent.querySelectorAll('button').forEach(b => {
+            b.classList.remove('active', 'btn-primary');
+            b.classList.add('btn-light');
+        });
+        btn.classList.add('active', 'btn-primary');
+        btn.classList.remove('btn-light');
+    }
+
+    renderVisualizationChart(visId);
+}
+
+function changeChartMetric(visId, metric) {
+    const config = window['chartData_' + visId];
+    if (!config) return;
+    config.currentMetric = metric;
+    renderVisualizationChart(visId);
+}
+
+function changeChartTopN(visId, topN, btn) {
+    const config = window['chartData_' + visId];
+    if (!config) return;
+    config.currentTop = topN;
+
+    const parent = btn.closest('.btn-group');
+    if (parent) {
+        parent.querySelectorAll('button').forEach(b => {
+            b.classList.remove('active', 'btn-secondary');
+            b.classList.add('btn-light');
+        });
+        btn.classList.add('active', 'btn-secondary');
+        btn.classList.remove('btn-light');
+    }
+
+    renderVisualizationChart(visId);
+}
+
+function downloadChartImage(visId) {
+    const canvas = document.getElementById(`canvas-${visId}`);
+    if (!canvas) {
+        if (typeof Swal !== 'undefined') Swal.fire('แจ้งเตือน', 'ไม่พบกราฟสำหรับบันทึกรูปภาพ', 'info');
+        else alert('ไม่พบกราฟสำหรับบันทึกรูปภาพ');
+        return;
+    }
+    try {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `ดองกี้_AI_Chart_${new Date().toISOString().slice(0,10)}.png`;
+        a.click();
+    } catch (e) {
+        console.error(e);
+        if (typeof Swal !== 'undefined') Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกรูปกราฟได้: ' + e, 'error');
+        else alert('ไม่สามารถบันทึกรูปกราฟได้: ' + e);
+    }
+}
+
+function renderVisualizationChart(visId) {
+    const config = window['chartData_' + visId];
+    if (!config || typeof Chart === 'undefined') return;
+
+    const canvas = document.getElementById(`canvas-${visId}`);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (config.chartInstance) {
+        config.chartInstance.destroy();
+        config.chartInstance = null;
+    }
+
+    const { rows, labelCol, currentMetric, currentType, currentTop, columnLabels } = config;
+    const metricLabel = (columnLabels && columnLabels[currentMetric]) ? columnLabels[currentMetric] : formatColumnHeader(currentMetric);
+
+    // Sort rows descending by currentMetric
+    const sorted = rows.slice().sort((a, b) => {
+        const valA = parseFloat(String(a[currentMetric]).replace(/,/g, '')) || 0;
+        const valB = parseFloat(String(b[currentMetric]).replace(/,/g, '')) || 0;
+        return valB - valA;
+    });
+
+    const limit = currentTop === 'all' ? sorted.length : parseInt(currentTop, 10);
+    const sliced = sorted.slice(0, limit);
+
+    const labels = sliced.map(r => {
+        const raw = String(r[labelCol] || '-');
+        return raw.length > 30 ? raw.substring(0, 28) + '...' : raw;
+    });
+    const values = sliced.map(r => parseFloat(String(r[currentMetric]).replace(/,/g, '')) || 0);
+
+    // Summary statistics
+    const allValues = sorted.map(r => parseFloat(String(r[currentMetric]).replace(/,/g, '')) || 0);
+    const totalSum = allValues.reduce((acc, v) => acc + v, 0);
+    const topItem = sorted.length > 0 ? sorted[0] : null;
+    const topItemLabel = topItem ? (topItem[labelCol] || '-') : '-';
+    const topItemVal = topItem ? (parseFloat(String(topItem[currentMetric]).replace(/,/g, '')) || 0) : 0;
+    const avgVal = allValues.length > 0 ? (totalSum / allValues.length) : 0;
+
+    const statsContainer = document.getElementById(`stats-${visId}`);
+    if (statsContainer) {
+        const isBaht = /amount|ยอด|บาท|เงิน|หนี้|จ่าย|price|cost|income/i.test(currentMetric) || /amount|ยอด|บาท|เงิน|หนี้|จ่าย|ราคา|รายได้/i.test(metricLabel);
+        const isPerson = /คน|ผู้ป่วย|staff|person|patient/i.test(currentMetric) || /คน|ผู้ป่วย|บุคลากร/i.test(metricLabel);
+        const unit = isBaht ? ' บาท' : (isPerson ? ' คน' : ' รายการ');
+
+        statsContainer.innerHTML = `
+            <div class="chart-stat-item">
+                <i class="bi bi-calculator text-primary"></i>
+                <span>ยอดรวม (${allValues.length.toLocaleString('th-TH')} รายการ): <strong>${totalSum.toLocaleString('th-TH', { maximumFractionDigits: 2 })}${unit}</strong></span>
+            </div>
+            <div class="chart-stat-item">
+                <i class="bi bi-trophy text-warning"></i>
+                <span>อันดับ 1: <strong>${escapeHtml(topItemLabel)}</strong> (${topItemVal.toLocaleString('th-TH', { maximumFractionDigits: 2 })}${unit})</span>
+            </div>
+            <div class="chart-stat-item">
+                <i class="bi bi-graph-up-arrow text-success"></i>
+                <span>ค่าเฉลี่ย: <strong>${avgVal.toLocaleString('th-TH', { maximumFractionDigits: 2 })}${unit}</strong></span>
+            </div>
+        `;
+    }
+
+    // Modern Vibrant Color Palette
+    const colors = [
+        '#0d6efd', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+        '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1',
+        '#84cc16', '#a855f7', '#0ea5e9', '#e11d48', '#d97706'
+    ];
+
+    let chartJsType = 'bar';
+    let indexAxis = 'y'; // Default horizontal bar
+
+    if (currentType === 'bar_v') {
+        chartJsType = 'bar';
+        indexAxis = 'x';
+    } else if (currentType === 'bar_h' || currentType === 'bar') {
+        chartJsType = 'bar';
+        indexAxis = 'y';
+    } else if (currentType === 'doughnut') {
+        chartJsType = 'doughnut';
+    } else if (currentType === 'line') {
+        chartJsType = 'line';
+    }
+
+    const isBar = chartJsType === 'bar';
+    const isDoughnut = chartJsType === 'doughnut';
+    const isLine = chartJsType === 'line';
+
+    const datasetBg = isDoughnut
+        ? colors.slice(0, sliced.length)
+        : (isLine ? 'rgba(13, 110, 253, 0.12)' : (isBar && indexAxis === 'y' ? colors.slice(0, sliced.length) : '#0d6efd'));
+
+    const datasetBorder = isDoughnut
+        ? '#ffffff'
+        : (isLine ? '#0d6efd' : (isBar && indexAxis === 'y' ? colors.slice(0, sliced.length) : '#0b5ed7'));
+
+    config.chartInstance = new Chart(ctx, {
+        type: chartJsType,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: metricLabel,
+                data: values,
+                backgroundColor: datasetBg,
+                borderColor: datasetBorder,
+                borderWidth: isDoughnut ? 2 : (isLine ? 3 : 1),
+                borderRadius: isBar ? 6 : 0,
+                fill: isLine,
+                tension: isLine ? 0.35 : 0,
+                pointBackgroundColor: isLine ? '#0d6efd' : undefined,
+                pointRadius: isLine ? 5 : undefined
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: isBar ? indexAxis : undefined,
+            plugins: {
+                legend: {
+                    display: isDoughnut,
+                    position: 'right',
+                    labels: {
+                        boxWidth: 14,
+                        font: { family: "'Nunito', 'Prompt', sans-serif", size: 11 }
+                    }
+                },
+                tooltip: {
+                    titleFont: { family: "'Nunito', 'Prompt', sans-serif", size: 12 },
+                    bodyFont: { family: "'Nunito', 'Prompt', sans-serif", size: 12 },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            const val = context.parsed ? (isBar && indexAxis === 'y' ? context.parsed.x : (isDoughnut ? context.raw : context.parsed.y)) : context.raw;
+                            return label + Number(val).toLocaleString('th-TH', { maximumFractionDigits: 2 });
+                        }
+                    }
+                }
+            },
+            scales: isDoughnut ? {} : {
+                x: {
+                    grid: { color: '#f1f5f9' },
+                    ticks: {
+                        font: { family: "'Nunito', 'Prompt', sans-serif", size: 10 },
+                        callback: function(val) {
+                            if (isBar && indexAxis === 'y') {
+                                if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+                                if (val >= 1000) return (val / 1000).toFixed(0) + 'k';
+                            }
+                            return this.getLabelForValue ? this.getLabelForValue(val) : val;
+                        }
+                    }
+                },
+                y: {
+                    grid: { color: '#f1f5f9' },
+                    ticks: {
+                        font: { family: "'Nunito', 'Prompt', sans-serif", size: 10 },
+                        callback: function(val) {
+                            if ((isBar && indexAxis === 'x') || isLine) {
+                                if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+                                if (val >= 1000) return (val / 1000).toFixed(0) + 'k';
+                            }
+                            return this.getLabelForValue ? this.getLabelForValue(val) : val;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function exportTableToExcel(tableId, targetName) {
+    const table = document.getElementById(tableId);
+    if (!table) {
+        if (typeof Swal !== 'undefined') Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลสำหรับส่งออก', 'info');
+        else alert('ไม่พบข้อมูลสำหรับส่งออก');
+        return;
+    }
+    try {
+        if (typeof XLSX !== 'undefined') {
+            const ws = XLSX.utils.table_to_sheet(table);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Result");
+            const filename = `SmartData_AI_${targetName}_${new Date().toISOString().slice(0,10)}.xlsx`;
+            XLSX.writeFile(wb, filename);
+        } else {
+            exportTableFallbackCsv(table, targetName);
+        }
+    } catch (err) {
+        console.error(err);
+        if (typeof Swal !== 'undefined') Swal.fire('ข้อผิดพลาด', 'ไม่สามารถส่งออกไฟล์ได้: ' + err, 'error');
+        else alert('ไม่สามารถส่งออกไฟล์ได้: ' + err);
+    }
+}
+
+function exportTableFallbackCsv(table, targetName) {
+    let csv = [];
+    const rows = table.querySelectorAll('tr');
+    for (let i = 0; i < rows.length; i++) {
+        let row = [], cols = rows[i].querySelectorAll('td, th');
+        for (let j = 0; j < cols.length; j++) {
+            row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
+        }
+        csv.push(row.join(','));
+    }
+
+    const csvFile = new Blob(["\uFEFF" + csv.join('\n')], {type: "text/csv;charset=utf-8;"});
+    const downloadLink = document.createElement("a");
+    downloadLink.download = `SmartData_AI_${targetName}_${new Date().toISOString().slice(0,10)}.csv`;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
 }
 
 function exportTableToCsv(btn) {

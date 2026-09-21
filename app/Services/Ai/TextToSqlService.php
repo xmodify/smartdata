@@ -4,6 +4,9 @@ namespace App\Services\Ai;
 
 use App\Models\AiSetting;
 use App\Services\Ai\Contracts\LlmProviderInterface;
+use App\Services\Ai\Context\HosxpContextService;
+use App\Services\Ai\Context\BackofficeContextService;
+use App\Services\Ai\Context\SmartdataContextService;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Log;
@@ -11,10 +14,20 @@ use Log;
 class TextToSqlService
 {
     protected LlmProviderInterface $provider;
+    protected HosxpContextService $hosxpContext;
+    protected BackofficeContextService $backofficeContext;
+    protected SmartdataContextService $smartdataContext;
 
-    public function __construct(?LlmProviderInterface $provider = null)
-    {
+    public function __construct(
+        ?LlmProviderInterface $provider = null,
+        ?HosxpContextService $hosxpContext = null,
+        ?BackofficeContextService $backofficeContext = null,
+        ?SmartdataContextService $smartdataContext = null
+    ) {
         $this->provider = $provider ?? AiManager::getActiveProvider();
+        $this->hosxpContext = $hosxpContext ?? app(HosxpContextService::class);
+        $this->backofficeContext = $backofficeContext ?? app(BackofficeContextService::class);
+        $this->smartdataContext = $smartdataContext ?? app(SmartdataContextService::class);
     }
 
     /**
@@ -98,24 +111,60 @@ class TextToSqlService
         }
 
         $connection = $this->resolveTargetDatabase($targetDb, $question, $previousDb);
-        $schemaContext = $this->getSchemaContext($connection);
+        $schemaContext = $this->getSchemaContext($connection, $question);
+
+        // Retrieve live dynamic domain lookup context (ICD-10, Doctor, Ward, Risk levels, etc.)
+        $liveContextText = '';
+        try {
+            $liveCtx = $this->getLiveDomainContext($connection, $question);
+            if ($liveCtx && !empty($liveCtx['text'])) {
+                $liveContextText = "\n\nข้อมูลบริบทจริงและ Lookup จากฐานข้อมูล [{$connection}]:\n" . $liveCtx['text'];
+            }
+        } catch (\Throwable $e) {
+            Log::warning("TextToSql live context error: " . $e->getMessage());
+        }
+
+        // Calculate current date and Thai fiscal year dynamically
+        $now = now();
+        $todayDate = $now->format('Y-m-d');
+        $thaiYear = $now->year + 543;
+        $currentFiscalYear = ($now->month >= 10) ? ($thaiYear + 1) : $thaiYear;
+        $fiscalStartCe = ($now->month >= 10) ? $now->year : ($now->year - 1);
+        $fiscalEndCe = $fiscalStartCe + 1;
+        $fiscalDateRange = "{$fiscalStartCe}-10-01 ถึง {$fiscalEndCe}-09-30";
 
         // Ask LLM to generate SQL
         $systemPrompt = "คุณคือ Expert Database Architect & SQL Generator สำหรับระบบโรงพยาบาล
 ฐานข้อมูลเป้าหมายคือ MySQL: [Connection: {$connection}]
+ข้อมูลเวลาปัจจุบันของระบบ:
+- วันที่ปัจจุบัน: {$todayDate} (พ.ศ. {$thaiYear})
+- ปีงบประมาณปัจจุบัน: ปีงบประมาณ {$currentFiscalYear} (ช่วงวันที่ {$fiscalDateRange})
+
 กฎสำคัญสูงสุด:
-1. ตอบกลับเป็นคำสั่ง SQL `SELECT` ที่สมบูรณ์เพียงคำสั่งเดียวเท่านั้น โดยต้องอยู่ใน Markdown Block: ```sql ... ```
+1. ตอบกลับเป็นคำสั่ง SQL `SELECT` หรือ `WITH` (CTE) ที่สมบูรณ์เพียงคำสั่งเดียวเท่านั้น โดยต้องอยู่ใน Markdown Block: ```sql ... ```
 2. ห้ามใช้คำสั่ง DDL/DML เด็ดขาด (ห้าม INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE)
-3. สำหรับวันที่ หากระบุ 'วันนี้' ให้ใช้ CURDATE() หากระบุปีงบประมาณไทย เช่น 2568 (วันที่ 2024-10-01 ถึง 2025-09-30) หรือแปลงพุทธศักราชเป็น ค.ศ. (ปี พ.ศ. - 543)
+3. สำหรับวันที่และการกรองช่วงเวลา (Date Filtering & Performance Optimization):
+   - สำคัญสูงสุด: ห้ามนำคอลัมน์วันที่ (เช่น vstdate, regdate, dchdate, incident_date, rxdate) ไปครอบด้วยฟังก์ชัน YEAR(), MONTH(), DATE() ใน WHERE เด็ดขาด เพราะจะทำให้ข้าม Index และเกิด Full Table Scan หลายล้านแถวจนระบบ Timeout
+   - ให้ใช้การเปรียบเทียบช่วงวันที่แบบ SARGable (Index-friendly) เสมอ เช่น:
+     • 'เดือนนี้': `vstdate BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE())`
+     • 'เดือนที่แล้ว': `vstdate BETWEEN DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 1 MONTH) AND LAST_DAY(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))`
+     • 'วันนี้': `vstdate = CURDATE()`
+     • 'เมื่อวาน': `vstdate = DATE_SUB(CURDATE(), INTERVAL 1 DAY)`
+     • 'ปีนี้': `vstdate BETWEEN DATE_FORMAT(CURDATE(), '%Y-01-01') AND DATE_FORMAT(CURDATE(), '%Y-12-31')`
+     • 'ย้อนหลัง 30 วัน': `vstdate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`
+     • 'ปีงบประมาณนี้' หรือ 'ปีงบประมาณปัจจุบัน' (ปี {$currentFiscalYear}): `vstdate BETWEEN '{$fiscalStartCe}-10-01' AND '{$fiscalEndCe}-09-30'`
+     • 'ปีงบประมาณนี้ ถึงเดือน...': เช่น 'ปีงบประมาณนี้ ถึงเดือน สค 2569' ให้ใช้ `vstdate BETWEEN '{$fiscalStartCe}-10-01' AND '2026-08-31'`
+     • 'ปีงบประมาณไทยระบุปี เช่น 2568': `vstdate BETWEEN '2024-10-01' AND '2025-09-30'` (1 ต.ค. ปีก่อนหน้า ถึง 30 ก.ย. ปีนั้น)
 4. กำหนด LIMIT สูงสุดไม่เกิน 100 แถวเสมอ (เช่น LIMIT 100)
 5. ใช้ชื่อฟิลด์ภาษาอังกฤษตาม Schema ที่ให้มาด้านล่าง
 6. เขียนคำสั่ง SQL ที่มีประสิทธิภาพ พร้อมตั้งชื่อ Alias คอลัมน์เป็นภาษาไทยที่อ่านง่าย เช่น `count(*) as 'จำนวนคน'`
 7. หากคำถามถามเรื่องประเภท หรือถามต่อเนื่องว่า 'กี่ประเภท' หรือ 'แยกตาม...' ให้เขียนคำสั่งที่แจกแจงตามประเภทนั้นๆ พร้อมนับจำนวน (GROUP BY และ COUNT) เพื่อให้ผู้ใช้เห็นรายละเอียดและจำนวนครบถ้วน
 8. ห้ามใส่เครื่องหมายจุลภาคหรือฟังก์ชัน FORMAT(...) กับรหัสประจำตัว (Identifiers) เด็ดขาด เช่น HN, AN, VN, CID, รหัสยา icode, รหัสแล็บ, เลขเตียง, ปี พ.ศ. เพราะไม่ใช่จำนวนนับหรือราคาเงิน ให้คงค่าเดิมไว้เสมอ
 9. ห้ามแสดงรหัส ID ดิบๆ ที่มีตาราง Lookup กำกับเด็ดขาด (เช่น ระดับความรุนแรงความเสี่ยง, โปรแกรมความเสี่ยง, หน่วยงาน/แผนก, สถานที่, สถานะ, ชื่อพัสดุ) ให้ทำการ JOIN ตาราง Lookup ที่เกี่ยวข้องเสมอ เพื่อดึงชื่อและคำอธิบายภาษาไทยมาแสดงผลให้อ่านเข้าใจง่าย
+10. หากคำถามของผู้ใช้มีการกล่าวถึง 'กราฟ', 'แผนภูมิ', 'chart', 'พล็อต', 'plot', 'สัดส่วน', 'เปรียบเทียบ', หรือ 'อันดับ' ให้เขียน SQL ในลักษณะจัดกลุ่มสรุป (GROUP BY) และเรียงลำดับจากมากไปหาน้อย (ORDER BY ... DESC) โดยเลือกคอลัมน์ที่เป็นชื่อกลุ่ม/ประเภท/หน่วยงาน/สิทธิ/โรค (Label) 1 คอลัมน์ และคอลัมน์ที่เป็นตัวเลข/จำนวนนับ/ยอดรวม (Metric) 1 หรือหลายคอลัมน์ เพื่อให้ระบบสามารถนำข้อมูลไปพล็อตกราฟ (Interactive Chart) ได้ทันทีอย่างถูกต้องและสวยงาม
 
 Schema ข้อมูลที่สามารถใช้ได้:
-{$schemaContext}
+{$schemaContext}{$liveContextText}
 ";
 
         // Build user prompt with multi-turn history if present
@@ -153,6 +202,9 @@ Schema ข้อมูลที่สามารถใช้ได้:
             ];
         }
 
+        // Optimize non-sargable date expressions to prevent full table scans
+        $sql = $this->optimizeSqlDates($sql);
+
         // Validate SQL safety
         $safetyCheck = $this->validateSqlSafety($sql);
         if (!$safetyCheck['safe']) {
@@ -174,9 +226,9 @@ Schema ข้อมูลที่สามารถใช้ได้:
 
         // Execute SQL on connection
         try {
-            // Protect hospital database with query statement timeout (Max 8 seconds)
+            // Protect hospital database with query statement timeout (Max 15 seconds)
             try {
-                DB::connection($connection)->statement('SET SESSION max_statement_time = 8;');
+                DB::connection($connection)->statement('SET SESSION max_statement_time = 15;');
             } catch (\Throwable $te) {
                 // Ignore if connection does not support max_statement_time
             }
@@ -211,7 +263,7 @@ Schema ข้อมูลที่สามารถใช้ได้:
 
             // Detect query timeout (MariaDB max_statement_time 1969 or MySQL 3024)
             if (stripos($rawError, 'max_statement_time') !== false || stripos($rawError, 'max_execution_time') !== false || stripos($rawError, 'interrupted') !== false) {
-                $politeMsg = "ขออภัยครับ คำสั่งสืบค้นนี้ใช้เวลาประมวลผลนานเกินกำหนด (มากกว่า 8 วินาที) ระบบได้ตัดการทำงานอัตโนมัติเพื่อความปลอดภัยของฐานข้อมูล {$dbName} ครับ 🙏\n\n💡 *คำแนะนำ: กรุณาระบุเงื่อนไขวันที่ หรือระบุช่วงเวลาให้แคบลง เพื่อให้การสืบค้นรวดเร็วยิ่งขึ้นครับ*";
+                $politeMsg = "ขออภัยครับ คำสั่งสืบค้นนี้ใช้เวลาประมวลผลนานเกินกำหนด (มากกว่า 15 วินาที) ระบบได้ตัดการทำงานอัตโนมัติเพื่อความปลอดภัยของฐานข้อมูล {$dbName} ครับ 🙏\n\n💡 *คำแนะนำ: กรุณาระบุเงื่อนไขวันที่ หรือระบุช่วงเวลาให้แคบลง เพื่อให้การสืบค้นรวดเร็วยิ่งขึ้นครับ*";
             } else {
                 $politeMsg = "ขออภัยครับ ระบบไม่พบข้อมูลหรือเกิดข้อขัดข้องในการสืบค้นจากฐานข้อมูล {$dbName} ในขณะนี้ครับ 🙏\n\n💡 *คำแนะนำ: โครงสร้างคำถามอาจยังไม่สอดคล้องกับตารางข้อมูล ท่านสามารถลองปรับเปลี่ยนคำค้นหา หรือสอบถามเจ้าหน้าที่ผู้ดูแลระบบ (Admin) เพื่อตรวจสอบคำสั่งสืบค้นได้ครับ*";
             }
@@ -228,19 +280,76 @@ Schema ข้อมูลที่สามารถใช้ได้:
     }
 
     /**
-     * Clean and extract SQL string from markdown block.
+     * Rewrite non-sargable date expressions to indexed range queries.
+     * Prevents multi-million row full table scans (e.g. vn_stat).
+     */
+    protected function optimizeSqlDates(string $sql): string
+    {
+        // 1. Current month: YEAR(col) = YEAR(CURDATE()) AND MONTH(col) = MONTH(CURDATE())
+        $patternCurrentMonth = '/(?:YEAR\(\s*([a-zA-Z0-9_\.]+)\s*\)\s*=\s*YEAR\s*\(\s*(?:CURDATE|NOW)\(\)\s*\)\s+AND\s+MONTH\(\s*\1\s*\)\s*=\s*MONTH\s*\(\s*(?:CURDATE|NOW)\(\)\s*\)|MONTH\(\s*([a-zA-Z0-9_\.]+)\s*\)\s*=\s*MONTH\s*\(\s*(?:CURDATE|NOW)\(\)\s*\)\s+AND\s+YEAR\(\s*\2\s*\)\s*=\s*YEAR\s*\(\s*(?:CURDATE|NOW)\(\)\s*\))/i';
+        $sql = preg_replace_callback($patternCurrentMonth, function ($m) {
+            $col = !empty($m[1]) ? $m[1] : $m[2];
+            return "{$col} BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE())";
+        }, $sql);
+
+        // 2. Specific year & month: YEAR(col) = 2024 AND MONTH(col) = 9
+        $patternSpecificMonth = '/(?:YEAR\(\s*([a-zA-Z0-9_\.]+)\s*\)\s*=\s*[\'"]?(\d{4})[\'"]?\s+AND\s+MONTH\(\s*\1\s*\)\s*=\s*[\'"]?(\d{1,2})[\'"]?|MONTH\(\s*([a-zA-Z0-9_\.]+)\s*\)\s*=\s*[\'"]?(\d{1,2})[\'"]?\s+AND\s+YEAR\(\s*\4\s*\)\s*=\s*[\'"]?(\d{4})[\'"]?)/i';
+        $sql = preg_replace_callback($patternSpecificMonth, function ($m) {
+            $col = !empty($m[1]) ? $m[1] : $m[4];
+            $year = !empty($m[2]) ? $m[2] : $m[6];
+            $month = str_pad(!empty($m[3]) ? $m[3] : $m[5], 2, '0', STR_PAD_LEFT);
+            return "{$col} BETWEEN '{$year}-{$month}-01' AND LAST_DAY('{$year}-{$month}-01')";
+        }, $sql);
+
+        // 3. Current year: YEAR(col) = YEAR(CURDATE())
+        $patternCurrentYear = '/YEAR\(\s*([a-zA-Z0-9_\.]+)\s*\)\s*=\s*YEAR\s*\(\s*(?:CURDATE|NOW)\(\)\s*\)/i';
+        $sql = preg_replace_callback($patternCurrentYear, function ($m) {
+            return "{$m[1]} BETWEEN DATE_FORMAT(CURDATE(), '%Y-01-01') AND DATE_FORMAT(CURDATE(), '%Y-12-31')";
+        }, $sql);
+
+        // 4. Specific year: YEAR(col) = 2024
+        $patternSpecificYear = '/YEAR\(\s*([a-zA-Z0-9_\.]+)\s*\)\s*=\s*[\'"]?(\d{4})[\'"]?/i';
+        $sql = preg_replace_callback($patternSpecificYear, function ($m) {
+            return "{$m[1]} BETWEEN '{$m[2]}-01-01' AND '{$m[2]}-12-31'";
+        }, $sql);
+
+        // 5. DATE(col) = CURDATE() or DATE(col) = 'YYYY-MM-DD'
+        $patternDateOnly = '/DATE\(\s*([a-zA-Z0-9_\.]+)\s*\)\s*=\s*(CURDATE\(\)|\'[^\']+\'|"[^"]+")/i';
+        $sql = preg_replace($patternDateOnly, '$1 = $2', $sql);
+
+        return $sql;
+    }
+
+    /**
+     * Clean and extract SQL string from markdown block or raw LLM text.
      */
     protected function extractSql(string $text): string
     {
-        if (preg_match('/```sql\s*([\s\S]*?)\s*```/i', $text, $matches)) {
+        // 1. Check for markdown code blocks (```sql ... ``` or ``` ... ```)
+        if (preg_match('/```(?:sql)?\s*([\s\S]*?)\s*```/i', $text, $matches)) {
+            $extracted = trim($matches[1]);
+            // If there was conversational text accidentally included inside the block, extract starting from WITH or SELECT
+            if (preg_match('/\b((?:WITH|SELECT)\s+[\s\S]+)/i', $extracted, $m)) {
+                return trim($m[1]);
+            }
+            return $extracted;
+        }
+
+        // 2. Fallback: Catch any SELECT or WITH statement ending with a semicolon
+        if (preg_match('/\b((?:WITH|SELECT)\s+[\s\S]+?);/i', $text, $matches)) {
             return trim($matches[1]);
         }
-        if (preg_match('/```\s*([\s\S]*?)\s*```/i', $text, $matches)) {
+
+        // 3. Fallback: Check if string begins with SELECT or WITH
+        if (preg_match('/^\s*((?:WITH|SELECT)\b[\s\S]+)/i', trim($text), $matches)) {
             return trim($matches[1]);
         }
-        if (preg_match('/^\s*SELECT\b/i', trim($text))) {
-            return trim($text);
+
+        // 4. Fallback: Extract SELECT or WITH statement until Thai explanation or end of string
+        if (preg_match('/\b((?:WITH|SELECT)\s+[A-Za-z0-9_\s\.,\(\)\*\=\<\>\'\`\-\+\/\%\:\&]+)/i', $text, $matches)) {
+            return trim($matches[1]);
         }
+
         return '';
     }
 
@@ -341,10 +450,15 @@ Schema ข้อมูลที่สามารถใช้ได้:
             ];
         }
 
-        $hintText = '';
+        $chartNotice = '';
+        if (preg_match('/(กราฟ|chart|แผนภูมิ|พล็อต|plot|สัดส่วน)/iu', $question)) {
+            $chartNotice = "\n\n📊 *ดองกี้ได้จัดเตรียมกราฟสรุป AI และตารางข้อมูลไว้ให้เรียบร้อยแล้วครับ ท่านสามารถคลิกดูแท็บ 'กราฟสรุป AI' เพื่อดูแผนภูมิแท่งแนวนอน แนวตั้ง โดนัท เส้น พร้อมเซฟรูปภาพได้ทันทีครับ*";
+        }
+
+        $hintText = $chartNotice;
         if (!empty($followUpHints)) {
             $hintItems = array_map(fn($h) => "  • *\"{$h}\"*", $followUpHints);
-            $hintText = "\n\n💡 **คำถามแนะนำเพื่อเจาะลึกข้อมูลต่อ:**\n" . implode("\n", $hintItems);
+            $hintText .= "\n\n💡 **คำถามแนะนำเพื่อเจาะลึกข้อมูลต่อ:**\n" . implode("\n", $hintItems);
         }
 
         // If single row with 1-3 columns, format directly
@@ -514,456 +628,35 @@ Schema ข้อมูลที่สามารถใช้ได้:
         return null;
     }
 
-    /**
-     * Schema Dictionary for target DB
+        /**
+     * Schema Dictionary for target DB (Delegated to dedicated Context Services)
      */
-    protected function getSchemaContext(string $connection): string
+    protected function getSchemaContext(string $connection, string $question = ''): string
     {
-        if ($connection === 'backoffice') {
-            return "
--- ฐานข้อมูล Backoffice (ระบบบริหารงานโรงพยาบาล v5.6.1.1)
-
-1. คลังพัสดุ และการเบิกจ่ายพัสดุ (Warehouse & Inventory):
-- warehouse_store: คลังพัสดุหลัก (STORE_ID, STORE_NAME, STORE_TYPE_ID)
-- warehouse_treasury: คลังย่อย/คลังประจำหน่วยงาน (TREASURY_ID, TREASURY_NAME, HR_DEPARTMENT_SUB_SUB_ID)
-- warehouse_request: ใบขอเบิกพัสดุ (WAREHOUSE_ID, WAREHOUSE_REQUEST_CODE [เลขที่ใบเบิก เช่น 'RE-690441'], WAREHOUSE_DATE_WANT [วันที่ต้องการ YYYY-MM-DD], WAREHOUSE_DATE_TIME_SAVE [วันเวลาบันทึก], WAREHOUSE_SAVE_HR_NAME [ชื่อผู้บันทึก/ขอเบิก], WAREHOUSE_STATUS [สถานะใบเบิก เช่น 'Approve','Pending'], INVEN_ID [คลังย่อย])
-- warehouse_request_sub: รายการพัสดุในใบขอเบิก (WAREHOUSE_REQUEST_SUB_ID, WAREHOUSE_REQUEST_ID [เชื่อม warehouse_request.WAREHOUSE_ID], WAREHOUSE_REQUEST_SUB_DETAIL_ID [รหัสพัสดุเชื่อม supplies.ID], WAREHOUSE_REQUEST_SUB_AMOUNT [จำนวนที่ขอเบิก], WAREHOUSE_REQUEST_SUB_PRICE [ราคาต่อหน่วย], WAREHOUSE_REQUEST_SUB_SUM_PRICE [ราคารวม])
-- warehouse_treasury_pay: การตัดจ่ายพัสดุจากคลังย่อย (TREASURT_PAY_ID, TREASURT_PAY_NAME [หน่วยงาน], TREASURT_PAY_REQUEST_HR_NAME [ผู้เบิก], objective_text [วัตถุประสงค์], created_at)
-- warehouse_check_receive: การตรวจรับพัสดุเข้าคลัง (RECEIVE_CHECK_ID, RECEIVE_CHECK_CODE [เลขที่รับเข้า], RECEIVE_CHECK_DATE [วันที่รับ], SUPPLIER_NAME [ผู้จำหน่าย], TOTAL_PRICE [มูลค่ารวม])
-
-2. คลังยาและเวชภัณฑ์ (Medicine & Pharmacy Stock):
-- medicine_drug: ทะเบียนยาและเวชภัณฑ์ (id, generic_name [ชื่อสามัญ], trade_name [ชื่อทางการค้า], thai_name [ชื่อไทย], tpu_number [รหัส TPU], icode [รหัสเชื่อม HOSxP], med_warehouse_id [คลังยาหลัก])
-- medicine_warehouse_items: รายการยาคงคลัง (id, warehouse_id [คลัง], distributor_id [ผู้จัดจำหน่าย], created_at)
-- medicine_warehouse_request: ใบขอเบิกยาและเวชภัณฑ์ (id, code [เลขที่ใบเบิก เช่น 'RE-6901002'], status ['Approve','Pending'], reason [เหตุผล], request_date [วันที่ขอ], pay_date [วันที่จ่าย], warehouse_id [คลังหลัก], treasury_id [คลังย่อย], value [มูลค่ารวม], created_at)
-- medicine_warehouse_request_list: รายการยาที่ขอเบิก (id, request_id [เชื่อม medicine_warehouse_request], medicine_id [รหัสยาเชื่อม medicine_drug.id], req_qty [จำนวนขอเบิก], pay_qty [จำนวนจ่ายจริง], unit_price [ราคาต่อหน่วย], value [มูลค่า])
-- medicine_warehouse_receive: การรับยาเข้าคลัง (id, code [เลขที่รับเข้า], warehouse_id, po_code [เลขที่ PO], invoice_code [ใบส่งของ], distributor_id, receive_datetime [วันที่รับ], value [มูลค่า])
-- medicine_warehouse_export: การจ่ายยาออกจากคลังไปยังคลังย่อย/ตึก (id, req_id, treasury_id [คลังย่อย], medicine_id [รหัสยา], quantity [จำนวนจ่าย], price [ราคา], created_at)
-- medicine_purchase_order: การสั่งซื้อยาและเวชภัณฑ์ (id, po_code, order_date, vendor_id, total_price, delivery_date)
-
-3. พัสดุและการจัดซื้อจัดจ้าง (Supplies & Procurement):
-- supplies: ทะเบียนวัสดุ/พัสดุโรงพยาบาล (ID, SUP_FSN_NUM [รหัส FSN], SUP_NAME [ชื่อวัสดุพัสดุ], SUP_TYPE_ID [รหัสหมวด เชื่อม supplies_type.SUP_TYPE_ID], PRICE_LAST [ราคาซื้อล่าสุด], PRICE_CENTER [ราคากลาง])
-- supplies_type: หมวดหมู่ประเภทพัสดุ/วัสดุ (SUP_TYPE_ID [PK], SUP_TYPE_NAME เช่น 'วัสดุการแพทย์ทั่วไป', 'วัสดุทันตกรรม', 'วัสดุวิทยาศาสตร์หรือการแพทย์', 'วัสดุงานบ้านงานครัว', 'วัสดุบริโภค', 'วัสดุคอมพิวเตอร์', 'วัสดุสำนักงาน', 'ครุภัณฑ์การแพทย์', 'ครุภัณฑ์สำนักงาน', 'ครุภัณฑ์คอมพิวเตอร์')
-- supplies_con: สัญญาจัดซื้อจัดจ้าง/โครงการ (ID, CON_NUM [เลขที่สัญญา/ข้อตกลง], CON_YEAR_ID [ปีงบประมาณ พ.ศ. เช่น '2569'], DATE_REGIS [วันที่ลงทะเบียน], DEP_REQUEST_NAME [ฝ่ายที่ขอซื้อ], PERSON_REQUEST_NAME [ผู้ขอซื้อ], CON_PROJECT_NAME [ชื่อโครงการ], EGP_PLAN_NAME)
-- supplies_con_list: รายการสิ่งของในสัญญาจัดซื้อ (ID, CON_ID [เชื่อม supplies_con.ID], SUP_NAME [ชื่อรายการสินค้า], SUP_TOTAL [จำนวน], PRICE_PER_UNIT [ราคาต่อหน่วย], PRICE_SUM [ราคารวม])
-- supplies_vendor: ทะเบียนบริษัทคู่ค้า/ผู้จัดจำหน่ายพัสดุ (VENDOR_ID, VENDOR_NAME, VENDOR_PHONE)
-
-4. งานทรัพย์สินและครุภัณฑ์ (Assets & Articles):
-- asset_article: ทะเบียนครุภัณฑ์โรงพยาบาล (รายชิ้น มีเลขครุภัณฑ์และสถานที่ตั้งชัดเจน) (
-    ARTICLE_ID [รหัสครุภัณฑ์ PK],
-    ARTICLE_NUM [เลขครุภัณฑ์ เช่น '7440-001-0006/11'],
-    ARTICLE_NAME [ชื่อครุภัณฑ์ เช่น 'เครื่องคอมพิวเตอร์ All In One สำหรับงานประมวลผล', 'เครื่องคอมพิวเตอร์ สําหรับงานประมวลผล แบบที่ 1', 'เครื่องคอมพิวเตอร์ สำหรับงานสำนักงาน', 'เครื่องคอมพิวเตอร์โน้ตบุ๊ก สำหรับงานประมวลผล', 'เครื่องคอมพิวเตอร์แม่ข่าย แบบที่ 1'],
-    DECLINE_ID [รหัสประเภทครุภัณฑ์ เชื่อม supplies_decline.DECLINE_ID: โดย 18='ครุภัณฑ์คอมพิวเตอร์', 5='ครุภัณฑ์สำนักงาน', 6='ครุภัณฑ์ยานพาหนะและขนส่ง', 17='ครุภัณฑ์วิทยาศาสตร์และการแพทย์'],
-    STATUS_ID [สถานะครุภัณฑ์ เชื่อม asset_status.STATUS_ID: โดย 1='ปกติ', 2='จำหน่ายแล้ว' (แทงจำหน่าย), 3='รอจำหน่าย', 4='ถูกยืม'],
-    PRICE_PER_UNIT [ราคาต่อหน่วย/มูลค่า],
-    RECEIVE_DATE [วันที่ได้มา/ตรวจรับ],
-    DEP_SUB_SUB_NAME [ชื่อหน่วยงาน/งานย่อยที่ครอบครองหรือสถานที่ตั้ง เช่น 'กลุ่มงานการพยาบาล', 'ศูนย์คอมพิวเตอร์', 'ห้องฉุกเฉิน', 'งานเทคนิคการแพทย์'],
-    SERIAL_NO [หมายเลขซีเรียลเครื่อง]
-  )
-- supplies_decline: ประเภทหมวดหมู่ครุภัณฑ์ (DECLINE_ID [PK], DECLINE_NAME เช่น 18='ครุภัณฑ์คอมพิวเตอร์', 5='ครุภัณฑ์สำนักงาน', 6='ครุภัณฑ์ยานพาหนะ', 17='ครุภัณฑ์วิทยาศาสตร์และการแพทย์')
-- asset_status: สถานะครุภัณฑ์ (STATUS_ID [PK], STATUS_NAME เช่น 1='ปกติ', 2='จำหน่ายแล้ว', 3='รอจำหน่าย', 4='ถูกยืม')
-- asset_depreciate: ค่าเสื่อมราคาครุภัณฑ์ (DEP_ID, DEP_ASSET_ID, DEP_YEAR [ปีงบ], DEP_PRICE, DEP_VALUE [มูลค่าคงเหลือ])
-- asset_dispose: ทะเบียนครุภัณฑ์ที่แทงจำหน่าย (DISPOSE_ID, ARTICLE_ID, DISPOSE_DATE, DISPOSE_REASON)
-
-5. งานซ่อมบำรุง / ศูนย์คอมพิวเตอร์ / ศูนย์เครื่องมือแพทย์ (Maintenance & Repairs):
-- informrepair_index: การแจ้งซ่อมบำรุงทั่วไปและอาคารสถานที่ (ID, REPAIR_ID [เลขที่แจ้งซ่อม เช่น 'R69-00530'], YEAR_ID [ปีงบประมาณ], REPAIR_NAME [ชื่อเรื่อง/สิ่งที่ชำรุด], SYMPTOM [อาการชำรุด], USRE_REQUEST_NAME [ผู้แจ้งซ่อม], DATE_TIME_REQUEST [วันเวลาแจ้ง], REPAIR_STATUS [สถานะการซ่อม เช่น 'REQUEST','SUCCESS'], STATUS)
-- informcom_repair: การแจ้งซ่อมคอมพิวเตอร์และอุปกรณ์ไอที (ID, REPAIR_ID [เลขที่แจ้งซ่อมคอม เช่น 'C69-00009'], YEAR_ID, ARTICLE_ID [รหัสครุภัณฑ์ที่ซ่อม], USRE_REQUEST_NAME [ผู้แจ้ง], REPAIR_NAME [เรื่องที่แจ้ง], SYMPTOM [อาการเสีย], DATE_TIME_REQUEST [วันเวลาแจ้ง], REPAIR_STATUS [สถานะการซ่อม เช่น 'REQUEST','RECEIVE','SUCCESS'], REPAIR_STATUS_SUB)
-- informcom_service: งานบริการศูนย์คอมพิวเตอร์ (ID, SERVICE_NAME, USER_REQUEST_NAME, DATE_TIME_REQUEST)
-
-6. งานยานพาหนะ (Vehicle & Ambulance Refer):
-- vehicle_car_reserve: การขอใช้รถยนต์ส่วนกลาง/รถตู้ (RESERVE_ID, RESERVE_PERSON_NAME [ผู้ขอใช้รถ], RESERVE_LOCATION [สถานที่ไป], DATE_TIME_REQUEST, DATE_BEGIN, DATE_END, STATUS)
-- vehicle_car_refer: การใช้รถพยาบาลส่งต่อผู้ป่วยฉุกเฉิน Refer (REFER_ID, REFER_LOCATION [รพ.ปลายทาง], DRIVER_NAME [พนักงานขับรถ], NURSE_NAME [พยาบาลเวร], USER_CREATED_NAME, DATE_TIME_REQUEST)
-
-7. งานจองห้องประชุม (Meeting Room):
-- meetingroom_service: การจองห้องประชุม (ID, ROOM_ID [รหัสห้องประชุม], PERSON_REQUEST_NAME [ผู้ขอใช้], SERVICE_STORY [หัวข้อ/วาระประชุม], DATE_BEGIN [วันที่เริ่ม], DATE_END [วันที่สิ้นสุด], TIME_BEGIN [เวลาเริ่ม], TIME_END [เวลาสิ้นสุด], TOTAL_PEOPLE [จำนวนผู้เข้าประชุม])
-
-8. บุคลากร, เงินเดือน, ลงเวลาสแกนนิ้ว, และการลา (HR, Payroll & Attendance):
-- hrd_person: ข้อมูลบุคลากร/เจ้าหน้าที่ (ID, HR_CID as เลขบัตรประชาชน, HR_PREFIX_ID as คำนำหน้า, HR_FNAME as ชื่อ, HR_LNAME as นามสกุล, HR_DEPARTMENT_ID as รหัสกลุ่มงาน, HR_DEPARTMENT_SUB_ID as รหัสงานย่อย, HR_PERSON_TYPE_ID as รหัสประเภทบุคลากร, HR_POSITION_ID as รหัสตำแหน่งสายงาน, HR_STATUS_ID as สถานะการทำงาน [1=ปฏิบัติงานปกติ], SEX, BIRTHDAY, START_WORK_DATE)
-- hrd_person_type: ประเภทบุคลากร (HR_PERSON_TYPE_ID, HR_PERSON_TYPE_NAME เช่น ข้าราชการ, ลูกจ้างประจำ, พนักงานราชการ, พนักงานกระทรวงสาธารณสุข, ลูกจ้างรายเดือน, ลูกจ้างรายวัน)
-- hrd_position: ตำแหน่งสายงาน/วิชาชีพ (HR_POSITION_ID, HR_POSITION_NAME เช่น พยาบาลวิชาชีพ, นายแพทย์, เจ้าพนักงานสาธารณสุข, เภสัชกร, นักวิชาการสาธารณสุข)
-- hrd_department: กลุ่มงาน/ฝ่าย (HR_DEPARTMENT_ID, HR_DEPARTMENT_NAME เช่น กลุ่มงานการพยาบาล, กลุ่มงานบริหารทั่วไป, กลุ่มงานบริการทางการแพทย์, กลุ่มงานสุขภาพดิจิทัล)
-- hrd_status: สถานะเจ้าหน้าที่ (HR_STATUS_ID, HR_STATUS_NAME เช่น 1=ปฏิบัติงานปกติ, 2=ลาศึกษาต่อ, 3=ลาออก, 4=เกษียณ)
-- checkin_device_time_attendance: ประวัติการสแกนลายนิ้วมือ/ใบหน้า (id, person_id, time_attendance [วันเวลาที่สแกน])
-- gleave_register: รายการยื่นใบลา (ID, PERSON_ID [เชื่อม hrd_person.ID], LEAVE_TYPE_ID, LEAVE_DATE_BEGIN, LEAVE_DATE_END, LEAVE_DAYS [จำนวนวันลา], STATUS [สถานะอนุมัติ])
-- gleave_over: ประวัติวันลาสะสม (ID, PERSON_ID, LEAVE_TYPE_ID, LEAVE_DAYS)
-- gleave_type: ประเภทวันลา (LEAVE_TYPE_ID, LEAVE_TYPE_NAME เช่น ลาป่วย, ลากิจ, ลาพักผ่อน, ลาคลอด)
-- salary_all: บัญชีเงินเดือนและค่าตอบแทน (ID, YEAR_ID [ปีงบประมาณ เช่น 2569], MONTH_ID [รหัสเดือน 1-12], PERSON_ID, TOTAL_RECEIVE [ยอดรับรวม], TOTAL_PAY [ยอดหักรวม], NET_SALARY [รับสุทธิ])
-
-9. ระบบรายงานอุบัติการณ์และความเสี่ยงโรงพยาบาล (Hospital Risk Management System):
-- risk_rep: รายงานอุบัติการณ์ความเสี่ยง (
-    RISKREP_ID [รหัสอุบัติการณ์ PK],
-    RISKREP_NO [เลขที่รายงาน เช่น 'R69-00270'],
-    RISKREP_DATESAVE [วันที่บันทึกรายงาน YYYY-MM-DD เช่น '2026-08-15'],
-    RISKREP_STARTDATE [วันที่เกิดอุบัติการณ์],
-    RISKREP_TIME [เวลาเกิดเหตุ เช่น '10:00:00'],
-    RISKREP_DETAILRISK [รายละเอียดเหตุการณ์ความเสี่ยง],
-    RISKREP_BASICMANAGE [การแก้ไขปัญหาเบื้องต้น],
-    RISKREP_LEVEL [รหัสระดับความรุนแรง เชื่อม risk_rep_level.RISK_REP_LEVEL_ID],
-    RISK_REPPROGRAM_ID [รหัสโปรแกรมความเสี่ยงหลัก เชื่อม risk_rep_program.RISK_REPPROGRAM_ID],
-    RISK_REPPROGRAMSUB_ID [รหัสโปรแกรมความเสี่ยงย่อย เชื่อม risk_rep_program_sub.RISK_REPPROGRAMSUB_ID],
-    RISK_REPPROGRAMSUBSUB_ID [รหัสโปรแกรมความเสี่ยงย่อยเฉพาะ เชื่อม risk_rep_program_subsub.RISK_REPPROGRAMSUBSUB_ID],
-    RISKREP_DEPARTMENT_SUB [รหัสหน่วยงานที่เกิดเหตุ/รายงาน เชื่อม risk_rep_department_sub หรือ hrd_department_sub],
-    RISKREP_LOCATION_ID [รหัสสถานที่เกิดเหตุ เชื่อม risk_rep_location.RISK_LOCATION_ID],
-    RISK_REPTYPERESON_ID [รหัสสาเหตุความเสี่ยง เชื่อม risk_rep_typereason.RISK_REPTYPERESON_ID],
-    RISK_REPTYPERESONSYS_ID [รหัสระบบสาเหตุความเสี่ยง เชื่อม risk_rep_typereason_sys.RISK_REPTYPERESONSYS_ID],
-    RISKREP_STATUS [สถานะความเสี่ยง เช่น 'REPORT', 'SUCCESS'],
-    LEADER_PERSON_NAME [ชื่อหัวหน้า/ผู้รับผิดชอบ],
-    RISKREP_USEREFFECT_FULLNAME [ชื่อผู้ได้รับผลกระทบ],
-    BUDGET_YEAR [ปีงบประมาณ พ.ศ. เช่น 2569]
-  )
-- risk_rep_level: ตารางระดับความรุนแรงของอุบัติการณ์ความเสี่ยง (Lookup ระดับความรุนแรง):
-  * RISK_REP_LEVEL_ID [รหัสระดับ PK ใช้เชื่อมกับ risk_rep.RISKREP_LEVEL]
-  * RISK_REP_LEVEL_CODE [เช่น '00001', '00002']
-  * RISK_REP_LEVEL_NAME [ชื่อระดับตัวอักษรหรือตัวเลข เช่น 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', '1', '2', '3', '4', '5']
-  * RISK_REP_LEVEL_DETAIL [คำอธิบายความหมายระดับความรุนแรงภาษาไทย]:
-    - A = '(เกิดที่นี่) เกิดเหตุการณ์ขึ้นจากตัวเองและค้นพบได้ด้วยตัวเอง สามารถปรับแก้ไขได้ ไม่ส่งผลกระทบถึงผู้อื่น'
-    - B = '(เกิดที่ไกล) เกิดเหตุการณ์ส่งต่อไปที่ผู้อื่น แต่ตรวจพบแก้ไขได้ ยังไม่มีผลกระทบถึงผู้ป่วยหรือบุคลากร'
-    - C = '(เกิดกับใคร) เกิดเหตุการณ์มีผลกระทบถึงผู้ป่วยหรือบุคลากร แต่ไม่เกิดอันตรายหรือเสียหาย'
-    - D = '(ให้ระวัง) มีผลกระทบถึงผู้ป่วยหรือบุคลากร ต้องให้การดูแลเฝ้าระวังเป็นพิเศษ'
-    - E = '(ต้องรักษา) เกิดอันตรายชั่วคราวที่ต้องแก้ไข/รักษาเพิ่มมากขึ้น'
-    - F = '(เยียวยานาน) ต้องรักษาหรือนอนโรงพยาบาลนานขึ้น'
-    - G = '(ต้องพิการ) ทำให้เกิดความพิการถาวรหรือเสียชื่อเสียง/มีเรื่องร้องเรียน'
-    - H = '(ต้องการปั๊ม) มีผลทำให้ต้องทำการช่วยชีวิต CPR'
-    - I = '(จำใจลา) เป็นสาเหตุทำให้เสียชีวิต'
-    - 1 = 'ผลกระทบมูลค่าความเสียหาย 0-1,000 บาท'
-    - 2 = 'ผลกระทบมูลค่าความเสียหาย 1,001-10,000 บาท'
-- risk_rep_program: ตารางโปรแกรมความเสี่ยงหลัก (RISK_REPPROGRAM_ID [PK], RISK_REPPROGRAM_NAME เช่น '1.โปรแกรมด้านคลินิก', '2.โปรแกรมความคลาดเคลื่อนทางยา', '3.โปรแกรมการควบคุมและป้องกันการติดเชื้อในโรงพยาบาล', '4.โปรแกรมสิ่งแวดล้อม ความปลอดภัย สาธารณูปโภค', '5.โปรแกรมด้านเครื่องมือ อุปกรณ์การแพทย์')
-- risk_rep_program_sub: ตารางโปรแกรมความเสี่ยงย่อย (RISK_REPPROGRAMSUB_ID [PK], RISK_REPPROGRAMSUB_NAME, RISK_REPPROGRAM_ID)
-- risk_rep_department_sub: ตารางหน่วยงานความเสี่ยง (RISK_REP_DEPARTMENT_SUBID [PK], RISK_REP_DEPARTMENT_SUBNAME เช่น 'งานการพยาบาลผู้ป่วยใน', 'งานเทคนิคการแพทย์', 'งานป้องกันและควบคุมโรค', 'องค์กรแพทย์')
-- risk_rep_location: ตารางสถานที่เกิดเหตุ (RISK_LOCATION_ID [PK], RISK_LOCATION_NAME เช่น 'OPD', 'IPD', 'ห้องคลอด', 'ห้องฉุกเฉิน')
-- risk_rep_typereason: ตารางสาเหตุความเสี่ยง (RISK_REPTYPERESON_ID [PK], RISK_REPTYPERESON_NAME เช่น 'ผู้ป่วย', 'บุคลากร', 'เครื่องมือ')
-- risk_rep_typereason_sys: ตารางระบบสาเหตุความเสี่ยง (RISK_REPTYPERESONSYS_ID [PK], RISK_REPTYPERESONSYS_NAME)
-- risk_status: ตารางสถานะความเสี่ยง (RISK_STATUS_ID, RISK_STATUS_NAME, RISK_STATUS_NAME_TH เช่น 'รายงาน', 'ดำเนินการ', 'เสร็จสิ้น')
-
-* กฎสำคัญ Backoffice & Lookup Tables:
-1. การสอบถามระดับความรุนแรงความเสี่ยง (Risk Severity Level):
-   - ห้ามแสดงค่า RISKREP_LEVEL เป็นตัวเลข ID ดิบๆ เด็ดขาด!
-   - ต้อง LEFT JOIN risk_rep_level lvl ON lvl.RISK_REP_LEVEL_ID = r.RISKREP_LEVEL
-   - ให้แสดงผลชื่อระดับและคำอธิบายภาษาไทยเสมอ เช่น:
-     COALESCE(CONCAT('ระดับ ', lvl.RISK_REP_LEVEL_NAME, ' : ', lvl.RISK_REP_LEVEL_DETAIL), 'ไม่ระบุระดับความรุนแรง') AS 'ระดับความรุนแรง'
-   - ตัวอย่างคำสั่งเมื่อถาม 'บันทึกความเสี่ยงแยกตามระดับความรุนแรง':
-     SELECT 
-       COALESCE(CONCAT('ระดับ ', lvl.RISK_REP_LEVEL_NAME, ' : ', lvl.RISK_REP_LEVEL_DETAIL), 'ไม่ระบุระดับความรุนแรง') AS 'ระดับความรุนแรง',
-       COUNT(*) AS 'จำนวนอุบัติการณ์'
-     FROM risk_rep r
-     LEFT JOIN risk_rep_level lvl ON lvl.RISK_REP_LEVEL_ID = r.RISKREP_LEVEL
-     WHERE r.RISKREP_DATESAVE BETWEEN ? AND ?
-     GROUP BY r.RISKREP_LEVEL, lvl.RISK_REP_LEVEL_NAME, lvl.RISK_REP_LEVEL_DETAIL
-     ORDER BY COUNT(*) DESC
-2. การสอบถามโปรแกรมความเสี่ยง / เรื่องความเสี่ยง:
-   - ต้อง LEFT JOIN risk_rep_program prog ON prog.RISK_REPPROGRAM_ID = r.RISK_REPPROGRAM_ID แล้วดึง prog.RISK_REPPROGRAM_NAME
-3. การสอบถามหน่วยงานที่เกิดเหตุ/รายงานในระบบความเสี่ยง:
-   - ให้ LEFT JOIN risk_rep_department_sub rdep ON rdep.RISK_REP_DEPARTMENT_SUBID = r.RISKREP_DEPARTMENT_SUB
-     LEFT JOIN hrd_department_sub hrd ON hrd.HR_DEPARTMENT_SUB_ID = r.RISKREP_DEPARTMENT_SUB
-     แล้วใช้ COALESCE(rdep.RISK_REP_DEPARTMENT_SUBNAME, hrd.HR_DEPARTMENT_SUB_NAME, 'ไม่ระบุ') AS 'หน่วยงาน'
-4. การสอบถามสถานที่เกิดเหตุความเสี่ยง:
-   - ต้อง LEFT JOIN risk_rep_location loc ON loc.RISK_LOCATION_ID = r.RISKREP_LOCATION_ID แล้วดึง loc.RISK_LOCATION_NAME
-5. คลังพัสดุทั่วไปใช้ตารางตระกูล warehouse_* ส่วนคลังยาและเวชภัณฑ์ใช้ตารางตระกูล medicine_warehouse_*
-   - เบิกพัสดุ: warehouse_request_sub ต้อง JOIN supplies s ON s.ID = sub.WAREHOUSE_REQUEST_SUB_DETAIL_ID เพื่อดึงชื่อพัสดุ s.SUP_NAME (ห้ามแสดงแค่ ID)
-6. เจ้าหน้าที่ไอทีหรือสารสนเทศ สังกัดกลุ่มงานชื่อ 'กลุ่มงานสุขภาพดิจิทัล' ใน hrd_department
-7. ปีงบประมาณใน Backoffice ส่วนใหญ่ใช้ พ.ศ. เช่น 2568, 2569 ในคอลัมน์ YEAR_ID, CON_YEAR_ID, BUDGET_YEAR
-8. การสอบถามเครื่องคอมพิวเตอร์และครุภัณฑ์ (Assets & Equipment) ใน Backoffice:
-   - ตารางหลักคือ `asset_article`
-   - หากถามเกี่ยวกับเครื่องคอมพิวเตอร์ ให้กรองด้วย `(a.ARTICLE_NAME LIKE '%คอมพิวเตอร์%' OR a.DECLINE_ID = 18)`
-   - สรุปภาพรวมแบบฉลาด (Smart Executive View): ให้แสดงทั้ง 'ประเภทครุภัณฑ์', 'จำนวนทั้งหมด', 'ใช้งานปกติ', 'จำหน่ายแล้ว' เสมอ เพื่อให้เห็นภาพรวมสถานะทันที:
-     SELECT 
-       a.ARTICLE_NAME AS 'ประเภทครุภัณฑ์',
-       COUNT(a.ARTICLE_ID) AS 'จำนวนทั้งหมด',
-       SUM(CASE WHEN a.STATUS_ID = 1 THEN 1 ELSE 0 END) AS 'ใช้งานปกติ',
-       SUM(CASE WHEN a.STATUS_ID = 2 THEN 1 ELSE 0 END) AS 'จำหน่ายแล้ว'
-     FROM asset_article a
-     WHERE a.ARTICLE_NAME LIKE '%คอมพิวเตอร์%' OR a.DECLINE_ID = 18
-     GROUP BY a.ARTICLE_NAME
-     ORDER BY COUNT(a.ARTICLE_ID) DESC;
-   - หากถามค้นหารายละเอียดครุภัณฑ์ (เช่น ขอดูรายการ, เลขครุภัณฑ์, สถานที่ตั้ง, หรือแยกตามแผนก):
-     SELECT 
-       a.ARTICLE_NUM AS 'เลขครุภัณฑ์',
-       a.ARTICLE_NAME AS 'ชื่อครุภัณฑ์',
-       COALESCE(s.STATUS_NAME, 'ไม่ระบุ') AS 'สถานะ',
-       COALESCE(a.DEP_SUB_SUB_NAME, 'ไม่ระบุ') AS 'หน่วยงานที่ครอบครอง',
-       a.RECEIVE_DATE AS 'วันที่รับ',
-       a.PRICE_PER_UNIT AS 'ราคา'
-     FROM asset_article a
-     LEFT JOIN asset_status s ON s.STATUS_ID = a.STATUS_ID
-     WHERE (a.ARTICLE_NAME LIKE '%คอมพิวเตอร์%' OR a.DECLINE_ID = 18)
-     ORDER BY a.ARTICLE_NAME ASC
-     LIMIT 50;
-9. การสอบถามพัสดุและวัสดุสิ้นเปลือง (Supplies & Materials) ใน Backoffice:
-   - ตารางหลักของวัสดุคือ `supplies` และเชื่อมหมวดหมู่วัสดุด้วย `supplies_type` (`s.SUP_TYPE_ID = t.SUP_TYPE_ID`)
-   - หากถาม 'วัสดุมีกี่หมวด' หรือ 'แยกตามหมวดหมู่วัสดุ':
-     SELECT 
-       COALESCE(t.SUP_TYPE_NAME, 'ไม่ระบุหมวด') AS 'หมวดหมู่วัสดุ',
-       COUNT(s.ID) AS 'จำนวนรายการพัสดุ'
-     FROM supplies s
-     LEFT JOIN supplies_type t ON t.SUP_TYPE_ID = s.SUP_TYPE_ID
-     GROUP BY s.SUP_TYPE_ID, t.SUP_TYPE_NAME
-     ORDER BY COUNT(s.ID) DESC;
-   - หากถามค้นหารายการวัสดุ/สเปก/ราคา:
-     SELECT 
-       s.SUP_FSN_NUM AS 'รหัส FSN',
-       s.SUP_NAME AS 'ชื่อวัสดุพัสดุ',
-       t.SUP_TYPE_NAME AS 'หมวดหมู่',
-       s.PRICE_LAST AS 'ราคาซื้อล่าสุด'
-     FROM supplies s
-     LEFT JOIN supplies_type t ON t.SUP_TYPE_ID = s.SUP_TYPE_ID
-     WHERE s.SUP_NAME LIKE '%...%'
-     LIMIT 50;
-10. การขอเบิกพัสดุ/ตัดจ่ายพัสดุคลัง (Warehouse Requisition & Disbursement):
-   - เชื่อมต่อระหว่างใบขอเบิก `warehouse_request` กับรายการพัสดุ `warehouse_request_sub` และชื่อวัสดุ `supplies`:
-     SELECT 
-       w.WAREHOUSE_REQUEST_CODE AS 'เลขที่ใบเบิก',
-       w.WAREHOUSE_DATE_TIME_SAVE AS 'วันที่ขอเบิก',
-       w.WAREHOUSE_SAVE_HR_NAME AS 'ผู้ขอเบิก',
-       w.WAREHOUSE_DEP_SUB_SUB_NAME AS 'หน่วยงานที่เบิก',
-       s.SUP_NAME AS 'รายการวัสดุ',
-       sub.WAREHOUSE_REQUEST_SUB_AMOUNT AS 'จำนวนขอเบิก',
-       sub.WAREHOUSE_REQUEST_SUB_PRICE AS 'ราคาต่อหน่วย',
-       sub.WAREHOUSE_REQUEST_SUB_SUM_PRICE AS 'ราคารวม'
-     FROM warehouse_request_sub sub
-     JOIN warehouse_request w ON w.WAREHOUSE_ID = sub.WAREHOUSE_REQUEST_ID
-     JOIN supplies s ON s.ID = sub.WAREHOUSE_REQUEST_SUB_DETAIL_ID
-     ORDER BY w.WAREHOUSE_DATE_TIME_SAVE DESC
-     LIMIT 50;
-";
+        switch ($connection) {
+            case 'backoffice':
+                return $this->backofficeContext->getSchemaContext($question);
+            case 'mysql':
+                return $this->smartdataContext->getSchemaContext($question);
+            case 'hosxp':
+            default:
+                return $this->hosxpContext->getSchemaContext($question);
         }
+    }
 
-        if ($connection === 'mysql') {
-            return "
--- ฐานข้อมูล SmartData (ระบบจัดการภายใน)
-- users: ผู้ใช้งานระบบ (id, name, username, email, role, allow_copilot, active, created_at)
-- ai_knowledge_docs: เอกสารคลังความรู้ (id, title, category, file_type, file_size, status, chunks_count, created_at)
-- lend_items: รายการอุปกรณ์ให้ยืม (id, item_code, item_name, category, status, total_qty, available_qty)
-- lend_transactions: รายการยืม-คืน (id, item_id, borrower_name, borrow_date, return_date, status)
-- customer_complains: ข้อร้องเรียน (id, topic, detail, status, created_at)
-";
+    /**
+     * Get live domain lookups for target connection
+     */
+    protected function getLiveDomainContext(string $connection, string $question): ?array
+    {
+        switch ($connection) {
+            case 'backoffice':
+                return $this->backofficeContext->getContext($question);
+            case 'mysql':
+                return $this->smartdataContext->getContext($question);
+            case 'hosxp':
+            default:
+                return $this->hosxpContext->getContext($question);
         }
-
-        // Default: HOSxP
-        return "
--- ฐานข้อมูล HOSxP (ระบบบริการผู้ป่วย, เวชระเบียน, การเงิน และตัวชี้วัดโรงพยาบาล)
-
-1. ผู้ป่วยและประชากร:
-- patient: ข้อมูลผู้ป่วย (hn, cid, pname, fname, lname, sex [1=ชาย, 2=หญิง], birthday, addrpart, mojupart, amphur, changwat, chwpart, amppart, tmbpart, moopart, hcode, pttype, drugallergy)
-- hospcode: สถานพยาบาล/รพ.สต. (hospcode, name, hosptype)
-
-2. ผู้ป่วยนอก (OPD):
-- ovst: การมารับบริการ (vn, hn, vstdate [YYYY-MM-DD], vsttime, cur_dep, main_dep, pttype, ovstost ['99'=เสร็จสิ้น], oqueue, main_dep_queue, ovstist ['08'=ALS, '09'=FR, '10'=ILS สำหรับ EMS], an)
-- vn_stat: สถิติผู้ป่วยนอกและการเงิน (vn, hn, vstdate, pdx [รหัสโรคหลัก ICD-10], dx0, dx1, dx2, dx3, dx4, dx5, sex, age_y, pttype, income [ค่าบริการรวม], uc_money [เบิกได้], paid_money [ชำระเอง], inc12 [ค่ายา], inc03 [ค่าแล็บ], lastvisit_hour [ชม. ที่มาตรวจครั้งก่อน], old_diagnosis ['Y'=โรคเดิม], dx_doctor)
-- opdscreen: คัดกรองและสัญญาณชีพ (vn, hn, cc [อาการสำคัญ Chief Complaint], bps, bpd, bw [น้ำหนัก], height [ส่วนสูง], hr, pulse, temperature)
-- ovstdiag: การวินิจฉัยโรค OPD (vn, hn, icd10, diagtype [1=Principle Dx, 2=Co-morbidity, 3=Complication], vstdate)
-- kskdepartment: แผนกตรวจ (depcode, department)
-  * รหัสแผนกหลัก main_dep: '002'=OPD ทั่วไป, '011'=NCD คลินิกเรื้อรัง, '032'=ARI ทางเดินหายใจ, '033'=ไตเทียม รพ., '024'=ไตเทียมนอก
-
-3. ผู้ป่วยใน (IPD):
-- ipt: การรับไว้รักษา (an, hn, vn, regdate [วันที่รับไว้], regtime, dchdate [วันที่จำหน่าย], dchtime, dchstts, dchtype ['04'=Refer], dch_doctor, ward, pttype, spclty, adjrw, confirm_discharge ['N'=ครองเตียงอยู่ หรือ dchdate IS NULL], prediag [อาการแรกรับ], provision_dx [การวินิจฉัยแรกรับก่อน Admit ที่แพทย์สั่ง เช่น 'Sepsis c UTI', 'Pneumonia'], provision_dx_icd [รหัส ICD-10 แรกรับ เช่น 'A419', 'J189'])
-- an_stat: สถิติผู้ป่วยใน (an, hn, regdate, dchdate, pdx [รหัสโรคหลักเมื่อจำหน่าย], admdate [วันนอน admit], hospital_admdate, income, rcpt_money, inc12 [ค่ายา], inc03 [ค่าแล็บ], ward, age_y, admit_hour, adjrw)
-- iptadm: เตียงและห้องพักผู้ป่วยใน (an, bedno, roomno)
-- iptbedmove: ประวัติการย้ายเตียง/วอร์ด IPD (an, movedate, movetime, nbedno, nward)
-- iptdiag: การวินิจฉัยโรค IPD (an, hn, icd10, diagtype [1=Principle Dx])
-- ipt_doctor_diag: แพทย์บันทึกการวินิจฉัย/สรุปชาร์ต EMR (an, diag_text [ข้อความวินิจฉัยโรคทางคลินิกที่แพทย์บันทึกแรกรับและระหว่างรักษา], audit_diag_text, audit_ok ['Y'=Audit ผ่าน], diagtype [1=โรคหลัก])
-- ipt_doctor_list: แพทย์ผู้ดูแล IPD (an, doctor, ipt_doctor_type_id, active_doctor ['Y'])
-- iptoprt: หัตถการและผ่าตัด IPD (an, icd9 [รหัสหัตถการ ICD-9-CM])
-- doctor_operation: หัตถการ OPD (vn, icd9)
-- ward: หอผู้ป่วย (ward, name, bedcount [จำนวนเตียงทั้งหมด])
-  * รหัสวอร์ด: '01'=สามัญ, '02'=ห้องคลอด (LR), '03'=VIP, '10'=ICU (หรือดูเตียง nbedno LIKE 'ICU%'), '06'=Homeward
-- dchstts: สถานะการจำหน่าย (dchstts, name เช่น หาย, ดีขึ้น, ไม่ทุเลา, เสียชีวิต)
-- dchtype: ประเภทการจำหน่าย (dchtype, name เช่น 01=With Approval, 04=Refer ส่งต่อไป รพ. อื่น)
-
-4. งานบริการเฉพาะทาง (Specialty Clinics & Units):
-- operation_list: บันทึกการผ่าตัด ห้องผ่าตัด OR (operation_id, hn, vn, an, operation_date, operation_time, room_id, status_id [1=รอผ่าตัด, 2=กำลังผ่าตัด, 3=ผ่าตัดเสร็จแล้ว], emergency_id [1=Emergency, 2=Elective], patient_department ['OPD','IPD'], request_doctor, operation_name, operation_detail_name, blood_loss, operation_list_anes_type_id, operation_anes_physical_status_id)
-- operation_team: ทีมผ่าตัดและแพทย์ผู้ทำการผ่าตัด (operation_id, doctor [เชื่อม doctor.code], position_id [1=ผู้ทำการผ่าตัด/ศัลยแพทย์ Surgeon, 2=Instrument Nurse, 3=Circulate Nurse, 5=Scrub Nurse])
-- operation_detail: รายการหัตถการผ่าตัด (operation_id, operation_item_id, icdcode [รหัส ICD-9-CM], price)
-- operation_item: ทะเบียนรายการผ่าตัด (operation_item_id, name, icode, price, icd9)
-- operation_room: ห้องผ่าตัด (room_id, room_name เช่น ห้องผ่าตัด 1, 2, 3)
-- dtmain: ทันตกรรม Dental (vn, hn) *เงื่อนไขผู้รับบริการ: `vn IN (SELECT vn FROM dtmain)`
-- physic_list: กายภาพบำบัด Physical Therapy (vn, hn) *เงื่อนไขผู้รับบริการ: `EXISTS (SELECT 1 FROM physic_list WHERE vn = o.vn)`
-- health_med_service: แพทย์แผนไทย (vn, hn) *เงื่อนไขผู้รับบริการ: `EXISTS (SELECT 1 FROM health_med_service WHERE vn = o.vn)`
-- ipt_pregnancy: การคลอดในห้องคลอด LR (an, deliver_type [1=คลอดธรรมชาติ Normal, 2=คลอดผิดปกติ/ผ่าคลอด, 3=แท้ง/อื่นๆ])
-- person_anc_service: บริการฝากครรภ์ ANC (vn, hn)
-- clinic: คลินิกเฉพาะโรค (clinic, name)
-  * รหัสคลินิกเรื้อรัง NCD: '001'=เบาหวาน (DM), '002'=ความดันโลหิตสูง (HT), '007'=ไตเรื้อรัง CKD, '009'=วัณโรค/Asthma, '012'=สุขภาพจิต, '013'=ฟอกไต HD, '014'=ฟอกไต CAPD, '020'=บำบัดยาเสพติด, '021'=COPD, '028'=โรคหลอดเลือดสมอง Stroke, '029'=หัวใจล้มเหลว, '032'=CKD 4-5
-- clinicmember: ทะเบียนผู้ป่วยคลินิกโรคเรื้อรัง NCD (hn, clinic, regdate, lastvisit, dchdate, clinic_member_status_id, last_fbs_value [ค่าน้ำตาล], last_hba1c_value, last_ua_value, last_bp_bps_value [ความดันตัวบน], doctor, send_to_pcu_hcode)
-- clinic_member_status: สถานะผู้ป่วยคลินิกเรื้อรัง (clinic_member_status_id, clinic_member_status_name)
-
-5. งานอุบัติเหตุ-ฉุกเฉิน (ER & EMS):
-- er_regist: ผู้ป่วยฉุกเฉิน ER (vn, hn, vstdate, vsttime, enter_er_time, finish_time, er_emergency_type, er_doctor)
-- er_emergency_type: ระดับความเร่งด่วน ER (er_emergency_type, name [1=กู้ชีพ Resuscitate, 2=ฉุกเฉินเร่งด่วน Emergency, 3=ฉุกเฉิน Urgency, 4=กึ่งฉุกเฉิน Semi-Urgency, 5=ไม่ฉุกเฉิน Non-Urgency])
-
-6. เภสัชกรรม ยา และการแพ้ยา:
-- drugitems: คลังยา (icode, name, generic_name, units, strength) *รหัสยา icode ขึ้นต้นด้วย '1%'
-- opitemrece: รายการสั่งยาและค่าบริการ (vn, an, hn, icode, qty, unitprice, sum_price, rxdate, rxtime, doctor)
-- opd_allergy: ประวัติแพ้ยา (hn, report_date, agent [ชื่อยาที่แพ้], symptom [อาการแพ้], seriousness_id, allergy_result_id)
-- allergy_seriousness: ความรุนแรงการแพ้ยา (seriousness_id, seiousness_name)
-- allergy_result: ผลการประเมินการแพ้ยา (allergy_result_id, result_name)
-
-7. ชันสูตร รังสี และค่าบริการ:
-- nondrugitems: ค่าบริการและเวชภัณฑ์มิใช่ยา (icode, name, price, unitcost, income)
-  * หมวดรายได้ income: '02'=อุปกรณ์/อวัยวะเทียม, '03'=แล็บ (LAB), '12'=ยา, '13'=ทันตกรรม, '14'=กายภาพบำบัด, '15'=แพทย์แผนไทย
-- xray_items: เอกซเรย์ (icode, name, xray_items_group [3=CT Scan])
-- xray_head: ใบสั่งตรวจเอกซเรย์ (vn, hn, order_date, order_time) **ไม่มีฟิลด์ an เด็ดขาด! ให้เชื่อมด้วย xh.vn**
-- lab_head: สั่งตรวจแล็บ (vn, hn, lab_order_number, order_date, order_time, doctor_code, form_name, confirm_report)
-  * **สำคัญมาก: ตาราง lab_head ไม่มีคอลัมน์ an เด็ดขาด! (ห้าม WHERE lh.an = ...)**
-  * การเชื่อมโยงแล็บของผู้ป่วยใน (IPD ด้วย AN): รหัส AN จะถูกบันทึกไว้ในฟิลด์ vn (lh.vn = an) หรือเชื่อมโยงผ่าน ipt.vn เสมอ ให้ใช้เงื่อนไข: `WHERE (lh.vn = :an OR lh.vn IN (SELECT vn FROM ipt WHERE an = :an))`
-- lab_order: รายการและผลการตรวจแล็บ (lab_order_number, lab_items_code, lab_order_result [ค่าผลตรวจแล็บ], lab_order_remark, confirm ['Y'/'N'])
-  * เชื่อมโยงกับ lab_head ด้วย: `lo.lab_order_number = lh.lab_order_number`
-  * เชื่อมโยงกับ lab_items ด้วย: `li.lab_items_code = lo.lab_items_code` (ห้ามนำ lab_items_code ไปเท่ากับ lab_order_number เด็ดขาด!)
-- lab_items: รายการตรวจแล็บ (lab_items_code, lab_items_name, lab_items_unit, lab_items_normal_value [ค่าปกติอ้างอิง], icode, price, provis_lab_code)
-
-8. นัดหมาย และ คิวตรวจ:
-- oapp: ใบนัดผู้ป่วย (vn, hn, nextdate [วันที่นัด], nexttime, clinic, doctor, app_cause [เหตุผลที่นัด])
-- opd_qs_slot: คิวตรวจ OPD (vn, queue_slot_number)
-
-9. การส่งต่อ และ ระบาดวิทยา:
-- referout: ส่งต่อไป รพ. อื่น (vn, hn, refer_date, refer_time, refer_hospcode, refer_point ['OPD','ER','IPD'], department, pdx, with_ambulance)
-- referin: รับส่งต่อจาก รพ. อื่น (vn, hn, refer_date, refer_time, refer_hospcode, pre_diagnosis, icd10 [as pdx_refer], refer_point)
-- death: การเสียชีวิต (hn, an, death_date, death_time, death_cause, death_diag_1 [รหัสโรค ICD10 ที่เสียชีวิต], death_place ['1'=เสียชีวิตใน รพ.])
-- surveil_member: ผู้ป่วยโรคเฝ้าระวังทางระบาดวิทยา 506 (hn, vn, an, code506, report_date, begin_date)
-- name506: พจนานุกรมโรคเฝ้าระวัง 506 (code, name)
-
-10. สิทธิการรักษาและการกำหนดกลุ่มราคา (Pttype & Price Group):
-- pttype: ตารางสิทธิการรักษา (pttype, name, hipdata_code, pcode, paidst, isuse ['Y'/'N'], expire_date, price_type [ระดับราคา 1-5], pttype_price_group_id [เชื่อม pttype_price_group], pttype_sks_code)
-  * hipdata_code: 'UCS'/'DIS'=บัตรทอง, 'OFC'/'BKK'/'BMT'=ข้าราชการ/เบิกตรง, 'SSS'/'SSI'=ประกันสังคม, 'LGO'=อปท., 'NRD'/'NRH'=ไร้สัญชาติ/ต่างด้าวไร้สิทธิ, 'A1'/'A9' หรือ paidst IN ('01','03')=ชำระเงินเอง
-- pttype_price_group: ตารางกลุ่มการคิดราคาตามสิทธิ (pttype_price_group_id, name, price_type [1=ราคาปกติ, 2=ราคานอกเวลา/เบิกได้, 3=ราคาต่างด้าว/ต่างชาติ, 4, 5])
-- pttype_price_policy: นโยบายการกำหนดราคาตามสิทธิ (pttype, price_type, discount_percent)
-- pttype_items_price: ตารางกำหนดราคาค่ายาและค่ารักษาเฉพาะรายสิทธิและรายรายการ icode (pttype, icode, price, price2, price3, paidst, claim_code)
-  * ความสำคัญสูงสุด (Override Priority 1): หากรายการ icode ใดมีการกำหนดราคาใน pttype_items_price ระบบ HOSxP จะดึงราคานี้มาใช้ก่อนเสมอ เหนือกว่า pttype_price_group และ drugitems.unitprice / nondrugitems.price
-- visit_pttype: สิทธิตอนตรวจ OPD (vn, pttype, hospmain [รหัส รพ. ตามสิทธิ เช่น '10989'=รพ.หัวตะพาน In-CUP])
-- ipt_pttype: สิทธิตอน Admit IPD (an, pttype, hospmain)
-- icd101: พจนานุกรมรหัสโรค ICD-10 (code, name, tname)
-
-11. ข้อมูลพื้นฐานและการตั้งค่าระบบ (Master Data & Settings สำหรับ Admin):
-- drugitems: คลังยาและการกำหนดราคาขายหลายระดับตามกลุ่มสิทธิ (icode, name, generic_name, strength, units, unitcost [ราคาทุน], unitprice [ราคาขายระดับ 1 ปกติ], unitprice2 [ราคาขายระดับ 2 นอกเวลา/เบิกได้], unitprice3 [ราคาขายระดับ 3 ต่างด้าว/ต่างชาติ], unitprice4 [ราคา 4], unitprice5 [ราคา 5], drugaccount [1=ED ในบัญชียาหลัก, 2=NED นอกบัญชี], hospital_drug_code [รหัสยามาตรฐาน 24 หลัก TMT สำหรับส่งออก e-Claim], did [รหัสยามาตรฐาน สธ.], nhso_adp_code [รหัสเบิก สปสช.], warn_text, pregnancy_category)
-  * การคิดค่ายาตามสิทธิ: ระบบ HOSxP จะดึงราคา unitprice, unitprice2, unitprice3... ตามฟิลด์ price_type ของ pttype หรือ pttype_price_group ของผู้ป่วย
-- drugitems_price_group: ตารางกำหนดราคายาเฉพาะกลุ่มราคา (icode, pttype_price_group_id, unitprice)
-- nondrugitems: ค่าบริการ ค่ารักษาพยาบาล และหัตถการหลายระดับราคา (icode, name, unitcost [ราคาทุน], price [ราคาปกติระดับ 1], price2 [ราคานอกเวลาระดับ 2], price3 [ราคาต่างด้าวระดับ 3], price4 [ราคา 4], price5 [ราคา 5], income [หมวดรายได้], billcode [รหัสเบิกจ่ายตรง CSOP], nhso_adp_code [รหัสเบิก สปสช. E-Claim], cgd_code, istype)
-  * การคิดค่าบริการตามสิทธิ: ระบบ HOSxP จะดึงราคา price, price2, price3... ตาม price_type ของ pttype หรือ pttype_price_group
-- nondrugitems_price_group: ตารางกำหนดค่าบริการเฉพาะกลุ่มราคา (icode, pttype_price_group_id, price)
-- income: หมวดรายได้หลักโรงพยาบาล (income, name เช่น 01=ค่าห้อง, 02=อุปกรณ์, 03=แล็บ, 12=ยา, 13=ทันตกรรม, 14=กายภาพ, 15=แพทย์แผนไทย)
-- icd9cm1: พจนานุกรมรหัสหัตถการและผ่าตัด ICD-9-CM มาตรฐาน (code, name)
-- lab_items: รายการตรวจแล็บ (lab_items_code, lab_items_name, lab_items_unit, lab_items_normal_value [ค่าปกติอ้างอิง Reference Range], icode [เชื่อม nondrugitems.icode], price, provis_lab_code)
-- doctor: แพทย์และบุคลากรทางการแพทย์ (code, name, licence_no [เลขที่ใบอนุญาต ว./ท./พ./ภ. สำหรับส่งออกแฟ้ม PROVIDER], spclty, active ['Y'/'N'], cid)
-- spclty: สาขาความเชี่ยวชาญแพทย์ (spclty, name เช่น 01=อายุรกรรม, 02=ศัลยกรรม, 03=สูติ-นรีเวช, 04=กุมารเวชกรรม, 05=ออร์โธปิดิกส์)
-- opduser: บัญชีผู้ใช้งานระบบ HOSxP (loginname, name, groupname, department, account_disable ['Y'/'N'])
-
-12. โครงสร้างการส่งออก 43 แฟ้ม และตารางมาตรฐาน provis_:
-- provis_instype: รหัสสิทธิการรักษามาตรฐาน 43 แฟ้ม สนย. (code, name) เชื่อมโยงกับ pttype (สำหรับแฟ้ม PERSON, CHARGE_OPD, CHARGE_IPD)
-- provis_vaccine: รหัสวัคซีนมาตรฐาน 43 แฟ้ม แฟ้ม EPI (code, name เช่น 010=BCG, 041=DTP-HB1, 081=OPV1, 061=MMR, 073=HPV)
-- provis_ncd_clinic: รหัสคลินิกโรคเรื้อรัง 43 แฟ้ม แฟ้ม CHRONIC (code, name เช่น 01=เบาหวาน, 02=ความดัน, 03=หัวใจ, 04=Stroke, 07=CKD)
-- provis_lab_code: รหัสแล็บตรวจติดตามโรคเรื้อรัง 43 แฟ้ม แฟ้ม LABFU (code, name เช่น FBS, HbA1c, Bun, Cr, eGFR, TC, TG, HDL, LDL)
-- provis_fp_type: รหัสวิธีวางแผนครอบครัว แฟ้ม FP (code, name เช่น 1=ยาเม็ด, 2=ยาฉีด, 3=ห่วง, 4=ยาฝัง, 5=ถุงยาง, 6=หมันชาย, 7=หมันหญิง)
-- provis_typedis: รหัสประเภทความพิการ แฟ้ม DISABILITY (code, name เช่น 1=มองเห็น, 2=ได้ยิน, 3=กายภาพ/เคลื่อนไหว, 4=จิตใจ, 5=สติปัญญา, 6=ออทิสติก)
-- provis_title: รหัสคำนำหน้าชื่อมาตรฐาน 43 แฟ้ม (title_code, title_name)
-- provis_marriage: รหัสสถานภาพสมรสมาตรฐาน 43 แฟ้ม (marriage_code, marriage_name)
-- provis_occupation: รหัสอาชีพมาตรฐาน 43 แฟ้ม (occupation_code, occupation_name)
-- provis_accident_code: รหัสสาเหตุการเกิดอุบัติเหตุ แฟ้ม ACCIDENT (code, name)
-- person: ข้อมูลประชากรในเขตรับผิดชอบสำหรับ 43 แฟ้ม แฟ้ม PERSON (person_id, hn, cid, pname, fname, lname, birthdate, sex, house_id, discharge_status, type_area)
-  * รหัส type_area: 1=มีชื่อและตัวอยู่จริง, 2=มีชื่อแต่ตัวไม่อยู่, 3=ตัวอยู่จริงไม่มีชื่อในทะเบียนบ้าน, 4=ประชากรแฝง/นอกเขต
-- person_chronic: ทะเบียนผู้ป่วยโรคเรื้อรังระดับบุคคล แฟ้ม CHRONIC (person_id, hn, chronic_diag, clinic_code)
-- person_disability: ข้อมูลคนพิการระดับบุคคล แฟ้ม DISABILITY (person_id, typedis, disabcode)
-- person_vaccine: ข้อมูลประวัติการรับวัคซีนระดับบุคคล แฟ้ม EPI (person_id, vaccine_code, vaccine_date)
-- village: ข้อมูลหมู่บ้าน (village_id, village_moo, village_name)
-- house: ข้อมูลหลังคาเรือน (house_id, village_id, house_address)
-
----------------------------------------------------------
-* กฎสำคัญ Hospital Domain Rules & Best Practices:
-1. ตาราง ipt ไม่มีฟิลด์ pdx และไม่มีฟิลด์ bedno เด็ดขาด!
-   - หากต้องการเตียงผู้ป่วยใน ให้ LEFT JOIN iptadm adm ON i.an = adm.an แล้วใช้ adm.bedno
-   - ตาราง lab_head และ xray_head ไม่มีฟิลด์ an เด็ดขาด! (ห้าม WHERE lh.an = ... หรือ xh.an = ...)
-   - การค้นหาแล็บด้วย AN ของผู้ป่วยใน: HOSxP จะบันทึก AN ไว้ในฟิลด์ vn ของ lab_head ดังนั้นต้องเขียนเงื่อนไขเป็น:
-     `WHERE (lh.vn = ? OR lh.vn IN (SELECT vn FROM ipt WHERE an = ?))`
-2. คนไข้ที่กำลังนอน รพ. (Admit อยู่ขณะนี้):
-   - เงื่อนไขครองเตียง: `WHERE (i.confirm_discharge = 'N' OR i.dchdate IS NULL)`
-   - สำคัญมากที่สุดตามโครงสร้าง HOSxP:
-     * ตาราง `an_stat` เป็นตารางสรุปตอนจำหน่าย (Discharge) ขณะคนไข้นอนจะยังไม่มีข้อมูลเด็ดขาด!
-     * ตาราง `iptdiag` และ `ipt_doctor_diag` ขณะคนไข้นอนส่วนใหญ่ยังไม่ได้บันทึก เพราะต้องรอแพทย์สรุปชาร์ตตอนจำหน่าย
-     * ข้อมูลการวินิจฉัยโรคขณะคนไข้กำลังนอน Admit อยู่ จะบันทึกไว้ในตาราง `ipt` โดยตรง คือ:
-       (1) `i.provision_dx` = การวินิจฉัยแรกรับทางคลินิกที่แพทย์ลงตอนสั่ง Admit (เช่น 'Sepsis c UTI', 'Pneumonia', 'CHF')
-       (2) `i.provision_dx_icd` = รหัส ICD-10 แรกรับตอนสั่ง Admit (เช่น 'A419', 'J189')
-       (3) `i.prediag` = อาการแรกรับและประวัติส่งต่อ
-       (4) `v.pdx` จาก `LEFT JOIN vn_stat v ON v.vn = i.vn` (รหัสโรคแรกรับจาก OPD/ER ก่อนส่งขึ้นตึก)
-   - ตัวอย่างคำสั่งมาตรฐานเมื่อค้นหาคนไข้ที่กำลัง Admit ด้วยโรคเฉพาะเจาะจง (เช่น Sepsis):
-     SELECT 
-       i.an AS 'เลข AN',
-       i.hn AS 'เลข HN',
-       CONCAT(p.pname, p.fname, ' ', p.lname) AS 'ชื่อ-นามสกุล',
-       w.name AS 'หอผู้ป่วย',
-       i.regdate AS 'วันที่รับไว้รักษา',
-       COALESCE(
-         NULLIF(i.provision_dx, ''),
-         (SELECT CONCAT('[', i.provision_dx_icd, '] ', icd.name) FROM icd101 icd WHERE icd.code = i.provision_dx_icd),
-         (SELECT CONCAT('[', v.pdx, '] ', icd2.name) FROM icd101 icd2 WHERE icd2.code = v.pdx LIMIT 1),
-         i.prediag,
-         'อยู่ระหว่างการวินิจฉัย'
-       ) AS 'การวินิจฉัยแรกรับ (Provisional Dx)'
-     FROM ipt i
-     JOIN patient p ON p.hn = i.hn
-     LEFT JOIN ward w ON w.ward = i.ward
-     LEFT JOIN vn_stat v ON v.vn = i.vn
-     WHERE (i.confirm_discharge = 'N' OR i.dchdate IS NULL)
-       AND (
-           i.provision_dx LIKE '%sepsis%' OR i.provision_dx LIKE '%septic%' OR i.provision_dx LIKE '%ติดเชื้อในกระแส%'
-           OR i.provision_dx_icd LIKE 'A41%' OR i.provision_dx_icd = 'R572'
-           OR i.prediag LIKE '%sepsis%' OR i.prediag LIKE '%ติดเชื้อในกระแส%'
-           OR v.pdx LIKE 'A41%' OR v.pdx = 'R572'
-           OR EXISTS (SELECT 1 FROM iptdiag id WHERE id.an = i.an AND (id.icd10 LIKE 'A41%' OR id.icd10 = 'R572'))
-       )
-3. ผู้ป่วยในที่จำหน่ายแล้ว (Discharged IPD):
-   - หาโรคหลักโดย JOIN an_stat a ON i.an = a.an แล้วใช้ a.pdx (หรือ LEFT JOIN icd101 icd ON a.pdx = icd.code)
-4. ตัวชี้วัดคุณภาพโรงพยาบาล (Hospital Indicators):
-   - Re-admit ภายใน 28 วันด้วยโรคเดิม (IPD):
-     FROM ipt ipt_new
-     INNER JOIN iptdiag diag_new ON diag_new.an = ipt_new.an AND diag_new.diagtype = '1'
-     INNER JOIN ipt ipt_old ON ipt_old.hn = ipt_new.hn AND ipt_old.an <> ipt_new.an
-     INNER JOIN iptdiag diag_old ON diag_old.an = ipt_old.an AND diag_old.diagtype = '1' AND diag_old.icd10 = diag_new.icd10
-     WHERE ipt_new.regdate BETWEEN ? AND ?
-       AND TIMESTAMPDIFF(DAY, ipt_old.dchdate, ipt_new.regdate) BETWEEN 1 AND 28
-   - Re-visit ภายใน 48 ชม. ด้วยโรคเดิม (ER/OPD):
-     FROM ovst o JOIN vn_stat v ON v.vn = o.vn WHERE v.lastvisit_hour <= 48 AND v.old_diagnosis = 'Y'
-   - Refer Out ภายใน 4 ชม. หรือ 24 ชม. หลัง Admit:
-     FROM ipt i JOIN an_stat a ON i.an = a.an WHERE i.dchtype = '04' AND a.admit_hour <= 4 (หรือ <= 24)
-   - ค่าดัชนีกลุ่มวินิจฉัยโรคร่วมเฉลี่ย (CMI): `ROUND(SUM(a.adjrw) / COUNT(DISTINCT a.an), 2)`
-   - ชาร์ตรอแพทย์สรุป: `NOT EXISTS (SELECT 1 FROM ipt_doctor_diag idd WHERE idd.an = i.an AND idd.diag_text <> '')`
-   - ชาร์ตรอ Audit: `EXISTS (SELECT 1 FROM ipt_doctor_diag idd WHERE idd.an = i.an AND idd.diag_text <> '' AND (idd.audit_ok IS NULL OR idd.audit_ok <> 'Y'))`
-5. การตรวจสอบความพร้อมการส่งออก 43 แฟ้ม และการตั้งค่าระบบ (43 Files Audit & Master Settings):
-   - ตรวจสอบรายการที่ตั้งราคาเฉพาะสิทธิใน pttype_items_price: `SELECT p.pttype, t.name as pttype_name, p.icode, COALESCE(d.name, n.name) as item_name, p.price, COALESCE(d.unitprice, n.price) as standard_price, COALESCE(d.unitcost, n.unitcost) as unitcost FROM pttype_items_price p LEFT JOIN pttype t ON t.pttype = p.pttype LEFT JOIN drugitems d ON d.icode = p.icode LEFT JOIN nondrugitems n ON n.icode = p.icode`
-   - ตรวจสอบสิทธิที่มีการตั้งราคาพิเศษเฉพาะรายการมากที่สุด: `SELECT p.pttype, t.name, count(p.icode) as custom_item_count FROM pttype_items_price p LEFT JOIN pttype t ON t.pttype = p.pttype GROUP BY p.pttype, t.name`
-   - ตรวจสอบกลุ่มราคา pttype_price_group และจำนวนสิทธิที่ผูก: `SELECT g.pttype_price_group_id, g.name, g.price_type, count(p.pttype) as pttype_count FROM pttype_price_group g LEFT JOIN pttype p ON p.pttype_price_group_id = g.pttype_price_group_id GROUP BY g.pttype_price_group_id, g.name, g.price_type`
-   - ตรวจสอบสิทธิที่ยังไม่ได้กำหนดระดับราคา (price_type หรือ pttype_price_group_id): `SELECT pttype, name, price_type, pttype_price_group_id FROM pttype WHERE isuse = 'Y' AND (price_type IS NULL OR price_type = '' OR price_type = '0')`
-   - ตรวจสอบราคายาในกลุ่มราคา 1, 2, 3 ที่ต่ำกว่าราคาทุน: `SELECT icode, name, unitcost, unitprice, unitprice2, unitprice3 FROM drugitems WHERE (unitprice < unitcost OR (unitprice2 > 0 AND unitprice2 < unitcost) OR (unitprice3 > 0 AND unitprice3 < unitcost)) AND unitcost > 0`
-   - ตรวจสอบค่าบริการ/หัตถการที่ราคาตามสิทธิผิดปกติหรือต่ำกว่าทุน: `SELECT icode, name, price, price2, price3, unitcost FROM nondrugitems WHERE (price < unitcost OR (price2 > 0 AND price2 < unitcost)) AND unitcost > 0`
-   - ตรวจสอบยาที่ยังไม่ใส่รหัส TMT 24 หลัก: `SELECT icode, name, units FROM drugitems WHERE (hospital_drug_code IS NULL OR hospital_drug_code = '') AND (istype = '01' OR istype IS NULL)`
-   - ตรวจสอบค่าบริการ/แล็บ/หัตถการที่ยังไม่ได้ใส่ billcode หรือ nhso_adp_code: `SELECT icode, name, price, income FROM nondrugitems WHERE (billcode IS NULL OR billcode = '') AND (nhso_adp_code IS NULL OR nhso_adp_code = '')`
-   - ตรวจสอบสิทธิที่เปิดใช้งานแต่ยังไม่ผูก hipdata_code หรือ provis_instype: `SELECT pttype, name, hipdata_code, pcode FROM pttype WHERE isuse = 'Y' AND (hipdata_code IS NULL OR hipdata_code = '')`
-   - ตรวจสอบแพทย์/ผู้ให้บริการที่ Active แต่ยังไม่มีเลข ว. (licence_no) สำหรับแฟ้ม PROVIDER: `SELECT code, name, cid FROM doctor WHERE active = 'Y' AND (licence_no IS NULL OR licence_no = '')`
-   - ตรวจสอบประชากร 43 แฟ้ม แยกตาม Type Area: `SELECT type_area, count(*) as count FROM person GROUP BY type_area`
-   - ตรวจสอบประชากรที่ CID ว่างหรือไม่ครบ 13 หลัก (แฟ้ม PERSON): `SELECT person_id, fname, lname, cid, type_area FROM person WHERE cid IS NULL OR LENGTH(cid) <> 13`
-   - ตรวจสอบประชากรที่ยังไม่ได้ระบุ Type Area: `SELECT person_id, fname, lname, cid FROM person WHERE type_area IS NULL OR type_area = ''`
-   - ตรวจสอบรายการแล็บที่ยังไม่ผูกรหัส provis_lab_code (แฟ้ม LABFU): `SELECT lab_items_code, lab_items_name, provis_lab_code FROM lab_items WHERE provis_lab_code IS NULL OR provis_lab_code = ''`
-   - ตรวจสอบคลินิก NCD ที่ยังไม่ผูกรหัส provis_ncd_clinic (แฟ้ม CHRONIC): `SELECT clinic, name, provis_ncd_clinic_code FROM clinic WHERE provis_ncd_clinic_code IS NULL OR provis_ncd_clinic_code = ''`
-   - ตรวจสอบวัคซีนที่ยังไม่ผูกรหัส provis_vaccine (แฟ้ม EPI): `SELECT vaccine_code, vaccine_name, provis_vaccine_code FROM vaccine WHERE provis_vaccine_code IS NULL OR provis_vaccine_code = ''`
-6. ผู้ป่วยหนัก ICU: ค้นหาจาก `iptbedmove.nbedno LIKE 'ICU%'` หรือ `i.ward = '10'` หรือ `w.name LIKE '%ICU%' OR w.name LIKE '%วิกฤต%'`
-7. รหัสโรคสำคัญ: Stroke (I64, I619, I639) | Sepsis (A419, A415) | Septic Shock (R572) | Pneumonia (J189, J180) | MI (I219) | CHF (I500, I509) | COPD (J449) | Asthma (J459) | Head Injury (S099, S060)
-8. การสืบค้นติดตามผู้ป่วยรายบุคคลด้วย HN หรือ AN (Patient Follow-up & PDPA Privacy):
-   - การสื่อสารด้วย HN หรือ AN เป็นมาตรการตามหลัก Pseudonymization (ข้อมูลรหัสเทียมภายนอกไม่สามารถระบุตัวตนบุคคลได้ ปลอดภัยตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล PDPA)
-    - ติดตามผลแล็บคนไข้ราย HN หรือ AN (ตาราง lab_head ไม่มีคอลัมน์ an เด็ดขาด! ค้นหาด้วย AN ให้ใช้ WHERE lh.vn = :an OR lh.vn IN (SELECT vn FROM ipt WHERE an = :an)):
-     SELECT lh.order_date, lh.order_time, li.lab_items_name, lo.lab_order_result, li.lab_items_unit, li.lab_items_normal_value
-     FROM lab_head lh
-     JOIN lab_order lo ON lo.lab_order_number = lh.lab_order_number
-     JOIN lab_items li ON li.lab_items_code = lo.lab_items_code
-     WHERE (lh.vn = ? OR lh.vn IN (SELECT vn FROM ipt WHERE an = ?))
-     ORDER BY lh.order_date DESC, lh.order_time DESC LIMIT 50
-   - ติดตามรายการยาที่คนไข้ได้รับราย HN/AN:
-     SELECT o.rxdate, o.rxtime, d.name AS drug_name, o.qty, d.units, o.unitprice, o.sum_price
-     FROM opitemrece o
-     JOIN drugitems d ON d.icode = o.icode
-     WHERE (o.hn = ? OR o.an = ?) AND o.icode LIKE '1%'
-     ORDER BY o.rxdate DESC, o.rxtime DESC LIMIT 30
-   - ติดตามค่ารักษาพยาบาลราย HN/AN:
-     SELECT i.name AS income_group, SUM(o.sum_price) AS total_amount, SUM(o.qty) AS item_count
-     FROM opitemrece o
-     JOIN income i ON i.income = o.income
-     WHERE o.hn = ? OR o.an = ?
-     GROUP BY i.name ORDER BY total_amount DESC
-   - มาตรการ PDPA: ห้าม SELECT เลขบัตรประชาชน (cid), เบอร์โทร, หรือที่อยู่ เว้นแต่ผู้ใช้ระบุโดยตรง เพื่อป้องกันการเปิดเผยข้อมูลส่วนบุคคลที่ระบุตัวตนโดยตรง
-";
     }
 }

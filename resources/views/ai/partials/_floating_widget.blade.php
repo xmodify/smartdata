@@ -60,6 +60,9 @@
                     <span class="me-1">💡</span> คำถามแนะนำด่วน:
                 </div>
                 <div class="d-flex flex-column gap-2" id="widgetQuickChips">
+                    <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอกราฟสรุป 10 อันดับโรคผู้ป่วยนอก (OPD) ที่มารับบริการมากที่สุดเดือนนี้')">
+                        <span class="me-2">📊</span> กราฟ 10 อันดับโรคผู้ป่วยนอกเดือนนี้
+                    </button>
                     <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) ย้อนหลัง 30 วัน แยกตามสิทธิการรักษา')">
                         <span class="me-2">📌</span> ยอดผู้ป่วยนอก (OPD) แยกตามสิทธิ
                     </button>
@@ -73,7 +76,7 @@
                         <span class="me-2">👥</span> สรุปจำนวนบุคลากรแยกกลุ่มงาน (Backoffice)
                     </button>
                     <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('แนวทางการดูแลรักษาผู้ป่วย Stroke หรือ STEMI มีขั้นตอนอย่างไร')">
-                        <span class="me-2">📊</span> แนวทางเวชปฏิบัติ CPG Stroke / STEMI
+                        <span class="me-2">📋</span> แนวทางเวชปฏิบัติ CPG Stroke / STEMI
                     </button>
                 </div>
             </div>
@@ -216,6 +219,9 @@ function resetWidgetConversation() {
                 <span class="me-1">💡</span> คำถามแนะนำด่วน:
             </div>
             <div class="d-flex flex-column gap-2" id="widgetQuickChips">
+                <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอกราฟสรุป 10 อันดับโรคผู้ป่วยนอก (OPD) ที่มารับบริการมากที่สุดเดือนนี้')">
+                    <span class="me-2">📊</span> กราฟ 10 อันดับโรคผู้ป่วยนอกเดือนนี้
+                </button>
                 <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('ขอยอดผู้ป่วยนอก (OPD) ย้อนหลัง 30 วัน แยกตามสิทธิการรักษา')">
                     <span class="me-2">📌</span> ยอดผู้ป่วยนอก (OPD) แยกตามสิทธิ
                 </button>
@@ -229,7 +235,7 @@ function resetWidgetConversation() {
                     <span class="me-2">👥</span> สรุปจำนวนบุคลากรแยกกลุ่มงาน (Backoffice)
                 </button>
                 <button type="button" class="btn btn-sm btn-white border rounded-pill text-start py-2 px-3 shadow-xs widget-chip-btn" onclick="sendWidgetQuickPrompt('แนวทางการดูแลรักษาผู้ป่วย Stroke หรือ STEMI มีขั้นตอนอย่างไร')">
-                    <span class="me-2">📊</span> แนวทางเวชปฏิบัติ CPG Stroke / STEMI
+                    <span class="me-2">📋</span> แนวทางเวชปฏิบัติ CPG Stroke / STEMI
                 </button>
             </div>
         </div>
@@ -297,12 +303,22 @@ function handleWidgetSubmit(e) {
                             <tbody>${trs}</tbody>
                         </table>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mt-1 text-muted" style="font-size: 0.7rem;">
-                        <span><i class="fas fa-database text-primary me-1"></i> ${(data.target_db || 'HOSxP').toUpperCase()} • ${data.count || data.rows.length} รายการ</span>
+                    <div class="d-flex justify-content-between align-items-center mt-2 pt-1 border-top text-muted" style="font-size: 0.72rem;">
+                        <span><i class="fas fa-database text-primary me-1"></i> ${(data.target_db || 'HOSxP').toUpperCase()} • ${(data.count || data.rows.length).toLocaleString('th-TH')} รายการ</span>
+                        <a href="{{ route('ai.chat') }}?session=${encodeURIComponent(widgetSessionUuid)}" class="text-primary text-decoration-none fw-semibold">
+                            <i class="fas fa-chart-bar text-success me-1"></i>เปิดดูตารางและกราฟเต็มจอ
+                        </a>
                     </div>
                 `;
             } else if (data.count !== undefined && data.count > 0) {
                 reply += `\n(ดึงข้อมูลสำเร็จ ${data.count} รายการ จากฐานข้อมูล ${(data.target_db || 'HOSxP').toUpperCase()})`;
+                extraHtml = `
+                    <div class="mt-2 text-end">
+                        <a href="{{ route('ai.chat') }}?session=${encodeURIComponent(widgetSessionUuid)}" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill" style="font-size: 0.72rem;">
+                            <i class="fas fa-chart-bar text-success me-1"></i>เปิดดูตารางและกราฟเต็มจอ
+                        </a>
+                    </div>
+                `;
             }
 
             // Show SQL for Admin in widget too

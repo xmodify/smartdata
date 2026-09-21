@@ -34,13 +34,9 @@
             gap: 0.5rem;
         }
 
-        .input-group-date { width: 140px !important; }
-        .input-group-budget { width: 220px !important; }
-
         @media (max-width: 992px) {
             .page-header-container { flex-direction: column; align-items: flex-start !important; gap: 1rem; }
             .header-form-controls { width: 100%; flex-wrap: wrap; }
-            .input-group-date, .input-group-budget { width: 100% !important; }
         }
 
         .dataTables_length select {
@@ -331,15 +327,14 @@
             <div class="d-flex align-items-center report-title-box">
                 <div class="ps-3 py-1">
                     <h5 class="text-dark mb-0 fw-bold"><i class="fas fa-capsules text-primary me-2"></i> {{ $title }}</h5>
-                    <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
-                    <div class="text-primary small fw-bold mt-1">
-                        <i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }}
+                    <div class="text-muted small mt-1">
+                        ข้อมูลปีงบประมาณ {{ $budget_year }} | สถิติภาพรวมประจำปี ({{ DateThai($start_date) }} ถึง {{ DateThai($end_date) }})
                     </div>
                 </div>
             </div>
             <div class="d-flex align-items-center">
                 <form action="{{ route('hosxp.phar.custom_drug') }}" method="GET" class="m-0 header-form-controls">
-                    <!-- Dropdown ค้นหาและเลือกตัวยา (เหมือนรูปที่ 2) -->
+                    <!-- Dropdown ค้นหาและเลือกตัวยา -->
                     <div class="d-flex align-items-center gap-1">
                         <span class="fw-bold text-muted small text-nowrap">ตัวยา:</span>
                         <div class="dropdown">
@@ -383,26 +378,25 @@
                         </div>
                     </div>
 
-                    <!-- Date pickers -->
-                    <div class="input-group input-group-sm shadow-sm input-group-date" style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="start_date" id="start_date" class="form-control border-start-0 ps-0" value="{{ $start_date }}" style="font-size: 0.8rem;">
-                    </div>
-                    <div class="input-group input-group-sm shadow-sm input-group-date" style="border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-alt"></i></span>
-                        <input type="text" name="end_date" id="end_date" class="form-control border-start-0 ps-0" value="{{ $end_date }}" style="font-size: 0.8rem;">
-                    </div>
-
-                    <!-- Budget year select -->
-                    <div class="input-group input-group-sm shadow-sm input-group-budget" style="border-radius: 8px; overflow: hidden;">
-                        <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
+                    <!-- Budget year select (ตรงตามรูปที่ 2) -->
+                    <div class="input-group input-group-sm shadow-sm" style="width: 230px; border-radius: 8px; overflow: hidden;">
+                        <span class="input-group-text bg-white border-end-0 text-primary fw-bold" style="font-size: 0.85rem;">
+                            <i class="fas fa-calendar-alt me-1"></i> เลือก
+                        </span>
+                        <select class="form-select border-start-0 ps-2" name="budget_year" id="budget_year" style="font-size: 0.85rem; cursor: pointer;">
                             @foreach ($budget_year_select as $row)
-                                <option value="{{ $row->LEAVE_YEAR_ID }}" {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>{{ $row->LEAVE_YEAR_NAME }}</option>
+                                <option value="{{ $row->LEAVE_YEAR_ID }}" {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>
+                                    {{ $row->LEAVE_YEAR_NAME }}
+                                </option>
                             @endforeach
                         </select>
                         <input type="hidden" name="budget_year_changed" id="budget_year_changed" value="0">
-                        <button type="submit" class="btn btn-primary text-white px-3" style="font-size: 0.8rem;"><i class="fas fa-search"></i> ค้นหา</button>
                     </div>
+
+                    <!-- ปุ่มค้นหาแยก -->
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold shadow-sm d-flex align-items-center gap-1" style="border-radius: 8px; font-size: 0.85rem; height: 31px;">
+                        <i class="fas fa-search"></i> ค้นหา
+                    </button>
                 </form>
             </div>
         </div>
@@ -785,140 +779,70 @@
             <!-- BOTTOM SECTION: ตารางรายชื่อผู้ป่วยที่ได้รับยา (รายละเอียด + วิธีใช้ยา + แยกจุดบริการ) -->
             <!-- ========================================================================= -->
             <div class="card card-custom p-4 bg-white mt-4 shadow-sm" style="border-radius: 20px;">
-                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom gap-2">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom gap-3">
                     <div>
                         <h5 class="fw-bold text-dark mb-1">
                             <i class="fas fa-users text-primary me-2"></i>รายชื่อผู้ป่วยที่ได้รับยา (รายละเอียดรายบุคคล)
                         </h5>
-                        <div class="text-muted small">แสดงประวัติการสั่งยา วิธีใช้ยา และจุดที่ให้บริการ (ER, ICU, VIP, IPD, OPD)</div>
+                        <div class="text-muted small">
+                            แสดงข้อมูลตามช่วงวันที่ <span id="displayDateRange" class="fw-bold text-dark">{{ DateThai($table_start_date) }} ถึง {{ DateThai($table_end_date) }}</span>
+                        </div>
                     </div>
 
-                    <!-- Service Point Quick Filter Buttons -->
+                    <!-- Table Independent Date Filter Controls (เหมือนหน้ารายงาน Stroke) -->
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="input-group input-group-sm shadow-sm" style="width: 145px;">
+                            <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-day"></i></span>
+                            <input type="text" id="table_start_date" class="form-control border-start-0 ps-0" value="{{ $table_start_date }}" placeholder="วันที่เริ่มต้น">
+                        </div>
+                        <div class="input-group input-group-sm shadow-sm" style="width: 145px;">
+                            <span class="input-group-text bg-white border-end-0 text-primary"><i class="fas fa-calendar-day"></i></span>
+                            <input type="text" id="table_end_date" class="form-control border-start-0 ps-0" value="{{ $table_end_date }}" placeholder="วันที่สิ้นสุด">
+                        </div>
+                        <button type="button" id="btnFilterTable" class="btn btn-primary btn-sm shadow-sm px-3 fw-bold">
+                            <i class="fas fa-search me-1"></i> ค้นหา
+                        </button>
+                        <div class="btn-group btn-group-sm shadow-sm">
+                            <button type="button" id="btnCurrentMonth" class="btn btn-outline-secondary" title="เลือกเดือนปัจจุบัน">
+                                เดือนนี้
+                            </button>
+                            <button type="button" id="btnPrevMonth" class="btn btn-outline-secondary" title="เลือกเดือนก่อนหน้า">
+                                เดือนก่อน
+                            </button>
+                            <button type="button" id="btnFullYear" class="btn btn-outline-secondary" title="เลือกทั้งปีงบประมาณ">
+                                ทั้งปี
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Point Quick Filter Buttons -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
                     <div class="d-flex flex-wrap align-items-center gap-1">
                         <span class="text-muted small fw-bold me-1">จุดบริการ:</span>
                         <button type="button" class="btn btn-outline-primary btn-sp-filter active" data-sp="ALL">
-                            ทั้งหมด <span class="badge bg-primary rounded-pill ms-1">{{ $sp_counts['ALL'] }}</span>
+                            ทั้งหมด <span class="badge bg-primary rounded-pill ms-1" id="sp-count-ALL">{{ $sp_counts['ALL'] }}</span>
                         </button>
                         <button type="button" class="btn btn-outline-danger btn-sp-filter" data-sp="ER">
-                            🚨 ER <span class="badge bg-danger rounded-pill ms-1">{{ $sp_counts['ER'] }}</span>
+                            🚨 ER <span class="badge bg-danger rounded-pill ms-1" id="sp-count-ER">{{ $sp_counts['ER'] }}</span>
                         </button>
                         <button type="button" class="btn btn-outline-purple btn-sp-filter" style="border-color: #7c3aed; color: #7c3aed;" data-sp="ICU">
-                            🩺 ICU <span class="badge rounded-pill ms-1" style="background-color: #7c3aed;">{{ $sp_counts['ICU'] }}</span>
+                            🩺 ICU <span class="badge rounded-pill ms-1" style="background-color: #7c3aed;" id="sp-count-ICU">{{ $sp_counts['ICU'] }}</span>
                         </button>
                         <button type="button" class="btn btn-outline-warning btn-sp-filter" style="border-color: #d97706; color: #d97706;" data-sp="VIP">
-                            🏨 VIP <span class="badge rounded-pill ms-1" style="background-color: #d97706;">{{ $sp_counts['VIP'] }}</span>
+                            🏨 VIP <span class="badge rounded-pill ms-1" style="background-color: #d97706;" id="sp-count-VIP">{{ $sp_counts['VIP'] }}</span>
                         </button>
                         <button type="button" class="btn btn-outline-info btn-sp-filter" data-sp="IPD">
-                            🛏️ IPD <span class="badge bg-info rounded-pill ms-1">{{ $sp_counts['IPD'] }}</span>
+                            🛏️ IPD <span class="badge bg-info rounded-pill ms-1" id="sp-count-IPD">{{ $sp_counts['IPD'] }}</span>
                         </button>
                         <button type="button" class="btn btn-outline-success btn-sp-filter" data-sp="OPD">
-                            🏥 OPD <span class="badge bg-success rounded-pill ms-1">{{ $sp_counts['OPD'] }}</span>
+                            🏥 OPD <span class="badge bg-success rounded-pill ms-1" id="sp-count-OPD">{{ $sp_counts['OPD'] }}</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle w-100" id="patientPrescriptionTable" style="font-size: 0.82rem;">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="text-center" style="width: 45px;">ลำดับ</th>
-                                <th>วันที่-เวลา</th>
-                                <th>HN / CID</th>
-                                <th>ชื่อ-นามสกุล</th>
-                                <th class="text-center">จุดบริการ</th>
-                                <th>ตัวยา</th>
-                                <th>วิธีใช้ยา</th>
-                                <th class="text-end">จำนวน</th>
-                                <th class="text-center">หน่วย</th>
-                                <th class="text-end">มูลค่า (บาท)</th>
-                                <th>แพทย์ผู้สั่ง</th>
-                                <th>สิทธิการรักษา</th>
-                                <th>รพ.สต. / พื้นที่</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($patient_prescriptions as $index => $pt)
-                                <tr data-service-point="{{ $pt->service_point_code }}">
-                                    <td class="text-center text-muted">{{ $index + 1 }}</td>
-                                    <td class="text-nowrap">
-                                        <div class="fw-bold text-dark">{{ DateThai($pt->rxdate) }}</div>
-                                        <small class="text-muted"><i class="far fa-clock me-1"></i>{{ $pt->rxtime ?: '-' }}</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold font-monospace text-primary">{{ $pt->hn }}</div>
-                                        @if($pt->cid)
-                                            <small class="text-muted font-monospace">{{ substr($pt->cid, 0, 1) . '-' . substr($pt->cid, 1, 4) . '-' . substr($pt->cid, 5, 5) . '-' . substr($pt->cid, 10, 2) . '-' . substr($pt->cid, 12, 1) }}</small>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold text-dark">{{ $pt->ptname }}</div>
-                                        @if($pt->age_y)
-                                            <small class="text-muted">อายุ {{ $pt->age_y }} ปี</small>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        @if($pt->service_point_code == 'ER')
-                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1 rounded-pill">
-                                                🚨 ER (ฉุกเฉิน)
-                                            </span>
-                                        @elseif($pt->service_point_code == 'ICU')
-                                            <span class="badge bg-opacity-10 border px-2 py-1 rounded-pill" style="background-color: #f3e8ff; color: #7c3aed; border-color: #7c3aed !important;">
-                                                🩺 ICU (วิกฤต)
-                                            </span>
-                                        @elseif($pt->service_point_code == 'VIP')
-                                            <span class="badge bg-opacity-10 border px-2 py-1 rounded-pill" style="background-color: #fef3c7; color: #b45309; border-color: #b45309 !important;">
-                                                🏨 VIP (พิเศษ)
-                                            </span>
-                                        @elseif($pt->service_point_code == 'IPD')
-                                            <span class="badge bg-info bg-opacity-10 text-info border border-info px-2 py-1 rounded-pill">
-                                                🛏️ {{ $pt->service_point_name }}
-                                            </span>
-                                        @else
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 rounded-pill">
-                                                🏥 {{ $pt->service_point_name }}
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold text-dark">{{ $pt->drug_name }}</div>
-                                        <small class="text-muted">รหัส: <code>{{ $pt->icode }}</code></small>
-                                    </td>
-                                    <td>
-                                        <div class="p-1 px-2 rounded bg-light border text-secondary small" style="max-width: 250px; line-height: 1.3;">
-                                            {{ $pt->drugusage_text }}
-                                        </div>
-                                    </td>
-                                    <td class="text-end fw-bold text-primary text-nowrap">
-                                        {{ number_format($pt->qty) }}
-                                    </td>
-                                    <td class="text-center text-nowrap">
-                                        <span class="badge bg-light text-secondary border px-2 py-1">{{ $pt->units ?: '-' }}</span>
-                                    </td>
-                                    <td class="text-end fw-bold text-success text-nowrap">
-                                        {{ number_format($pt->sum_price, 2) }}
-                                    </td>
-                                    <td class="text-nowrap">
-                                        <div class="small text-dark"><i class="fas fa-user-md text-muted me-1"></i>{{ $pt->doctor_name }}</div>
-                                    </td>
-                                    <td class="text-nowrap">
-                                        <span class="badge bg-light text-dark border">{{ $pt->pttype_name }}</span>
-                                    </td>
-                                    <td class="text-nowrap">
-                                        <span class="small text-muted"><i class="fas fa-map-marker-alt text-danger me-1"></i>{{ $pt->pcu }}</span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot class="table-light fw-bold border-top border-2">
-                            <tr class="align-middle">
-                                <th colspan="7" class="text-end text-dark">รวมทั้งหมด:</th>
-                                <th class="text-end text-primary fw-bold" id="footer-total-qty">0</th>
-                                <th class="text-center text-muted">-</th>
-                                <th class="text-end text-success fw-bold" id="footer-total-price">0.00</th>
-                                <th colspan="3"></th>
-                            </tr>
-                        </tfoot>
-                    </table>
+                <div id="tableContainer">
+                    @include('hosxp.phar.partials._table_patient_prescriptions')
                 </div>
             </div>
         @endif
@@ -943,6 +867,8 @@
             if ($.fn.dataTable) {
                 $.fn.dataTable.ext.errMode = 'none';
             }
+
+            let tableStartPicker, tableEndPicker;
 
             // 1. Setup Flatpickr
             if (typeof flatpickr !== 'undefined') {
@@ -974,8 +900,10 @@
                         }
                     }
                 };
-                flatpickr("#start_date", commonConfig);
-                flatpickr("#end_date", commonConfig);
+                if (document.getElementById("start_date")) flatpickr("#start_date", commonConfig);
+                if (document.getElementById("end_date")) flatpickr("#end_date", commonConfig);
+                tableStartPicker = flatpickr("#table_start_date", commonConfig);
+                tableEndPicker = flatpickr("#table_end_date", commonConfig);
             }
 
             // Sync Budget Year
@@ -1135,90 +1063,206 @@
                 });
 
                 // 4. Initialize Patient Prescription DataTable
-                const ptTable = $('#patientPrescriptionTable').DataTable({
-                    dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
-                    buttons: [
-                        {
-                            extend: 'excelHtml5',
-                            text: '<i class="fa-solid fa-file-excel me-1"></i> Excel รายชื่อ',
-                            className: 'btn btn-success',
-                            filename: function () {
-                                const activeSp = $('.btn-sp-filter.active').data('sp') || 'ALL';
-                                return 'Patient_Drug_Prescriptions_' + activeSp + '_{{ date('Y-m-d') }}';
-                            },
-                            title: function () {
-                                const activeSp = $('.btn-sp-filter.active').data('sp') || 'ALL';
-                                const spText = activeSp === 'ALL' ? 'ทุกจุดบริการ' : activeSp;
-                                return 'รายชื่อผู้ป่วยที่ได้รับยา (จุดบริการ: ' + spText + ') - วันที่ {{ date('Y-m-d') }}';
-                            },
-                            footer: true,
-                            exportOptions: {
-                                columns: ':visible',
-                                modifier: {
-                                    search: 'applied',
-                                    order: 'applied'
+                let ptTable = null;
+
+                function initPatientTable() {
+                    if ($.fn.DataTable.isDataTable('#patientPrescriptionTable')) {
+                        $('#patientPrescriptionTable').DataTable().destroy();
+                    }
+
+                    ptTable = $('#patientPrescriptionTable').DataTable({
+                        dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+                        buttons: [
+                            {
+                                extend: 'excelHtml5',
+                                text: '<i class="fa-solid fa-file-excel me-1"></i> Excel รายชื่อ',
+                                className: 'btn btn-success',
+                                filename: function () {
+                                    const activeSp = $('.btn-sp-filter.active').data('sp') || 'ALL';
+                                    return 'Patient_Drug_Prescriptions_' + activeSp + '_{{ date('Y-m-d') }}';
                                 },
-                                format: {
-                                    body: function (data, row, column, node) {
-                                        return node.innerText ? node.innerText.replace(/\n\s*\n/g, ' ').trim() : data;
+                                title: function () {
+                                    const activeSp = $('.btn-sp-filter.active').data('sp') || 'ALL';
+                                    const spText = activeSp === 'ALL' ? 'ทุกจุดบริการ' : activeSp;
+                                    const dateText = $('#displayDateRange').text() || '{{ date('Y-m-d') }}';
+                                    return 'รายชื่อผู้ป่วยที่ได้รับยา (จุดบริการ: ' + spText + ') - ช่วงวันที่ ' + dateText;
+                                },
+                                footer: true,
+                                exportOptions: {
+                                    columns: ':visible',
+                                    modifier: {
+                                        search: 'applied',
+                                        order: 'applied'
                                     },
-                                    footer: function (data, column, node) {
-                                        return node.innerText ? node.innerText.replace(/\n\s*\n/g, ' ').trim() : data;
+                                    format: {
+                                        body: function (data, row, column, node) {
+                                            return node.innerText ? node.innerText.replace(/\n\s*\n/g, ' ').trim() : data;
+                                        },
+                                        footer: function (data, column, node) {
+                                            return node.innerText ? node.innerText.replace(/\n\s*\n/g, ' ').trim() : data;
+                                        }
                                     }
                                 }
                             }
+                        ],
+                        language: {
+                            search: "ค้นหาผู้ป่วย/HN/CID/แพทย์:",
+                            lengthMenu: "แสดง _MENU_ รายการ",
+                            info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                            paginate: { previous: "ก่อนหน้า", next: "ถัดไป" },
+                            emptyTable: "ไม่พบข้อมูลรายการสั่งยาในช่วงเวลานี้"
+                        },
+                        order: [],
+                        pageLength: 10,
+                        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]],
+                        footerCallback: function (row, data, start, end, display) {
+                            const api = this.api();
+
+                            const parseNumber = function (val) {
+                                if (typeof val === 'number') return val;
+                                if (typeof val === 'string') {
+                                    const clean = val.replace(/<[^>]*>/g, '').replace(/,/g, '').trim();
+                                    const num = parseFloat(clean);
+                                    return isNaN(num) ? 0 : num;
+                                }
+                                return 0;
+                            };
+
+                            // Column 9: จำนวน (Qty)
+                            const totalQty = api
+                                .column(9, { search: 'applied' })
+                                .data()
+                                .reduce((a, b) => a + parseNumber(b), 0);
+
+                            // Column 11: มูลค่า (บาท) (Price)
+                            const totalPrice = api
+                                .column(11, { search: 'applied' })
+                                .data()
+                                .reduce((a, b) => a + parseNumber(b), 0);
+
+                            $('#footer-total-qty').text(totalQty.toLocaleString());
+                            $('#footer-total-price').text(totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
                         }
-                    ],
-                    language: {
-                        search: "ค้นหาผู้ป่วย/HN/แพทย์:",
-                        lengthMenu: "แสดง _MENU_ รายการ",
-                        info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
-                        paginate: { previous: "ก่อนหน้า", next: "ถัดไป" },
-                        emptyTable: "ไม่พบข้อมูลรายการสั่งยา"
-                    },
-                    order: [],
-                    pageLength: 10,
-                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]],
-                    footerCallback: function (row, data, start, end, display) {
-                        const api = this.api();
+                    });
+                }
 
-                        const parseNumber = function (val) {
-                            if (typeof val === 'number') return val;
-                            if (typeof val === 'string') {
-                                const clean = val.replace(/<[^>]*>/g, '').replace(/,/g, '').trim();
-                                const num = parseFloat(clean);
-                                return isNaN(num) ? 0 : num;
+                // AJAX function to load patient table data
+                function loadPatientTableData(startDate, endDate) {
+                    const $btn = $('#btnFilterTable');
+                    const originalText = $btn.html();
+                    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> ค้นหา...');
+                    $('#tableContainer').css('opacity', '0.5');
+
+                    const selectedIcodes = [];
+                    document.querySelectorAll('.drug-checkbox:checked').forEach(cb => {
+                        selectedIcodes.push(cb.value);
+                    });
+
+                    $.ajax({
+                        url: "{{ route('hosxp.phar.custom_drug') }}",
+                        method: 'GET',
+                        data: {
+                            drug_icodes: selectedIcodes,
+                            table_start_date: startDate,
+                            table_end_date: endDate,
+                            budget_year: "{{ $budget_year }}"
+                        },
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.success && res.html) {
+                                $('#tableContainer').html(res.html);
+                                initPatientTable();
+
+                                // Update Header Subtitle
+                                $('#displayDateRange').text(`${res.start_date_thai} ถึง ${res.end_date_thai}`);
+
+                                // Update Badge Counts
+                                if (res.sp_counts) {
+                                    $('#sp-count-ALL').text(res.sp_counts.ALL || 0);
+                                    $('#sp-count-ER').text(res.sp_counts.ER || 0);
+                                    $('#sp-count-ICU').text(res.sp_counts.ICU || 0);
+                                    $('#sp-count-VIP').text(res.sp_counts.VIP || 0);
+                                    $('#sp-count-IPD').text(res.sp_counts.IPD || 0);
+                                    $('#sp-count-OPD').text(res.sp_counts.OPD || 0);
+                                }
+
+                                // Reset active SP filter button to ALL
+                                $('.btn-sp-filter').removeClass('active');
+                                $('.btn-sp-filter[data-sp="ALL"]').addClass('active');
                             }
-                            return 0;
-                        };
+                        },
+                        error: function (err) {
+                            console.error("Failed to load patient table data", err);
+                            alert("เกิดข้อผิดพลาดในการโหลดข้อมูลตารางรายชื่อ กรุณาลองใหม่อีกครั้ง");
+                        },
+                        complete: function () {
+                            $('#tableContainer').css('opacity', '1');
+                            $btn.prop('disabled', false).html(originalText);
+                        }
+                    });
+                }
 
-                        // Column 7: จำนวน (Qty)
-                        const totalQty = api
-                            .column(7, { search: 'applied' })
-                            .data()
-                            .reduce((a, b) => a + parseNumber(b), 0);
-
-                        // Column 9: มูลค่า (บาท) (Price)
-                        const totalPrice = api
-                            .column(9, { search: 'applied' })
-                            .data()
-                            .reduce((a, b) => a + parseNumber(b), 0);
-
-                        $('#footer-total-qty').text(totalQty.toLocaleString());
-                        $('#footer-total-price').text(totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-                    }
+                // Table Filter Button click
+                $('#btnFilterTable').on('click', function() {
+                    const s = $('#table_start_date').val();
+                    const e = $('#table_end_date').val();
+                    loadPatientTableData(s, e);
                 });
 
-                // Service Point Filter Buttons Logic
-                $('.btn-sp-filter').on('click', function() {
+                // Quick Filter: Current Month
+                $('#btnCurrentMonth').on('click', function() {
+                    const now = new Date();
+                    const y = now.getFullYear();
+                    const m = String(now.getMonth() + 1).padStart(2, '0');
+                    const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
+                    const s = `${y}-${m}-01`;
+                    const e = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+
+                    if (tableStartPicker) tableStartPicker.setDate(s, true);
+                    if (tableEndPicker) tableEndPicker.setDate(e, true);
+                    loadPatientTableData(s, e);
+                });
+
+                // Quick Filter: Previous Month
+                $('#btnPrevMonth').on('click', function() {
+                    const now = new Date();
+                    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    const y = prev.getFullYear();
+                    const m = String(prev.getMonth() + 1).padStart(2, '0');
+                    const lastDay = new Date(y, prev.getMonth() + 1, 0).getDate();
+                    const s = `${y}-${m}-01`;
+                    const e = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+
+                    if (tableStartPicker) tableStartPicker.setDate(s, true);
+                    if (tableEndPicker) tableEndPicker.setDate(e, true);
+                    loadPatientTableData(s, e);
+                });
+
+                // Quick Filter: Full Year
+                $('#btnFullYear').on('click', function() {
+                    const s = "{{ $start_date }}";
+                    const e = "{{ $end_date }}";
+
+                    if (tableStartPicker) tableStartPicker.setDate(s, true);
+                    if (tableEndPicker) tableEndPicker.setDate(e, true);
+                    loadPatientTableData(s, e);
+                });
+
+                // Initialize Patient Table on page load
+                initPatientTable();
+
+                // Service Point Filter Buttons Logic (Delegated)
+                $(document).on('click', '.btn-sp-filter', function() {
                     $('.btn-sp-filter').removeClass('active');
                     $(this).addClass('active');
 
                     const sp = $(this).data('sp');
-                    if (sp === 'ALL') {
-                        ptTable.column(4).search('').draw();
-                    } else {
-                        ptTable.column(4).search(sp).draw();
+                    if (ptTable) {
+                        if (sp === 'ALL') {
+                            ptTable.column(6).search('').draw();
+                        } else {
+                            ptTable.column(6).search('SP_' + sp).draw();
+                        }
                     }
                 });
 

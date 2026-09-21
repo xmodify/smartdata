@@ -2805,6 +2805,34 @@ class PharController extends Controller
             ];
         }
 
+        // Resolve Table Date Range (for patient list below)
+        // Default table date range: from the 1st day of the latest month in end_date to end_date
+        $default_table_start = date('Y-m-01', strtotime($end_date));
+        $table_start_date = $request->input('table_start_date', $default_table_start);
+        $table_end_date = $request->input('table_end_date', $end_date);
+
+        // Handle AJAX Request for Patient Prescriptions Table Data
+        if ($request->ajax()) {
+            list($patient_prescriptions, $sp_counts) = $this->fetch_custom_drug_patient_list(
+                $table_start_date,
+                $table_end_date,
+                $selected_icodes
+            );
+
+            $html = view('hosxp.phar.partials._table_patient_prescriptions', compact('patient_prescriptions'))->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'total' => count($patient_prescriptions),
+                'sp_counts' => $sp_counts
+            ]);
+        }
+
         if (!$has_searched) {
             // Initial load without search: Do not run heavy queries
             $custom_opd = [];
@@ -3113,7 +3141,48 @@ class PharController extends Controller
         $chart_series_opd = $formatChart($monthly_raw_opd);
         $chart_series_ipd = $formatChart($monthly_raw_ipd);
 
-        // 6. Detailed Patient Prescriptions List (Bottom Table)
+        // 6. Detailed Patient Prescriptions List (Bottom Table) - Fetched for table_start_date to table_end_date
+        list($patient_prescriptions, $sp_counts) = $this->fetch_custom_drug_patient_list(
+            $table_start_date,
+            $table_end_date,
+            $selected_icodes
+        );
+        }
+
+        return view('hosxp.phar.custom_drug', compact(
+            'title',
+            'has_searched',
+            'budget_year_select',
+            'budget_year',
+            'start_date',
+            'end_date',
+            'table_start_date',
+            'table_end_date',
+            'drug_list',
+            'selected_icodes',
+            'custom_opd',
+            'custom_ipd',
+            'custom_opd_monthly',
+            'custom_ipd_monthly',
+            'month_categories',
+            'months_list',
+            'chart_series_opd',
+            'chart_series_ipd',
+            'patient_prescriptions',
+            'sp_counts'
+        ));
+    }
+
+    private function fetch_custom_drug_patient_list($start_date, $end_date, array $selected_icodes)
+    {
+        if (empty($selected_icodes)) {
+            return [[], ['ALL' => 0, 'ER' => 0, 'ICU' => 0, 'VIP' => 0, 'IPD' => 0, 'OPD' => 0]];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($selected_icodes), '?'));
+        $drugFilterSql = " AND o.icode IN ($placeholders) ";
+        $bindingsPt = array_merge([$start_date, $end_date], $selected_icodes);
+
         $patient_prescriptions = DB::connection('hosxp')->select("
             SELECT 
                 o.hos_guid,
@@ -3167,7 +3236,6 @@ class PharController extends Controller
             LEFT JOIN patient p ON p.hn = o.hn
             LEFT JOIN vn_stat v ON v.vn = o.vn
             LEFT JOIN an_stat a ON a.an = o.an
-            LEFT JOIN ovst ov ON ov.vn = o.vn
             LEFT JOIN ipt i ON i.an = o.an
             LEFT JOIN ward w ON w.ward = i.ward
             LEFT JOIN er_regist er ON er.vn = o.vn
@@ -3181,10 +3249,8 @@ class PharController extends Controller
             WHERE o.rxdate BETWEEN ? AND ?
               $drugFilterSql
             ORDER BY o.rxdate DESC, o.rxtime DESC
-            LIMIT 1500
         ", $bindingsPt);
 
-        // Calculate service point and drug usage text in PHP
         $sp_counts = [
             'ALL' => count($patient_prescriptions),
             'ER' => 0,
@@ -3246,28 +3312,8 @@ class PharController extends Controller
                 $sp_counts['OPD']++;
             }
         }
-        }
 
-        return view('hosxp.phar.custom_drug', compact(
-            'title',
-            'has_searched',
-            'budget_year_select',
-            'budget_year',
-            'start_date',
-            'end_date',
-            'drug_list',
-            'selected_icodes',
-            'custom_opd',
-            'custom_ipd',
-            'custom_opd_monthly',
-            'custom_ipd_monthly',
-            'month_categories',
-            'months_list',
-            'chart_series_opd',
-            'chart_series_ipd',
-            'patient_prescriptions',
-            'sp_counts'
-        ));
+        return [$patient_prescriptions, $sp_counts];
     }
 
     private function resolveDateRange(Request $request)

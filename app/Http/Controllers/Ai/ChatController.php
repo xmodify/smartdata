@@ -261,6 +261,7 @@ class ChatController extends Controller
                         'rows' => $sqlResult['rows'],
                         'count' => $sqlResult['count'],
                         'execution_ms' => $sqlResult['execution_ms'] ?? 0,
+                        'user_prompt' => $messageText,
                     ]);
                 } else {
                     // SQL execution returned error or empty
@@ -506,6 +507,8 @@ class ChatController extends Controller
 
         // 4. Broad SQL Intent keywords
         $sqlKeywords = [
+            // Chart & Visualization
+            'กราฟ', 'chart', 'แผนภูมิ', 'พล็อต', 'plot', 'สัดส่วน', 'เปรียบเทียบ', 'แนวโน้ม',
             // Questions asking for numbers/quantities
             'กี่', 'จำนวน', 'สถิติ', 'ยอด', 'เท่าไหร่', 'เท่าใด', 'เท่าไร', 'มีเท่า', 'มีกี่', 'มีไหม', 'มีมั้ย', 'มีหรือไม่',
             'รายชื่อ', 'คนไข้', 'ผู้ป่วย', 'บุคลากร', 'เจ้าหน้าที่', 'พนักงาน',
