@@ -1,3 +1,15 @@
+@if(!empty($is_limited) && $is_limited)
+    <div class="alert alert-primary bg-primary bg-opacity-10 border-primary border-opacity-25 py-2 px-3 mb-3 small d-flex flex-wrap align-items-center justify-content-between gap-2" style="border-radius: 10px;">
+        <div class="d-flex align-items-center gap-2 text-primary fw-medium">
+            <i class="fas fa-bolt"></i>
+            <span>แสดงผล <strong>{{ number_format(count($patient_prescriptions)) }}</strong> รายการล่าสุด จากทั้งหมด <strong>{{ number_format($total_count) }}</strong> รายการ เพื่อความรวดเร็วและประสิทธิภาพของระบบ</span>
+        </div>
+        <span class="badge bg-primary text-white px-2 py-1 shadow-sm">
+            <i class="fas fa-file-excel me-1"></i> ดาวน์โหลดข้อมูลทั้งหมดครบถ้วนได้ที่ปุ่ม "ส่งออก Excel (ทั้งหมด)"
+        </span>
+    </div>
+@endif
+
 <div class="table-responsive">
     <table class="table table-hover align-middle w-100" id="patientPrescriptionTable" style="font-size: 0.82rem;">
         <thead class="table-light">
@@ -44,23 +56,23 @@
                     <td class="text-center" data-filter="{{ $pt->service_point_code }}">
                         @if($pt->service_point_code == 'ER')
                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1 rounded-pill">
-                                🚨 ER (ฉุกเฉิน)
+                                ER (ฉุกเฉิน)
                             </span>
                         @elseif($pt->service_point_code == 'ICU')
                             <span class="badge bg-opacity-10 border px-2 py-1 rounded-pill" style="background-color: #f3e8ff; color: #7c3aed; border-color: #7c3aed !important;">
-                                🩺 ICU ({{ $pt->service_point_name }})
+                                ICU ({{ $pt->service_point_name }})
                             </span>
                         @elseif($pt->service_point_code == 'VIP')
                             <span class="badge bg-opacity-10 border px-2 py-1 rounded-pill" style="background-color: #fef3c7; color: #b45309; border-color: #b45309 !important;">
-                                🏨 VIP ({{ $pt->service_point_name }})
+                                VIP ({{ $pt->service_point_name }})
                             </span>
                         @elseif($pt->service_point_code == 'IPD')
                             <span class="badge bg-info bg-opacity-10 text-info border border-info px-2 py-1 rounded-pill">
-                                🛏️ IPD ({{ $pt->service_point_name }})
+                                IPD ({{ $pt->service_point_name }})
                             </span>
                         @else
                             <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 rounded-pill">
-                                🏥 OPD ({{ $pt->service_point_name }})
+                                OPD ({{ $pt->service_point_name }})
                             </span>
                         @endif
                         <span class="d-none">SP_{{ $pt->service_point_code }}</span>
@@ -97,11 +109,21 @@
         </tbody>
         <tfoot class="table-light fw-bold border-top border-2">
             <tr class="align-middle">
-                <th colspan="9" class="text-end text-dark">รวมทั้งหมด:</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th class="text-end text-dark">รวมทั้งหมด:</th>
                 <th class="text-end text-primary fw-bold" id="footer-total-qty">0</th>
                 <th class="text-center text-muted">-</th>
                 <th class="text-end text-success fw-bold" id="footer-total-price">0.00</th>
-                <th colspan="3"></th>
+                <th></th>
+                <th></th>
+                <th></th>
             </tr>
         </tfoot>
     </table>

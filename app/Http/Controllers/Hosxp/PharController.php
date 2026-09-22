@@ -2813,13 +2813,14 @@ class PharController extends Controller
 
         // Handle AJAX Request for Patient Prescriptions Table Data
         if ($request->ajax()) {
-            list($patient_prescriptions, $sp_counts) = $this->fetch_custom_drug_patient_list(
+            list($patient_prescriptions, $sp_counts, $total_count, $is_limited) = $this->fetch_custom_drug_patient_list(
                 $table_start_date,
                 $table_end_date,
-                $selected_icodes
+                $selected_icodes,
+                2500
             );
 
-            $html = view('hosxp.phar.partials._table_patient_prescriptions', compact('patient_prescriptions'))->render();
+            $html = view('hosxp.phar.partials._table_patient_prescriptions', compact('patient_prescriptions', 'is_limited', 'total_count'))->render();
 
             return response()->json([
                 'success' => true,
@@ -2828,7 +2829,9 @@ class PharController extends Controller
                 'table_end_date' => $table_end_date,
                 'start_date_thai' => DateThai($table_start_date),
                 'end_date_thai' => DateThai($table_end_date),
-                'total' => count($patient_prescriptions),
+                'total' => $total_count,
+                'displayed' => count($patient_prescriptions),
+                'is_limited' => $is_limited,
                 'sp_counts' => $sp_counts
             ]);
         }
@@ -2842,6 +2845,8 @@ class PharController extends Controller
             $chart_series_opd = [];
             $chart_series_ipd = [];
             $patient_prescriptions = [];
+            $total_count = 0;
+            $is_limited = false;
             $sp_counts = [
                 'ALL' => 0,
                 'ER' => 0,
@@ -3141,11 +3146,12 @@ class PharController extends Controller
         $chart_series_opd = $formatChart($monthly_raw_opd);
         $chart_series_ipd = $formatChart($monthly_raw_ipd);
 
-        // 6. Detailed Patient Prescriptions List (Bottom Table) - Fetched for table_start_date to table_end_date
-        list($patient_prescriptions, $sp_counts) = $this->fetch_custom_drug_patient_list(
+        // 6. Detailed Patient Prescriptions List (Bottom Table) - Fetched for table_start_date to table_end_date (limit 2500 for web view)
+        list($patient_prescriptions, $sp_counts, $total_count, $is_limited) = $this->fetch_custom_drug_patient_list(
             $table_start_date,
             $table_end_date,
-            $selected_icodes
+            $selected_icodes,
+            2500
         );
         }
 
@@ -3169,14 +3175,146 @@ class PharController extends Controller
             'chart_series_opd',
             'chart_series_ipd',
             'patient_prescriptions',
+            'total_count',
+            'is_limited',
             'sp_counts'
         ));
     }
 
-    private function fetch_custom_drug_patient_list($start_date, $end_date, array $selected_icodes)
+    /**
+     * Direct Server-Side Streaming CSV/Excel Export
+     */
+    public function customDrugExport(Request $request)
+    {
+        $selected_icodes = $request->input('drug_icodes', []);
+        if (!is_array($selected_icodes)) {
+            $selected_icodes = $selected_icodes ? explode(',', $selected_icodes) : [];
+        }
+        $selected_icodes = array_values(array_filter($selected_icodes));
+
+        if (empty($selected_icodes)) {
+            return redirect()->back()->with('error', 'กรุณาเลือกตัวยาอย่างน้อย 1 รายการก่อนส่งออกข้อมูล');
+        }
+
+        $dates = $this->resolveDateRange($request);
+        $start_date = $request->input('table_start_date', $request->input('start_date', $dates['start_date']));
+        $end_date = $request->input('table_end_date', $request->input('end_date', $dates['end_date']));
+        $service_point = strtoupper(trim($request->input('service_point', 'ALL')));
+
+        list($patient_prescriptions) = $this->fetch_custom_drug_patient_list(
+            $start_date,
+            $end_date,
+            $selected_icodes,
+            false // No limit for server-side export!
+        );
+
+        // Filter by service point if specific
+        if ($service_point && $service_point !== 'ALL') {
+            $patient_prescriptions = array_values(array_filter($patient_prescriptions, function ($pt) use ($service_point) {
+                return ($pt->service_point_code ?? '') === $service_point;
+            }));
+        }
+
+        $filename = 'Patient_Drug_Prescriptions_' . $service_point . '_' . date('Y-m-d_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        $callback = function () use ($patient_prescriptions, $start_date, $end_date, $service_point) {
+            $file = fopen('php://output', 'w');
+            // Add UTF-8 Byte Order Mark (BOM) so Excel opens UTF-8 Thai text automatically
+            fputs($file, "\xEF\xBB\xBF");
+
+            // CSV Column Headers
+            fputcsv($file, [
+                'ลำดับ',
+                'วันที่สั่งยา',
+                'เวลาสั่งยา',
+                'HN',
+                'CID',
+                'ชื่อ-นามสกุล',
+                'อายุ (ปี)',
+                'จุดบริการ',
+                'รหัสยา',
+                'ชื่อยา',
+                'วิธีใช้ยา',
+                'จำนวน',
+                'หน่วย',
+                'มูลค่า (บาท)',
+                'แพทย์ผู้สั่ง',
+                'สิทธิการรักษา',
+                'รพ.สต. / พื้นที่'
+            ]);
+
+            $i = 1;
+            $total_qty = 0;
+            $total_price = 0;
+
+            foreach ($patient_prescriptions as $pt) {
+                $qty = (float)($pt->qty ?? 0);
+                $price = (float)($pt->sum_price ?? 0);
+                $total_qty += $qty;
+                $total_price += $price;
+
+                $sp_name = ($pt->service_point_code ?? '') . ' (' . ($pt->service_point_name ?? '') . ')';
+
+                fputcsv($file, [
+                    $i++,
+                    $pt->rxdate ? DateThai($pt->rxdate) : '-',
+                    $pt->rxtime ?: '-',
+                    '="' . ($pt->hn ?? '') . '"',
+                    '="' . ($pt->cid ?? '') . '"',
+                    $pt->ptname ?? '-',
+                    $pt->age_y ?? '-',
+                    $sp_name,
+                    $pt->icode ?? '-',
+                    $pt->drug_name ?? '-',
+                    str_replace(["\r\n", "\r", "\n"], ' ', $pt->drugusage_text ?? '-'),
+                    $qty,
+                    $pt->units ?: '-',
+                    number_format($price, 2, '.', ''),
+                    $pt->doctor_name ?? '-',
+                    $pt->pttype_name ?? '-',
+                    $pt->pcu ?? '-'
+                ]);
+            }
+
+            // Summary Totals Row
+            fputcsv($file, [
+                'รวมทั้งหมด',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                $total_qty,
+                '',
+                number_format($total_price, 2, '.', ''),
+                '',
+                '',
+                ''
+            ]);
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    private function fetch_custom_drug_patient_list($start_date, $end_date, array $selected_icodes, $limit = 2500)
     {
         if (empty($selected_icodes)) {
-            return [[], ['ALL' => 0, 'ER' => 0, 'ICU' => 0, 'VIP' => 0, 'IPD' => 0, 'OPD' => 0]];
+            return [[], ['ALL' => 0, 'ER' => 0, 'ICU' => 0, 'VIP' => 0, 'IPD' => 0, 'OPD' => 0], 0, false];
         }
 
         $placeholders = implode(',', array_fill(0, count($selected_icodes), '?'));
@@ -3191,7 +3329,7 @@ class PharController extends Controller
                 o.hn,
                 p.cid,
                 CONCAT(p.pname, p.fname, ' ', p.lname) AS ptname,
-                IFNULL(v.age_y, a.age_y) AS age_y,
+                TIMESTAMPDIFF(YEAR, p.birthday, o.rxdate) AS age_y,
                 o.rxdate,
                 o.rxtime,
                 o.icode,
@@ -3234,8 +3372,6 @@ class PharController extends Controller
 
             FROM opitemrece o
             LEFT JOIN patient p ON p.hn = o.hn
-            LEFT JOIN vn_stat v ON v.vn = o.vn
-            LEFT JOIN an_stat a ON a.an = o.an
             LEFT JOIN ipt i ON i.an = o.an
             LEFT JOIN ward w ON w.ward = i.ward
             LEFT JOIN er_regist er ON er.vn = o.vn
@@ -3313,7 +3449,15 @@ class PharController extends Controller
             }
         }
 
-        return [$patient_prescriptions, $sp_counts];
+        $total_count = count($patient_prescriptions);
+        $is_limited = false;
+
+        if ($limit !== false && $total_count > $limit) {
+            $is_limited = true;
+            $patient_prescriptions = array_slice($patient_prescriptions, 0, $limit);
+        }
+
+        return [$patient_prescriptions, $sp_counts, $total_count, $is_limited];
     }
 
     private function resolveDateRange(Request $request)
