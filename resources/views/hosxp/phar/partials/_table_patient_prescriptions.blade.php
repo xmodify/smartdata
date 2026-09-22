@@ -75,7 +75,6 @@
                                 OPD ({{ $pt->service_point_name }})
                             </span>
                         @endif
-                        <span class="d-none">SP_{{ $pt->service_point_code }}</span>
                     </td>
                     <td>
                         <div class="fw-bold text-dark">{{ $pt->drug_name }}</div>

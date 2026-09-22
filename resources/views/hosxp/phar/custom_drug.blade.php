@@ -816,7 +816,7 @@
                     </div>
                 </div>
 
-                <!-- Service Point Quick Filter Buttons & Direct Server-side Excel Export -->
+                <!-- Service Point Quick Filter Buttons -->
                 <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
                     <div class="d-flex flex-wrap align-items-center gap-1">
                         <span class="text-muted small fw-bold me-1">จุดบริการ:</span>
@@ -839,10 +839,6 @@
                             🏥 OPD <span class="badge bg-success rounded-pill ms-1" id="sp-count-OPD">{{ $sp_counts['OPD'] }}</span>
                         </button>
                     </div>
-
-                    <button type="button" id="btnExportAllExcel" class="btn btn-success btn-sm shadow-sm fw-bold px-3 d-flex align-items-center gap-1" style="border-radius: 8px;">
-                        <i class="fa-solid fa-file-excel me-1"></i> ส่งออก Excel (ทั้งหมด)
-                    </button>
                 </div>
 
                 <div id="tableContainer">
@@ -1098,48 +1094,10 @@
                         processing: true,
                         buttons: [
                             {
-                                extend: 'excelHtml5',
-                                text: '<i class="fa-solid fa-file-excel me-1"></i> Excel รายชื่อ (ตามตาราง)',
-                                className: 'btn btn-outline-success btn-sm',
-                                filename: function () {
-                                    const activeSp = $('.btn-sp-filter.active').data('sp') || 'ALL';
-                                    return 'Patient_Drug_Prescriptions_' + activeSp + '_{{ date('Y-m-d') }}';
-                                },
-                                title: function () {
-                                    const activeSp = $('.btn-sp-filter.active').data('sp') || 'ALL';
-                                    const spText = activeSp === 'ALL' ? 'ทุกจุดบริการ' : activeSp;
-                                    const dateText = $('#displayDateRange').text() || '{{ date('Y-m-d') }}';
-                                    return 'รายชื่อผู้ป่วยที่ได้รับยา (จุดบริการ: ' + spText + ') - ช่วงวันที่ ' + dateText;
-                                },
-                                footer: true,
-                                exportOptions: {
-                                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-                                    modifier: {
-                                        search: 'applied',
-                                        order: 'applied'
-                                    },
-                                    format: {
-                                        body: function (data, row, column, node) {
-                                            if (!node) return data;
-                                            let text = node.innerText || '';
-                                            // Remove filter token
-                                            text = text.replace(/SP_[A-Z]+/g, '').trim();
-                                            // Format CID & HN as clean digits
-                                            if (column === 3 || column === 4) {
-                                                return text.replace(/[^0-9A-Za-z]/g, '');
-                                            }
-                                            return text.replace(/\n\s*\n/g, ' ').replace(/\s+/g, ' ').trim();
-                                        },
-                                        footer: function (data, column, node) {
-                                            if (!node) return '';
-                                            return (node.innerText || '').trim();
-                                        }
-                                    }
-                                },
-                                customize: function (xlsx) {
-                                    const sheet = xlsx.xl.worksheets['sheet1.xml'];
-                                    // Treat columns D (HN) and E (CID) as text strings to prevent scientific notation and preserve leading zeroes
-                                    $('row c[r^="D"], row c[r^="E"]', sheet).attr('t', 'inlineStr');
+                                text: '<i class="fa-solid fa-file-excel me-1"></i> ส่งออก Excel',
+                                className: 'btn btn-success btn-sm shadow-sm fw-bold',
+                                action: function (e, dt, node, config) {
+                                    triggerCustomDrugExport();
                                 }
                             }
                         ],
@@ -1147,6 +1105,9 @@
                             search: "ค้นหาผู้ป่วย/HN/CID/แพทย์:",
                             lengthMenu: "แสดง _MENU_ รายการ",
                             info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                            infoEmpty: "แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ",
+                            infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+                            zeroRecords: "ไม่พบข้อมูลรายการสั่งยาที่ตรงกับเงื่อนไข",
                             paginate: { previous: "ก่อนหน้า", next: "ถัดไป" },
                             emptyTable: "ไม่พบข้อมูลรายการสั่งยาในช่วงเวลานี้"
                         },
@@ -1185,8 +1146,7 @@
                 }
 
                 // Direct Server-Side Streaming CSV/Excel Export Handler
-                $('#btnExportAllExcel').on('click', function(e) {
-                    e.preventDefault();
+                function triggerCustomDrugExport() {
                     const selectedIcodes = [];
                     document.querySelectorAll('.drug-checkbox:checked').forEach(cb => {
                         selectedIcodes.push(cb.value);
@@ -1209,7 +1169,7 @@
                     params.append('budget_year', '{{ $budget_year }}');
 
                     window.location.href = "{{ route('hosxp.phar.custom_drug_export') }}?" + params.toString();
-                });
+                }
 
                 // AJAX function to load patient table data
                 function loadPatientTableData(startDate, endDate) {
@@ -1326,7 +1286,7 @@
                         if (sp === 'ALL') {
                             ptTable.column(6).search('').draw();
                         } else {
-                            ptTable.column(6).search('SP_' + sp).draw();
+                            ptTable.column(6).search('^' + sp + '$', true, false).draw();
                         }
                     }
                 });
