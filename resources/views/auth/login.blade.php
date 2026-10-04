@@ -275,13 +275,17 @@
                     </div>
 
                     <!-- Action Buttons: Login & ProviderID Login -->
+                    @php 
+                        $providerConfig = \App\Models\ProviderId::where('active', 'Y')->first(); 
+                        $isProviderActive = ($providerConfig && $providerConfig->active === 'Y' && !empty($providerConfig->health_id_client_id) && !empty($providerConfig->health_id_secret));
+                    @endphp
+
                     <div class="d-flex align-items-center gap-2 mb-3 mt-4">
-                        <button type="submit" class="btn btn-login-rims">
+                        <button type="submit" class="btn btn-login-rims {{ !$isProviderActive ? 'w-100' : '' }}">
                             <i class="fas fa-sign-in-alt me-1.5"></i> เข้าสู่ระบบ
                         </button>
 
-                        @php $providerConfig = \App\Models\ProviderId::where('active', 'Y')->first(); @endphp
-                        @if($providerConfig && $providerConfig->active === 'Y')
+                        @if($isProviderActive)
                             <a href="{{ route('login.provider_id') }}" class="btn btn-provider-rims">
                                 <i class="fas fa-shield-alt me-1.5"></i> เข้าด้วย Provider ID
                             </a>
