@@ -277,7 +277,7 @@
                     <!-- Action Buttons: Login & ProviderID Login -->
                     @php 
                         $providerConfig = \App\Models\ProviderId::where('active', 'Y')->first(); 
-                        $isProviderActive = ($providerConfig && $providerConfig->active === 'Y' && !empty($providerConfig->health_id_client_id) && !empty($providerConfig->health_id_secret));
+                        $isProviderActive = ($providerConfig && $providerConfig->active === 'Y');
                     @endphp
 
                     <div class="d-flex align-items-center gap-2 mb-3 mt-4">
