@@ -81,14 +81,6 @@
             display: block;
         }
 
-        .form-label-custom-otp {
-            font-weight: 700;
-            font-size: 0.85rem;
-            color: #0284c7;
-            margin-bottom: 6px;
-            display: block;
-        }
-
         .input-wrapper {
             position: relative;
             display: flex;
@@ -168,26 +160,6 @@
             box-shadow: 0 6px 16px rgba(0, 135, 81, 0.38) !important;
             color: #ffffff !important;
             background: linear-gradient(135deg, #00995c 0%, #00733d 100%) !important;
-        }
-
-        .btn-otp-original {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
-            border: none !important;
-            color: #1e293b !important;
-            padding: 10px 22px !important;
-            border-radius: 8px !important; /* รูปทรงปุ่มใหม่โค้งมนสวยงาม */
-            font-weight: 600 !important;
-            font-size: 0.95rem !important;
-            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.15) !important;
-            transition: all 0.3s ease !important;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-otp-original:hover {
-            transform: translateY(-1px) !important;
-            box-shadow: 0 6px 16px rgba(255, 193, 7, 0.25) !important;
         }
 
         .divider-original {
@@ -270,28 +242,6 @@
                             </div>
                         </div>
 
-                        <!-- OTP Verification Block (Initially Hidden) -->
-                        <div id="otp_verify_block" style="display: none;" class="mb-3">
-                            <div class="row justify-content-center">
-                                <div class="col-md-10">
-                                    <label for="otp" class="form-label-custom-otp">รหัส OTP</label>
-                                    <div class="input-wrapper">
-                                        <i class="fa-solid fa-key input-icon"></i>
-                                        <input id="otp" type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" class="form-control form-input-custom text-center fw-bold" style="font-size: 1.25rem; letter-spacing: 4px;" maxlength="6" placeholder="รหัส OTP 6 หลัก">
-                                    </div>
-                                    <div class="form-text text-muted text-center mt-2" style="font-size: 0.85rem;"><i class="fas fa-info-circle me-1"></i> กรอกรหัสที่ท่านได้รับผ่าน หมอพร้อม LineOA</div>
-                                    <div class="d-flex justify-content-center gap-2 mt-3">
-                                        <button type="button" id="btn_verify_otp" class="btn btn-primary px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #0052cc 0%, #0268c7 100%) !important; border: none !important;">
-                                            <i class="fas fa-check-circle me-1"></i> ยืนยันรหัส OTP
-                                        </button>
-                                        <button type="button" id="btn_cancel_otp" class="btn btn-outline-secondary px-3 fw-bold">
-                                            ยกเลิก
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Bottom Full-Width Action Block (Centered below split columns) -->
                         <div class="row mb-0">
                             <div class="col-md-12 text-center mt-0">
@@ -299,13 +249,6 @@
                                     <button type="submit" class="btn btn-login-original py-2">
                                         <i class="fas fa-sign-in-alt me-1"></i> {{ __('Login') }}
                                     </button>
-                                    
-                                    @php $mophAlertConfig = \App\Models\MophAlert::where('active', 'Y')->first(); @endphp
-                                    @if($mophAlertConfig && $mophAlertConfig->enable_2fa !== 'Y')
-                                        <button type="button" id="btn_request_otp" class="btn btn-otp-original py-2">
-                                            <i class="fas fa-sms me-1"></i> OTP Login
-                                        </button>
-                                    @endif
                                     
                                     @php $providerConfig = \App\Models\ProviderId::where('active', 'Y')->first(); @endphp
                                     @if($providerConfig && !empty($providerConfig->health_id_client_id) && !empty($providerConfig->provider_id_client_id))
@@ -347,186 +290,6 @@
                 confirmButtonText: 'ลองอีกครั้ง'
             });
         @endif
-
-        const btnRequestOtp = document.getElementById('btn_request_otp');
-        const btnVerifyOtp = document.getElementById('btn_verify_otp');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        
-        if (btnRequestOtp) {
-            btnRequestOtp.addEventListener('click', function() {
-                const username = usernameInput.value.trim();
-                if (!username) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'กรุณากรอกข้อมูล',
-                        text: 'กรุณากรอก Username ก่อนขอรหัส OTP',
-                        confirmButtonText: 'ตกลง',
-                        confirmButtonColor: '#0d6efd'
-                    });
-                    return;
-                }
-
-                btnRequestOtp.disabled = true;
-                btnRequestOtp.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> กำลังส่ง OTP...';
-
-                fetch('{{ route("login.send_otp") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({ username: username })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    btnRequestOtp.disabled = false;
-                    btnRequestOtp.innerHTML = '<i class="fas fa-sms me-1"></i> OTP Login';
-
-                    if (data.success) {
-                        if (data.redirect) {
-                            // Global 2FA is active, redirect to 2FA page
-                            Swal.fire({
-                                icon: 'info',
-                                title: 'ระบบเปิดใช้งาน 2FA',
-                                text: 'ส่งรหัสเรียบร้อยแล้ว กำลังนำทางไปหน้ากรอก OTP...',
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.href = data.redirect;
-                            });
-                        } else {
-                            // Passwordless OTP (2FA inactive), show OTP field here
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'ส่งรหัส OTP สำเร็จ!',
-                                text: data.message,
-                                confirmButtonText: 'ตกลง',
-                                confirmButtonColor: '#198754'
-                            });
-                            
-                            // Hide password block and login buttons
-                            passwordInput.closest('.row').style.display = 'none';
-                            document.getElementById('login_buttons_block').style.display = 'none';
-                            
-                            // Disable username edit to prevent mismatch
-                            usernameInput.readOnly = true;
-
-                            // Show OTP input block
-                            document.getElementById('otp_verify_block').style.display = 'block';
-                            const loginOtpInput = document.getElementById('otp');
-                            if (loginOtpInput) {
-                                setTimeout(() => loginOtpInput.focus(), 200);
-                            }
-                        }
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'เกิดข้อผิดพลาด',
-                            text: data.message,
-                            confirmButtonText: 'ลองอีกครั้ง'
-                        });
-                    }
-                })
-                .catch(err => {
-                    btnRequestOtp.disabled = false;
-                    btnRequestOtp.innerHTML = '<i class="fas fa-sms me-1"></i> OTP Login';
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถส่งรหัส OTP ได้ในขณะนี้ ' + err.message,
-                        confirmButtonText: 'ตกลง'
-                    });
-                });
-            });
-        }
-
-        if (btnVerifyOtp) {
-            btnVerifyOtp.addEventListener('click', function() {
-                const otp = document.getElementById('otp').value.trim();
-                const username = usernameInput.value.trim();
-                if (!otp) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'กรุณากรอกรหัส',
-                        text: 'กรุณากรอกรหัส OTP 6 หลักก่อนยืนยันการเข้าสู่ระบบ',
-                        confirmButtonText: 'ตกลง',
-                        confirmButtonColor: '#198754'
-                    });
-                    return;
-                }
-
-                btnVerifyOtp.disabled = true;
-                btnVerifyOtp.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> กำลังตรวจสอบ...';
-
-                fetch('{{ route("login.verify_otp_passwordless") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({ username: username, otp: otp })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    btnVerifyOtp.disabled = false;
-                    btnVerifyOtp.innerHTML = '<i class="fas fa-check-circle me-1"></i> ยืนยันรหัส OTP';
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'เข้าสู่ระบบสำเร็จ',
-                            text: 'ระบบความปลอดภัยยืนยันถูกต้อง กำลังพาท่านเข้าสู่ระบบ...',
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = data.redirect;
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'รหัสไม่ถูกต้อง',
-                            text: data.message,
-                            confirmButtonText: 'ลองอีกครั้ง'
-                        });
-                    }
-                })
-                .catch(err => {
-                    btnVerifyOtp.disabled = false;
-                    btnVerifyOtp.innerHTML = '<i class="fas fa-check-circle me-1"></i> ยืนยันรหัส OTP';
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถตรวจสอบรหัสได้ในขณะนี้: ' + err.message,
-                        confirmButtonText: 'ตกลง'
-                    });
-                });
-            });
-        }
-
-        const btnCancelOtp = document.getElementById('btn_cancel_otp');
-        if (btnCancelOtp) {
-            btnCancelOtp.addEventListener('click', function() {
-                document.getElementById('otp').value = '';
-                passwordInput.closest('.row').style.display = 'flex';
-                document.getElementById('login_buttons_block').style.display = 'flex';
-                usernameInput.readOnly = false;
-                document.getElementById('otp_verify_block').style.display = 'none';
-            });
-        }
-
-        // Auto-submit passwordless OTP on 6 digits
-        const otpInputPasswordless = document.getElementById('otp');
-        if (otpInputPasswordless) {
-            otpInputPasswordless.addEventListener('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, '');
-                if (this.value.length === 6 && btnVerifyOtp) {
-                    btnVerifyOtp.click();
-                }
-            });
-        }
 
         // Prevent double click on form submission
         const loginForm = document.querySelector('form');
