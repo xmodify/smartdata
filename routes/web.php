@@ -66,6 +66,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/system', [App\Http\Controllers\Admin\StructureController::class, 'index'])->name('admin.system.index');
     Route::post('/admin/git-pull', [App\Http\Controllers\Admin\StructureController::class, 'gitPull'])->name('admin.git_pull');
     Route::post('/admin/upgrade-structure', [App\Http\Controllers\Admin\StructureController::class, 'upgrade'])->name('admin.upgrade_structure');
+    Route::get('/admin/version/check', [App\Http\Controllers\Admin\StructureController::class, 'checkVersionUpdate'])->name('admin.version.check');
     
     // Moph Notify Routes
     Route::post('/admin/moph-notify', [App\Http\Controllers\Admin\StructureController::class, 'store_moph_notify'])->name('admin.moph_notify.store');

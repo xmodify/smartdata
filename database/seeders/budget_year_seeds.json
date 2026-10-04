@@ -1,0 +1,76 @@
+{
+    "budget_year": [
+        {
+            "match_by": [
+                "LEAVE_YEAR_ID"
+            ],
+            "data": {
+                "LEAVE_YEAR_ID": "2565",
+                "LEAVE_YEAR_NAME": "ปีงบประมาณ 2565",
+                "DATE_BEGIN": "2021-10-01",
+                "DATE_END": "2022-09-30",
+                "DAY_PER_YEAR": 10
+            }
+        },
+        {
+            "match_by": [
+                "LEAVE_YEAR_ID"
+            ],
+            "data": {
+                "LEAVE_YEAR_ID": "2566",
+                "LEAVE_YEAR_NAME": "ปีงบประมาณ 2566",
+                "DATE_BEGIN": "2022-10-01",
+                "DATE_END": "2023-09-30",
+                "DAY_PER_YEAR": 10
+            }
+        },
+        {
+            "match_by": [
+                "LEAVE_YEAR_ID"
+            ],
+            "data": {
+                "LEAVE_YEAR_ID": "2567",
+                "LEAVE_YEAR_NAME": "ปีงบประมาณ 2567",
+                "DATE_BEGIN": "2023-10-01",
+                "DATE_END": "2024-09-30",
+                "DAY_PER_YEAR": 10
+            }
+        },
+        {
+            "match_by": [
+                "LEAVE_YEAR_ID"
+            ],
+            "data": {
+                "LEAVE_YEAR_ID": "2568",
+                "LEAVE_YEAR_NAME": "ปีงบประมาณ 2568",
+                "DATE_BEGIN": "2024-10-01",
+                "DATE_END": "2025-09-30",
+                "DAY_PER_YEAR": 10
+            }
+        },
+        {
+            "match_by": [
+                "LEAVE_YEAR_ID"
+            ],
+            "data": {
+                "LEAVE_YEAR_ID": "2569",
+                "LEAVE_YEAR_NAME": "ปีงบประมาณ 2569",
+                "DATE_BEGIN": "2025-10-01",
+                "DATE_END": "2026-09-30",
+                "DAY_PER_YEAR": 10
+            }
+        },
+        {
+            "match_by": [
+                "LEAVE_YEAR_ID"
+            ],
+            "data": {
+                "LEAVE_YEAR_ID": "2570",
+                "LEAVE_YEAR_NAME": "ปีงบประมาณ 2570",
+                "DATE_BEGIN": "2026-10-01",
+                "DATE_END": "2027-09-30",
+                "DAY_PER_YEAR": 10
+            }
+        }
+    ]
+}

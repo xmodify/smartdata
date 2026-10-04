@@ -69,12 +69,27 @@ class StructureController extends Controller
     }
 
     /**
-         * Execute git pull to update source code.
-         */
+     * Execute git pull to update source code.
+     */
     public function gitPull(Request $request)
     {
         if (auth()->user()->role !== 'admin') {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
             abort(403);
+        }
+
+        // Safety check: Prevent git reset & pull on local development environment
+        if (app()->isLocal() || config('app.env') === 'local') {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'error' => 'ระบบทำงานในสภาพแวดล้อม Local (Development Mode) การ Git Reset & Pull ถูกระงับเพื่อป้องกันโค้ดที่คุณกำลังพัฒนาสูญหาย',
+                    'is_local' => true,
+                    'skipped' => true
+                ], 400);
+            }
+            return redirect()->back()->with('error', 'ระบบทำงานในสภาพแวดล้อม Local การ Git Pull ถูกปิดใช้งานเพื่อความปลอดภัย');
         }
 
         $details = $request->input('details');
@@ -82,8 +97,12 @@ class StructureController extends Controller
             Log::info('Git Pull triggered by ' . auth()->user()->name . ' with details: ' . $details);
         }
 
-        $output = shell_exec('git reset --hard && git pull origin main 2>&1');
+        // 1. Fetch latest changes from remote main branch
+        // 2. Hard reset local working tree to match origin/main exactly
+        // 3. Clean untracked files (keeps .env and storage safe via .gitignore)
+        $output = shell_exec('git fetch origin main && git reset --hard origin/main && git clean -fd 2>&1');
         
+        // 4. Clear application caches (config, route, views, compiled classes)
         try {
             $artisanOutput = new BufferedOutput();
             Artisan::call('optimize:clear', [], $artisanOutput);
@@ -92,7 +111,27 @@ class StructureController extends Controller
             $output .= "\n\nError running artisan optimize:clear: " . $e->getMessage();
         }
 
+        \Illuminate\Support\Facades\Cache::forget(\App\Services\VersionService::CACHE_KEY);
+
+        if ($request->wantsJson()) {
+            return response()->json(['output' => trim($output)]);
+        }
+
         return back()->with('git_output', $output)->with('active_tab', 'system');
+    }
+
+    /**
+     * Check for version update via VersionService (AJAX API)
+     */
+    public function checkVersionUpdate(Request $request)
+    {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $force = $request->boolean('force', false);
+        $res = \App\Services\VersionService::checkForUpdate($force);
+        return response()->json($res);
     }
 
     /**
@@ -147,60 +186,83 @@ class StructureController extends Controller
                     return response()->json(['success' => true, 'message' => 'Migrations completed. Output: ' . trim($output->fetch())]);
 
                 case 'sync_seed_data':
-                    $seedFile = database_path('default_seeds.json');
-                    if (!file_exists($seedFile)) {
-                        return response()->json(['success' => true, 'message' => 'ไม่พบไฟล์ข้อมูลตั้งต้น (default_seeds.json)']);
+                    $seedFiles = array_unique(array_merge(
+                        glob(database_path('seeders/*_seeds.json')) ?: [],
+                        glob(database_path('*_seeds.json')) ?: []
+                    ));
+
+                    if (empty($seedFiles)) {
+                        return response()->json(['success' => true, 'message' => 'ไม่พบไฟล์ข้อมูลตั้งต้น (*_seeds.json)']);
                     }
 
-                    $seeds = json_decode(file_get_contents($seedFile), true);
-                    if (!is_array($seeds)) {
-                        return response()->json(['success' => false, 'message' => 'รูปแบบไฟล์ default_seeds.json ไม่ถูกต้อง']);
-                    }
-
-                    // Load extra seeds from icd10_seeds.json if exists
-                    $icd10SeedFile = database_path('icd10_seeds.json');
-                    if (file_exists($icd10SeedFile)) {
-                        $icd10Seeds = json_decode(file_get_contents($icd10SeedFile), true);
-                        if (is_array($icd10Seeds)) {
-                            $seeds = array_merge($seeds, $icd10Seeds);
-                        }
-                    }
-
+                    $today = date('Y-m-d');
                     $log = [];
-                    foreach ($seeds as $table => $records) {
-                        if (!Schema::hasTable($table)) {
+
+                    foreach ($seedFiles as $file) {
+                        $content = json_decode(file_get_contents($file), true);
+                        if (!is_array($content)) {
                             continue;
                         }
 
-                        $seededCount = 0;
-                        foreach ($records as $record) {
-                            $matchBy = $record['match_by'] ?? [];
-                            $data = $record['data'] ?? [];
+                        foreach ($content as $table => $records) {
+                            if (!Schema::hasTable($table) || !is_array($records)) {
+                                continue;
+                            }
 
-                            // Build query to check if record exists
-                            $query = DB::table($table);
-                            foreach ($matchBy as $key) {
-                                if (isset($data[$key])) {
-                                    $query->where($key, $data[$key]);
+                            $seededCount = 0;
+                            $updatedCount = 0;
+
+                            foreach ($records as $record) {
+                                $matchBy = $record['match_by'] ?? [];
+                                $data = $record['data'] ?? [];
+
+                                // Special auto-calculation for budget_year active status
+                                if ($table === 'budget_year' && isset($data['DATE_BEGIN'], $data['DATE_END'])) {
+                                    $data['ACTIVE'] = ($today >= $data['DATE_BEGIN'] && $today <= $data['DATE_END']) ? 'True' : 'False';
+                                }
+
+                                if (empty($matchBy)) {
+                                    continue;
+                                }
+
+                                $matchCondition = [];
+                                foreach ($matchBy as $key) {
+                                    if (isset($data[$key])) {
+                                        $matchCondition[$key] = $data[$key];
+                                    }
+                                }
+
+                                if (empty($matchCondition)) {
+                                    continue;
+                                }
+
+                                $query = DB::table($table)->where($matchCondition);
+                                if ($query->exists()) {
+                                    $updateData = $data;
+                                    if (Schema::hasColumn($table, 'updated_at')) {
+                                        $updateData['updated_at'] = now();
+                                    }
+                                    $query->update($updateData);
+                                    $updatedCount++;
+                                } else {
+                                    $insertData = $data;
+                                    if (Schema::hasColumn($table, 'created_at')) {
+                                        $insertData['created_at'] = now();
+                                    }
+                                    if (Schema::hasColumn($table, 'updated_at')) {
+                                        $insertData['updated_at'] = now();
+                                    }
+                                    DB::table($table)->insert($insertData);
+                                    $seededCount++;
                                 }
                             }
 
-                            if (!$query->exists()) {
-                                // Add timestamps if columns exist in the table
-                                if (Schema::hasColumn($table, 'created_at')) {
-                                    $data['created_at'] = now();
-                                }
-                                if (Schema::hasColumn($table, 'updated_at')) {
-                                    $data['updated_at'] = now();
-                                }
-
-                                DB::table($table)->insert($data);
-                                $seededCount++;
+                            if ($seededCount > 0 || $updatedCount > 0) {
+                                $msgParts = [];
+                                if ($seededCount > 0) $msgParts[] = "เพิ่ม {$seededCount} รายการ";
+                                if ($updatedCount > 0) $msgParts[] = "อัปเดต {$updatedCount} รายการ";
+                                $log[] = "{$table} (" . implode(', ', $msgParts) . ")";
                             }
-                        }
-
-                        if ($seededCount > 0) {
-                            $log[] = "ตาราง {$table} (เพิ่ม {$seededCount} รายการ)";
                         }
                     }
 

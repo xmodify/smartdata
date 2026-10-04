@@ -53,22 +53,23 @@ class SkpcardController extends Controller
         ];
 
         // We want to show all 12 months in budget year order (Oct-Sep)
-        $currentDate = Carbon::parse($start_date);
+        $startCarbon = Carbon::parse($start_date)->startOfMonth();
         for ($i = 0; $i < 12; $i++) {
-            $m = (int)$currentDate->format('m');
-            $y = (int)$currentDate->format('Y');
+            $monthDate = $startCarbon->copy()->addMonths($i);
+            $m = (int)$monthDate->format('m');
+            $y = (int)$monthDate->format('Y');
             
-            $label = $monthNames[$m] . ' ' . ($y + 543);
+            $label = ($monthNames[$m] ?? $m) . ' ' . ($y + 543);
             $chartData['labels'][] = $label;
             
-            $match = $statsRaw->where('m', $m)->where('y', $y)->first();
+            $match = $statsRaw->first(function ($item) use ($m, $y) {
+                return (int)$item->m === $m && (int)$item->y === $y;
+            });
             
             $chartData['count_1000'][] = $match ? (int)$match->count_1000 : 0;
             $chartData['count_1500'][] = $match ? (int)$match->count_1500 : 0;
             $chartData['count_2000'][] = $match ? (int)$match->count_2000 : 0;
             $chartData['total_income'][] = $match ? (float)$match->total_income : 0;
-            
-            $currentDate->addMonth();
         }
 
         return view('smartdata.skpcard.index', compact(
@@ -89,10 +90,14 @@ class SkpcardController extends Controller
             ->limit(7)
             ->get();
 
+        $curMonth = (int)date('m');
+        $curYear = (int)date('Y');
+        $calculatedYearNow = $curMonth >= 10 ? ($curYear + 544) : ($curYear + 543);
+
         $budget_year_now = DB::table('budget_year')
             ->whereDate('DATE_END', '>=', date('Y-m-d'))
             ->whereDate('DATE_BEGIN', '<=', date('Y-m-d'))
-            ->value('LEAVE_YEAR_ID');
+            ->value('LEAVE_YEAR_ID') ?: $calculatedYearNow;
 
         $budget_year = $request->budget_year ?: $budget_year_now;
 
@@ -108,6 +113,10 @@ class SkpcardController extends Controller
 
             if ($matched_year) {
                 $budget_year = $matched_year;
+            } else {
+                $sm = (int)date('m', strtotime($start_date));
+                $sy = (int)date('Y', strtotime($start_date));
+                $budget_year = $sm >= 10 ? ($sy + 544) : ($sy + 543);
             }
         } else {
             $year_data = DB::table('budget_year')
@@ -118,9 +127,16 @@ class SkpcardController extends Controller
                 $start_date = $year_data->DATE_BEGIN;
                 $end_date = $year_data->DATE_END;
             } else {
-                $start_date = ($budget_year - 543) . '-10-01';
-                $end_date = ($budget_year - 542) . '-09-30';
+                $start_date = ((int)$budget_year - 544) . '-10-01';
+                $end_date = ((int)$budget_year - 543) . '-09-30';
             }
+        }
+
+        if ($budget_year && $budget_year_select->where('LEAVE_YEAR_ID', (string)$budget_year)->isEmpty()) {
+            $budget_year_select->prepend((object)[
+                'LEAVE_YEAR_ID' => (string)$budget_year,
+                'LEAVE_YEAR_NAME' => 'ปีงบประมาณ ' . $budget_year
+            ]);
         }
 
         return [
