@@ -27,16 +27,16 @@
 
     <style>
         body {
-            background: #f0fdf4;
-            background: radial-gradient(circle at 50% 50%, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%);
+            background: radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding-top: 50px; /* ระยะห่างจากด้านบน 50px เท่ากับหน้า register */
+            padding-bottom: 30px;
         }
 
         .login-card-rims {
@@ -297,11 +297,11 @@
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Bottom Copyright Note -->
-    <div class="footer-copyright">
-        SmartData : Hospital Data System &copy; {{ date('Y') }}. All Rights Reserved.
+        <!-- Bottom Card Footer (White Background, Centered) -->
+        <div class="card-footer bg-white border-0 py-3 text-center text-muted" style="border-top: 1px solid #f1f5f9 !important; font-size: 0.82rem;">
+            SmartData : Huataphanhospital Data System &copy; 2026. All Rights Reserved.
+        </div>
     </div>
 </div>
 
