@@ -27,56 +27,73 @@
 
     <style>
         body {
-            background: radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%);
+            background: #f0fdf4;
+            background: radial-gradient(circle at 50% 50%, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%);
             min-height: 100vh;
             display: flex;
-            align-items: flex-start; /* แหนวตั้งเกือบติดบน */
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
             font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif;
             margin: 0;
-            padding-top: 50px; /* ระยะห่างจากด้านบน 50px เสมอกันทุกหน้า */
+            padding: 20px;
         }
 
-        .login-card-original {
+        .login-card-rims {
             background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(2, 132, 199, 0.06), 0 5px 15px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(2, 132, 199, 0.18) !important;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(2, 132, 199, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(2, 132, 199, 0.15);
+            border-top: 4px solid #0284c7;
             overflow: hidden;
-            transition: all 0.3s ease;
             width: 100%;
-            max-width: 680px; /* ขยายความกว้างเพื่อรองรับ 2 คอลัมน์ด้านใน */
+            max-width: 820px;
+            transition: all 0.3s ease;
         }
 
-        .login-card-original:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(2, 132, 199, 0.1), 0 8px 20px rgba(0, 0, 0, 0.06);
+        .login-card-rims:hover {
+            box-shadow: 0 20px 45px rgba(2, 132, 199, 0.12), 0 8px 20px rgba(0, 0, 0, 0.06);
         }
 
-        .card-login-header {
-            background: linear-gradient(135deg, #004b99 0%, #0284c7 50%, #38bdf8 100%);
-            color: white;
-            padding: 1.8rem;
-            text-align: center;
+        .logo-col-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
         }
 
-        .border-start-custom {
-            border-left: none;
-            padding-left: 12px;
+        .form-col-wrapper {
+            padding: 2.5rem 2.8rem;
         }
 
-        @media (min-width: 768px) {
-            .border-start-custom {
-                border-left: 1px solid #e2e8f0;
-                padding-left: 30px;
+        @media (max-width: 767.98px) {
+            .logo-col-wrapper {
+                padding: 2rem 1.5rem 0.5rem 1.5rem;
+            }
+            .form-col-wrapper {
+                padding: 1.5rem 1.5rem 2rem 1.5rem;
             }
         }
 
-        /* Form Controls with Dimensions */
-        .form-label-custom {
+        .login-heading {
+            font-size: 1.65rem;
             font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.5px;
+        }
+
+        .login-subheading {
+            font-size: 0.88rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label-custom {
+            font-weight: 600;
             font-size: 0.85rem;
-            color: #0284c7;
+            color: #475569;
             margin-bottom: 6px;
             display: block;
         }
@@ -91,20 +108,20 @@
             position: absolute;
             left: 14px;
             color: #94a3b8;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             transition: color 0.3s ease;
             z-index: 10;
         }
 
         .form-input-custom {
-            padding-left: 38px !important;
+            padding-left: 40px !important;
             border: 1px solid #cbd5e1 !important;
-            background-color: #f8fafc !important;
-            border-radius: 8px !important;
-            font-size: 0.95rem !important;
+            background-color: #ffffff !important;
+            border-radius: 10px !important;
+            font-size: 0.92rem !important;
             color: #1e293b !important;
             transition: all 0.3s ease !important;
-            height: 40px !important;
+            height: 44px !important;
         }
 
         .form-input-custom:focus {
@@ -118,155 +135,173 @@
             color: #0284c7;
         }
 
-        /* Buttons with Custom Premium Shape & Icons */
-        .btn-login-original {
-            background: linear-gradient(135deg, #0052cc 0%, #0268c7 100%) !important;
+        .form-input-custom::placeholder {
+            color: #94a3b8 !important;
+            font-size: 0.88rem !important;
+        }
+
+        /* Action Buttons */
+        .btn-login-rims {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
             border: none !important;
             color: #ffffff !important;
-            padding: 10px 22px !important;
-            border-radius: 8px !important; /* รูปทรงปุ่มใหม่โค้งมนสวยงาม */
+            padding: 10px 18px !important;
+            border-radius: 8px !important;
             font-weight: 600 !important;
-            font-size: 0.95rem !important;
-            box-shadow: 0 4px 12px rgba(0, 82, 204, 0.22) !important;
+            font-size: 0.92rem !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
             transition: all 0.3s ease !important;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            flex: 1;
+            white-space: nowrap;
         }
 
-        .btn-login-original:hover {
+        .btn-login-rims:hover {
+            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%) !important;
             transform: translateY(-1px) !important;
-            box-shadow: 0 6px 16px rgba(0, 82, 204, 0.35) !important;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
+            color: #ffffff !important;
         }
 
-        .btn-provider-original {
-            background: linear-gradient(135deg, #008751 0%, #006837 100%) !important;
+        .btn-provider-rims {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
             border: none !important;
             color: #ffffff !important;
-            padding: 10px 22px !important;
-            border-radius: 8px !important; /* รูปทรงปุ่มใหม่โค้งมนสวยงาม */
+            padding: 10px 18px !important;
+            border-radius: 8px !important;
             font-weight: 600 !important;
-            font-size: 0.95rem !important;
-            box-shadow: 0 4px 12px rgba(0, 135, 81, 0.25) !important;
+            font-size: 0.92rem !important;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
             transition: all 0.3s ease !important;
             text-decoration: none !important;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            flex: 1;
+            white-space: nowrap;
         }
 
-        .btn-provider-original:hover {
+        .btn-provider-rims:hover {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
             transform: translateY(-1px) !important;
-            box-shadow: 0 6px 16px rgba(0, 135, 81, 0.38) !important;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
             color: #ffffff !important;
-            background: linear-gradient(135deg, #00995c 0%, #00733d 100%) !important;
         }
 
-        .divider-original {
-            border: 0;
-            height: 1px;
-            background: #e2e8f0;
-            margin: 15px 0;
-            opacity: 0.5;
-        }
-
-        .register-link-original {
-            color: #0d6efd;
+        .register-link-rims {
+            color: #059669;
             text-decoration: none;
             transition: color 0.2s ease;
         }
 
-        .register-link-original:hover {
-            color: #0a58ca;
+        .register-link-rims:hover {
+            color: #047857;
             text-decoration: underline;
+        }
+
+        .footer-copyright {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 1.5rem;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8 d-flex justify-content-center">
-            <div class="card login-card-original shadow-lg"> 
-                <div class="card-login-header">
-                    <h4 class="mb-1 fw-bold text-white" style="font-size: 1.35rem; letter-spacing: -0.5px;">เข้าสู่ระบบ SmartData</h4>
-                    <p class="mb-0 small text-white opacity-75">โรงพยาบาลหัวตะพาน</p>
-                </div>
-                <div class="card-body px-4 pt-3 pb-3" style="padding-bottom: 15px !important; padding-top: 15px !important;">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
+<div class="container d-flex flex-column align-items-center justify-content-center">
+    <div class="card login-card-rims shadow-lg">
+        <div class="row g-0 align-items-center">
+            <!-- Left Column: Big Centered Logo -->
+            <div class="col-md-5 logo-col-wrapper text-center">
+                <img src="{{ asset('images/logo.png') }}" 
+                     style="max-width: 210px; width: 100%; height: auto; display: block; margin: 0 auto; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08));" 
+                     alt="SmartData Logo">
+            </div>
 
-                        @if($errors->has('provider_id'))
-                            <div class="alert alert-danger shadow-sm small py-2 px-3 mb-3 border-0 rounded-lg" style="background-color: rgba(220, 53, 69, 0.9); color: #fff;">
-                                <i class="fas fa-exclamation-triangle me-1"></i> {{ $errors->first('provider_id') }}
-                            </div>
+            <!-- Right Column: Form Header, Inputs, and Action Buttons -->
+            <div class="col-md-7 form-col-wrapper">
+                <h3 class="login-heading">เข้าสู่ระบบ</h3>
+                <p class="login-subheading">ระบุบัญชีผู้ใช้งานของท่านเพื่อเข้าสู่ระบบ SmartData</p>
+
+                <form method="POST" action="{{ route('login') }}">
+                    @csrf
+
+                    @if($errors->has('provider_id'))
+                        <div class="alert alert-danger shadow-sm small py-2 px-3 mb-3 border-0 rounded-lg" style="background-color: rgba(220, 53, 69, 0.9); color: #fff;">
+                            <i class="fas fa-exclamation-triangle me-1"></i> {{ $errors->first('provider_id') }}
+                        </div>
+                    @endif
+
+                    <!-- Username Field -->
+                    <div class="mb-3">
+                        <label for="username" class="form-label-custom">ชื่อผู้ใช้งาน (Username)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-user input-icon"></i>
+                            <input id="username" type="text" 
+                                   class="form-control form-input-custom @error('username') is-invalid @enderror" 
+                                   name="username" 
+                                   value="{{ old('username') }}" 
+                                   required 
+                                   autocomplete="username" 
+                                   autofocus 
+                                   placeholder="กรอก Username เข้าใช้งาน">
+                        </div>
+                        @error('username')
+                            <span class="invalid-feedback d-block" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label-custom">รหัสผ่าน</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input id="password" type="password" 
+                                   class="form-control form-input-custom @error('password') is-invalid @enderror" 
+                                   name="password" 
+                                   required
+                                   autocomplete="current-password" 
+                                   placeholder="กรอกรหัสผ่านเข้าใช้งาน">
+                        </div>
+                        @error('password')
+                            <span class="invalid-feedback d-block" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+                    <!-- Action Buttons: Login & ProviderID Login -->
+                    <div class="d-flex align-items-center gap-2 mb-3 mt-4">
+                        <button type="submit" class="btn btn-login-rims">
+                            <i class="fas fa-sign-in-alt me-1.5"></i> เข้าสู่ระบบ
+                        </button>
+
+                        @php $providerConfig = \App\Models\ProviderId::where('active', 'Y')->first(); @endphp
+                        @if($providerConfig && $providerConfig->active === 'Y')
+                            <a href="{{ route('login.provider_id') }}" class="btn btn-provider-rims">
+                                <i class="fas fa-shield-alt me-1.5"></i> เข้าด้วย Provider ID
+                            </a>
                         @endif
+                    </div>
 
-                        <!-- Top Split Row: Logo on Left, Username/Password on Right -->
-                        <div class="row align-items-center mb-1">
-                            <!-- Left Column: Hospital Logo -->
-                            <div class="col-md-5 text-center mb-4 mb-md-0">
-                                <img src="{{ asset('images/logo.png') }}" style="max-width: 175px; height: auto; display: block; margin: 0 auto; padding: 5px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));" alt="SmartData Logo">
-                            </div>
-                            
-                            <!-- Right Column: Login Inputs -->
-                            <div class="col-md-7 border-start-custom">
-                                <!-- Username Input -->
-                                <div class="mb-3">
-                                    <label for="username" class="form-label-custom">Username</label>
-                                    <div class="input-wrapper">
-                                        <i class="fa-regular fa-user input-icon"></i>
-                                        <input id="username" type="text" class="form-control form-input-custom @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" autofocus placeholder="กรอก Username เข้าใช้งาน">
-                                    </div>
-                                    @error('username')
-                                        <span class="invalid-feedback d-block" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-
-                                <!-- Password Input Wrapper Row -->
-                                <div class="row mb-0">
-                                    <div class="col-md-12">
-                                        <label for="password" class="form-label-custom">Password</label>
-                                        <div class="input-wrapper">
-                                            <i class="fa-solid fa-lock input-icon"></i>
-                                            <input id="password" type="password" class="form-control form-input-custom @error('password') is-invalid @enderror" name="password" autocomplete="current-password" placeholder="รหัสผ่านเข้าใช้งาน">
-                                        </div>
-                                        @error('password')
-                                            <span class="invalid-feedback d-block" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bottom Full-Width Action Block (Centered below split columns) -->
-                        <div class="row mb-0">
-                            <div class="col-md-12 text-center mt-0">
-                                <div id="login_buttons_block" class="d-flex justify-content-center flex-wrap align-items-center gap-2 mb-3">
-                                    <button type="submit" class="btn btn-login-original py-2">
-                                        <i class="fas fa-sign-in-alt me-1"></i> {{ __('Login') }}
-                                    </button>
-                                    
-                                    @php $providerConfig = \App\Models\ProviderId::where('active', 'Y')->first(); @endphp
-                                    @if($providerConfig && $providerConfig->active === 'Y')
-                                        <a href="{{ route('login.provider_id') }}" class="btn btn-provider-original py-2">
-                                            <i class="fas fa-id-card me-1"></i> ProviderID Login
-                                        </a>
-                                    @endif
-                                </div>
-                                <hr class="divider-original">
-                                <div class="text-center">
-                                    <p class="mb-0 small text-muted">ยังไม่มีบัญชี? <a href="{{ route('register') }}" class="register-link-original fw-bold">ลงทะเบียนที่นี่</a></p>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Register Link -->
+                    <div class="text-center mt-3 pt-1">
+                        <p class="mb-0 small text-muted">
+                            ยังไม่มีบัญชีผู้ใช้งานระบบ? <a href="{{ route('register') }}" class="register-link-rims fw-bold">สมัครสมาชิกใหม่ที่นี่</a>
+                        </p>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
+
+    <!-- Bottom Copyright Note -->
+    <div class="footer-copyright">
+        SmartData : Hospital Data System &copy; {{ date('Y') }}. All Rights Reserved.
     </div>
 </div>
 
