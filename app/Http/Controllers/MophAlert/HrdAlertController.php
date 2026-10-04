@@ -18,8 +18,10 @@ class HrdAlertController extends Controller
             abort(403);
         }
 
-        // Fetch Alert settings to check if Moph Alert is active
-        $mophAlert = MophAlert::where('active', 'Y')->first() ?: MophAlert::find(1);
+        // Fetch Alert settings for SmartData to check if Moph Alert is active
+        $mophAlert = MophAlert::where('name', 'SmartData')->first() 
+            ?: MophAlert::where('active', 'Y')->first() 
+            ?: MophAlert::find(1);
 
         // Handle Filters (Department)
         $dept_ids = $request->dept_ids ?: [];
@@ -116,7 +118,9 @@ class HrdAlertController extends Controller
             $bubbleText .= "\n📝" . $nbsp . "รายละเอียด:" . $nbsp . $plainDetail;
         }
 
-        $activeAlert = MophAlert::where('active', 'Y')->first() ?: MophAlert::find(1);
+        $activeAlert = MophAlert::where('name', 'SmartData')->where('active', 'Y')->first() 
+            ?: MophAlert::where('active', 'Y')->first() 
+            ?: MophAlert::find(1);
         $alertId = $activeAlert ? $activeAlert->id : 1;
 
         // Message text for MorProm App (strip any complex characters/formatting)

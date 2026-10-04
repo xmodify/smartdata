@@ -28,9 +28,10 @@ class LoginController extends Controller
         if (Auth::validate(array_merge($credentials, ['active' => 'Y']))) {
             $user = User::where('username', $request->username)->first();
 
-            // Check if 2FA is enabled globally
-            $mophAlert = MophAlert::where('active', 'Y')->where('enable_2fa', 'Y')->first();
-            $is2faEnabled = (bool)$mophAlert;
+            // Check if 2FA is enabled for SmartData (by system name 'SmartData' or first active record)
+            $smartDataAlert = MophAlert::where('name', 'SmartData')->where('active', 'Y')->first() 
+                ?: MophAlert::where('active', 'Y')->first();
+            $is2faEnabled = ($smartDataAlert && $smartDataAlert->enable_2fa === 'Y');
 
             if ($is2faEnabled) {
                 // Generate OTP
@@ -43,13 +44,13 @@ class LoginController extends Controller
                     '2fa_expires_at' => time() + 120
                 ]);
 
-                // Send OTP via Moph Alert to user's CID (username)
-                $this->sendMophAlertOTP($user->username, $otp, $mophAlert->id);
+                // Send OTP via SmartData Moph Alert to user's CID (username)
+                $this->sendMophAlertOTP($user->username, $otp, $smartDataAlert->id);
 
                 // Redirect to 2FA page
                 return redirect()->route('login.verify_2fa');
             } else {
-                // No 2FA -> Log in immediately
+                // No 2FA -> Log in immediately via username + password
                 if (Auth::attempt(array_merge($credentials, ['active' => 'Y']), $request->boolean('remember'))) {
                     $request->session()->regenerate();
                     return redirect()->intended(route('dashboard'));
@@ -84,10 +85,10 @@ class LoginController extends Controller
             ], 404);
         }
 
-        // Check 2FA global status
-        $mophAlert = MophAlert::where('active', 'Y')->where('enable_2fa', 'Y')->first();
-        $is2faEnabled = (bool)$mophAlert;
-        $activeAlert = $mophAlert ?: MophAlert::where('active', 'Y')->first();
+        // Check 2FA for SmartData
+        $smartDataAlert = MophAlert::where('name', 'SmartData')->where('active', 'Y')->first() 
+            ?: MophAlert::where('active', 'Y')->first();
+        $is2faEnabled = ($smartDataAlert && $smartDataAlert->enable_2fa === 'Y');
 
         // Generate OTP
         $otp = rand(100000, 999999);
@@ -100,7 +101,7 @@ class LoginController extends Controller
                 '2fa_expires_at' => time() + 120
             ]);
 
-            $this->sendMophAlertOTP($user->username, $otp, $activeAlert?->id);
+            $this->sendMophAlertOTP($user->username, $otp, $smartDataAlert?->id);
 
             return response()->json([
                 'success' => true,
@@ -115,7 +116,7 @@ class LoginController extends Controller
                 'otp_expires_at' => now()->addSeconds(120)
             ]);
 
-            $this->sendMophAlertOTP($user->username, $otp, $activeAlert?->id);
+            $this->sendMophAlertOTP($user->username, $otp, $smartDataAlert?->id);
 
             return response()->json([
                 'success' => true,

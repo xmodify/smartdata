@@ -26,10 +26,12 @@ class MophAlertService
             if ($alertId !== null) {
                 $config = (clone $query)->where('id', $alertId)->first(['id', 'client_id', 'secret']);
                 if (!$config) {
-                    $config = $query->first(['id', 'client_id', 'secret']);
+                    $config = (clone $query)->where('name', 'SmartData')->first(['id', 'client_id', 'secret'])
+                        ?: $query->first(['id', 'client_id', 'secret']);
                 }
             } else {
-                $config = $query->first(['id', 'client_id', 'secret']);
+                $config = (clone $query)->where('name', 'SmartData')->first(['id', 'client_id', 'secret'])
+                    ?: $query->first(['id', 'client_id', 'secret']);
             }
 
             if (!$config || empty($config->client_id) || empty($config->secret)) {
