@@ -251,7 +251,7 @@
                                     </button>
                                     
                                     @php $providerConfig = \App\Models\ProviderId::where('active', 'Y')->first(); @endphp
-                                    @if($providerConfig && !empty($providerConfig->health_id_client_id) && !empty($providerConfig->provider_id_client_id))
+                                    @if($providerConfig && $providerConfig->active === 'Y')
                                         <a href="{{ route('login.provider_id') }}" class="btn btn-provider-original py-2">
                                             <i class="fas fa-id-card me-1"></i> ProviderID Login
                                         </a>
