@@ -68,11 +68,7 @@ class MonitorController extends Controller
         $backupLogLines = $this->readTailLines($backupLogPath, 60);
 
         // 6. Hospital Code for Security Code generation
-        try {
-            $hospcode = DB::table('lookup_hospcode')->value('hospcode') ?? '10989';
-        } catch (\Throwable $e) {
-            $hospcode = '10989';
-        }
+        $hospcode = '10989';
 
         // 7. Server Info
         $serverTime = now()->toDateTimeString();
@@ -134,15 +130,11 @@ class MonitorController extends Controller
             return response()->json(['success' => false, 'message' => 'รูปแบบชื่อไฟล์ไม่ถูกต้อง'], 400);
         }
 
-        try {
-            $hcode = DB::table('lookup_hospcode')->value('hospcode') ?? '10989';
-        } catch (\Throwable $e) {
-            $hcode = '10989';
-        }
+        $hcode = '10989';
 
         $securityCode = trim($request->input('security_code', ''));
 
-        // Generate allowed codes with +-2 minutes tolerance
+        // Generate allowed codes with +-2 minutes tolerance (10989-HHmm)
         $validCodes = [];
         for ($i = -2; $i <= 2; $i++) {
             $validCodes[] = $hcode . '-' . now()->addMinutes($i)->format('Hi');
@@ -151,7 +143,7 @@ class MonitorController extends Controller
         if (empty($securityCode) || !in_array($securityCode, $validCodes)) {
             return response()->json([
                 'success' => false,
-                'message' => "รหัสยืนยันความปลอดภัยไม่ถูกต้อง กรุณากรอกรหัสตามรูปแบบ {$hcode}-HHmm (เช่น {$hcode}-" . now()->format('Hi') . ")"
+                'message' => 'รหัสยืนยันความปลอดภัยไม่ถูกต้อง'
             ], 422);
         }
 

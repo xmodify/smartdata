@@ -721,11 +721,10 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-danger">
-                            กรุณากรอกรหัสความปลอดภัยเพื่อยืนยัน: <code class="bg-danger-subtle text-danger px-2 py-0.5 rounded font-monospace" id="expected_security_code">{{ $hospcode }}-{{ now()->format('Hi') }}</code>
+                        <label class="form-label fw-bold small text-danger" for="restore_security_code">
+                            กรุณากรอกรหัสความปลอดภัยเพื่อยืนยัน:
                         </label>
-                        <input type="text" id="restore_security_code" class="form-control font-monospace fw-bold text-center border-danger shadow-none" placeholder="เช่น {{ $hospcode }}-{{ now()->format('Hi') }}" required autocomplete="off">
-                        <div class="form-text xsmall text-muted text-center mt-1">รหัสความปลอดภัยคือ รหัสหน่วยบริการ ตามด้วยเวลาปัจจุบัน (HHmm)</div>
+                        <input type="text" id="restore_security_code" class="form-control font-monospace fw-bold text-center border-danger shadow-none" placeholder="กรอกรหัสความปลอดภัย" required autocomplete="off">
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
@@ -856,12 +855,6 @@
         document.getElementById('restore_display_date').innerText = createdAt;
         document.getElementById('restore_display_size').innerText = size;
         document.getElementById('restore_security_code').value = '';
-
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const code = `{{ $hospcode }}-${hours}${minutes}`;
-        document.getElementById('expected_security_code').innerText = code;
 
         const modal = new bootstrap.Modal(document.getElementById('restoreBackupModal'));
         modal.show();
