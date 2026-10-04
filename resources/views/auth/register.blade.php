@@ -253,9 +253,9 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <div class="mt-3">
+                    <div class="mb-3 mt-4">
                         <button type="submit" class="btn btn-register-rims">
-                            <i class="fa-solid fa-user-plus me-1.5"></i> ลงทะเบียนเข้าใช้งาน
+                            <i class="fa-solid fa-user-plus me-2"></i> ลงทะเบียนเข้าใช้งาน
                         </button>
                     </div>
 

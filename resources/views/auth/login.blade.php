@@ -282,12 +282,12 @@
 
                     <div class="d-flex align-items-center gap-2 mb-3 mt-4">
                         <button type="submit" class="btn btn-login-rims {{ !$isProviderActive ? 'w-100' : '' }}">
-                            <i class="fas fa-sign-in-alt me-1.5"></i> เข้าสู่ระบบ
+                            <i class="fas fa-sign-in-alt me-2"></i> เข้าสู่ระบบ
                         </button>
 
                         @if($isProviderActive)
                             <a href="{{ route('login.provider_id') }}" class="btn btn-provider-rims">
-                                <i class="fas fa-shield-alt me-1.5"></i> เข้าด้วย Provider ID
+                                <i class="fas fa-shield-alt me-2"></i> เข้าด้วย Provider ID
                             </a>
                         @endif
                     </div>
