@@ -81,12 +81,18 @@ class DatabaseBackupService
 
         try {
             $pdo = DB::connection()->getPdo();
+            $pdo->exec("SET NAMES utf8mb4;");
+            $pdo->exec("SET CHARACTER SET utf8mb4;");
 
             gzwrite($gz, "-- --------------------------------------------------------\n");
             gzwrite($gz, "-- SmartData Database Backup (High-Speed PHP Stream)\n");
             gzwrite($gz, "-- Database: {$dbName}\n");
             gzwrite($gz, "-- Date: " . date('Y-m-d H:i:s') . "\n");
             gzwrite($gz, "-- --------------------------------------------------------\n\n");
+            gzwrite($gz, "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n");
+            gzwrite($gz, "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n");
+            gzwrite($gz, "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n");
+            gzwrite($gz, "/*!40101 SET NAMES utf8mb4 */;\n");
             gzwrite($gz, "SET FOREIGN_KEY_CHECKS=0;\n");
             gzwrite($gz, "SET SQL_MODE=\"NO_AUTO_VALUE_ON_ZERO\";\n");
             gzwrite($gz, "SET AUTOCOMMIT=0;\n");
@@ -219,7 +225,7 @@ class DatabaseBackupService
     protected function dumpWithMysqldump(string $bin, string $host, string $port, string $user, string $pass, string $db, string $targetGz): bool
     {
         $passArg = !empty($pass) ? ("-p" . escapeshellarg($pass)) : "";
-        $cmd = escapeshellarg($bin) . " -h " . escapeshellarg($host) . " -P " . escapeshellarg($port) . " -u " . escapeshellarg($user) . " " . $passArg . " --single-transaction --quick " . escapeshellarg($db);
+        $cmd = escapeshellarg($bin) . " --default-character-set=utf8mb4 -h " . escapeshellarg($host) . " -P " . escapeshellarg($port) . " -u " . escapeshellarg($user) . " " . $passArg . " --single-transaction --quick " . escapeshellarg($db);
 
         $descriptors = [
             0 => ["pipe", "r"], // stdin
@@ -415,6 +421,8 @@ class DatabaseBackupService
         try {
             $pdo = DB::connection()->getPdo();
             $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, 0);
+            $pdo->exec("SET NAMES utf8mb4;");
+            $pdo->exec("SET CHARACTER SET utf8mb4;");
             $pdo->exec("SET FOREIGN_KEY_CHECKS=0;");
 
             $sqlBuffer = '';
@@ -504,7 +512,7 @@ class DatabaseBackupService
     protected function restoreWithMysqlCli(string $bin, string $host, string $port, string $user, string $pass, string $db, string $gzPath): bool
     {
         $passArg = !empty($pass) ? ("-p" . escapeshellarg($pass)) : "";
-        $cmd = escapeshellarg($bin) . " -h " . escapeshellarg($host) . " -P " . escapeshellarg($port) . " -u " . escapeshellarg($user) . " " . $passArg . " " . escapeshellarg($db);
+        $cmd = escapeshellarg($bin) . " --default-character-set=utf8mb4 -h " . escapeshellarg($host) . " -P " . escapeshellarg($port) . " -u " . escapeshellarg($user) . " " . $passArg . " " . escapeshellarg($db);
 
         $descriptors = [
             0 => ["pipe", "r"], // stdin
