@@ -236,7 +236,7 @@
 
                     <!-- Username Field -->
                     <div class="mb-3">
-                        <label for="username" class="form-label-custom">ชื่อผู้ใช้งาน (Username)</label>
+                        <label for="username" class="form-label-custom">ผู้ใช้งาน</label>
                         <div class="input-wrapper">
                             <i class="fa-regular fa-user input-icon"></i>
                             <input id="username" type="text" 
@@ -246,7 +246,7 @@
                                    required 
                                    autocomplete="username" 
                                    autofocus 
-                                   placeholder="กรอก Username เข้าใช้งาน">
+                                   placeholder="กรอกผู้ใช้งานเข้าใช้งาน">
                         </div>
                         @error('username')
                             <span class="invalid-feedback d-block" role="alert">
