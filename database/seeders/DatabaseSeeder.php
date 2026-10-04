@@ -90,23 +90,25 @@ class DatabaseSeeder extends Seeder
                         continue;
                     }
 
-                    // Configuration and credential tables should NEVER be overwritten if already configured
-                    $configTables = ['provider_id', 'moph_alert', 'moph_notify', 'telegram_notify', 'ai_settings'];
-                    $isConfigTable = in_array($table, $configTables);
+                    // SAFE-BY-DEFAULT POLICY:
+                    // Only explicit master/dictionary lookup tables are allowed to update reference data.
+                    // All other tables (configurations, user data, transactions, and ANY future tables) are strictly INSERT-ONLY if not exist.
+                    $masterReferenceTables = ['budget_year', 'lookup_hospcode', 'icd10'];
+                    $isMasterTable = in_array($table, $masterReferenceTables);
 
                     $query = DB::table($table)->where($matchCondition);
                     if ($query->exists()) {
-                        // If it's a configuration table, preserve existing user settings and do not overwrite with seed defaults
-                        if ($isConfigTable) {
-                            continue;
+                        // If it's a master reference table, sync updated definitions/active status
+                        if ($isMasterTable) {
+                            $updateData = $data;
+                            if (Schema::hasColumn($table, 'updated_at')) {
+                                $updateData['updated_at'] = now();
+                            }
+                            $query->update($updateData);
                         }
-
-                        $updateData = $data;
-                        if (Schema::hasColumn($table, 'updated_at')) {
-                            $updateData['updated_at'] = now();
-                        }
-                        $query->update($updateData);
+                        // For all other tables (present and future): PRESERVE EXISTING DATA, NEVER OVERWRITE!
                     } else {
+                        // Record does not exist -> Safe initial insertion
                         $insertData = $data;
                         if (Schema::hasColumn($table, 'created_at')) {
                             $insertData['created_at'] = now();
