@@ -64,15 +64,15 @@
         }
 
         .form-col-wrapper {
-            padding: 2.5rem 2.8rem;
+            padding: 2.2rem 2.8rem 1.2rem 2.8rem;
         }
 
         @media (max-width: 767.98px) {
             .logo-col-wrapper {
-                padding: 2rem 1.5rem 0.5rem 1.5rem;
+                padding: 1.5rem 1.5rem 0.5rem 1.5rem;
             }
             .form-col-wrapper {
-                padding: 1.5rem 1.5rem 2rem 1.5rem;
+                padding: 1.2rem 1.5rem 1rem 1.5rem;
             }
         }
 
@@ -289,7 +289,7 @@
                     </div>
 
                     <!-- Register Link -->
-                    <div class="text-center mt-3 pt-1">
+                    <div class="text-center mt-2.5 mb-0">
                         <p class="mb-0 small text-muted">
                             ยังไม่มีบัญชีผู้ใช้งานระบบ? <a href="{{ route('register') }}" class="register-link-rims fw-bold">สมัครสมาชิกใหม่ที่นี่</a>
                         </p>
@@ -298,9 +298,9 @@
             </div>
         </div>
 
-        <!-- Bottom Card Footer (White Background, Centered) -->
-        <div class="card-footer bg-white border-0 py-3 text-center text-muted" style="border-top: 1px solid #f1f5f9 !important; font-size: 0.82rem;">
-            SmartData : Huataphanhospital Data System &copy; 2026. All Rights Reserved.
+        <!-- Bottom Card Footer (White Background, Left-aligned, Bold SmartData) -->
+        <div class="card-footer bg-white border-0 py-2.5 px-4 text-start text-muted" style="border-top: 1px solid #f1f5f9 !important; font-size: 0.8rem; padding-left: 2.5rem !important;">
+            <strong class="text-dark">SmartData</strong> : Huataphanhospital Data System &copy; 2026. All Rights Reserved.
         </div>
     </div>
 </div>
