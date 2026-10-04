@@ -59,8 +59,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2.5rem;
-            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            padding: 2.5rem 2rem;
+            background: #ffffff;
         }
 
         .form-col-wrapper {
@@ -216,7 +216,7 @@
             <!-- Left Column: Big Centered Logo -->
             <div class="col-md-5 logo-col-wrapper text-center">
                 <img src="{{ asset('images/logo.png') }}" 
-                     style="max-width: 210px; width: 100%; height: auto; display: block; margin: 0 auto; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08));" 
+                     style="max-width: 250px; width: 100%; height: auto; display: block; margin: 0 auto; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.06));" 
                      alt="SmartData Logo">
             </div>
 
