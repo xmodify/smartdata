@@ -62,7 +62,10 @@ Schedule::call(function () {
     app(AuditEmrController::class)->check(request());
 })->dailyAt('19:00');
 
-// 7. Heartbeat ตรวจสอบความเคลื่อนไหวของ Scheduler ทุกๆ 1 นาที
+// 7. สำรองฐานข้อมูล SmartData อัตโนมัติ (.sql.gz) ทุกวันเวลา 02:00 น.
+Schedule::command('db:backup')->dailyAt('02:00');
+
+// 8. Heartbeat ตรวจสอบความเคลื่อนไหวของ Scheduler ทุกๆ 1 นาที
 Schedule::call(function () {
     cache(['scheduler_last_run' => now()->toDateTimeString()], now()->addDays(7));
 })->everyMinute();

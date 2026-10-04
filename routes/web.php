@@ -59,9 +59,14 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // System Monitor Routes
+    // System Monitor & Operations Routes
     Route::get('/admin/monitor', [App\Http\Controllers\Admin\MonitorController::class, 'index'])->name('admin.monitor.index');
     Route::post('/admin/monitor/run-task/{task}', [App\Http\Controllers\Admin\MonitorController::class, 'runTask'])->name('admin.monitor.run_task');
+    Route::post('/admin/monitor/backup/run', [App\Http\Controllers\Admin\MonitorController::class, 'backupRun'])->name('admin.monitor.backup.run');
+    Route::post('/admin/monitor/backup/restore/{filename}', [App\Http\Controllers\Admin\MonitorController::class, 'backupRestore'])->name('admin.monitor.backup.restore');
+    Route::get('/admin/monitor/backup/download/{filename}', [App\Http\Controllers\Admin\MonitorController::class, 'backupDownload'])->name('admin.monitor.backup.download');
+    Route::delete('/admin/monitor/backup/delete/{filename}', [App\Http\Controllers\Admin\MonitorController::class, 'backupDelete'])->name('admin.monitor.backup.delete');
+    Route::post('/admin/monitor/log/clear', [App\Http\Controllers\Admin\MonitorController::class, 'clearLog'])->name('admin.monitor.log.clear');
 
     Route::get('/admin/system', [App\Http\Controllers\Admin\StructureController::class, 'index'])->name('admin.system.index');
     Route::post('/admin/git-pull', [App\Http\Controllers\Admin\StructureController::class, 'gitPull'])->name('admin.git_pull');
