@@ -302,14 +302,7 @@ class LoginController extends Controller
         $isUat = (strpos(strtolower($config->health_id_client_id), 'uat') !== false || strpos(strtolower($config->health_id_client_id), 'test') !== false);
         $healthIdUrl = $isUat ? 'https://uat-moph.id.th' : 'https://moph.id.th';
 
-        // Construct redirect URI using scheme and host from APP_URL config
-        $appUrl = config('app.url');
-        $parsedApp = parse_url($appUrl);
-        $scheme = $parsedApp['scheme'] ?? 'http';
-        $host = $parsedApp['host'] ?? 'localhost';
-        $port = isset($parsedApp['port']) ? ':' . $parsedApp['port'] : '';
-        $path = parse_url(route('login.provider_id.callback'), PHP_URL_PATH);
-        $redirectUri = "{$scheme}://{$host}{$port}{$path}";
+        $redirectUri = route('login.provider_id.callback');
 
         $url = "{$healthIdUrl}/oauth/redirect?" . http_build_query([
             'client_id' => $config->health_id_client_id,
@@ -337,14 +330,7 @@ class LoginController extends Controller
             $healthIdUrl = $isUat ? 'https://uat-moph.id.th' : 'https://moph.id.th';
             $providerIdUrl = $isUat ? 'https://uat-provider.id.th' : 'https://provider.id.th';
 
-            // Construct redirect URI using scheme and host from APP_URL config
-            $appUrl = config('app.url');
-            $parsedApp = parse_url($appUrl);
-            $scheme = $parsedApp['scheme'] ?? 'http';
-            $host = $parsedApp['host'] ?? 'localhost';
-            $port = isset($parsedApp['port']) ? ':' . $parsedApp['port'] : '';
-            $path = parse_url(route('login.provider_id.callback'), PHP_URL_PATH);
-            $redirectUri = "{$scheme}://{$host}{$port}{$path}";
+            $redirectUri = route('login.provider_id.callback');
 
             // 1. Get Health ID Access Token
             $responseHealthToken = \Illuminate\Support\Facades\Http::timeout(15)
