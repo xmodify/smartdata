@@ -87,14 +87,14 @@
         .register-subheading {
             font-size: 0.88rem;
             color: #64748b;
-            margin-bottom: 1.2rem;
+            margin-bottom: 1.35rem;
         }
 
         .form-label-custom {
             font-weight: 600;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             color: #475569;
-            margin-bottom: 5px;
+            margin-bottom: 7px;
             display: block;
         }
 
@@ -106,22 +106,22 @@
 
         .input-icon {
             position: absolute;
-            left: 14px;
+            left: 15px;
             color: #94a3b8;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             transition: color 0.3s ease;
             z-index: 10;
         }
 
         .form-input-custom {
-            padding-left: 38px !important;
+            padding-left: 42px !important;
             border: 1px solid #cbd5e1 !important;
             background-color: #ffffff !important;
-            border-radius: 9px !important;
-            font-size: 0.9rem !important;
+            border-radius: 10px !important;
+            font-size: 0.92rem !important;
             color: #1e293b !important;
             transition: all 0.3s ease !important;
-            height: 40px !important;
+            height: 44px !important;
         }
 
         .form-input-custom:focus {
@@ -137,7 +137,7 @@
 
         .form-input-custom::placeholder {
             color: #94a3b8 !important;
-            font-size: 0.85rem !important;
+            font-size: 0.88rem !important;
         }
 
         /* Submit Button */
@@ -196,7 +196,7 @@
                     @csrf
 
                     <!-- Name Input -->
-                    <div class="mb-2.5">
+                    <div class="mb-3">
                         <label for="name" class="form-label-custom">ชื่อ-นามสกุล</label>
                         <div class="input-wrapper">
                             <i class="fa-regular fa-id-badge input-icon"></i>
@@ -208,7 +208,7 @@
                     </div>
 
                     <!-- Email Input -->
-                    <div class="mb-2.5">
+                    <div class="mb-3">
                         <label for="email" class="form-label-custom">อีเมล</label>
                         <div class="input-wrapper">
                             <i class="fa-regular fa-envelope input-icon"></i>
@@ -220,7 +220,7 @@
                     </div>
 
                     <!-- Username Input (CID) -->
-                    <div class="mb-2.5">
+                    <div class="mb-3">
                         <label for="username" class="form-label-custom">Username (เลขบัตรประชาชน / CID)</label>
                         <div class="input-wrapper">
                             <i class="fa-regular fa-user input-icon"></i>
@@ -232,7 +232,7 @@
                     </div>
 
                     <!-- Password Inputs Row -->
-                    <div class="row g-2 mb-3">
+                    <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label for="password" class="form-label-custom">รหัสผ่าน</label>
                             <div class="input-wrapper">

@@ -94,7 +94,7 @@
             font-weight: 600;
             font-size: 0.85rem;
             color: #475569;
-            margin-bottom: 6px;
+            margin-bottom: 7px;
             display: block;
         }
 
@@ -106,7 +106,7 @@
 
         .input-icon {
             position: absolute;
-            left: 14px;
+            left: 15px;
             color: #94a3b8;
             font-size: 0.95rem;
             transition: color 0.3s ease;
@@ -114,7 +114,7 @@
         }
 
         .form-input-custom {
-            padding-left: 40px !important;
+            padding-left: 42px !important;
             border: 1px solid #cbd5e1 !important;
             background-color: #ffffff !important;
             border-radius: 10px !important;
