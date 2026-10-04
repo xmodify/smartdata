@@ -90,8 +90,17 @@ class DatabaseSeeder extends Seeder
                         continue;
                     }
 
+                    // Configuration and credential tables should NEVER be overwritten if already configured
+                    $configTables = ['provider_id', 'moph_alert', 'moph_notify', 'telegram_notify', 'ai_settings'];
+                    $isConfigTable = in_array($table, $configTables);
+
                     $query = DB::table($table)->where($matchCondition);
                     if ($query->exists()) {
+                        // If it's a configuration table, preserve existing user settings and do not overwrite with seed defaults
+                        if ($isConfigTable) {
+                            continue;
+                        }
+
                         $updateData = $data;
                         if (Schema::hasColumn($table, 'updated_at')) {
                             $updateData['updated_at'] = now();
