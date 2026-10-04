@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder
     /**
      * Scan and sync all *_seeds.json files into database
      */
-    public function syncJsonSeeds(): void
+    public function syncJsonSeeds(): array
     {
         $seedFiles = array_unique(array_merge(
             glob(database_path('seeders/*_seeds.json')) ?: [],
@@ -55,6 +55,7 @@ class DatabaseSeeder extends Seeder
         ));
 
         $today = date('Y-m-d');
+        $log = [];
 
         foreach ($seedFiles as $file) {
             $content = json_decode(file_get_contents($file), true);
@@ -66,6 +67,9 @@ class DatabaseSeeder extends Seeder
                 if (!Schema::hasTable($table) || !is_array($records)) {
                     continue;
                 }
+
+                $seededCount = 0;
+                $updatedCount = 0;
 
                 foreach ($records as $record) {
                     $matchBy = $record['match_by'] ?? [];
@@ -105,6 +109,7 @@ class DatabaseSeeder extends Seeder
                                 $updateData['updated_at'] = now();
                             }
                             $query->update($updateData);
+                            $updatedCount++;
                         }
                         // For all other tables (present and future): PRESERVE EXISTING DATA, NEVER OVERWRITE!
                     } else {
@@ -117,9 +122,19 @@ class DatabaseSeeder extends Seeder
                             $insertData['updated_at'] = now();
                         }
                         DB::table($table)->insert($insertData);
+                        $seededCount++;
                     }
+                }
+
+                if ($seededCount > 0 || $updatedCount > 0) {
+                    $msgParts = [];
+                    if ($seededCount > 0) $msgParts[] = "เพิ่ม {$seededCount} รายการ";
+                    if ($updatedCount > 0) $msgParts[] = "อัปเดต {$updatedCount} รายการ";
+                    $log[] = "{$table} (" . implode(', ', $msgParts) . ")";
                 }
             }
         }
+
+        return $log;
     }
 }

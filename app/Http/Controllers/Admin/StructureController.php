@@ -186,85 +186,8 @@ class StructureController extends Controller
                     return response()->json(['success' => true, 'message' => 'Migrations completed. Output: ' . trim($output->fetch())]);
 
                 case 'sync_seed_data':
-                    $seedFiles = array_unique(array_merge(
-                        glob(database_path('seeders/*_seeds.json')) ?: [],
-                        glob(database_path('*_seeds.json')) ?: []
-                    ));
-
-                    if (empty($seedFiles)) {
-                        return response()->json(['success' => true, 'message' => 'ไม่พบไฟล์ข้อมูลตั้งต้น (*_seeds.json)']);
-                    }
-
-                    $today = date('Y-m-d');
-                    $log = [];
-
-                    foreach ($seedFiles as $file) {
-                        $content = json_decode(file_get_contents($file), true);
-                        if (!is_array($content)) {
-                            continue;
-                        }
-
-                        foreach ($content as $table => $records) {
-                            if (!Schema::hasTable($table) || !is_array($records)) {
-                                continue;
-                            }
-
-                            $seededCount = 0;
-                            $updatedCount = 0;
-
-                            foreach ($records as $record) {
-                                $matchBy = $record['match_by'] ?? [];
-                                $data = $record['data'] ?? [];
-
-                                // Special auto-calculation for budget_year active status
-                                if ($table === 'budget_year' && isset($data['DATE_BEGIN'], $data['DATE_END'])) {
-                                    $data['ACTIVE'] = ($today >= $data['DATE_BEGIN'] && $today <= $data['DATE_END']) ? 'True' : 'False';
-                                }
-
-                                if (empty($matchBy)) {
-                                    continue;
-                                }
-
-                                $matchCondition = [];
-                                foreach ($matchBy as $key) {
-                                    if (isset($data[$key])) {
-                                        $matchCondition[$key] = $data[$key];
-                                    }
-                                }
-
-                                if (empty($matchCondition)) {
-                                    continue;
-                                }
-
-                                $query = DB::table($table)->where($matchCondition);
-                                if ($query->exists()) {
-                                    $updateData = $data;
-                                    if (Schema::hasColumn($table, 'updated_at')) {
-                                        $updateData['updated_at'] = now();
-                                    }
-                                    $query->update($updateData);
-                                    $updatedCount++;
-                                } else {
-                                    $insertData = $data;
-                                    if (Schema::hasColumn($table, 'created_at')) {
-                                        $insertData['created_at'] = now();
-                                    }
-                                    if (Schema::hasColumn($table, 'updated_at')) {
-                                        $insertData['updated_at'] = now();
-                                    }
-                                    DB::table($table)->insert($insertData);
-                                    $seededCount++;
-                                }
-                            }
-
-                            if ($seededCount > 0 || $updatedCount > 0) {
-                                $msgParts = [];
-                                if ($seededCount > 0) $msgParts[] = "เพิ่ม {$seededCount} รายการ";
-                                if ($updatedCount > 0) $msgParts[] = "อัปเดต {$updatedCount} รายการ";
-                                $log[] = "{$table} (" . implode(', ', $msgParts) . ")";
-                            }
-                        }
-                    }
+                    $seeder = new \Database\Seeders\DatabaseSeeder();
+                    $log = $seeder->syncJsonSeeds();
 
                     return response()->json([
                         'success' => true, 
