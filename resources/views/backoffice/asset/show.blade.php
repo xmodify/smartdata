@@ -177,10 +177,30 @@
 <div class="container-fluid px-4">
     <!-- Header Box -->
     <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px; overflow: hidden;">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%); border-bottom: 1px solid #eaecf4;">
-            <h5 class="mb-0 fw-bold text-dark">
-                {{ $category->DECLINE_NAME }} ปีงบประมาณ {{ $fiscalYearThai }}
-            </h5>
+        <div class="card-header py-3 d-flex flex-wrap justify-content-between align-items-center" style="background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%); border-bottom: 1px solid #eaecf4; gap: 1rem;">
+            <div class="d-flex align-items-center">
+                <h5 class="mb-0 fw-bold text-dark">
+                    <i class="fas fa-boxes-stacked text-primary me-2"></i>{{ $category->DECLINE_NAME }} ปีงบประมาณ <span class="text-primary">{{ $fiscalYearThai }}</span>
+                </h5>
+            </div>
+            
+            <div class="d-flex align-items-center">
+                <form action="" method="GET" class="m-0 d-flex align-items-center gap-2">
+                    <div class="input-group input-group-sm shadow-sm" style="min-width: 265px; border-radius: 8px; overflow: hidden;">
+                        <span class="input-group-text bg-light text-primary border-end-0 fw-bold text-nowrap" style="font-size: 0.82rem; padding: 0.375rem 0.65rem;">
+                            <i class="fas fa-calendar-alt me-1"></i>เลือกปีงบ
+                        </span>
+                        <select class="form-select border-start-0" name="fiscal_year" onchange="this.form.submit()" style="font-size: 0.85rem; cursor: pointer;">
+                            @foreach ($budget_years as $by)
+                                <option value="{{ $by->LEAVE_YEAR_ID }}"
+                                    {{ (string)$fiscalYearThai === (string)$by->LEAVE_YEAR_ID ? 'selected' : '' }}>
+                                    {{ $by->LEAVE_YEAR_NAME }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
+            </div>
         </div>
         
         <div class="card-body p-4">
@@ -236,14 +256,14 @@
                             }
                         @endphp
 
-                        <!-- Asset Code Multi-select Dropdown Filter & Summary Button -->
+                        <!-- Asset Code & Department Multi-select Dropdown Filters & Summary Buttons -->
                         <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
                             <span class="fw-bold text-muted small text-nowrap">รหัสทรัพย์สิน:</span>
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-white dropdown-toggle shadow-sm" type="button" 
                                     id="assetFilterDropdown-{{ $statusId }}" data-bs-toggle="dropdown" aria-expanded="false"
-                                    style="background-color: white !important; border-radius: 8px !important; font-size: 0.8rem !important; min-width: 250px; text-align: left; display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.75rem !important; border: 1px solid #d1d3e2;">
-                                    <span class="dropdown-label text-truncate" style="max-width: 200px;">-- ทั้งหมด --</span>
+                                    style="background-color: white !important; border-radius: 8px !important; font-size: 0.8rem !important; min-width: 230px; text-align: left; display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.75rem !important; border: 1px solid #d1d3e2;">
+                                    <span class="dropdown-label text-truncate" style="max-width: 180px;">-- ทั้งหมด --</span>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-multiselect p-0" aria-labelledby="assetFilterDropdown-{{ $statusId }}">
                                     <div class="multiselect-header">
@@ -260,18 +280,56 @@
                                         @php
                                             $uniqueFsn = [];
                                             $fsnCounts = [];
+                                            $uniqueDept = [];
+                                            $deptCounts = [];
                                             foreach ($group['items'] as $item) {
                                                 if ($item->SUP_FSN) {
                                                     $uniqueFsn[$item->SUP_FSN] = $item->SUP_NAME ?: $item->ARTICLE_NAME;
                                                     $fsnCounts[$item->SUP_FSN] = ($fsnCounts[$item->SUP_FSN] ?? 0) + 1;
                                                 }
+                                                $dName = $item->HR_DEPARTMENT_SUB_SUB_NAME ?: 'ไม่ระบุหน่วยงาน';
+                                                $uniqueDept[$dName] = $dName;
+                                                $deptCounts[$dName] = ($deptCounts[$dName] ?? 0) + 1;
                                             }
                                             asort($uniqueFsn);
+                                            ksort($uniqueDept);
                                         @endphp
                                         @foreach ($uniqueFsn as $fsn => $name)
                                             <div class="multiselect-item selected">
                                                 <input type="checkbox" value="{{ $fsn }}" class="asset-checkbox" checked data-status-id="{{ $statusId }}" id="opt-{{ $statusId }}-{{ md5($fsn) }}">
                                                 <label for="opt-{{ $statusId }}-{{ md5($fsn) }}"><strong class="text-primary">{{ $fsn }}</strong> : {{ $name }} <span class="badge bg-secondary ms-1">{{ $fsnCounts[$fsn] }} {{ $category->DECLINE_ID == 18 ? 'เครื่อง' : 'รายการ' }}</span></label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="p-2 border-top bg-light text-center">
+                                        <small class="text-muted">เลือกได้หลายรายการ</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <span class="fw-bold text-muted small text-nowrap ms-1">หน่วยงาน:</span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-white dropdown-toggle shadow-sm" type="button" 
+                                    id="deptFilterDropdown-{{ $statusId }}" data-bs-toggle="dropdown" aria-expanded="false"
+                                    style="background-color: white !important; border-radius: 8px !important; font-size: 0.8rem !important; min-width: 230px; text-align: left; display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.75rem !important; border: 1px solid #d1d3e2;">
+                                    <span class="dropdown-label text-truncate" style="max-width: 180px;">-- ทั้งหมด --</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-multiselect p-0" aria-labelledby="deptFilterDropdown-{{ $statusId }}">
+                                    <div class="multiselect-header">
+                                        <input type="text" class="form-control form-control-sm multiselect-search mb-2" 
+                                            placeholder="ค้นหาหน่วยงาน..." id="searchDept-{{ $statusId }}">
+                                        <div class="form-check ms-1 mt-1">
+                                            <input class="form-check-input select-all-dept" type="checkbox" id="selectAllDept-{{ $statusId }}" checked data-status-id="{{ $statusId }}">
+                                            <label class="form-check-label fw-bold text-primary small" for="selectAllDept-{{ $statusId }}" style="cursor: pointer;">
+                                                เลือกทั้งหมด
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="multiselect-item-list" id="deptList-{{ $statusId }}">
+                                        @foreach ($uniqueDept as $deptName)
+                                            <div class="multiselect-item selected">
+                                                <input type="checkbox" value="{{ $deptName }}" class="dept-checkbox" checked data-status-id="{{ $statusId }}" id="opt-dept-{{ $statusId }}-{{ md5($deptName) }}">
+                                                <label for="opt-dept-{{ $statusId }}-{{ md5($deptName) }}"><strong class="text-dark">{{ $deptName }}</strong> <span class="badge bg-secondary ms-1">{{ $deptCounts[$deptName] }} {{ $category->DECLINE_ID == 18 ? 'เครื่อง' : 'รายการ' }}</span></label>
                                             </div>
                                         @endforeach
                                     </div>
@@ -562,25 +620,40 @@
     <script src="{{ asset('vendor/datatables/buttons.html5.min.js') }}"></script>
     <script>
         $(document).ready(function() {
-            // Register DataTables custom search filter for asset FSN
+            // Register DataTables custom search filter for asset FSN & Department
             $.fn.dataTable.ext.search.push(
                 function( settings, data, dataIndex ) {
                     let tableId = settings.nTable.id;
                     if (!tableId.startsWith('assetTable-')) return true;
                     
                     let statusId = tableId.split('-')[1];
-                    let checkedFsn = [];
+                    let isComputer = "{{ $category->DECLINE_ID }}" == "18";
                     
+                    // 1. Check FSN filter
+                    let checkedFsn = [];
                     $(`#assetList-${statusId} .asset-checkbox:checked`).each(function() {
-                        checkedFsn.push($(this).val());
+                        checkedFsn.push($(this).val().trim());
                     });
                     
-                    // For decline_id == 18, FSN is in column 0. For others, it's column 3.
-                    let isComputer = "{{ $category->DECLINE_ID }}" == "18";
                     let fsnColumnIndex = isComputer ? 0 : 3;
                     let rowFsn = data[fsnColumnIndex].trim(); 
+                    if (!checkedFsn.includes(rowFsn)) {
+                        return false;
+                    }
+
+                    // 2. Check Department filter
+                    let checkedDept = [];
+                    $(`#deptList-${statusId} .dept-checkbox:checked`).each(function() {
+                        checkedDept.push($(this).val().trim());
+                    });
                     
-                    return checkedFsn.includes(rowFsn);
+                    let deptColumnIndex = isComputer ? 10 : 8;
+                    let rowDept = data[deptColumnIndex] ? data[deptColumnIndex].trim() : 'ไม่ระบุหน่วยงาน';
+                    if (!checkedDept.includes(rowDept)) {
+                        return false;
+                    }
+                    
+                    return true;
                 }
             );
 
@@ -589,7 +662,7 @@
                 let statusId = $(this).attr('id').split('-')[1];
                 let tabButton = document.querySelector(`#status-${statusId}-tab`);
                 let tabName = tabButton ? tabButton.innerText.trim().replace(/\s*\(\d+\)/g, '') : '';
-                let pdfUrl = "{{ route('backoffice.asset.pdf', $category->DECLINE_ID) }}?status_id=" + statusId;
+                let pdfUrl = "{{ route('backoffice.asset.pdf', $category->DECLINE_ID) }}?status_id=" + statusId + "&fiscal_year={{ $fiscalYearThai }}";
                 let isComputer = "{{ $category->DECLINE_ID }}" == "18";
 
                 $(this).DataTable({
@@ -606,7 +679,8 @@
                             extend: 'excelHtml5',
                             text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
                             className: 'btn btn-success',
-                            title: 'รายงาน_' + '{{ str_replace(' ', '_', $category->DECLINE_NAME) }}' + '_' + tabName + '_{{ date('Y-m-d') }}',
+                            title: 'รายงาน_' + '{{ str_replace(' ', '_', $category->DECLINE_NAME) }}' + '_' + tabName + '_ปีงบประมาณ_{{ $fiscalYearThai }}_{{ date('Y-m-d') }}',
+                            filename: 'รายงาน_' + '{{ str_replace(' ', '_', $category->DECLINE_NAME) }}' + '_' + tabName + '_ปีงบประมาณ_{{ $fiscalYearThai }}_{{ date('Y-m-d') }}',
                             exportOptions: {
                                 columns: isComputer ? ':not(:last-child)' : ':visible'
                             }
@@ -630,11 +704,11 @@
                 e.stopPropagation();
             });
 
-            // Filter search input within dropdowns
-            $(`.multiselect-search`).on('input', function() {
+            // Filter search input within dropdowns (Assets & Department)
+            $(document).on('input', '.multiselect-search', function() {
                 let searchTerm = $(this).val().toLowerCase();
-                let statusId = $(this).attr('id').split('-')[1];
-                $(`#assetList-${statusId} .multiselect-item`).each(function() {
+                let dropdownMenu = $(this).closest('.dropdown-menu-multiselect');
+                dropdownMenu.find('.multiselect-item').each(function() {
                     let text = $(this).text().toLowerCase();
                     if (text.includes(searchTerm)) {
                         $(this).css('display', 'flex');
@@ -644,7 +718,7 @@
                 });
             });
 
-            // Select All Checkbox Handler
+            // Select All Checkbox Handler - Assets
             $('.select-all-assets').on('change', function() {
                 let isChecked = this.checked;
                 let statusId = $(this).data('status-id');
@@ -662,7 +736,7 @@
                 $('#assetTable-' + statusId).DataTable().draw();
             });
 
-            // Individual Checkbox Handler
+            // Individual Checkbox Handler - Assets
             $('.asset-checkbox').on('change', function() {
                 let statusId = $(this).data('status-id');
                 $(this).closest('.multiselect-item').toggleClass('selected', this.checked);
@@ -689,6 +763,54 @@
                     label.text('-- ทั้งหมด --');
                 } else {
                     label.text('เลือก (' + checkedCount + ') รหัสทรัพย์สิน');
+                }
+            }
+
+            // Select All Checkbox Handler - Department
+            $('.select-all-dept').on('change', function() {
+                let isChecked = this.checked;
+                let statusId = $(this).data('status-id');
+                let list = $(`#deptList-${statusId}`);
+                
+                list.find('.multiselect-item').each(function() {
+                    if ($(this).css('display') !== 'none') {
+                        let cb = $(this).find('.dept-checkbox');
+                        cb.prop('checked', isChecked);
+                        $(this).toggleClass('selected', isChecked);
+                    }
+                });
+                
+                updateDeptDropdownLabel(statusId);
+                $('#assetTable-' + statusId).DataTable().draw();
+            });
+
+            // Individual Checkbox Handler - Department
+            $('.dept-checkbox').on('change', function() {
+                let statusId = $(this).data('status-id');
+                $(this).closest('.multiselect-item').toggleClass('selected', this.checked);
+                
+                // Update Select All state
+                let list = $(`#deptList-${statusId}`);
+                let allChecked = list.find('.dept-checkbox:checked').length === list.find('.dept-checkbox').length;
+                $(`#selectAllDept-${statusId}`).prop('checked', allChecked);
+
+                updateDeptDropdownLabel(statusId);
+                $('#assetTable-' + statusId).DataTable().draw();
+            });
+
+            function updateDeptDropdownLabel(statusId) {
+                let list = $(`#deptList-${statusId}`);
+                let checkedCount = list.find('.dept-checkbox:checked').length;
+                let totalCount = list.find('.dept-checkbox').length;
+                let dropdownBtn = $(`#deptFilterDropdown-${statusId}`);
+                let label = dropdownBtn.find('.dropdown-label');
+                
+                if (checkedCount === 0) {
+                    label.text('-- ไม่มีตัวเลือก --');
+                } else if (checkedCount === totalCount) {
+                    label.text('-- ทั้งหมด --');
+                } else {
+                    label.text('เลือก (' + checkedCount + ') หน่วยงาน');
                 }
             }
 

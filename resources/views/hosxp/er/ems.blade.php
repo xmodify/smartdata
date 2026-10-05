@@ -167,6 +167,7 @@
             transition: width 0.6s ease;
         }
         .diag-progress.bg-als { background: rgba(239, 68, 68, 0.15); }
+        .diag-progress.bg-bls { background: rgba(2, 132, 199, 0.15); }
         .diag-progress.bg-ils { background: rgba(59, 130, 246, 0.15); }
         .diag-progress.bg-fr { background: rgba(16, 185, 129, 0.15); }
     </style>
@@ -194,7 +195,7 @@
                             @foreach ($budget_year_select as $row)
                                 <option value="{{ $row->LEAVE_YEAR_ID }}"
                                     {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>
-                                    ปีงบ {{ $row->LEAVE_YEAR_NAME }}
+                                    {{ $row->LEAVE_YEAR_NAME }}
                                 </option>
                             @endforeach
                         </select>
@@ -206,13 +207,14 @@
         @php
             $total_count = count($ems_list);
             $als_count = count(array_filter($ems_list, function($item) { return $item->ems === 'ALS'; }));
+            $bls_count = count(array_filter($ems_list, function($item) { return $item->ems === 'BLS'; }));
             $ils_count = count(array_filter($ems_list, function($item) { return $item->ems === 'ILS'; }));
             $fr_count = count(array_filter($ems_list, function($item) { return $item->ems === 'FR'; }));
         @endphp
 
-        <!-- Summary Cards -->
-        <div class="row mb-4 g-3">
-            <div class="col-md-3">
+        <!-- Summary Cards (5 columns) -->
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 mb-4 g-3">
+            <div class="col">
                 <div class="card card-ems shadow-sm border-0 h-100 bg-white" style="border-top: 4px solid #475569 !important;">
                     <div class="card-body text-center p-3">
                         <div class="mb-2"><i class="fas fa-users fa-2x text-secondary opacity-50"></i></div>
@@ -221,7 +223,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col">
                 <div class="card card-ems shadow-sm border-0 h-100 bg-white" style="border-top: 4px solid #dc3545 !important;">
                     <div class="card-body text-center p-3">
                         <div class="mb-2"><i class="fas fa-ambulance fa-2x text-danger opacity-50"></i></div>
@@ -230,7 +232,16 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col">
+                <div class="card card-ems shadow-sm border-0 h-100 bg-white" style="border-top: 4px solid #0284c7 !important;">
+                    <div class="card-body text-center p-3">
+                        <div class="mb-2"><i class="fas fa-ambulance fa-2x opacity-75" style="color: #0284c7;"></i></div>
+                        <h3 class="fw-bold mb-0" style="color: #0284c7;">{{ number_format($bls_count) }}</h3>
+                        <div class="small fw-bold mt-1" style="color: #0284c7;">BLS (Basic Life Support)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
                 <div class="card card-ems shadow-sm border-0 h-100 bg-white" style="border-top: 4px solid #0d6efd !important;">
                     <div class="card-body text-center p-3">
                         <div class="mb-2"><i class="fas fa-ambulance fa-2x text-primary opacity-50"></i></div>
@@ -239,7 +250,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col">
                 <div class="card card-ems shadow-sm border-0 h-100 bg-white" style="border-top: 4px solid #198754 !important;">
                     <div class="card-body text-center p-3">
                         <div class="mb-2"><i class="fas fa-ambulance fa-2x text-success opacity-50"></i></div>
@@ -255,7 +266,7 @@
             <div class="col-12">
                 <div class="card border-0 shadow-sm card-ems" style="border-radius: 15px;">
                     <div class="card-header bg-light py-3 border-0" style="border-radius: 16px 16px 0 0;">
-                        <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-chart-line me-2"></i>จำนวนผู้รับบริการ EMS แยกรายเดือน (ALS, ILS, FR)</h6>
+                        <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-chart-line me-2"></i>จำนวนผู้รับบริการ EMS แยกรายเดือน (ALS, BLS, ILS, FR)</h6>
                     </div>
                     <div class="card-body">
                         <div id="chart-ems-monthly"></div>
@@ -264,11 +275,11 @@
             </div>
         </div>
 
-        <!-- Top 20 Diagnoses for ALS, ILS, FR -->
+        <!-- Top 20 Diagnoses for ALS, BLS, ILS, FR -->
         <div class="row mb-4 g-3">
             <!-- ALS Top Diags -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm card-ems">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="card border-0 shadow-sm card-ems h-100">
                     <div class="card-header bg-danger text-white py-3 border-0" style="border-radius: 16px 16px 0 0;">
                         <h6 class="fw-bold mb-0"><i class="fas fa-trophy me-2"></i>20 อันดับโรคสูงสุด (ALS)</h6>
                     </div>
@@ -282,7 +293,7 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="small text-dark fw-bold" style="max-width: 80%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                             @if($index < 3 && $row->sum > 0)
-                                                <span class="badge rounded-pill bg-warning text-dark px-2 me-1">
+                                                 <span class="badge rounded-pill bg-warning text-dark px-2 me-1">
                                                     <i class="fas fa-crown"></i> {{ $index + 1 }}
                                                 </span>
                                             @else
@@ -300,9 +311,43 @@
                 </div>
             </div>
 
+            <!-- BLS Top Diags -->
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="card border-0 shadow-sm card-ems h-100">
+                    <div class="card-header text-white py-3 border-0" style="border-radius: 16px 16px 0 0; background-color: #0284c7;">
+                        <h6 class="fw-bold mb-0"><i class="fas fa-trophy me-2"></i>20 อันดับโรคสูงสุด (BLS)</h6>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                        @if(empty($ems_diag_bls))
+                            <div class="p-4 text-center text-muted small">ไม่มีข้อมูล</div>
+                        @else
+                            @php $max_bls = reset($ems_diag_bls)->sum ?? 1; @endphp
+                            @foreach($ems_diag_bls as $index => $row)
+                                <div class="diag-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="small text-dark fw-bold" style="max-width: 80%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            @if($index < 3 && $row->sum > 0)
+                                                <span class="badge rounded-pill bg-warning text-dark px-2 me-1">
+                                                    <i class="fas fa-crown"></i> {{ $index + 1 }}
+                                                </span>
+                                            @else
+                                                <span class="me-1 fw-bold text-muted">{{ $index + 1 }}.</span>
+                                            @endif
+                                            {{ $row->name }}
+                                        </span>
+                                        <span class="badge rounded-pill text-white" style="background-color: #0284c7;">{{ number_format($row->sum) }}</span>
+                                    </div>
+                                    <div class="diag-progress bg-bls" style="width: {{ ($row->sum / $max_bls) * 100 }}%"></div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+                </div>
+            </div>
+
             <!-- ILS Top Diags -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm card-ems">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="card border-0 shadow-sm card-ems h-100">
                     <div class="card-header bg-primary text-white py-3 border-0" style="border-radius: 16px 16px 0 0;">
                         <h6 class="fw-bold mb-0"><i class="fas fa-trophy me-2"></i>20 อันดับโรคสูงสุด (ILS)</h6>
                     </div>
@@ -335,8 +380,8 @@
             </div>
 
             <!-- FR Top Diags -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm card-ems">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="card border-0 shadow-sm card-ems h-100">
                     <div class="card-header bg-success text-white py-3 border-0" style="border-radius: 16px 16px 0 0;">
                         <h6 class="fw-bold mb-0"><i class="fas fa-trophy me-2"></i>20 อันดับโรคสูงสุด (FR)</h6>
                     </div>
@@ -582,15 +627,17 @@
 
             initPatientTable();
 
-                // Render EMS Monthly Trend Line Chart (ALS, ILS, FR)
+                // Render EMS Monthly Trend Line Chart (ALS, BLS, ILS, FR)
                 const monthlyCategories = {!! json_encode(array_column($ems_monthly, 'month_year')) !!};
                 const alsData = {!! json_encode(array_map('intval', array_column($ems_monthly, 'als'))) !!};
+                const blsData = {!! json_encode(array_map('intval', array_column($ems_monthly, 'bls'))) !!};
                 const ilsData = {!! json_encode(array_map('intval', array_column($ems_monthly, 'ils'))) !!};
                 const frData = {!! json_encode(array_map('intval', array_column($ems_monthly, 'fr'))) !!};
 
                 const chartOptions = {
                     series: [
                         { name: 'ALS (Advanced Life Support)', data: alsData },
+                        { name: 'BLS (Basic Life Support)', data: blsData },
                         { name: 'ILS (Intermediate Life Support)', data: ilsData },
                         { name: 'FR (First Responder)', data: frData }
                     ],
@@ -602,7 +649,7 @@
                     dataLabels: {
                         enabled: true
                     },
-                    colors: ['#dc3545', '#0d6efd', '#198754'],
+                    colors: ['#dc3545', '#0284c7', '#0d6efd', '#198754'],
                     stroke: {
                         curve: 'smooth',
                         width: 3

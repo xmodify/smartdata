@@ -292,7 +292,7 @@ class HosxpContextService
 - hospcode: สถานพยาบาล/รพ.สต. (hospcode, name, hosptype)
 
 2. ผู้ป่วยนอก (OPD):
-- ovst: การมารับบริการ (vn, hn, vstdate [YYYY-MM-DD], vsttime, cur_dep, main_dep, pttype, ovstost ['99'=เสร็จสิ้น], oqueue, main_dep_queue, ovstist ['08'=ALS, '09'=FR, '10'=ILS สำหรับ EMS], an)
+- ovst: การมารับบริการ (vn, hn, vstdate [YYYY-MM-DD], vsttime, cur_dep, main_dep, pttype, ovstost ['99'=เสร็จสิ้น], oqueue, main_dep_queue, ovstist ['08'=ALS, '09'=ILS, '10'=FR, '13'=BLS สำหรับ EMS], an)
 - vn_stat: สถิติผู้ป่วยนอกและการเงิน (vn, hn, vstdate, pdx [รหัสโรคหลัก ICD-10], dx0, dx1, dx2, dx3, dx4, dx5, sex, age_y, pttype, income [ค่าบริการรวม], uc_money [เบิกได้], paid_money [ชำระเอง], inc12 [ค่ายา], inc03 [ค่าแล็บ], lastvisit_hour [ชม. ที่มาตรวจครั้งก่อน], old_diagnosis ['Y'=โรคเดิม], dx_doctor)
 - opdscreen: คัดกรองและสัญญาณชีพ (vn, hn, cc [อาการสำคัญ Chief Complaint], bps, bpd, bw [น้ำหนัก], height [ส่วนสูง], hr, pulse, temperature)
 - ovstdiag: การวินิจฉัยโรค OPD (vn, hn, icd10, diagtype [1=Principle Dx, 2=Co-morbidity, 3=Complication], vstdate)

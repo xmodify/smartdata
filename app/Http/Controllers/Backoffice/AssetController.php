@@ -27,7 +27,7 @@ class AssetController extends Controller
         return view('backoffice.asset.index', compact('categories'));
     }
 
-    public function show($decline_id)
+    public function show(Request $request, $decline_id)
     {
         $category = DB::connection('backoffice')->selectOne('
             SELECT * FROM supplies_decline WHERE DECLINE_ID = ?
@@ -98,12 +98,27 @@ class AssetController extends Controller
         // Sort grouped assets so that 'ปกติ' (1) is always first if exists
         ksort($groupedAssets);
 
-        $year = date('Y');
-        $month = date('m');
-        $fiscalYear = ($month >= 10) ? $year + 1 : $year;
-        $fiscalYearThai = $fiscalYear + 543;
+        $budget_years = DB::table('budget_year')
+            ->select('LEAVE_YEAR_ID', 'LEAVE_YEAR_NAME')
+            ->orderByDesc('LEAVE_YEAR_ID')
+            ->limit(10)
+            ->get();
 
-        return view('backoffice.asset.show', compact('groupedAssets', 'category', 'fiscalYearThai'));
+        $budget_year_now = DB::table('budget_year')
+            ->whereDate('DATE_END', '>=', date('Y-m-d'))
+            ->whereDate('DATE_BEGIN', '<=', date('Y-m-d'))
+            ->value('LEAVE_YEAR_ID');
+
+        if (!$budget_year_now) {
+            $year = date('Y');
+            $month = date('m');
+            $fiscalYear = ($month >= 10) ? $year + 1 : $year;
+            $budget_year_now = $fiscalYear + 543;
+        }
+
+        $fiscalYearThai = $request->query('fiscal_year') ?: ($request->query('budget_year') ?: $budget_year_now);
+
+        return view('backoffice.asset.show', compact('groupedAssets', 'category', 'fiscalYearThai', 'budget_years'));
     }
 
     public function pdf(Request $request, $decline_id)
@@ -148,10 +163,19 @@ class AssetController extends Controller
             $asset->thai_receive_date = self::formatThaiDate($asset->RECEIVE_DATE, 'short');
         }
 
-        $year = date('Y');
-        $month = date('m');
-        $fiscalYear = ($month >= 10) ? $year + 1 : $year;
-        $fiscalYearThai = $fiscalYear + 543;
+        $budget_year_now = DB::table('budget_year')
+            ->whereDate('DATE_END', '>=', date('Y-m-d'))
+            ->whereDate('DATE_BEGIN', '<=', date('Y-m-d'))
+            ->value('LEAVE_YEAR_ID');
+
+        if (!$budget_year_now) {
+            $year = date('Y');
+            $month = date('m');
+            $fiscalYear = ($month >= 10) ? $year + 1 : $year;
+            $budget_year_now = $fiscalYear + 543;
+        }
+
+        $fiscalYearThai = $request->query('fiscal_year') ?: ($request->query('budget_year') ?: $budget_year_now);
 
         $pdf = Pdf::loadView('backoffice.asset.pdf', compact('assets', 'category', 'statusName', 'fiscalYearThai'))
             ->setPaper('A4', 'landscape')

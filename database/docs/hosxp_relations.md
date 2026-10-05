@@ -171,6 +171,7 @@
 
 * **`er_regist_oper` (ตารางหัตถการห้องฉุกเฉิน - ER Procedures)**
   * `er_regist_oper.vn` -> `ovst.vn` หรือ `er_regist.vn` (เชื่อมโยงกับ Visit ห้องฉุกเฉิน)
+  * `er_regist_oper.er_oper_code` -> `er_oper_code.er_oper_code` (เชื่อมตารางรหัสหัตถการ ER ซึ่งเก็บรหัส ICD-9 ในคอลัมน์ `icd9cm`)
   * `er_regist_oper.doctor` -> `doctor.code` (แพทย์ผู้ทำหัตถการ)
 
 ### ตาราง Lookup สำคัญด้านการให้รหัสโรคและรหัสหัตถการ (Coding Lookups):

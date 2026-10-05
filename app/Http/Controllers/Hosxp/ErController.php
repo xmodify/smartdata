@@ -89,7 +89,12 @@ class ErController extends Controller
         $ems_list = DB::connection('hosxp')->select('
             SELECT o.vn, o.oqueue, o.vstdate, o.vsttime, o.hn, CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS ptname,
             v.age_y, CONCAT(o.pttype, " [", p1.hipdata_code, "]") AS pttype, o1.cc, v.pdx, d.`name` AS dx_doctor,
-            CASE WHEN o.ovstist = "08" THEN "ALS" WHEN o.ovstist = "09" THEN "FR" WHEN o.ovstist = "10" THEN "ILS" END AS ems,
+            CASE 
+                WHEN o.ovstist = "08" THEN "ALS" 
+                WHEN o.ovstist = "09" THEN "ILS" 
+                WHEN o.ovstist = "10" THEN "FR" 
+                WHEN o.ovstist = "13" THEN "BLS" 
+            END AS ems,
             IF(o.an <> "", "Admit", NULL) AS admit, CONCAT(r.refer_hospcode, " [", r.pdx, "]") AS refer,
             CASE WHEN e.er_emergency_type = "1" THEN "Resuscitate" WHEN e.er_emergency_type = "2" THEN "Emergency" 
             WHEN e.er_emergency_type = "3" THEN "Urgency" WHEN e.er_emergency_type = "4" THEN "Semi_Urgency"  
@@ -103,7 +108,7 @@ class ErController extends Controller
             LEFT JOIN doctor d ON d.`code`=v.dx_doctor
             LEFT JOIN er_regist e ON e.vn=o.vn
             WHERE o.vstdate BETWEEN ? AND ?
-            AND o.ovstist IN ("08", "09", "10")
+            AND o.ovstist IN ("08", "09", "10", "13")
             GROUP BY o.vn
         ', [$table_start_date, $table_end_date]);
 
@@ -140,6 +145,25 @@ class ErController extends Controller
 
         $ems_diag_als_name = array_column($ems_diag_als, 'name');
         $ems_diag_als_sum = array_column($ems_diag_als, 'sum');
+
+        $ems_diag_bls = DB::connection('hosxp')->select('
+            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
+            FROM (
+                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
+                FROM vn_stat v
+                LEFT JOIN icd101 i ON i.code=v.pdx
+                LEFT JOIN ovst o ON o.vn=v.vn
+                WHERE v.vstdate BETWEEN ? AND ?
+                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
+                AND o.ovstist IN ("13")
+                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
+            ) AS a
+            GROUP BY pdx
+            ORDER BY sum DESC LIMIT 20
+        ', [$year_start, $year_end]);
+
+        $ems_diag_bls_name = array_column($ems_diag_bls, 'name');
+        $ems_diag_bls_sum = array_column($ems_diag_bls, 'sum');
 
         $ems_diag_ils = DB::connection('hosxp')->select('
             SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
@@ -196,11 +220,12 @@ class ErController extends Controller
                     WHEN MONTH(o.vstdate) = 9 THEN CONCAT("ก.ย. ", RIGHT(YEAR(o.vstdate) + 543, 2))
                 END AS month_year,
                 SUM(CASE WHEN o.ovstist = "08" THEN 1 ELSE 0 END) AS als,
-                SUM(CASE WHEN o.ovstist = "09" THEN 1 ELSE 0 END) AS fr,
-                SUM(CASE WHEN o.ovstist = "10" THEN 1 ELSE 0 END) AS ils
+                SUM(CASE WHEN o.ovstist = "13" THEN 1 ELSE 0 END) AS bls,
+                SUM(CASE WHEN o.ovstist = "09" THEN 1 ELSE 0 END) AS ils,
+                SUM(CASE WHEN o.ovstist = "10" THEN 1 ELSE 0 END) AS fr
             FROM ovst o
             WHERE o.vstdate BETWEEN ? AND ?
-            AND o.ovstist IN ("08", "09", "10")
+            AND o.ovstist IN ("08", "09", "10", "13")
             GROUP BY YEAR(o.vstdate), MONTH(o.vstdate)
             ORDER BY YEAR(o.vstdate), MONTH(o.vstdate)
         ', [$year_start, $year_end]);
@@ -213,6 +238,7 @@ class ErController extends Controller
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
             'year_start', 'year_end', 'table_start_date', 'table_end_date',
             'ems_diag_als', 'ems_diag_als_name', 'ems_diag_als_sum',
+            'ems_diag_bls', 'ems_diag_bls_name', 'ems_diag_bls_sum',
             'ems_diag_ils', 'ems_diag_ils_name', 'ems_diag_ils_sum',
             'ems_diag_fr', 'ems_diag_fr_name', 'ems_diag_fr_sum',
             'ems_list', 'ems_monthly'
@@ -487,6 +513,228 @@ class ErController extends Controller
         ", [$start_date, $end_date]);
 
         return view('hosxp.er.top20', compact('title', 'budget_year_select', 'budget_year', 'diag_icd10', 'diag_504', 'start_date', 'end_date'));
+    }
+
+    public function procedure(Request $request)
+    {
+        $title = 'รายงานหัตถการสำคัญ ER';
+        $dates = $this->resolveDateRange($request);
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+        $year_start = $dates['year_start'];
+        $year_end = $dates['year_end'];
+        $table_start_date = $dates['table_start_date'];
+        $table_end_date = $dates['table_end_date'];
+        $start_date = $table_start_date;
+        $end_date = $table_end_date;
+
+        $proc_filter = $request->get('proc_filter', 'all');
+
+        if ($request->ajax()) {
+            $procedure_list = $this->fetch_er_procedure_list($table_start_date, $table_end_date, $proc_filter);
+            $html = view('hosxp.er.partials._table_procedure', compact('procedure_list'))->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'total' => count($procedure_list)
+            ]);
+        }
+
+        $procedure_list = $this->fetch_er_procedure_list($table_start_date, $table_end_date, $proc_filter);
+        $procedure_monthly = $this->fetch_er_procedure_monthly($year_start, $year_end);
+        $summary_stats = $this->fetch_er_procedure_summary($year_start, $year_end);
+        $diag_intubation = $this->fetch_er_procedure_diag($year_start, $year_end, 'intubation');
+        $diag_cpr = $this->fetch_er_procedure_diag($year_start, $year_end, 'cpr');
+
+        return view('hosxp.er.procedure', compact(
+            'title', 'budget_year_select', 'budget_year', 'year_start', 'year_end',
+            'table_start_date', 'table_end_date', 'start_date', 'end_date',
+            'proc_filter', 'procedure_list', 'procedure_monthly', 'summary_stats',
+            'diag_intubation', 'diag_cpr'
+        ));
+    }
+
+    private function fetch_er_procedure_list($start_date, $end_date, $filter = 'all')
+    {
+        $having = '';
+        if ($filter === 'intubation') {
+            $having = ' HAVING has_intubation = 1 ';
+        } elseif ($filter === 'cpr') {
+            $having = ' HAVING has_cpr = 1 ';
+        } elseif ($filter === 'both') {
+            $having = ' HAVING has_intubation = 1 AND has_cpr = 1 ';
+        }
+
+        return DB::connection('hosxp')->select("
+            SELECT 
+                o.vn,
+                o.vstdate,
+                o.vsttime,
+                o.oqueue,
+                o.hn,
+                CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS ptname,
+                v.age_y,
+                CONCAT(o.pttype, ' [', COALESCE(p1.hipdata_code, o.pttype), ']') AS pttype,
+                o1.cc,
+                v.pdx,
+                d.name AS dx_doctor,
+                MAX(CASE WHEN REPLACE(proc.icd9, '.', '') IN ('9604', '9671', '9672', '9605') THEN 1 ELSE 0 END) AS has_intubation,
+                MAX(CASE WHEN REPLACE(proc.icd9, '.', '') IN ('9960', '9963') THEN 1 ELSE 0 END) AS has_cpr,
+                GROUP_CONCAT(DISTINCT 
+                    CASE 
+                        WHEN REPLACE(proc.icd9, '.', '') IN ('9604') THEN 'ใส่ท่อช่วยหายใจ [96.04]'
+                        WHEN REPLACE(proc.icd9, '.', '') IN ('9671', '9672', '9605') THEN 'ช่วยหายใจ [96.7x]'
+                        WHEN REPLACE(proc.icd9, '.', '') IN ('9960') THEN 'ฟื้นคืนชีพ CPR [99.60]'
+                        WHEN REPLACE(proc.icd9, '.', '') IN ('9963') THEN 'นวดหัวใจ [99.63]'
+                        ELSE proc.icd9
+                    END 
+                    ORDER BY proc.icd9 ASC
+                    SEPARATOR ', '
+                ) AS procedure_summary,
+                IF(o.an <> '' AND o.an IS NOT NULL, 'Admit', NULL) AS admit,
+                IF(r.vn <> '' AND r.vn IS NOT NULL, CONCAT(r.refer_hospcode, ' [', COALESCE(r.pdx, ''), ']'), NULL) AS refer,
+                CASE 
+                    WHEN e.er_emergency_type = '1' THEN 'Resuscitate' 
+                    WHEN e.er_emergency_type = '2' THEN 'Emergency' 
+                    WHEN e.er_emergency_type = '3' THEN 'Urgency' 
+                    WHEN e.er_emergency_type = '4' THEN 'Semi_Urgency'  
+                    WHEN (e.er_emergency_type = '5' OR e.er_emergency_type IS NULL) THEN 'Non_Urgency' 
+                END AS er_emergency_type
+            FROM ovst o
+            INNER JOIN er_regist e ON e.vn = o.vn
+            INNER JOIN (
+                SELECT vn, icd9, doctor FROM doctor_operation
+                WHERE REPLACE(icd9, '.', '') IN ('9604', '9671', '9672', '9605', '9960', '9963')
+                UNION
+                SELECT eop.vn, COALESCE(eoc.icd9cm, '') AS icd9, eop.doctor
+                FROM er_regist_oper eop
+                LEFT JOIN er_oper_code eoc ON eoc.er_oper_code = eop.er_oper_code
+                WHERE REPLACE(COALESCE(eoc.icd9cm, ''), '.', '') IN ('9604', '9671', '9672', '9605', '9960', '9963')
+            ) AS proc ON proc.vn = o.vn
+            LEFT JOIN patient p ON p.hn = o.hn
+            LEFT JOIN pttype p1 ON p1.pttype = o.pttype
+            LEFT JOIN opdscreen o1 ON o1.vn = o.vn
+            LEFT JOIN vn_stat v ON v.vn = o.vn
+            LEFT JOIN referout r ON r.vn = o.vn
+            LEFT JOIN doctor d ON d.code = v.dx_doctor
+            WHERE o.vstdate BETWEEN ? AND ?
+            GROUP BY o.vn
+            {$having}
+            ORDER BY o.vstdate DESC, o.vsttime DESC
+        ", [$start_date, $end_date]);
+    }
+
+    private function fetch_er_procedure_monthly($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select("
+            SELECT 
+                CASE 
+                    WHEN MONTH(o.vstdate) = 10 THEN CONCAT('ต.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 11 THEN CONCAT('พ.ย. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 12 THEN CONCAT('ธ.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 1 THEN CONCAT('ม.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 2 THEN CONCAT('ก.พ. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 3 THEN CONCAT('มี.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 4 THEN CONCAT('เม.ย. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 5 THEN CONCAT('พ.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 6 THEN CONCAT('มิ.ย. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 7 THEN CONCAT('ก.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 8 THEN CONCAT('ส.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 9 THEN CONCAT('ก.ย. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                END AS month_year,
+                COUNT(DISTINCT o.vn) AS total_cases,
+                COUNT(DISTINCT CASE WHEN REPLACE(proc.icd9, '.', '') IN ('9604', '9671', '9672', '9605') THEN o.vn END) AS intubation_cases,
+                COUNT(DISTINCT CASE WHEN REPLACE(proc.icd9, '.', '') IN ('9960', '9963') THEN o.vn END) AS cpr_cases,
+                COUNT(DISTINCT CASE WHEN o.an <> '' AND o.an IS NOT NULL THEN o.vn END) AS admit_cases,
+                COUNT(DISTINCT CASE WHEN r.vn <> '' AND r.vn IS NOT NULL THEN o.vn END) AS refer_cases
+            FROM ovst o
+            INNER JOIN er_regist e ON e.vn = o.vn
+            INNER JOIN (
+                SELECT vn, icd9 FROM doctor_operation
+                WHERE REPLACE(icd9, '.', '') IN ('9604', '9671', '9672', '9605', '9960', '9963')
+                UNION
+                SELECT eop.vn, COALESCE(eoc.icd9cm, '') AS icd9
+                FROM er_regist_oper eop
+                LEFT JOIN er_oper_code eoc ON eoc.er_oper_code = eop.er_oper_code
+                WHERE REPLACE(COALESCE(eoc.icd9cm, ''), '.', '') IN ('9604', '9671', '9672', '9605', '9960', '9963')
+            ) AS proc ON proc.vn = o.vn
+            LEFT JOIN referout r ON r.vn = o.vn
+            WHERE o.vstdate BETWEEN ? AND ?
+            GROUP BY YEAR(o.vstdate), MONTH(o.vstdate)
+            ORDER BY YEAR(o.vstdate), MONTH(o.vstdate)
+        ", [$start_date, $end_date]);
+    }
+
+    private function fetch_er_procedure_summary($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->selectOne("
+            SELECT 
+                COUNT(DISTINCT o.vn) AS total_patients,
+                COUNT(DISTINCT CASE WHEN REPLACE(proc.icd9, '.', '') IN ('9604', '9671', '9672', '9605') THEN o.vn END) AS intubation_patients,
+                COUNT(DISTINCT CASE WHEN REPLACE(proc.icd9, '.', '') IN ('9960', '9963') THEN o.vn END) AS cpr_patients,
+                COUNT(DISTINCT CASE WHEN REPLACE(proc.icd9, '.', '') IN ('9604', '9671', '9672', '9605') AND REPLACE(proc2.icd9, '.', '') IN ('9960', '9963') THEN o.vn END) AS both_patients,
+                COUNT(DISTINCT CASE WHEN o.an <> '' AND o.an IS NOT NULL THEN o.vn END) AS admit_patients,
+                COUNT(DISTINCT CASE WHEN r.vn <> '' AND r.vn IS NOT NULL THEN o.vn END) AS refer_patients
+            FROM ovst o
+            INNER JOIN er_regist e ON e.vn = o.vn
+            INNER JOIN (
+                SELECT vn, icd9 FROM doctor_operation
+                WHERE REPLACE(icd9, '.', '') IN ('9604', '9671', '9672', '9605', '9960', '9963')
+                UNION
+                SELECT eop.vn, COALESCE(eoc.icd9cm, '') AS icd9
+                FROM er_regist_oper eop
+                LEFT JOIN er_oper_code eoc ON eoc.er_oper_code = eop.er_oper_code
+                WHERE REPLACE(COALESCE(eoc.icd9cm, ''), '.', '') IN ('9604', '9671', '9672', '9605', '9960', '9963')
+            ) AS proc ON proc.vn = o.vn
+            LEFT JOIN (
+                SELECT vn, icd9 FROM doctor_operation
+                WHERE REPLACE(icd9, '.', '') IN ('9960', '9963')
+                UNION
+                SELECT eop.vn, COALESCE(eoc.icd9cm, '') AS icd9
+                FROM er_regist_oper eop
+                LEFT JOIN er_oper_code eoc ON eoc.er_oper_code = eop.er_oper_code
+                WHERE REPLACE(COALESCE(eoc.icd9cm, ''), '.', '') IN ('9960', '9963')
+            ) AS proc2 ON proc2.vn = o.vn
+            LEFT JOIN referout r ON r.vn = o.vn
+            WHERE o.vstdate BETWEEN ? AND ?
+        ", [$start_date, $end_date]);
+    }
+
+    private function fetch_er_procedure_diag($start_date, $end_date, $type = 'intubation')
+    {
+        $codes = ($type === 'intubation') 
+            ? "('9604', '9671', '9672', '9605')" 
+            : "('9960', '9963')";
+
+        return DB::connection('hosxp')->select("
+            SELECT CONCAT('[', pdx, '] ', name) AS name, count(*) AS sum
+            FROM (
+                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
+                FROM vn_stat v
+                INNER JOIN er_regist e ON e.vn = v.vn
+                INNER JOIN (
+                    SELECT vn, icd9 FROM doctor_operation
+                    WHERE REPLACE(icd9, '.', '') IN {$codes}
+                    UNION
+                    SELECT eop.vn, COALESCE(eoc.icd9cm, '') AS icd9
+                    FROM er_regist_oper eop
+                    LEFT JOIN er_oper_code eoc ON eoc.er_oper_code = eop.er_oper_code
+                    WHERE REPLACE(COALESCE(eoc.icd9cm, ''), '.', '') IN {$codes}
+                ) AS proc ON proc.vn = v.vn
+                LEFT JOIN icd101 i ON i.code = v.pdx
+                WHERE v.vstdate BETWEEN ? AND ?
+                AND (v.pdx <> '' AND v.pdx IS NOT NULL)
+                AND v.pdx NOT LIKE 'z%' AND v.pdx NOT IN ('u119')
+                GROUP BY v.vn, v.pdx
+            ) AS a
+            GROUP BY pdx
+            ORDER BY sum DESC LIMIT 20
+        ", [$start_date, $end_date]);
     }
 
     private function resolveDateRange(Request $request)
