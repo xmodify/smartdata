@@ -182,7 +182,8 @@ class AssetController extends Controller
             ->setOption('isRemoteEnabled', true)
             ->setOption('isFontSubsettingEnabled', true);
 
-        return $pdf->stream(strtolower(str_replace(' ', '_', $category->DECLINE_NAME)) . '_report.pdf');
+        $safeName = str_replace(['/', '\\', ' '], '_', $category->DECLINE_NAME ?? 'asset');
+        return $pdf->stream(strtolower($safeName) . '_report.pdf');
     }
 
     public function getSoftware($article_id)
