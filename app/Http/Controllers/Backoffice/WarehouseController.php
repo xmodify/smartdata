@@ -41,8 +41,8 @@ class WarehouseController extends Controller
         ],
         'medtech' => [
             'id' => 'medtech',
-            'name' => 'คลังวัสดุเทคนิคการแพทย์',
-            'full_name' => 'คลังวัสดุเทคนิคการแพทย์ (LAB)',
+            'name' => 'คลัง LAB',
+            'full_name' => 'คลัง LAB',
             'icon' => 'fa-microscope',
             'color' => '#8b5cf6',
             'type' => 'medicine',
@@ -102,13 +102,15 @@ class WarehouseController extends Controller
         }
 
         $tab = $request->input('tab', 'overview');
-        if (!in_array($tab, array_merge(['overview'], array_keys($this->warehouseConfig)))) {
+        $allowedTabs = array_merge(['overview', 'rpst'], array_keys($this->warehouseConfig));
+        if (!in_array($tab, $allowedTabs)) {
             $tab = 'overview';
         }
 
         $year_id = (int)$request->input('year_id', 2570);
         $month_id = $request->input('month_id', 'all');
         $sub_warehouse_id = $request->input('sub_warehouse_id', 'all');
+        $rpst_id = $request->input('rpst_id', 'all');
         $view_mode = $request->input('view_mode', 'overview'); // 'receive', 'overview', 'stock', 'planner'
         if (!in_array($view_mode, ['receive', 'overview', 'stock', 'planner'])) {
             $view_mode = 'overview';
@@ -165,6 +167,8 @@ class WarehouseController extends Controller
         // Branching according to tab
         if ($tab === 'overview') {
             $data = $this->getOverviewData($year_id, $month_id, $sub_warehouse_id, $search);
+        } elseif ($tab === 'rpst') {
+            $data = $this->getRpstData($year_id, $month_id, $rpst_id, $search);
         } else {
             $config = $this->warehouseConfig[$tab];
             $data = $this->getSingleWarehouseData($config, $year_id, $month_id, $sub_warehouse_id, $view_mode, $search);
@@ -176,6 +180,7 @@ class WarehouseController extends Controller
             'month_id' => $month_id,
             'sub_warehouse_id' => $sub_warehouse_id,
             'selectedSubWhName' => $selectedSubWhName,
+            'rpst_id' => $rpst_id,
             'view_mode' => $view_mode,
             'search' => $search,
             'availableYears' => $availableYears,
@@ -596,6 +601,436 @@ class WarehouseController extends Controller
             'isMonthlyView' => $isMonthlyView,
             'selectedMonthName' => $selectedMonthName,
             'selectedCalYear' => $selectedCalYear,
+            'dailyTrend' => array_values($dailyTrend),
+        ];
+    }
+
+    /**
+     * Get Requisition Data for Sub-district Health Centers (รพ.สต. เครือข่าย CUP)
+     */
+    private function getRpstData(int $yearId, $monthId, $selectedRpstId, string $search): array
+    {
+        $startGregorian = ($yearId - 544) . '-10-01';
+        $endGregorian = ($yearId - 543) . '-09-30 23:59:59';
+
+        $isMonthlyView = ($monthId !== 'all');
+        $selectedMonthName = '';
+        $selectedCalYear = $yearId;
+        $startMonth = '';
+        $endMonth = '';
+
+        if ($isMonthlyView) {
+            $mInt = (int)$monthId;
+            $selectedMonthName = $this->thaiMonths[$mInt] ?? '';
+            $selectedCalYear = ($mInt >= 10) ? ($yearId - 1) : $yearId;
+            $calGregorianYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mInt, $calGregorianYear);
+            $startMonth = sprintf('%04d-%02d-01', $calGregorianYear, $mInt);
+            $endMonth = sprintf('%04d-%02d-%02d 23:59:59', $calGregorianYear, $mInt, $daysInMonth);
+        }
+
+        // 1. Fetch 13 smallhos
+        $smallhosList = DB::connection('backoffice')->table('warehouse_smallhos')
+            ->orderBy('WAREHOUSE_SMALLHOS_ID')
+            ->get(['WAREHOUSE_SMALLHOS_ID as id', 'WAREHOUSE_SMALLHOS_CODE as code', 'WAREHOUSE_SMALLHOS_NAME as name']);
+
+        $selectedRpstName = 'ทุก รพ.สต. ในเครือข่าย (13 แห่ง)';
+        if ($selectedRpstId !== 'all') {
+            $matched = $smallhosList->firstWhere('id', (int)$selectedRpstId);
+            if ($matched) {
+                $selectedRpstName = $matched->name;
+            }
+        }
+
+        // 2. Mappings
+        $userMap = DB::connection('backoffice')->table('users')
+            ->whereNotNull('SMALL_ID')->where('SMALL_ID', '!=', '')->where('SMALL_ID', '!=', '0')
+            ->pluck('SMALL_ID', 'id')->toArray();
+
+        $personMap = [];
+        $requestsWithSmallhos = DB::connection('backoffice')->table('warehouse_request')
+            ->whereNotNull('WAREHOUSE_SMALLHOS')->where('WAREHOUSE_SMALLHOS', '!=', '')->where('WAREHOUSE_SMALLHOS', '!=', '0')
+            ->select('WAREHOUSE_SAVE_HR_NAME', 'WAREHOUSE_REPORT_HR_NAME', 'WAREHOUSE_SMALLHOS')
+            ->get();
+        foreach ($requestsWithSmallhos as $r) {
+            $sid = (int)$r->WAREHOUSE_SMALLHOS;
+            foreach ([$r->WAREHOUSE_SAVE_HR_NAME, $r->WAREHOUSE_REPORT_HR_NAME] as $nm) {
+                if (!empty($nm)) {
+                    $clean = preg_replace('/^(นาย|นางสาว|นาง|น\.ส\.)\s*/u', '', trim($nm));
+                    $clean = preg_replace('/\s+/', ' ', $clean);
+                    $parts = explode(' ', $clean);
+                    if (!empty($parts[0])) {
+                        $personMap[$parts[0]] = $sid;
+                    }
+                }
+            }
+        }
+
+        // 3. Matrix setup
+        $matrix = [];
+        foreach ($smallhosList as $sh) {
+            $matrix[$sh->id] = [
+                'id' => $sh->id,
+                'code' => $sh->code,
+                'name' => $sh->name,
+                'material' => 0.0,
+                'dental' => 0.0,
+                'medtech' => 0.0,
+                'physical' => 0.0,
+                'medical' => 0.0,
+                'total' => 0.0,
+                'req_count' => 0,
+            ];
+        }
+
+        // Setup 12 fiscal months trend & daily trend (separated by 5 warehouses)
+        $monthlyTrend = [];
+        foreach ($this->fiscalMonthOrder as $m) {
+            $monthlyTrend[$m] = [
+                'month_id' => $m,
+                'label' => $this->thaiMonthsShort[$m] ?? (string)$m,
+                'material' => 0.0,
+                'dental' => 0.0,
+                'medtech' => 0.0,
+                'physical' => 0.0,
+                'medical' => 0.0,
+                'total' => 0.0,
+            ];
+        }
+
+        $dailyTrend = [];
+        if ($isMonthlyView) {
+            $mInt = (int)$monthId;
+            $calGregorianYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mInt, $calGregorianYear);
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $dailyTrend[$d] = [
+                    'day' => $d,
+                    'material' => 0.0,
+                    'dental' => 0.0,
+                    'medtech' => 0.0,
+                    'physical' => 0.0,
+                    'medical' => 0.0,
+                    'total' => 0.0,
+                ];
+            }
+        }
+
+        // 4. Supplies (Material)
+        $suppQuery = DB::connection('backoffice')->table('warehouse_request as w')
+            ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+            ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId)
+            ->whereNotNull('w.WAREHOUSE_SMALLHOS')->where('w.WAREHOUSE_SMALLHOS', '!=', '')->where('w.WAREHOUSE_SMALLHOS', '!=', '0');
+
+        if ($isMonthlyView) {
+            $suppQuery->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId]);
+        }
+        if ($selectedRpstId !== 'all') {
+            $suppQuery->where('w.WAREHOUSE_SMALLHOS', $selectedRpstId);
+        }
+
+        $suppRows = $suppQuery->select(
+            'w.WAREHOUSE_ID',
+            'w.WAREHOUSE_REQUEST_CODE as code',
+            'w.WAREHOUSE_DATE_WANT as request_date',
+            'w.WAREHOUSE_SMALLHOS as small_id',
+            'w.WAREHOUSE_SAVE_HR_NAME as requester_name',
+            'w.WAREHOUSE_STATUS as status',
+            's.WAREHOUSE_REQUEST_SUB_SUM_PRICE as price'
+        )->get();
+
+        $suppReqGroup = [];
+        $suppRequisitionItems = [];
+        foreach ($suppRows as $sr) {
+            $sid = (int)$sr->small_id;
+            if (isset($matrix[$sid])) {
+                $price = (float)$sr->price;
+                $matrix[$sid]['material'] += $price;
+                $matrix[$sid]['total'] += $price;
+                $suppReqGroup[$sid][$sr->WAREHOUSE_ID] = true;
+
+                // Monthly and Daily Trend
+                if (!empty($sr->request_date)) {
+                    $ts = strtotime($sr->request_date);
+                    $m = (int)date('n', $ts);
+                    $d = (int)date('j', $ts);
+                    if (isset($monthlyTrend[$m])) {
+                        $monthlyTrend[$m]['material'] += $price;
+                        $monthlyTrend[$m]['total'] += $price;
+                    }
+                    if ($isMonthlyView && isset($dailyTrend[$d])) {
+                        $dailyTrend[$d]['material'] += $price;
+                        $dailyTrend[$d]['total'] += $price;
+                    }
+                }
+
+                if (!isset($suppRequisitionItems[$sr->WAREHOUSE_ID])) {
+                    $shObj = $smallhosList->firstWhere('id', $sid);
+                    $suppRequisitionItems[$sr->WAREHOUSE_ID] = (object)[
+                        'id' => $sr->WAREHOUSE_ID,
+                        'code' => $sr->code,
+                        'request_date' => $sr->request_date,
+                        'smallhos_id' => $sid,
+                        'smallhos_name' => $shObj ? $shObj->name : 'รพ.สต.',
+                        'warehouse_key' => 'material',
+                        'warehouse_name' => 'คลังวัสดุ',
+                        'warehouse_color' => '#f59e0b',
+                        'requester_name' => $sr->requester_name ?: '-',
+                        'status' => $sr->status ?: 'Pending',
+                        'item_count' => 0,
+                        'total_val' => 0.0,
+                    ];
+                }
+                $suppRequisitionItems[$sr->WAREHOUSE_ID]->item_count += 1;
+                $suppRequisitionItems[$sr->WAREHOUSE_ID]->total_val += (float)$sr->price;
+            }
+        }
+        foreach ($suppReqGroup as $sid => $reqs) {
+            if (isset($matrix[$sid])) {
+                $matrix[$sid]['req_count'] += count($reqs);
+            }
+        }
+
+        // 5. Medicine Warehouses (Dental, MedTech, Physical, Medical)
+        $medQuery = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+            ->leftJoin('medicine_warehouse as mw', 'r.warehouse_id', '=', 'mw.id');
+        if ($isMonthlyView) {
+            $medQuery->whereBetween('r.request_date', [$startMonth, substr($endMonth, 0, 10)]);
+        } else {
+            $medQuery->whereBetween('r.request_date', [$startGregorian, substr($endGregorian, 0, 10)]);
+        }
+
+        $medRows = $medQuery->select(
+            'r.id', 'r.code', 'r.request_date', 'r.warehouse_id', 'mw.name as warehouse_name',
+            'r.created_by', 'r.request_by', 'r.request_by_small_hosp_name', 'r.approve_by_small_hosp_name',
+            'r.status', 'r.value'
+        )->get();
+
+        $medRequisitionItems = [];
+        $whConfigs = [
+            1 => ['key' => 'dental', 'name' => 'คลังทันตกรรม', 'color' => '#06b6d4'],
+            3 => ['key' => 'medtech', 'name' => 'คลัง LAB', 'color' => '#8b5cf6'],
+            4 => ['key' => 'physical', 'name' => 'คลังวัสดุกายภาพบำบัด', 'color' => '#10b981'],
+            5 => ['key' => 'medical', 'name' => 'คลังวัสดุการแพทย์', 'color' => '#ec4899'],
+        ];
+
+        foreach ($medRows as $mr) {
+            $matchedSid = null;
+            if (!empty($mr->created_by) && isset($userMap[$mr->created_by])) {
+                $matchedSid = (int)$userMap[$mr->created_by];
+            } elseif (!empty($mr->request_by) && isset($userMap[$mr->request_by])) {
+                $matchedSid = (int)$userMap[$mr->request_by];
+            }
+
+            if (!$matchedSid) {
+                foreach ([$mr->request_by_small_hosp_name, $mr->approve_by_small_hosp_name] as $nm) {
+                    if (!empty($nm)) {
+                        $clean = preg_replace('/^(นาย|นางสาว|นาง|น\.ส\.)\s*/u', '', trim($nm));
+                        $clean = preg_replace('/\s+/', ' ', $clean);
+                        $parts = explode(' ', $clean);
+                        if (!empty($parts[0]) && isset($personMap[$parts[0]])) {
+                            $matchedSid = $personMap[$parts[0]];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ($matchedSid && isset($matrix[$matchedSid])) {
+                if ($selectedRpstId !== 'all' && (int)$selectedRpstId !== $matchedSid) {
+                    continue;
+                }
+                $whConf = $whConfigs[(int)$mr->warehouse_id] ?? ['key' => 'medical', 'name' => 'คลังวัสดุการแพทย์', 'color' => '#ec4899'];
+                $val = (float)$mr->value;
+                $whKey = $whConf['key'];
+                $matrix[$matchedSid][$whKey] += $val;
+                $matrix[$matchedSid]['total'] += $val;
+                $matrix[$matchedSid]['req_count'] += 1;
+
+                // Monthly and Daily Trend
+                if (!empty($mr->request_date)) {
+                    $ts = strtotime($mr->request_date);
+                    $m = (int)date('n', $ts);
+                    $d = (int)date('j', $ts);
+                    if (isset($monthlyTrend[$m])) {
+                        $monthlyTrend[$m][$whKey] += $val;
+                        $monthlyTrend[$m]['total'] += $val;
+                    }
+                    if ($isMonthlyView && isset($dailyTrend[$d])) {
+                        $dailyTrend[$d][$whKey] += $val;
+                        $dailyTrend[$d]['total'] += $val;
+                    }
+                }
+
+                $shObj = $smallhosList->firstWhere('id', $matchedSid);
+                $medRequisitionItems[] = (object)[
+                    'id' => $mr->id,
+                    'code' => $mr->code,
+                    'request_date' => $mr->request_date,
+                    'smallhos_id' => $matchedSid,
+                    'smallhos_name' => $shObj ? $shObj->name : 'รพ.สต.',
+                    'warehouse_key' => $whConf['key'],
+                    'warehouse_name' => $mr->warehouse_name ?: $whConf['name'],
+                    'warehouse_color' => $whConf['color'],
+                    'requester_name' => $mr->request_by_small_hosp_name ?: '-',
+                    'status' => $mr->status ?: 'Pending',
+                    'item_count' => 1,
+                    'total_val' => $val,
+                ];
+            }
+        }
+
+        // 6. Totals & Top Spenders
+        $totalDisbursement = array_sum(array_column($matrix, 'total'));
+        $totalReqCount = array_sum(array_column($matrix, 'req_count'));
+
+        foreach ($matrix as $sid => &$mRow) {
+            $mRow['share_pct'] = $totalDisbursement > 0 ? round(($mRow['total'] / $totalDisbursement) * 100, 1) : 0;
+        }
+        unset($mRow);
+
+        uasort($matrix, fn($a, $b) => $b['total'] <=> $a['total']);
+
+        $topRpst = null;
+        $firstItem = reset($matrix);
+        if ($firstItem && $firstItem['total'] > 0) {
+            $topRpst = [
+                'name' => $firstItem['name'],
+                'val' => $firstItem['total'],
+                'share_pct' => $firstItem['share_pct'],
+                'req_count' => $firstItem['req_count'],
+            ];
+        }
+
+        $whContribs = [
+            'material' => ['name' => 'คลังวัสดุ', 'val' => array_sum(array_column($matrix, 'material')), 'color' => '#f59e0b', 'icon' => 'fa-boxes-stacked'],
+            'dental' => ['name' => 'คลังทันตกรรม', 'val' => array_sum(array_column($matrix, 'dental')), 'color' => '#06b6d4', 'icon' => 'fa-tooth'],
+            'medtech' => ['name' => 'คลัง LAB', 'val' => array_sum(array_column($matrix, 'medtech')), 'color' => '#8b5cf6', 'icon' => 'fa-microscope'],
+            'physical' => ['name' => 'คลังวัสดุกายภาพบำบัด', 'val' => array_sum(array_column($matrix, 'physical')), 'color' => '#10b981', 'icon' => 'fa-person-walking'],
+            'medical' => ['name' => 'คลังวัสดุการแพทย์', 'val' => array_sum(array_column($matrix, 'medical')), 'color' => '#ec4899', 'icon' => 'fa-stethoscope'],
+        ];
+
+        $topWarehouse = null;
+        $maxWhVal = -1;
+        foreach ($whContribs as $wk => $wc) {
+            if ($wc['val'] > $maxWhVal) {
+                $maxWhVal = $wc['val'];
+                $topWarehouse = [
+                    'key' => $wk,
+                    'name' => $wc['name'],
+                    'val' => $wc['val'],
+                    'color' => $wc['color'],
+                    'icon' => $wc['icon'],
+                    'share_pct' => $totalDisbursement > 0 ? round(($wc['val'] / $totalDisbursement) * 100, 1) : 0,
+                ];
+            }
+        }
+
+        // 7. Top Disbursed Items for รพ.สต.
+        $suppTopQuery = DB::connection('backoffice')->table('warehouse_request as w')
+            ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+            ->leftJoin('supplies as sup', 's.WAREHOUSE_REQUEST_SUB_DETAIL_ID', '=', 'sup.ID')
+            ->leftJoin('supplies_unit as u', 'sup.SUP_UNIT_ID', '=', 'u.SUP_UNIT_ID')
+            ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId)
+            ->whereNotNull('w.WAREHOUSE_SMALLHOS')->where('w.WAREHOUSE_SMALLHOS', '!=', '')->where('w.WAREHOUSE_SMALLHOS', '!=', '0');
+
+        if ($isMonthlyView) {
+            $suppTopQuery->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId]);
+        }
+        if ($selectedRpstId !== 'all') {
+            $suppTopQuery->where('w.WAREHOUSE_SMALLHOS', $selectedRpstId);
+        }
+
+        $suppTopItems = $suppTopQuery->select(
+            'sup.ID as item_id',
+            'sup.SUP_FSN_NUM as code',
+            'sup.SUP_NAME as name',
+            'u.SUP_UNIT_NAME as unit_name',
+            DB::raw("'material' as warehouse_key"),
+            DB::raw("'คลังวัสดุ' as warehouse_name"),
+            DB::raw("'#f59e0b' as warehouse_color"),
+            DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_AMOUNT) as total_qty'),
+            DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as total_val')
+        )
+        ->groupBy('sup.ID', 'sup.SUP_FSN_NUM', 'sup.SUP_NAME', 'u.SUP_UNIT_NAME')
+        ->orderByDesc('total_val')
+        ->take(15)
+        ->get();
+
+        $medReqIds = array_column($medRequisitionItems, 'id');
+        $medTopItems = collect();
+        if (!empty($medReqIds)) {
+            $medTopItems = DB::connection('backoffice')->table('medicine_warehouse_request_list as l')
+                ->leftJoin('medicine_drug as d', 'l.medicine_id', '=', 'd.id')
+                ->leftJoin('medicine_warehouse as mw', 'd.med_warehouse_id', '=', 'mw.id')
+                ->leftJoin('medicine_unit as mu', function ($j) {
+                    $j->on('d.id', '=', 'mu.drug_id')->where('mu.ranking', 1);
+                })
+                ->leftJoin('medicine_unit_name as mun', 'mu.unit_name_id', '=', 'mun.id')
+                ->whereIn('l.request_id', $medReqIds)
+                ->select(
+                    'd.id as item_id',
+                    'd.drug_code as code',
+                    DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), d.drug_code) as name"),
+                    DB::raw("COALESCE(mun.name, mu.new_unitname, '') as unit_name"),
+                    DB::raw("
+                        CASE 
+                            WHEN d.med_warehouse_id = 1 THEN 'dental'
+                            WHEN d.med_warehouse_id = 3 THEN 'medtech'
+                            WHEN d.med_warehouse_id = 4 THEN 'physical'
+                            ELSE 'medical'
+                        END as warehouse_key
+                    "),
+                    DB::raw("
+                        CASE 
+                            WHEN d.med_warehouse_id = 1 THEN 'คลังทันตกรรม'
+                            WHEN d.med_warehouse_id = 3 THEN 'คลัง LAB'
+                            WHEN d.med_warehouse_id = 4 THEN 'คลังกายภาพ'
+                            ELSE 'คลังวัสดุการแพทย์'
+                        END as warehouse_name
+                    "),
+                    DB::raw("
+                        CASE 
+                            WHEN d.med_warehouse_id = 1 THEN '#06b6d4'
+                            WHEN d.med_warehouse_id = 3 THEN '#8b5cf6'
+                            WHEN d.med_warehouse_id = 4 THEN '#10b981'
+                            ELSE '#ec4899'
+                        END as warehouse_color
+                    "),
+                    DB::raw("sum(l.pay_qty) as total_qty"),
+                    DB::raw("sum(l.value) as total_val")
+                )
+                ->groupBy('d.id', 'd.drug_code', DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), d.drug_code)"), DB::raw("COALESCE(mun.name, mu.new_unitname, '')"), 'd.med_warehouse_id')
+                ->orderByDesc('total_val')
+                ->take(15)
+                ->get();
+        }
+
+        $topDisbursedItems = collect(array_merge($suppTopItems->toArray(), $medTopItems->toArray()))
+            ->sortByDesc('total_val')
+            ->take(15)
+            ->values();
+
+        // 8. Combined Requisitions List
+        $combinedRequisitions = collect(array_merge(array_values($suppRequisitionItems), $medRequisitionItems))
+            ->sortByDesc('request_date')
+            ->values();
+
+        return [
+            'totalDisbursement' => $totalDisbursement,
+            'totalReqCount' => $totalReqCount,
+            'topRpst' => $topRpst,
+            'topWarehouse' => $topWarehouse,
+            'warehouseContributions' => $whContribs,
+            'matrix' => array_values($matrix),
+            'topDisbursedItems' => $topDisbursedItems,
+            'combinedRequisitions' => $combinedRequisitions,
+            'smallhosList' => $smallhosList,
+            'selectedRpstName' => $selectedRpstName,
+            'isMonthlyView' => $isMonthlyView,
+            'selectedMonthName' => $selectedMonthName,
+            'selectedCalYear' => $selectedCalYear,
+            'monthlyTrend' => array_values($monthlyTrend),
             'dailyTrend' => array_values($dailyTrend),
         ];
     }
@@ -1474,13 +1909,16 @@ class WarehouseController extends Controller
                 ->leftJoin('medicine_drug as d', 'l.medicine_id', '=', 'd.id')
                 ->where('l.request_id', $id)
                 ->select(
-                    'l.id',
+                    DB::raw('MIN(l.id) as id'),
                     'd.drug_code as code',
                     DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), NULLIF(d.description, ''), d.drug_code) as name"),
-                    'l.req_qty as amount',
-                    'l.unit_price as price',
-                    'l.value as total'
-                )->get();
+                    DB::raw('MAX(COALESCE(NULLIF(l.pay_qty, 0), l.req_qty, 0)) as amount'),
+                    DB::raw('MAX(COALESCE(l.unit_price, 0)) as price'),
+                    DB::raw('SUM(COALESCE(l.value, 0)) as total')
+                )
+                ->groupBy('d.id', 'd.drug_code', DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), NULLIF(d.description, ''), d.drug_code)"))
+                ->havingRaw('MAX(COALESCE(NULLIF(l.pay_qty, 0), l.req_qty, 0)) > 0 OR SUM(COALESCE(l.value, 0)) > 0')
+                ->get();
 
             return response()->json([
                 'code' => $req->code,
@@ -2093,5 +2531,516 @@ class WarehouseController extends Controller
                 'items' => $items,
             ]);
         }
+    }
+
+    /**
+     * AJAX Endpoint: Get Requisition & Disbursed Items Detail for a specific Sub-district Health Center (รพ.สต.)
+     */
+    public function rpstDetail(Request $request, int $id)
+    {
+        if (!auth()->user()->hasAccessWarehouse()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $yearId = (int)$request->input('year_id', 2570);
+        $monthId = $request->input('month_id', 'all');
+
+        $sh = DB::connection('backoffice')->table('warehouse_smallhos')
+            ->where('WAREHOUSE_SMALLHOS_ID', $id)
+            ->first(['WAREHOUSE_SMALLHOS_ID as id', 'WAREHOUSE_SMALLHOS_CODE as code', 'WAREHOUSE_SMALLHOS_NAME as name']);
+
+        if (!$sh) {
+            return response()->json(['error' => 'ไม่พบข้อมูล รพ.สต.'], 404);
+        }
+
+        $startGregorian = ($yearId - 544) . '-10-01';
+        $endGregorian = ($yearId - 543) . '-09-30 23:59:59';
+        $isMonthlyView = ($monthId !== 'all');
+        $startMonth = '';
+        $endMonth = '';
+        if ($isMonthlyView) {
+            $mInt = (int)$monthId;
+            $calGregorianYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mInt, $calGregorianYear);
+            $startMonth = sprintf('%04d-%02d-01', $calGregorianYear, $mInt);
+            $endMonth = sprintf('%04d-%02d-%02d 23:59:59', $calGregorianYear, $mInt, $daysInMonth);
+        }
+
+        // Summary counters
+        $summary = [
+            'material' => 0.0,
+            'dental' => 0.0,
+            'medtech' => 0.0,
+            'physical' => 0.0,
+            'medical' => 0.0,
+            'total_val' => 0.0,
+            'req_count' => 0,
+        ];
+
+        $itemsMap = [];
+        $suppReqIdsSeen = [];
+
+        // 1. General Supplies
+        $suppQuery = DB::connection('backoffice')->table('warehouse_request as w')
+            ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+            ->leftJoin('supplies as sup', 's.WAREHOUSE_REQUEST_SUB_DETAIL_ID', '=', 'sup.ID')
+            ->leftJoin('supplies_unit as u', 'sup.SUP_UNIT_ID', '=', 'u.SUP_UNIT_ID')
+            ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId)
+            ->where('w.WAREHOUSE_SMALLHOS', $id);
+
+        if ($isMonthlyView) {
+            $suppQuery->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId]);
+        }
+
+        $suppRows = $suppQuery->select(
+            'w.WAREHOUSE_ID as id',
+            'w.WAREHOUSE_REQUEST_CODE as code',
+            'w.WAREHOUSE_DATE_WANT as request_date',
+            'w.WAREHOUSE_SAVE_HR_NAME as requester',
+            'w.WAREHOUSE_STATUS as status',
+            'sup.SUP_FSN_NUM as item_code',
+            'sup.SUP_NAME as item_name',
+            'u.SUP_UNIT_NAME as unit_name',
+            's.WAREHOUSE_REQUEST_SUB_AMOUNT as qty',
+            's.WAREHOUSE_REQUEST_SUB_PRICE as price',
+            's.WAREHOUSE_REQUEST_SUB_SUM_PRICE as total_val'
+        )->get();
+
+        foreach ($suppRows as $sr) {
+            $val = (float)$sr->total_val;
+            $summary['material'] += $val;
+            $summary['total_val'] += $val;
+
+            if (!isset($suppReqIdsSeen[$sr->id])) {
+                $suppReqIdsSeen[$sr->id] = [
+                    'id' => $sr->id,
+                    'code' => $sr->code ?: '-',
+                    'request_date' => $sr->request_date ? substr($sr->request_date, 0, 10) : '-',
+                    'warehouse_name' => 'คลังวัสดุ',
+                    'warehouse_key' => 'material',
+                    'warehouse_color' => '#f59e0b',
+                    'requester' => $sr->requester ?: '-',
+                    'status' => $sr->status ?: 'Pending',
+                    'total_val' => 0.0,
+                    'item_count' => 0,
+                ];
+            }
+            $suppReqIdsSeen[$sr->id]['total_val'] += $val;
+            $suppReqIdsSeen[$sr->id]['item_count'] += 1;
+
+            $itemKey = 'supp_' . ($sr->item_code ?: $sr->item_name);
+            if (!isset($itemsMap[$itemKey])) {
+                $itemsMap[$itemKey] = [
+                    'code' => $sr->item_code ?: '-',
+                    'name' => $sr->item_name ?: 'วัสดุทั่วไป',
+                    'unit' => $sr->unit_name ?: '-',
+                    'warehouse_name' => 'คลังวัสดุ',
+                    'warehouse_key' => 'material',
+                    'warehouse_color' => '#f59e0b',
+                    'qty' => 0,
+                    'total_val' => 0.0,
+                ];
+            }
+            $itemsMap[$itemKey]['qty'] += (float)$sr->qty;
+            $itemsMap[$itemKey]['total_val'] += $val;
+        }
+
+        // 2. Clinical Warehouses (Medicine, Dental, MedTech, Physical)
+        $userMap = DB::connection('backoffice')->table('users')->where('SMALL_ID', $id)->pluck('id')->toArray();
+        $personNames = DB::connection('backoffice')->table('warehouse_request')
+            ->where('WAREHOUSE_SMALLHOS', $id)
+            ->select('WAREHOUSE_SAVE_HR_NAME', 'WAREHOUSE_REPORT_HR_NAME')
+            ->get();
+        $names = [];
+        foreach ($personNames as $pn) {
+            foreach ([$pn->WAREHOUSE_SAVE_HR_NAME, $pn->WAREHOUSE_REPORT_HR_NAME] as $n) {
+                if (!empty($n)) {
+                    $clean = preg_replace('/^(นาย|นางสาว|นาง|น\.ส\.)\s*/u', '', trim($n));
+                    $clean = preg_replace('/\s+/', ' ', $clean);
+                    $parts = explode(' ', $clean);
+                    if (!empty($parts[0])) $names[] = $parts[0];
+                }
+            }
+        }
+        $names = array_unique($names);
+
+        $medQuery = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+            ->leftJoin('medicine_warehouse as mw', 'r.warehouse_id', '=', 'mw.id');
+
+        if ($isMonthlyView) {
+            $medQuery->whereBetween('r.request_date', [$startMonth, substr($endMonth, 0, 10)]);
+        } else {
+            $medQuery->whereBetween('r.request_date', [$startGregorian, substr($endGregorian, 0, 10)]);
+        }
+
+        $medQuery->where(function ($q) use ($userMap, $names) {
+            if (!empty($userMap)) {
+                $q->whereIn('r.created_by', $userMap)
+                  ->orWhereIn('r.request_by', $userMap);
+            }
+            foreach ($names as $nm) {
+                $q->orWhere('r.request_by_small_hosp_name', 'like', "%{$nm}%")
+                  ->orWhere('r.approve_by_small_hosp_name', 'like', "%{$nm}%");
+            }
+        });
+
+        $medReqList = $medQuery->select(
+            'r.id', 'r.code', 'r.request_date', 'r.warehouse_id', 'mw.name as warehouse_name',
+            'r.request_by_small_hosp_name as requester', 'r.status', 'r.value'
+        )->get();
+
+        $whConfigs = [
+            1 => ['key' => 'dental', 'name' => 'คลังทันตกรรม', 'color' => '#06b6d4'],
+            3 => ['key' => 'medtech', 'name' => 'คลัง LAB', 'color' => '#8b5cf6'],
+            4 => ['key' => 'physical', 'name' => 'คลังวัสดุกายภาพบำบัด', 'color' => '#10b981'],
+            5 => ['key' => 'medical', 'name' => 'คลังวัสดุการแพทย์', 'color' => '#ec4899'],
+        ];
+
+        $medReqIds = $medReqList->pluck('id')->toArray();
+        $medReqMap = [];
+        foreach ($medReqList as $mr) {
+            $whConf = $whConfigs[(int)$mr->warehouse_id] ?? ['key' => 'medical', 'name' => 'คลังวัสดุการแพทย์', 'color' => '#ec4899'];
+            $val = (float)$mr->value;
+            $summary[$whConf['key']] += $val;
+            $summary['total_val'] += $val;
+
+            $medReqMap[$mr->id] = [
+                'id' => $mr->id,
+                'code' => $mr->code ?: '-',
+                'request_date' => $mr->request_date ? substr($mr->request_date, 0, 10) : '-',
+                'warehouse_name' => ((int)$mr->warehouse_id === 3) ? 'คลัง LAB' : ($whConf['name'] ?? $mr->warehouse_name),
+                'warehouse_key' => $whConf['key'],
+                'warehouse_color' => $whConf['color'],
+                'requester' => $mr->requester ?: '-',
+                'status' => $mr->status ?: 'Pending',
+                'total_val' => $val,
+                'item_count' => 0,
+            ];
+        }
+
+        if (!empty($medReqIds)) {
+            $medItems = DB::connection('backoffice')->table('medicine_warehouse_request_list as l')
+                ->leftJoin('medicine_drug as d', 'l.medicine_id', '=', 'd.id')
+                ->leftJoin('medicine_unit as mu', function ($j) {
+                    $j->on('d.id', '=', 'mu.drug_id')->where('mu.ranking', 1);
+                })
+                ->leftJoin('medicine_unit_name as mun', 'mu.unit_name_id', '=', 'mun.id')
+                ->leftJoin('medicine_warehouse as mw', 'd.med_warehouse_id', '=', 'mw.id')
+                ->whereIn('l.request_id', $medReqIds)
+                ->select(
+                    'l.request_id',
+                    'd.drug_code as item_code',
+                    DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), d.drug_code) as item_name"),
+                    DB::raw("COALESCE(mun.name, mu.new_unitname, '-') as unit_name"),
+                    'l.pay_qty as qty',
+                    'l.unit_price as price',
+                    'l.value as total_val',
+                    'mw.name as warehouse_name',
+                    'd.med_warehouse_id as warehouse_id'
+                )
+                ->get();
+
+            foreach ($medItems as $mi) {
+                if (isset($medReqMap[$mi->request_id])) {
+                    $medReqMap[$mi->request_id]['item_count'] += 1;
+                }
+                $whConf = $whConfigs[(int)$mi->warehouse_id] ?? ['key' => 'medical', 'name' => 'คลังเวชภัณฑ์', 'color' => '#ec4899'];
+                $whName = ((int)$mi->warehouse_id === 3) ? 'คลัง LAB' : ($whConf['name'] ?? $mi->warehouse_name);
+                $itemKey = 'med_' . ($mi->item_code ?: $mi->item_name);
+                if (!isset($itemsMap[$itemKey])) {
+                    $itemsMap[$itemKey] = [
+                        'code' => $mi->item_code ?: '-',
+                        'name' => $mi->item_name ?: 'เวชภัณฑ์',
+                        'unit' => $mi->unit_name ?: '-',
+                        'warehouse_name' => $whName,
+                        'warehouse_key' => $whConf['key'],
+                        'warehouse_color' => $whConf['color'],
+                        'qty' => 0,
+                        'total_val' => 0.0,
+                    ];
+                }
+                $itemsMap[$itemKey]['qty'] += (float)$mi->qty;
+                $itemsMap[$itemKey]['total_val'] += (float)$mi->total_val;
+            }
+        }
+
+        $allReqs = array_merge(array_values($suppReqIdsSeen), array_values($medReqMap));
+        usort($allReqs, fn($a, $b) => strcmp($b['request_date'], $a['request_date']));
+        $summary['req_count'] = count($allReqs);
+
+        $allItems = array_values($itemsMap);
+        usort($allItems, fn($a, $b) => $b['total_val'] <=> $a['total_val']);
+
+        $periodLabel = ($isMonthlyView) 
+            ? "ประจำเดือน {$this->thaiMonths[(int)$monthId]} ปีงบประมาณ {$yearId}" 
+            : "ทั้งปีงบประมาณ {$yearId}";
+
+        return response()->json([
+            'rpst_id' => $sh->id,
+            'rpst_code' => $sh->code,
+            'rpst_name' => $sh->name,
+            'period_label' => $periodLabel,
+            'summary' => $summary,
+            'items_count' => count($allItems),
+            'items' => $allItems,
+            'requisitions_count' => count($allReqs),
+            'requisitions' => $allReqs,
+        ]);
+    }
+
+    /**
+     * AJAX Endpoint: Get Health Centers (รพ.สต.) breakdown for a top disbursed item
+     */
+    public function rpstItemBreakdown(Request $request)
+    {
+        if (!auth()->user()->hasAccessWarehouse()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $code = $request->input('code');
+        $itemId = $request->input('item_id');
+        $whKey = $request->input('warehouse_key', 'material');
+        $yearId = (int)$request->input('year_id', 2569);
+        $monthId = $request->input('month_id', 'all');
+
+        $startGregorian = ($yearId - 544) . '-10-01';
+        $endGregorian = ($yearId - 543) . '-09-30 23:59:59';
+        $isMonthlyView = ($monthId !== 'all');
+        $startMonth = '';
+        $endMonth = '';
+        if ($isMonthlyView) {
+            $mInt = (int)$monthId;
+            $calGregorianYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mInt, $calGregorianYear);
+            $startMonth = sprintf('%04d-%02d-01', $calGregorianYear, $mInt);
+            $endMonth = sprintf('%04d-%02d-%02d 23:59:59', $calGregorianYear, $mInt, $daysInMonth);
+        }
+
+        $smallhosList = DB::connection('backoffice')->table('warehouse_smallhos')
+            ->get(['WAREHOUSE_SMALLHOS_ID as id', 'WAREHOUSE_SMALLHOS_CODE as code', 'WAREHOUSE_SMALLHOS_NAME as name'])
+            ->keyBy('id');
+
+        $itemInfo = [
+            'code' => $code ?: '-',
+            'name' => '',
+            'unit_name' => '',
+            'warehouse_key' => $whKey,
+            'warehouse_name' => 'คลังพัสดุ/เวชภัณฑ์',
+            'warehouse_color' => '#3b82f6',
+            'total_qty' => 0,
+            'total_val' => 0.0,
+        ];
+        $rpstList = [];
+
+        if ($whKey === 'material') {
+            $itemQuery = DB::connection('backoffice')->table('supplies as sup')
+                ->leftJoin('supplies_unit as u', 'sup.SUP_UNIT_ID', '=', 'u.SUP_UNIT_ID');
+            if ($itemId) {
+                $itemQuery->where('sup.ID', $itemId);
+            } else {
+                $itemQuery->where('sup.SUP_FSN_NUM', $code);
+            }
+            $itemObj = $itemQuery->select('sup.ID', 'sup.SUP_FSN_NUM as code', 'sup.SUP_NAME as name', 'u.SUP_UNIT_NAME as unit_name')->first();
+            if ($itemObj) {
+                $itemInfo['code'] = $itemObj->code;
+                $itemInfo['name'] = $itemObj->name;
+                $itemInfo['unit_name'] = $itemObj->unit_name ?: 'หน่วย';
+                $itemInfo['warehouse_name'] = 'คลังวัสดุ';
+                $itemInfo['warehouse_color'] = '#f59e0b';
+            }
+
+            $query = DB::connection('backoffice')->table('warehouse_request as w')
+                ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+                ->leftJoin('supplies as sup', 's.WAREHOUSE_REQUEST_SUB_DETAIL_ID', '=', 'sup.ID')
+                ->leftJoin('warehouse_smallhos as sh', 'w.WAREHOUSE_SMALLHOS', '=', 'sh.WAREHOUSE_SMALLHOS_ID')
+                ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId)
+                ->whereNotNull('w.WAREHOUSE_SMALLHOS')->where('w.WAREHOUSE_SMALLHOS', '!=', '')->where('w.WAREHOUSE_SMALLHOS', '!=', '0');
+
+            if ($itemId) {
+                $query->where('s.WAREHOUSE_REQUEST_SUB_DETAIL_ID', $itemId);
+            } else {
+                $query->where('sup.SUP_FSN_NUM', $code);
+            }
+
+            if ($isMonthlyView) {
+                $query->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId]);
+            }
+
+            $rows = $query->select(
+                'sh.WAREHOUSE_SMALLHOS_ID as rpst_id',
+                'sh.WAREHOUSE_SMALLHOS_CODE as rpst_code',
+                'sh.WAREHOUSE_SMALLHOS_NAME as rpst_name',
+                DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_AMOUNT) as qty'),
+                DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as total_val'),
+                DB::raw('count(distinct w.WAREHOUSE_ID) as req_count'),
+                DB::raw('max(w.WAREHOUSE_DATE_WANT) as last_date')
+            )
+            ->groupBy('sh.WAREHOUSE_SMALLHOS_ID', 'sh.WAREHOUSE_SMALLHOS_CODE', 'sh.WAREHOUSE_SMALLHOS_NAME')
+            ->orderByDesc('qty')
+            ->get();
+
+            foreach ($rows as $r) {
+                $rpstList[] = [
+                    'rpst_id' => $r->rpst_id,
+                    'rpst_code' => $r->rpst_code ?: '-',
+                    'rpst_name' => $r->rpst_name ?: 'รพ.สต.',
+                    'qty' => (float)$r->qty,
+                    'total_val' => (float)$r->total_val,
+                    'req_count' => (int)$r->req_count,
+                    'last_date' => $r->last_date ? substr($r->last_date, 0, 10) : '-',
+                ];
+                $itemInfo['total_qty'] += (float)$r->qty;
+                $itemInfo['total_val'] += (float)$r->total_val;
+            }
+        } else {
+            // Medicine / Clinical
+            $drugQuery = DB::connection('backoffice')->table('medicine_drug as d')
+                ->leftJoin('medicine_warehouse as mw', 'd.med_warehouse_id', '=', 'mw.id')
+                ->leftJoin('medicine_unit as mu', function ($j) {
+                    $j->on('d.id', '=', 'mu.drug_id')->where('mu.ranking', 1);
+                })
+                ->leftJoin('medicine_unit_name as mun', 'mu.unit_name_id', '=', 'mun.id');
+
+            if ($itemId) {
+                $drugQuery->where('d.id', $itemId);
+            } else {
+                $drugQuery->where('d.drug_code', $code);
+            }
+
+            $drugObj = $drugQuery->select(
+                'd.id', 'd.drug_code as code',
+                DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), d.drug_code) as name"),
+                DB::raw("COALESCE(mun.name, mu.new_unitname, '') as unit_name"),
+                'd.med_warehouse_id',
+                'mw.name as warehouse_name'
+            )->first();
+
+            $whNames = [
+                1 => ['name' => 'คลังทันตกรรม', 'color' => '#06b6d4', 'key' => 'dental'],
+                3 => ['name' => 'คลัง LAB', 'color' => '#8b5cf6', 'key' => 'medtech'],
+                4 => ['name' => 'คลังกายภาพ', 'color' => '#10b981', 'key' => 'physical'],
+                5 => ['name' => 'คลังวัสดุการแพทย์', 'color' => '#ec4899', 'key' => 'medical'],
+            ];
+
+            if ($drugObj) {
+                $itemInfo['code'] = $drugObj->code;
+                $itemInfo['name'] = $drugObj->name;
+                $itemInfo['unit_name'] = $drugObj->unit_name ?: 'หน่วย';
+                $wConf = $whNames[(int)$drugObj->med_warehouse_id] ?? ['name' => $drugObj->warehouse_name ?: 'คลังเวชภัณฑ์', 'color' => '#8b5cf6', 'key' => 'medical'];
+                $itemInfo['warehouse_name'] = $wConf['name'];
+                $itemInfo['warehouse_color'] = $wConf['color'];
+                $itemInfo['warehouse_key'] = $wConf['key'];
+            }
+
+            $userMap = DB::connection('backoffice')->table('users')
+                ->whereNotNull('SMALL_ID')->where('SMALL_ID', '!=', '')->where('SMALL_ID', '!=', '0')
+                ->pluck('SMALL_ID', 'id')->toArray();
+
+            $personMap = [];
+            $requestsWithSmallhos = DB::connection('backoffice')->table('warehouse_request')
+                ->whereNotNull('WAREHOUSE_SMALLHOS')->where('WAREHOUSE_SMALLHOS', '!=', '')->where('WAREHOUSE_SMALLHOS', '!=', '0')
+                ->select('WAREHOUSE_SAVE_HR_NAME', 'WAREHOUSE_REPORT_HR_NAME', 'WAREHOUSE_SMALLHOS')
+                ->get();
+            foreach ($requestsWithSmallhos as $r) {
+                $sid = (int)$r->WAREHOUSE_SMALLHOS;
+                foreach ([$r->WAREHOUSE_SAVE_HR_NAME, $r->WAREHOUSE_REPORT_HR_NAME] as $nm) {
+                    if (!empty($nm)) {
+                        $clean = preg_replace('/^(นาย|นางสาว|นาง|น\.ส\.)\s*/u', '', trim($nm));
+                        $clean = preg_replace('/\s+/', ' ', $clean);
+                        $parts = explode(' ', $clean);
+                        if (!empty($parts[0])) {
+                            $personMap[$parts[0]] = $sid;
+                        }
+                    }
+                }
+            }
+
+            $medQuery = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+                ->join('medicine_warehouse_request_list as l', 'r.id', '=', 'l.request_id')
+                ->leftJoin('medicine_drug as d', 'l.medicine_id', '=', 'd.id');
+
+            if ($isMonthlyView) {
+                $medQuery->whereBetween('r.request_date', [$startMonth, substr($endMonth, 0, 10)]);
+            } else {
+                $medQuery->whereBetween('r.request_date', [$startGregorian, substr($endGregorian, 0, 10)]);
+            }
+
+            if ($itemId) {
+                $medQuery->where('l.medicine_id', $itemId);
+            } else {
+                $medQuery->where('d.drug_code', $code);
+            }
+
+            $medRows = $medQuery->select(
+                'r.id as request_id', 'r.code as request_code', 'r.request_date',
+                'r.created_by', 'r.request_by', 'r.request_by_small_hosp_name', 'r.approve_by_small_hosp_name',
+                'l.pay_qty as qty', 'l.value as total_val'
+            )->get();
+
+            $rpstGroup = [];
+            foreach ($medRows as $mr) {
+                $matchedSid = null;
+                if (!empty($mr->created_by) && isset($userMap[$mr->created_by])) {
+                    $matchedSid = (int)$userMap[$mr->created_by];
+                } elseif (!empty($mr->request_by) && isset($userMap[$mr->request_by])) {
+                    $matchedSid = (int)$userMap[$mr->request_by];
+                }
+                if (!$matchedSid) {
+                    foreach ([$mr->request_by_small_hosp_name, $mr->approve_by_small_hosp_name] as $nm) {
+                        if (!empty($nm)) {
+                            $clean = preg_replace('/^(นาย|นางสาว|นาง|น\.ส\.)\s*/u', '', trim($nm));
+                            $clean = preg_replace('/\s+/', ' ', $clean);
+                            $parts = explode(' ', $clean);
+                            if (!empty($parts[0]) && isset($personMap[$parts[0]])) {
+                                $matchedSid = $personMap[$parts[0]];
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if ($matchedSid) {
+                    if (!isset($rpstGroup[$matchedSid])) {
+                        $sh = $smallhosList->get($matchedSid);
+                        $rpstGroup[$matchedSid] = [
+                            'rpst_id' => $matchedSid,
+                            'rpst_code' => $sh ? $sh->code : '-',
+                            'rpst_name' => $sh ? $sh->name : 'รพ.สต.',
+                            'qty' => 0.0,
+                            'total_val' => 0.0,
+                            'req_count' => 0,
+                            'last_date' => $mr->request_date,
+                        ];
+                    }
+                    $rpstGroup[$matchedSid]['qty'] += (float)$mr->qty;
+                    $rpstGroup[$matchedSid]['total_val'] += (float)$mr->total_val;
+                    $rpstGroup[$matchedSid]['req_count'] += 1;
+                    if ($mr->request_date > $rpstGroup[$matchedSid]['last_date']) {
+                        $rpstGroup[$matchedSid]['last_date'] = $mr->request_date;
+                    }
+                    $itemInfo['total_qty'] += (float)$mr->qty;
+                    $itemInfo['total_val'] += (float)$mr->total_val;
+                }
+            }
+
+            uasort($rpstGroup, fn($a, $b) => $b['qty'] <=> $a['qty']);
+            $rpstList = array_values($rpstGroup);
+        }
+
+        foreach ($rpstList as &$rp) {
+            $rp['share_pct'] = $itemInfo['total_qty'] > 0 ? round(($rp['qty'] / $itemInfo['total_qty']) * 100, 1) : 0;
+        }
+        unset($rp);
+
+        $periodLabel = ($isMonthlyView) 
+            ? "ประจำเดือน {$this->thaiMonths[(int)$monthId]} ปีงบประมาณ {$yearId}" 
+            : "ทั้งปีงบประมาณ {$yearId}";
+
+        return response()->json([
+            'item' => $itemInfo,
+            'period_label' => $periodLabel,
+            'rpst_count' => count($rpstList),
+            'rpst_list' => $rpstList,
+        ]);
     }
 }

@@ -6,10 +6,90 @@
     <!-- DataTables & ApexCharts CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.css">
 
     <style>
         /* Base Styling */
+        .rpst-modal-card {
+            cursor: pointer;
+            transition: all 0.18s ease;
+            user-select: none;
+        }
+        .rpst-modal-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+        .rpst-modal-card.active-wh-card {
+            box-shadow: 0 0 0 2px #0d6efd !important;
+            background-color: #eff6ff !important;
+            border-radius: 8px;
+        }
+        .dt-buttons .btn {
+            font-size: 0.75rem;
+        }
+        /* Custom Excel Export Button & DataTables Layout */
+        .btn-excel-custom,
+        .dt-buttons .btn.btn-excel-custom,
+        button.dt-button.btn-excel-custom {
+            background-color: #ffffff !important;
+            background-image: none !important;
+            border: 1.5px solid #16a34a !important;
+            color: #15803d !important;
+            border-radius: 50rem !important;
+            padding: 0.32rem 0.9rem !important;
+            font-size: 0.78rem !important;
+            font-weight: 600 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            cursor: pointer !important;
+            transition: all 0.18s ease-in-out !important;
+        }
+        .btn-excel-custom:hover,
+        .dt-buttons .btn.btn-excel-custom:hover,
+        button.dt-button.btn-excel-custom:hover {
+            background-color: #16a34a !important;
+            color: #ffffff !important;
+            border-color: #16a34a !important;
+            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25) !important;
+        }
+        .btn-excel-custom:hover span,
+        .btn-excel-custom:hover i {
+            color: #ffffff !important;
+        }
+        div.dataTables_filter {
+            margin-bottom: 0 !important;
+        }
+        div.dataTables_filter label {
+            margin-bottom: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            font-size: 0.82rem !important;
+        }
+        div.dataTables_filter input {
+            margin-left: 0.35rem !important;
+            border-radius: 20px !important;
+            padding: 0.25rem 0.75rem !important;
+            font-size: 0.82rem !important;
+        }
+        div.dataTables_length {
+            margin-bottom: 0 !important;
+        }
+        div.dataTables_length label {
+            margin-bottom: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            font-size: 0.82rem !important;
+        }
+        div.dataTables_length select {
+            margin: 0 0.25rem !important;
+            border-radius: 8px !important;
+            font-size: 0.82rem !important;
+        }
+        .dt-buttons {
+            margin-bottom: 0 !important;
+        }
         .page-header-box {
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             border: 1px solid #e2e8f0;
@@ -62,6 +142,7 @@
         .wh-nav-tabs .nav-link.active-medtech  { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; }
         .wh-nav-tabs .nav-link.active-physical { background: linear-gradient(135deg, #10b981, #059669) !important; }
         .wh-nav-tabs .nav-link.active-medical  { background: linear-gradient(135deg, #ec4899, #db2777) !important; }
+        .wh-nav-tabs .nav-link.active-rpst     { background: linear-gradient(135deg, #0284c7, #0369a1) !important; }
 
         /* Month Sub-tabs Navigation */
         .month-subtabs-box {
@@ -251,18 +332,33 @@
                     </select>
                 </div>
 
-                <!-- Sub-Warehouse Filter -->
-                <div class="d-flex align-items-center gap-1">
-                    <label class="text-muted small fw-bold text-nowrap mb-0">คลังย่อย:</label>
-                    <select name="sub_warehouse_id" id="sub_warehouse_id" class="form-select form-select-sm shadow-sm" style="width: 200px; border-radius: 8px;" onchange="this.form.submit()">
-                        <option value="all">-- ทุกคลังย่อย (ทุกหน่วยงาน) --</option>
-                        @foreach($subWarehouses as $sw)
-                            <option value="{{ $sw->id }}" {{ (string)$sw->id === (string)$sub_warehouse_id ? 'selected' : '' }}>
-                                {{ $sw->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                @if($tab === 'rpst')
+                    <!-- รพ.สต. Network Node Selector Filter -->
+                    <div class="d-flex align-items-center gap-1">
+                        <label class="text-muted small fw-bold text-nowrap mb-0"><i class="fas fa-hospital-user text-info me-1"></i>รพ.สต.:</label>
+                        <select name="rpst_id" id="rpst_id" class="form-select form-select-sm shadow-sm" style="width: 220px; border-radius: 8px;" onchange="this.form.submit()">
+                            <option value="all">-- ทุก รพ.สต. (เครือข่าย 13 แห่ง) --</option>
+                            @foreach($smallhosList as $sh)
+                                <option value="{{ $sh->id }}" {{ (string)$sh->id === (string)$rpst_id ? 'selected' : '' }}>
+                                    {{ $sh->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @else
+                    <!-- Sub-Warehouse Filter -->
+                    <div class="d-flex align-items-center gap-1">
+                        <label class="text-muted small fw-bold text-nowrap mb-0">คลังย่อย:</label>
+                        <select name="sub_warehouse_id" id="sub_warehouse_id" class="form-select form-select-sm shadow-sm" style="width: 200px; border-radius: 8px;" onchange="this.form.submit()">
+                            <option value="all">-- ทุกคลังย่อย (ทุกหน่วยงาน) --</option>
+                            @foreach($subWarehouses as $sw)
+                                <option value="{{ $sw->id }}" {{ (string)$sw->id === (string)$sub_warehouse_id ? 'selected' : '' }}>
+                                    {{ $sw->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
 
                 <!-- Search Input -->
                 <div class="input-group input-group-sm" style="width: 170px;">
@@ -270,7 +366,7 @@
                     <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
                 </div>
 
-                @if($month_id !== 'all' || $sub_warehouse_id !== 'all' || !empty($search))
+                @if($month_id !== 'all' || ($tab !== 'rpst' && $sub_warehouse_id !== 'all') || ($tab === 'rpst' && $rpst_id !== 'all') || !empty($search))
                     <a href="{{ route('backoffice.warehouse.index', ['tab' => $tab, 'year_id' => $year_id]) }}" class="btn btn-light btn-sm text-muted border shadow-xs" title="รีเซ็ตตัวกรอง">
                         <i class="fas fa-rotate-left"></i>
                     </a>
@@ -279,7 +375,7 @@
         </div>
     </div>
 
-    <!-- 6 Main Warehouse Tabs Navigation -->
+    <!-- 7 Main Warehouse & Network Tabs Navigation -->
     <ul class="nav wh-nav-tabs mb-3">
         <!-- Tab 0: ภาพรวม 5 คลัง -->
         <li class="nav-item">
@@ -300,6 +396,15 @@
                 </a>
             </li>
         @endforeach
+
+        <!-- Tab 6: รพ.สต. (เครือข่าย CUP) -->
+        <li class="nav-item">
+            <a class="nav-link {{ $tab === 'rpst' ? 'active active-rpst' : '' }}" 
+               href="{{ route('backoffice.warehouse.index', array_merge(request()->except('tab'), ['tab' => 'rpst'])) }}">
+                <i class="fas fa-hospital-user"></i>
+                <span>รพ.สต. (เครือข่าย)</span>
+            </a>
+        </li>
     </ul>
 
     <!-- Month Sub-tabs Navigation Bar -->
@@ -547,6 +652,394 @@
                                             <td colspan="3" class="text-center text-muted py-3">ไม่พบข้อมูลคลังย่อย</td>
                                         </tr>
                                     @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    @elseif($tab === 'rpst')
+        {{-- ========================================================================= --}}
+        {{-- RPST TAB: SUB-DISTRICT HEALTH CENTER NETWORK (CUP HUB) --}}
+        {{-- ========================================================================= --}}
+        
+        <!-- Multi-Warehouse Monthly Trend Chart for RPST (กราฟรายเดือน แยกเส้นแต่ละคลัง พร้อมแถบยอดรวมในตัว) -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+            <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
+                        <i class="fas fa-chart-line text-info"></i>
+                        @if($isMonthlyView ?? false)
+                            <span>แนวโน้มการเบิกจ่าย รพ.สต. รายวัน แยกตาม 5 คลังหลัก - เดือน{{ $selectedMonthName }} {{ $selectedCalYear }}</span>
+                        @else
+                            <span>แนวโน้มมูลค่าการเบิกจ่าย รพ.สต. รายเดือน แยกตาม 5 คลังหลัก (12 เดือน ปีงบประมาณ {{ $year_id }})</span>
+                        @endif
+                    </h6>
+                    <div class="text-muted small mt-1 d-flex align-items-center gap-2 flex-wrap" style="font-size: 0.76rem;">
+                        <span>
+                            <i class="fas fa-hospital text-info me-1"></i>เครือข่าย: <strong class="text-dark">{{ $selectedRpstName }}</strong>
+                        </span>
+                        <span class="text-muted">|</span>
+                        <span>คลิกที่ชื่อคลังใน Legend เพื่อเปิด/ปิดเส้นได้</span>
+                    </div>
+                </div>
+                
+                <!-- ยอดรวมเบิกจ่าย และจำนวนใบเบิก ย้ายมาไว้แทนที่ badge เดิมตามคำสั่ง (รูป 2 แทนรูป 3) -->
+                <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                    <div class="d-flex align-items-center gap-3 px-3.5 py-2 rounded-3 bg-light border shadow-2xs">
+                        <div class="d-flex align-items-center gap-2.5">
+                            <div class="wh-icon-box bg-info bg-opacity-10 text-info rounded-3" style="width: 36px; height: 36px; font-size: 1.1rem; flex-shrink: 0;">
+                                <i class="fas fa-coins text-warning"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-medium" style="font-size: 0.72rem; line-height: 1.2;">
+                                    มูลค่าเบิกจ่ายรวม ({{ ($isMonthlyView ?? false) ? $selectedMonthName : 'ทั้งปี ' . $year_id }})
+                                </div>
+                                <div class="fw-bold text-primary font-monospace" style="font-size: 1.12rem; line-height: 1.2;">
+                                    {{ number_format($totalDisbursement, 2) }} <span class="fs-6 fw-normal text-muted">บาท</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="vr my-1 text-muted" style="height: 28px; opacity: 0.25;"></div>
+                        <div class="d-flex align-items-center gap-2.5">
+                            <div class="wh-icon-box bg-primary bg-opacity-10 text-primary rounded-3" style="width: 36px; height: 36px; font-size: 1.1rem; flex-shrink: 0;">
+                                <i class="fas fa-file-invoice text-info"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-medium" style="font-size: 0.72rem; line-height: 1.2;">จำนวนใบขอเบิก</div>
+                                <div class="fw-bold text-dark font-monospace" style="font-size: 1.12rem; line-height: 1.2;">
+                                    {{ number_format($totalReqCount) }} <span class="fs-6 fw-normal text-muted">ใบ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <!-- 5 Warehouses Contribution Summary Pills -->
+                <div class="row g-2 mb-3">
+                    @foreach($warehouseContributions as $wk => $wc)
+                        @php
+                            $pct = $totalDisbursement > 0 ? round(($wc['val'] / $totalDisbursement) * 100, 1) : 0;
+                        @endphp
+                        <div class="col-xl col-md-4 col-sm-6">
+                            <div class="p-2.5 rounded-3 border d-flex flex-column gap-1" style="background-color: {{ $wc['color'] }}08; border-color: {{ $wc['color'] }}25 !important;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="small fw-bold d-flex align-items-center gap-1.5" style="color: {{ $wc['color'] }}; font-size: 0.76rem;">
+                                        <i class="fas {{ $wc['icon'] }}"></i>
+                                        <span class="text-truncate" style="max-width: 140px;">{{ $wc['name'] }}</span>
+                                    </span>
+                                    <span class="badge rounded-pill px-1.5 py-0.5 font-monospace" style="font-size: 0.68rem; background: {{ $wc['color'] }}20; color: {{ $wc['color'] }};">
+                                        {{ $pct }}%
+                                    </span>
+                                </div>
+                                <div class="fw-bold font-monospace text-dark" style="font-size: 0.92rem;">
+                                    {{ number_format($wc['val'], 2) }} <span class="fw-normal text-muted" style="font-size: 0.7rem;">฿</span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <!-- ApexChart Element for 5 Separate Lines -->
+                <div id="rpst_warehouse_trend_chart" style="min-height: 330px;"></div>
+            </div>
+        </div>
+
+        <!-- Section 1: Matrix Table (13 รพ.สต. x 5 Main Warehouses) -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+            <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
+                        <i class="fas fa-table-cells text-primary"></i>
+                        <span>ตารางเปรียบเทียบการเบิกจ่าย 13 รพ.สต. x 5 คลังหลัก</span>
+                    </h6>
+                    <div class="text-muted small mt-0.5" style="font-size: 0.74rem;">
+                        แสดงยอดรวมที่แต่ละ รพ.สต. เบิกจากคลังพัสดุและคลังเวชภัณฑ์ทั้ง 5 คลัง ในช่วงเวลาที่เลือก
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-dark border px-2.5 py-1 font-monospace" style="font-size: 0.75rem;">
+                        <i class="fas fa-hospital me-1 text-info"></i> {{ count($matrix) }} หน่วยบริการ
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="rpst_matrix_table" style="font-size: 0.83rem;">
+                        <thead class="bg-light">
+                            <tr class="text-muted" style="font-size: 0.75rem;">
+                                <th class="text-center" style="width: 45px;">#</th>
+                                <th style="width: 85px;">รหัส</th>
+                                <th>ชื่อ รพ.สต. / หน่วยบริการ</th>
+                                <th class="text-end" style="color: #d97706; width: 110px;"><i class="fas fa-boxes-stacked me-1"></i>คลังวัสดุ</th>
+                                <th class="text-end" style="color: #0891b2; width: 110px;"><i class="fas fa-tooth me-1"></i>ทันตกรรม</th>
+                                <th class="text-end" style="color: #7c3aed; width: 110px;"><i class="fas fa-microscope me-1"></i>คลัง LAB</th>
+                                <th class="text-end" style="color: #059669; width: 110px;"><i class="fas fa-person-walking me-1"></i>กายภาพ</th>
+                                <th class="text-end" style="color: #db2777; width: 120px;"><i class="fas fa-stethoscope me-1"></i>วัสดุการแพทย์</th>
+                                <th class="text-end fw-bold text-dark" style="width: 135px;"><i class="fas fa-coins me-1 text-warning"></i>รวม 5 คลัง (บาท)</th>
+                                <th class="text-center" style="width: 95px;">สัดส่วน</th>
+                                <th class="text-center" style="width: 75px;">ใบเบิก</th>
+                                <th class="text-center" style="width: 90px;">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($matrix as $idx => $r)
+                                @php
+                                    $rankBadge = match($idx) {
+                                        0 => 'bg-warning text-dark border border-warning',
+                                        1 => 'bg-secondary bg-opacity-25 text-dark border',
+                                        2 => 'bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25',
+                                        default => 'bg-light text-muted border',
+                                    };
+                                    $isFiltered = ($rpst_id !== 'all' && (string)$rpst_id === (string)$r['id']);
+                                @endphp
+                                <tr class="{{ $isFiltered ? 'table-primary bg-opacity-10' : '' }}">
+                                    <td class="text-center">
+                                        <span class="badge rounded-circle p-1 {{ $rankBadge }}" style="width: 22px; height: 22px; line-height: 14px; font-size: 0.7rem;">
+                                            {{ $idx + 1 }}
+                                        </span>
+                                    </td>
+                                    <td class="font-monospace text-muted small">{{ $r['code'] ?: '-' }}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark d-flex align-items-center gap-1.5">
+                                            <i class="fas fa-hospital me-1 text-muted" style="font-size: 0.8rem;"></i>
+                                            <span>{{ $r['name'] }}</span>
+                                            @if($idx === 0 && $r['total'] > 0)
+                                                <span class="badge bg-warning bg-opacity-15 text-dark border border-warning border-opacity-50 rounded-pill px-1.5 py-0.5" style="font-size: 0.65rem;">
+                                                    <i class="fas fa-crown text-warning me-0.5"></i>สูงสุด
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="text-end font-monospace text-muted">{{ number_format($r['material'], 2) }}</td>
+                                    <td class="text-end font-monospace text-muted">{{ number_format($r['dental'], 2) }}</td>
+                                    <td class="text-end font-monospace text-muted">{{ number_format($r['medtech'], 2) }}</td>
+                                    <td class="text-end font-monospace text-muted">{{ number_format($r['physical'], 2) }}</td>
+                                    <td class="text-end font-monospace text-muted">{{ number_format($r['medical'], 2) }}</td>
+                                    <td class="text-end font-monospace fw-bold text-primary fs-6">
+                                        {{ number_format($r['total'], 2) }}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="font-monospace small fw-bold text-dark" style="font-size: 0.72rem;">{{ $r['share_pct'] }}%</span>
+                                            <div class="progress w-100 mt-1" style="height: 4px;">
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ min(100, $r['share_pct'] * 2) }}%;"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border px-2 py-1 font-monospace">{{ $r['req_count'] }} ใบ</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 shadow-xs" 
+                                                style="font-size: 0.74rem;" 
+                                                onclick="viewRpstDetail({{ $r['id'] }}, '{{ addslashes($r['name']) }}')"
+                                                title="คลิกเพื่อดูรายละเอียดรายการสิ่งของและใบเบิกของ {{ $r['name'] }}">
+                                            <i class="fas fa-file-invoice me-1"></i>ดูรายละเอียด
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot class="bg-light fw-bold">
+                            <tr>
+                                <td colspan="3" class="text-end text-dark">รวมทั้งเครือข่าย รพ.สต.:</td>
+                                <td class="text-end font-monospace text-dark">{{ number_format(array_sum(array_column($matrix, 'material')), 2) }}</td>
+                                <td class="text-end font-monospace text-dark">{{ number_format(array_sum(array_column($matrix, 'dental')), 2) }}</td>
+                                <td class="text-end font-monospace text-dark">{{ number_format(array_sum(array_column($matrix, 'medtech')), 2) }}</td>
+                                <td class="text-end font-monospace text-dark">{{ number_format(array_sum(array_column($matrix, 'physical')), 2) }}</td>
+                                <td class="text-end font-monospace text-dark">{{ number_format(array_sum(array_column($matrix, 'medical')), 2) }}</td>
+                                <td class="text-end font-monospace text-primary fs-6">{{ number_format($totalDisbursement, 2) }} ฿</td>
+                                <td class="text-center font-monospace">100%</td>
+                                <td class="text-center font-monospace text-dark">{{ $totalReqCount }} ใบ</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Side-by-Side (Top Items vs Requisitions History) -->
+        <div class="row g-4 mb-5">
+            <!-- Left Column: 15 อันดับรายการที่ รพ.สต. เบิกสูงสุด (แบ่งครึ่ง col-xl-6) -->
+            <div class="col-xl-6">
+                <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden d-flex flex-column">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
+                                <i class="fas fa-ranking-star text-warning"></i>
+                                <span>15 อันดับรายการที่ รพ.สต. เบิกสูงสุด</span>
+                            </h6>
+                            <div class="text-muted small mt-0.5" style="font-size: 0.74rem;">
+                                สิ่งของ/เวชภัณฑ์ที่ส่งมอบให้ รพ.สต. มากที่สุด
+                            </div>
+                        </div>
+                        <span class="badge bg-light text-dark border px-2.5 py-1" style="font-size: 0.75rem;">
+                            <i class="fas fa-boxes-stacked me-1 text-primary"></i> 15 อันดับสูงสุด
+                        </span>
+                    </div>
+                    <div class="card-body p-0 flex-grow-1">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" style="font-size: 0.81rem;">
+                                <thead class="bg-light">
+                                    <tr class="text-muted" style="font-size: 0.74rem;">
+                                        <th class="text-center" style="width: 32px;">#</th>
+                                        <th>รายการพัสดุ / เวชภัณฑ์</th>
+                                        <th style="width: 105px;">คลังต้นทาง</th>
+                                        <th class="text-center" style="width: 75px;">จำนวนเบิก</th>
+                                        <th class="text-end" style="width: 95px;">มูลค่า (บาท)</th>
+                                        <th class="text-center" style="width: 75px;">ดูรายการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($topDisbursedItems as $tIdx => $tItem)
+                                        @php
+                                            $rankBadge = match($tIdx) {
+                                                0 => 'bg-warning text-dark border border-warning',
+                                                1 => 'bg-secondary bg-opacity-25 text-dark border',
+                                                2 => 'bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25',
+                                                default => 'bg-light text-muted border',
+                                            };
+                                        @endphp
+                                        <tr>
+                                            <td class="text-center">
+                                                <span class="badge rounded-circle p-1 {{ $rankBadge }}" style="width: 20px; height: 20px; line-height: 12px; font-size: 0.68rem;">
+                                                    {{ $tIdx + 1 }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold text-dark text-truncate" style="max-width: 180px;" title="{{ $tItem->name }}">
+                                                    {{ $tItem->name }}
+                                                </div>
+                                                <div class="text-muted small font-monospace" style="font-size: 0.7rem;">
+                                                    {{ $tItem->code ?: '-' }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge rounded-pill px-2 py-0.5" style="background: {{ $tItem->warehouse_color }}15; color: {{ $tItem->warehouse_color }}; font-size: 0.68rem;">
+                                                    {{ $tItem->warehouse_name }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center font-monospace">
+                                                <span class="fw-bold text-dark">{{ number_format($tItem->total_qty) }}</span>
+                                                <span class="text-muted small ms-0.5">{{ $tItem->unit_name ?: '' }}</span>
+                                            </td>
+                                            <td class="text-end fw-bold font-monospace text-primary">
+                                                {{ number_format($tItem->total_val, 2) }}
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 shadow-xs" 
+                                                        style="font-size: 0.72rem;" 
+                                                        onclick="viewRpstItemBreakdown('{{ $tItem->warehouse_key ?? 'material' }}', '{{ $tItem->item_id ?? '' }}', '{{ addslashes($tItem->code ?? '') }}', '{{ addslashes($tItem->name ?? '') }}')"
+                                                        title="ดูรายชื่อ รพ.สต. ที่เบิก {{ $tItem->name }}">
+                                                    <i class="fas fa-hospital-user me-1"></i>ดูรายการ
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">ไม่พบรายการเบิกจ่ายในงวดเวลานี้</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: ประวัติใบขอเบิกของ รพ.สต. (แบ่งครึ่ง col-xl-6) -->
+            <div class="col-xl-6">
+                <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden d-flex flex-column">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
+                                <i class="fas fa-file-invoice text-info"></i>
+                                <span>ประวัติใบขอเบิกของ รพ.สต.</span>
+                            </h6>
+                            <div class="text-muted small mt-0.5" style="font-size: 0.74rem;">
+                                รายการใบเบิกส่งมอบสิ่งของ/เวชภัณฑ์ให้ รพ.สต. ในเครือข่าย
+                            </div>
+                        </div>
+                        <span class="badge bg-light text-dark border px-2.5 py-1 font-monospace" style="font-size: 0.75rem;">
+                            {{ count($combinedRequisitions) }} ใบเบิก
+                        </span>
+                    </div>
+                    <div class="card-body p-0 flex-grow-1">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="rpst_requisitions_table" style="font-size: 0.81rem;">
+                                <thead class="bg-light">
+                                    <tr class="text-muted" style="font-size: 0.74rem;">
+                                        <th class="text-center" style="width: 32px;">#</th>
+                                        <th style="width: 85px;">วันที่เบิก</th>
+                                        <th>รพ.สต. ปลายทาง</th>
+                                        <th style="width: 110px;">คลังที่เบิก</th>
+                                        <th>ผู้ขอเบิก</th>
+                                        <th class="text-end" style="width: 90px;">มูลค่า (บาท)</th>
+                                        <th class="text-center" style="width: 70px;">สถานะ</th>
+                                        <th class="text-center" style="width: 75px;">ดูรายการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($combinedRequisitions as $cIdx => $creq)
+                                        @php
+                                             $stClass = match($creq->status) {
+                                                'Allow', 'Verify', 'Approve' => 'bg-success bg-opacity-10 text-success border border-success border-opacity-25',
+                                                'Disallow', 'Disapprove' => 'bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25',
+                                                default => 'bg-warning bg-opacity-15 text-dark border border-warning border-opacity-50',
+                                            };
+                                            $stLabel = match($creq->status) {
+                                                'Allow' => 'จ่ายแล้ว',
+                                                'Verify' => 'ตรวจสอบแล้ว',
+                                                'Approve' => 'อนุมัติแล้ว',
+                                                'Disallow', 'Disapprove' => 'ไม่อนุมัติ',
+                                                default => 'รอดำเนินการ',
+                                            };
+                                        @endphp
+                                        <tr>
+                                            <td class="text-center text-muted">{{ $cIdx + 1 }}</td>
+                                            <td class="text-muted small">
+                                                {{ $creq->request_date ? substr($creq->request_date, 0, 10) : '-' }}
+                                                <span class="d-none">{{ $creq->code }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold text-dark text-truncate" style="max-width: 140px;" title="{{ $creq->smallhos_name }}">
+                                                    {{ $creq->smallhos_name }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge rounded-pill px-2 py-0.5" style="background: {{ $creq->warehouse_color ?? '#64748b' }}15; color: {{ $creq->warehouse_color ?? '#64748b' }}; font-size: 0.68rem;">
+                                                    {{ $creq->warehouse_name }}
+                                                </span>
+                                            </td>
+                                            <td class="text-muted small">
+                                                <div class="text-truncate" style="max-width: 120px;" title="{{ $creq->requester_name }}">
+                                                    {{ $creq->requester_name }}
+                                                </div>
+                                            </td>
+                                            <td class="text-end font-monospace fw-bold text-primary">
+                                                {{ number_format($creq->total_val, 2) }}
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge rounded-pill px-2 py-0.5 {{ $stClass }}" style="font-size: 0.68rem;">
+                                                    {{ $stLabel }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 shadow-xs" 
+                                                        style="font-size: 0.72rem;" 
+                                                        onclick="viewRequestDetail('{{ $creq->warehouse_key }}', {{ $creq->id }})"
+                                                        title="ดูรายการสิ่งของในใบขอเบิก {{ $creq->code }}">
+                                                    <i class="fas fa-file-invoice me-1"></i>ดูรายการ
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -1387,7 +1880,7 @@
 </div>
 
 <!-- Modal 1: Requisition Detail Line Items -->
-<div class="modal fade" id="requisitionDetailModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="requisitionDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1065;">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             <div class="modal-header bg-light py-3 px-4 border-bottom">
@@ -1656,6 +2149,272 @@
     </div>
 </div>
 
+<!-- Modal 7: RPST Requisition & Disbursed Items Detail Modal (รายละเอียดการเบิกจ่าย รพ.สต.) -->
+<div class="modal fade" id="rpstDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-light py-3 px-4 border-bottom">
+                <div class="w-100 me-2">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 mb-0">
+                            <i class="fas fa-hospital-user text-info"></i>
+                            <span>รายละเอียดการเบิกจ่าย: <span id="modalRpstName" class="text-primary">-</span></span>
+                            <span class="badge bg-light text-muted border font-monospace ms-1" style="font-size: 0.72rem;" id="modalRpstCode"></span>
+                        </h5>
+                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2.5 py-1" id="modalRpstPeriod">
+                            -
+                        </span>
+                    </div>
+                    <div class="text-muted small mt-1">
+                        สรุปรายการพัสดุและเวชภัณฑ์ทั้งหมดที่ รพ.สต. ขอเบิกจาก 5 คลังหลักของโรงพยาบาล
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Summary 5 Warehouses Pills inside Modal (Clickable to Filter) -->
+                <div class="p-3 bg-light border-bottom">
+                    <div class="row g-2 text-center" id="rpstModalCardsRow">
+                        <div class="col">
+                            <div class="p-2 rounded-3 bg-white border rpst-modal-card active-wh-card" data-wh-key="all" onclick="filterRpstModal('all')" title="คลิกเพื่อดูทุกคลัง">
+                                <div class="text-muted small" style="font-size: 0.72rem;">รวม 5 คลัง (บาท)</div>
+                                <div class="fw-bold text-primary font-monospace fs-6" id="modalRpstTotalVal">0.00</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2 rounded-3 bg-white border rpst-modal-card" data-wh-key="material" onclick="filterRpstModal('material')" style="border-left: 3px solid #f59e0b !important;" title="คลิกเพื่อกรองเฉพาะคลังวัสดุ">
+                                <div class="text-muted small" style="font-size: 0.72rem;">คลังวัสดุ</div>
+                                <div class="fw-bold font-monospace" style="color: #d97706; font-size: 0.9rem;" id="modalRpstMatVal">0.00</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2 rounded-3 bg-white border rpst-modal-card" data-wh-key="dental" onclick="filterRpstModal('dental')" style="border-left: 3px solid #06b6d4 !important;" title="คลิกเพื่อกรองเฉพาะคลังทันตกรรม">
+                                <div class="text-muted small" style="font-size: 0.72rem;">คลังทันตกรรม</div>
+                                <div class="fw-bold font-monospace" style="color: #0891b2; font-size: 0.9rem;" id="modalRpstDenVal">0.00</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2 rounded-3 bg-white border rpst-modal-card" data-wh-key="medtech" onclick="filterRpstModal('medtech')" style="border-left: 3px solid #8b5cf6 !important;" title="คลิกเพื่อกรองเฉพาะคลัง LAB">
+                                <div class="text-muted small" style="font-size: 0.72rem;">คลัง LAB</div>
+                                <div class="fw-bold font-monospace" style="color: #7c3aed; font-size: 0.9rem;" id="modalRpstMedtechVal">0.00</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2 rounded-3 bg-white border rpst-modal-card" data-wh-key="physical" onclick="filterRpstModal('physical')" style="border-left: 3px solid #10b981 !important;" title="คลิกเพื่อกรองเฉพาะคลังกายภาพ">
+                                <div class="text-muted small" style="font-size: 0.72rem;">คลังกายภาพ</div>
+                                <div class="fw-bold font-monospace" style="color: #059669; font-size: 0.9rem;" id="modalRpstPhyVal">0.00</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2 rounded-3 bg-white border rpst-modal-card" data-wh-key="medical" onclick="filterRpstModal('medical')" style="border-left: 3px solid #ec4899 !important;" title="คลิกเพื่อกรองเฉพาะคลังวัสดุการแพทย์">
+                                <div class="text-muted small" style="font-size: 0.72rem;">คลังวัสดุการแพทย์</div>
+                                <div class="fw-bold font-monospace" style="color: #db2777; font-size: 0.9rem;" id="modalRpstMedVal">0.00</div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="p-2 rounded-3 bg-white border rpst-modal-card" data-wh-key="all" onclick="filterRpstModal('all')" title="คลิกเพื่อดูทุกใบเบิก">
+                                <div class="text-muted small" style="font-size: 0.72rem;">จำนวนใบเบิก</div>
+                                <div class="fw-bold text-dark font-monospace fs-6" id="modalRpstReqCount">0 ใบ</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Filter Banner -->
+                <div id="rpstModalFilterBanner" class="px-3 pt-2 pb-0 d-none">
+                    <div class="alert alert-primary bg-primary bg-opacity-10 border-primary border-opacity-25 py-1.5 px-3 mb-0 d-flex justify-content-between align-items-center rounded-3" style="font-size: 0.8rem;">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary px-2 py-1"><i class="fas fa-filter me-1"></i>กำลังกรองเฉพาะ:</span>
+                            <span id="rpstModalFilterText" class="fw-bold text-primary">-</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-0.5 shadow-xs" style="font-size: 0.72rem;" onclick="filterRpstModal('all')">
+                            <i class="fas fa-rotate-left me-1"></i>ล้างตัวกรอง (ดูทุกคลัง)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Nav Tabs for Modal: Swap Requisitions to be the 1st Tab -->
+                <ul class="nav nav-tabs px-3 pt-2 bg-light border-bottom" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active fw-bold text-dark" id="modal-rpst-reqs-tab" data-bs-toggle="tab" data-bs-target="#modal-rpst-reqs" type="button" role="tab">
+                            <i class="fas fa-file-invoice me-1.5 text-info"></i>ประวัติใบขอเบิก (<span id="modalRpstReqsTabCount">0</span>)
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-bold text-dark" id="modal-rpst-items-tab" data-bs-toggle="tab" data-bs-target="#modal-rpst-items" type="button" role="tab">
+                            <i class="fas fa-boxes-stacked me-1.5 text-primary"></i>รายการพัสดุและเวชภัณฑ์ที่เบิก (<span id="modalRpstItemsCount">0</span>)
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content p-3">
+                    <!-- Tab 1: Requisitions List (First Tab) -->
+                    <div class="tab-pane fade show active" id="modal-rpst-reqs" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped align-middle mb-0 w-100" id="modal_rpst_reqs_table" style="font-size: 0.82rem;">
+                                <thead class="bg-light">
+                                    <tr class="text-muted" style="font-size: 0.75rem;">
+                                        <th class="text-center" style="width: 40px;">#</th>
+                                        <th style="width: 120px;">เลขที่ใบเบิก</th>
+                                        <th style="width: 95px;">วันที่เบิก</th>
+                                        <th style="width: 130px;">คลังที่เบิก</th>
+                                        <th>ผู้ขอเบิก</th>
+                                        <th class="text-end" style="width: 110px;">มูลค่า (บาท)</th>
+                                        <th class="text-center" style="width: 85px;">สถานะ</th>
+                                        <th class="text-center" style="width: 90px;">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalRpstReqsBody">
+                                    <!-- Populated via AJAX / DataTables -->
+                                </tbody>
+                                <tfoot class="bg-light fw-bold">
+                                    <tr>
+                                        <td colspan="5" class="text-end text-dark">รวมมูลค่าตามที่แสดง:</td>
+                                        <td class="text-end font-monospace text-primary fs-6" id="modalRpstReqsFooterVal">0.00 บาท</td>
+                                        <td colspan="2"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Items List (Second Tab) -->
+                    <div class="tab-pane fade" id="modal-rpst-items" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped align-middle mb-0 w-100" id="modal_rpst_items_table" style="font-size: 0.82rem;">
+                                <thead class="bg-light">
+                                    <tr class="text-muted" style="font-size: 0.75rem;">
+                                        <th class="text-center" style="width: 40px;">#</th>
+                                        <th style="width: 100px;">รหัส</th>
+                                        <th>ชื่อรายการพัสดุ / เวชภัณฑ์</th>
+                                        <th style="width: 140px;">คลังต้นทาง</th>
+                                        <th class="text-center" style="width: 110px;">จำนวนเบิก</th>
+                                        <th class="text-end" style="width: 120px;">มูลค่ารวม (บาท)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalRpstItemsBody">
+                                    <!-- Populated via AJAX / DataTables -->
+                                </tbody>
+                                <tfoot class="bg-light fw-bold">
+                                    <tr>
+                                        <td colspan="4" class="text-end text-dark">รวมทั้งหมดตามที่แสดง:</td>
+                                        <td class="text-center font-monospace text-dark" id="modalRpstItemsFooterQty">0</td>
+                                        <td class="text-end font-monospace text-primary fs-6" id="modalRpstItemsFooterVal">0.00 บาท</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-4 d-flex justify-content-between align-items-center">
+                <span class="text-muted small" style="font-size: 0.75rem;">
+                    <i class="fas fa-circle-check me-1 text-success"></i>ข้อมูลบูรณาการ 5 คลังหลักสำหรับ รพ.สต. เครือข่าย
+                </span>
+                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 8: RPST Item Breakdown Modal (รายชื่อ รพ.สต. และจำนวนที่เบิก) -->
+<div class="modal fade" id="rpstItemBreakdownModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-light py-3 px-4 border-bottom">
+                <div class="w-100 me-2">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 mb-0">
+                            <i class="fas fa-boxes-stacked text-primary"></i>
+                            <span>สถิติการเบิก: <span id="modalItemBreakdownName" class="text-primary">-</span></span>
+                            <span class="badge bg-light text-muted border font-monospace ms-1" style="font-size: 0.72rem;" id="modalItemBreakdownCode">-</span>
+                            <span class="badge rounded-pill px-2.5 py-1" style="font-size: 0.72rem;" id="modalItemBreakdownWarehouse">-</span>
+                        </h5>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1" id="modalItemBreakdownPeriod">
+                            -
+                        </span>
+                    </div>
+                    <div class="text-muted small mt-1">
+                        แสดงรายชื่อ รพ.สต. เครือข่ายทั้งหมดที่ขอเบิกรายการนี้ พร้อมจำนวนและมูลค่ารวม
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Summary KPI Cards inside Modal -->
+                <div class="p-3 bg-light border-bottom">
+                    <div class="row g-2 text-center">
+                        <div class="col-sm-3 col-6">
+                            <div class="p-2 rounded-3 bg-white border">
+                                <div class="text-muted small" style="font-size: 0.72rem;">รพ.สต. ที่เบิก</div>
+                                <div class="fw-bold text-dark font-monospace fs-6" id="modalItemBreakdownRpstCount">0 แห่ง</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 col-6">
+                            <div class="p-2 rounded-3 bg-white border">
+                                <div class="text-muted small" style="font-size: 0.72rem;">จำนวนเบิกรวมทั้งหมด</div>
+                                <div class="fw-bold text-success font-monospace fs-6">
+                                    <span id="modalItemBreakdownTotalQty">0</span> <span id="modalItemBreakdownUnit" class="small fw-normal text-muted" style="font-size: 0.75rem;">หน่วย</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 col-6">
+                            <div class="p-2 rounded-3 bg-white border">
+                                <div class="text-muted small" style="font-size: 0.72rem;">มูลค่ารวมทั้งหมด (บาท)</div>
+                                <div class="fw-bold text-primary font-monospace fs-6" id="modalItemBreakdownTotalVal">0.00 บาท</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 col-6">
+                            <div class="p-2 rounded-3 bg-white border">
+                                <div class="text-muted small" style="font-size: 0.72rem;">คลังต้นทาง</div>
+                                <div class="fw-bold text-dark font-monospace fs-6" id="modalItemBreakdownWhLabel">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped align-middle mb-0 w-100" id="modal_rpst_item_breakdown_table" style="font-size: 0.82rem;">
+                            <thead class="bg-light">
+                                <tr class="text-muted" style="font-size: 0.75rem;">
+                                    <th class="text-center" style="width: 45px;">#</th>
+                                    <th style="width: 95px;">รหัส รพ.สต.</th>
+                                    <th>ชื่อ รพ.สต. / หน่วยบริการ</th>
+                                    <th class="text-center" style="width: 120px;">จำนวนที่เบิก</th>
+                                    <th style="width: 150px;">สัดส่วน (%)</th>
+                                    <th class="text-end" style="width: 130px;">มูลค่ารวม (บาท)</th>
+                                    <th class="text-center" style="width: 90px;">จำนวนใบเบิก</th>
+                                    <th class="text-center" style="width: 100px;">เบิกล่าสุด</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalItemBreakdownBody">
+                                <!-- Populated via AJAX / DataTables -->
+                            </tbody>
+                            <tfoot class="bg-light fw-bold">
+                                <tr>
+                                    <td colspan="3" class="text-end text-dark">รวมทั้งหมดตามที่แสดง:</td>
+                                    <td class="text-center font-monospace text-success fs-6" id="modalItemBreakdownFooterQty">0</td>
+                                    <td class="text-center font-monospace text-muted" id="modalItemBreakdownFooterPct">100%</td>
+                                    <td class="text-end font-monospace text-primary fs-6" id="modalItemBreakdownFooterVal">0.00 บาท</td>
+                                    <td class="text-center font-monospace text-dark" id="modalItemBreakdownFooterReqs">0 ใบ</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-4 d-flex justify-content-between align-items-center">
+                <span class="text-muted small" style="font-size: 0.75rem;">
+                    <i class="fas fa-circle-check me-1 text-success"></i>สถิติแจกแจงการเบิกจ่ายพัสดุและเวชภัณฑ์รายหน่วยบริการ (รพ.สต.)
+                </span>
+                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -1663,6 +2422,10 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
 
     <script>
@@ -1684,7 +2447,7 @@
                     var overviewOptions = {
                         series: [
                             { name: 'คลังวัสดุการแพทย์', data: medSeries },
-                            { name: 'คลังวัสดุเทคนิคการแพทย์', data: medtechSeries },
+                            { name: 'คลัง LAB', data: medtechSeries },
                             { name: 'คลังวัสดุ (พัสดุ)', data: matSeries },
                             { name: 'คลังทันตกรรม', data: denSeries },
                             { name: 'คลังวัสดุกายภาพบำบัด', data: phySeries }
@@ -1757,7 +2520,7 @@
                     var overviewOptions = {
                         series: [
                             { name: 'คลังวัสดุการแพทย์', data: medSeries },
-                            { name: 'คลังวัสดุเทคนิคการแพทย์', data: medtechSeries },
+                            { name: 'คลัง LAB', data: medtechSeries },
                             { name: 'คลังวัสดุ (พัสดุ)', data: matSeries },
                             { name: 'คลังทันตกรรม', data: denSeries },
                             { name: 'คลังวัสดุกายภาพบำบัด', data: phySeries }
@@ -1826,7 +2589,7 @@
             // =========================================================================
             // 2. Single Warehouse Tab: Charts & Tables Initialization
             // =========================================================================
-            @if($tab !== 'overview')
+            @if($tab !== 'overview' && $tab !== 'rpst')
                 @if($isMonthlyView ?? false)
                     var dailyTrendData = @json($dailyTrend ?? []);
                     var chartLabels = dailyTrendData.map(function(d) { return 'ว.' + d.day; });
@@ -1953,6 +2716,126 @@
                     });
                 }
             @endif
+
+            // =========================================================================
+            // 3. RPST Tab: Tables Initialization
+            // =========================================================================
+            @if($tab === 'rpst')
+                if (typeof $.fn.DataTable !== 'undefined') {
+                    $.fn.dataTable.ext.errMode = 'none';
+                }
+
+                if ($('#rpst_requisitions_table').length && !$.fn.DataTable.isDataTable('#rpst_requisitions_table')) {
+                    $('#rpst_requisitions_table').DataTable({
+                        pageLength: 10,
+                        language: {
+                            search: "ค้นหาใบเบิก รพ.สต.:",
+                            lengthMenu: "แสดง _MENU_ รายการ",
+                            info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                            infoEmpty: "ไม่พบข้อมูล",
+                            emptyTable: "ไม่พบประวัติใบขอเบิกของ รพ.สต. ในงวดเวลาที่เลือก",
+                            zeroRecords: "ไม่พบข้อมูลที่ตรงกับการค้นหา",
+                            paginate: { first: "แรก", previous: "ก่อนหน้า", next: "ถัดไป", last: "ท้ายสุด" }
+                        },
+                        order: [[0, 'asc']],
+                        columnDefs: [
+                            { orderable: false, targets: -1 }
+                        ]
+                    });
+                }
+
+                // Render Multi-Warehouse Monthly Trend Chart (5 Separate Lines)
+                @if($isMonthlyView ?? false)
+                    var rpstDailyTrend = @json($dailyTrend ?? []);
+                    var rpstLabels = rpstDailyTrend.map(function(d) { return 'ว.' + d.day; });
+                    var rpstMat = rpstDailyTrend.map(function(d) { return d.material || 0; });
+                    var rpstDen = rpstDailyTrend.map(function(d) { return d.dental || 0; });
+                    var rpstMedtech = rpstDailyTrend.map(function(d) { return d.medtech || 0; });
+                    var rpstPhy = rpstDailyTrend.map(function(d) { return d.physical || 0; });
+                    var rpstMed = rpstDailyTrend.map(function(d) { return d.medical || 0; });
+                @else
+                    var rpstMonthlyTrend = @json($monthlyTrend ?? []);
+                    var rpstLabels = ['ต.ค.', 'พ.ย.', 'ธ.ค.', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.'];
+                    var rpstMat = rpstMonthlyTrend.map(function(d) { return d.material || 0; });
+                    var rpstDen = rpstMonthlyTrend.map(function(d) { return d.dental || 0; });
+                    var rpstMedtech = rpstMonthlyTrend.map(function(d) { return d.medtech || 0; });
+                    var rpstPhy = rpstMonthlyTrend.map(function(d) { return d.physical || 0; });
+                    var rpstMed = rpstMonthlyTrend.map(function(d) { return d.medical || 0; });
+                @endif
+
+                var rpstChartOptions = {
+                    series: [
+                        { name: 'คลังวัสดุ (พัสดุ)', data: rpstMat },
+                        { name: 'คลังทันตกรรม', data: rpstDen },
+                        { name: 'คลัง LAB', data: rpstMedtech },
+                        { name: 'คลังวัสดุกายภาพบำบัด', data: rpstPhy },
+                        { name: 'คลังวัสดุการแพทย์ (ยา/เวชภัณฑ์)', data: rpstMed }
+                    ],
+                    chart: {
+                        type: 'area',
+                        height: 330,
+                        stacked: false,
+                        toolbar: { 
+                            show: true,
+                            tools: { download: true, selection: false, zoom: false, zoomin: false, zoomout: false, pan: false, reset: false }
+                        },
+                        fontFamily: 'inherit'
+                    },
+                    stroke: { 
+                        curve: 'smooth', 
+                        width: 2.5 
+                    },
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shadeIntensity: 1,
+                            opacityFrom: 0.28,
+                            opacityTo: 0.02,
+                            stops: [0, 90, 100]
+                        }
+                    },
+                    markers: {
+                        size: 4.5,
+                        strokeColors: '#ffffff',
+                        strokeWidth: 2,
+                        hover: { size: 7 }
+                    },
+                    grid: {
+                        borderColor: '#f1f1f1',
+                        strokeDashArray: 3
+                    },
+                    colors: ['#f59e0b', '#06b6d4', '#8b5cf6', '#10b981', '#ec4899'],
+                    dataLabels: { enabled: false },
+                    xaxis: { categories: rpstLabels },
+                    yaxis: {
+                        labels: {
+                            formatter: function (value) {
+                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M ฿';
+                                if (value >= 1000) return (value / 1000).toFixed(0) + 'K ฿';
+                                return Number(value).toLocaleString() + ' ฿';
+                            }
+                        }
+                    },
+                    tooltip: {
+                        shared: true,
+                        intersect: false,
+                        y: { formatter: function (val) { return Number(val || 0).toLocaleString(undefined, {minimumFractionDigits: 2}) + ' บาท'; } }
+                    },
+                    legend: { position: 'top', horizontalAlign: 'right', fontSize: '12px' }
+                };
+
+                var rpstChartEl = document.querySelector("#rpst_warehouse_trend_chart");
+                if (rpstChartEl) {
+                    var rpstChart = new ApexCharts(rpstChartEl, rpstChartOptions);
+                    rpstChart.render();
+                }
+            @endif
+            // Auto adjust DataTables columns when modal tabs switch
+            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                if ($.fn.DataTable) {
+                    $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+                }
+            });
         });
 
         // =========================================================================
@@ -2296,6 +3179,442 @@
                 $('#modalDeptItemsBody').html(html);
             }).fail(function() {
                 $('#modalDeptItemsBody').html('<tr><td colspan="7" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดรายการสิ่งของ</td></tr>');
+            });
+        }
+
+        // =========================================================================
+        // AJAX: View RPST Requisitions & Disbursed Items Detail Modal
+        // =========================================================================
+        window.currentRpstModalData = null;
+        window.currentRpstModalFilter = 'all';
+
+        function renderRpstModalTables(filterWhKey) {
+            filterWhKey = filterWhKey || 'all';
+            const res = window.currentRpstModalData;
+            if (!res) return;
+
+            // Destroy previous DataTables instances
+            if ($.fn.DataTable.isDataTable('#modal_rpst_reqs_table')) {
+                $('#modal_rpst_reqs_table').DataTable().destroy();
+            }
+            if ($.fn.DataTable.isDataTable('#modal_rpst_items_table')) {
+                $('#modal_rpst_items_table').DataTable().destroy();
+            }
+
+            // Filter Requisitions
+            var filteredReqs = res.requisitions || [];
+            if (filterWhKey !== 'all') {
+                filteredReqs = filteredReqs.filter(function(rq) {
+                    return rq.warehouse_key === filterWhKey;
+                });
+            }
+
+            // Filter Items
+            var filteredItems = res.items || [];
+            if (filterWhKey !== 'all') {
+                filteredItems = filteredItems.filter(function(it) {
+                    return it.warehouse_key === filterWhKey;
+                });
+            }
+
+            $('#modalRpstReqsTabCount').text(filteredReqs.length);
+            $('#modalRpstItemsCount').text(filteredItems.length);
+
+            // Populate Requisitions Table Body
+            var reqsHtml = '';
+            var reqsSumVal = 0;
+            if (filteredReqs.length > 0) {
+                $.each(filteredReqs, function(idx, rq) {
+                    var stClass = (rq.status === 'Allow' || rq.status === 'Verify' || rq.status === 'Approve') 
+                        ? 'bg-success bg-opacity-10 text-success border border-success border-opacity-25'
+                        : (rq.status === 'Disallow' || rq.status === 'Disapprove' ? 'bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25' : 'bg-warning bg-opacity-15 text-dark border border-warning border-opacity-50');
+                    var stLabel = (rq.status === 'Allow') ? 'จ่ายแล้ว' :
+                                  (rq.status === 'Verify') ? 'ตรวจสอบแล้ว' :
+                                  (rq.status === 'Approve') ? 'อนุมัติแล้ว' :
+                                  (rq.status === 'Disallow' || rq.status === 'Disapprove') ? 'ไม่อนุมัติ' : 'รอดำเนินการ';
+
+                    var actionBtn = '<button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 shadow-xs" style="font-size: 0.72rem;" onclick="viewRequestDetail(\'' + rq.warehouse_key + '\', ' + rq.id + ')"><i class="fas fa-file-invoice me-1"></i>ดูรายการ</button>';
+                    var valNum = parseFloat(rq.total_val || 0);
+                    reqsSumVal += valNum;
+
+                    reqsHtml += '<tr>' +
+                        '<td class="text-center text-muted font-monospace">' + (idx + 1) + '</td>' +
+                        '<td class="font-monospace fw-bold text-primary">' + (rq.code || '-') + '</td>' +
+                        '<td class="text-muted small">' + (rq.request_date || '-') + '</td>' +
+                        '<td><span class="badge rounded-pill px-2 py-0.5" style="background: ' + rq.warehouse_color + '15; color: ' + rq.warehouse_color + '; font-size: 0.7rem;">' + rq.warehouse_name + '</span></td>' +
+                        '<td class="text-muted small text-truncate" style="max-width: 150px;" title="' + rq.requester + '">' + rq.requester + '</td>' +
+                        '<td class="text-end font-monospace fw-bold text-primary" data-order="' + valNum + '">' + valNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>' +
+                        '<td class="text-center"><span class="badge rounded-pill px-2 py-0.5 ' + stClass + '" style="font-size: 0.68rem;">' + stLabel + '</span></td>' +
+                        '<td class="text-center">' + actionBtn + '</td>' +
+                    '</tr>';
+                });
+            } else {
+                reqsHtml = '<tr><td colspan="8" class="text-center text-muted py-4">ไม่พบประวัติใบขอเบิก' + (filterWhKey !== 'all' ? ' สำหรับคลังนี้' : '') + ' ในงวดเวลานี้</td></tr>';
+            }
+            $('#modalRpstReqsBody').html(reqsHtml);
+            $('#modalRpstReqsFooterVal').text(reqsSumVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+
+            // Populate Items Table Body
+            var itemsHtml = '';
+            var itemsSumQty = 0;
+            var itemsSumVal = 0;
+            if (filteredItems.length > 0) {
+                $.each(filteredItems, function(idx, it) {
+                    var qtyNum = parseFloat(it.qty || 0);
+                    var valNum = parseFloat(it.total_val || 0);
+                    itemsSumQty += qtyNum;
+                    itemsSumVal += valNum;
+
+                    itemsHtml += '<tr>' +
+                        '<td class="text-center text-muted font-monospace">' + (idx + 1) + '</td>' +
+                        '<td class="font-monospace text-muted small">' + (it.code || '-') + '</td>' +
+                        '<td><div class="fw-bold text-dark text-truncate" style="max-width: 320px;" title="' + it.name + '">' + it.name + '</div></td>' +
+                        '<td><span class="badge rounded-pill px-2 py-0.5" style="background: ' + it.warehouse_color + '15; color: ' + it.warehouse_color + '; font-size: 0.7rem;">' + it.warehouse_name + '</span></td>' +
+                        '<td class="text-center font-monospace fw-bold text-dark" data-order="' + qtyNum + '">' + Number(qtyNum).toLocaleString() + ' <span class="text-muted fw-normal small">' + (it.unit || '') + '</span></td>' +
+                        '<td class="text-end font-monospace fw-bold text-primary" data-order="' + valNum + '">' + valNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>' +
+                    '</tr>';
+                });
+            } else {
+                itemsHtml = '<tr><td colspan="6" class="text-center text-muted py-4">ไม่พบรายการพัสดุและเวชภัณฑ์ที่ขอเบิก' + (filterWhKey !== 'all' ? ' สำหรับคลังนี้' : '') + ' ในงวดเวลานี้</td></tr>';
+            }
+            $('#modalRpstItemsBody').html(itemsHtml);
+            $('#modalRpstItemsFooterQty').text(itemsSumQty.toLocaleString());
+            $('#modalRpstItemsFooterVal').text(itemsSumVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+
+            // Initialize DataTables
+            if (typeof $.fn.DataTable !== 'undefined') {
+                if (filteredReqs.length > 0) {
+                    $('#modal_rpst_reqs_table').DataTable({
+                        pageLength: 10,
+                        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "ทั้งหมด"]],
+                        pagingType: 'full_numbers',
+                        searching: true,
+                        order: [[2, 'desc']],
+                        dom: "<'row g-2 align-items-center mb-3'<'col-12 col-md-5 d-flex align-items-center'l><'col-12 col-md-7 d-flex align-items-center justify-content-md-end gap-2 flex-wrap'f B>>" +
+                             "<'row'<'col-12'tr>>" +
+                             "<'row g-2 align-items-center mt-3'<'col-12 col-md-5'i><'col-12 col-md-7 d-flex justify-content-md-end'p>>",
+                        buttons: [
+                            {
+                                extend: 'excelHtml5',
+                                text: '<i class="fas fa-file-excel me-1.5" style="color: #107c41; font-size: 0.95rem;"></i><span style="color: #15803d; font-weight: 600;">ส่งออก Excel</span>',
+                                className: 'btn btn-sm btn-outline-success rounded-pill shadow-xs btn-excel-custom',
+                                title: function() {
+                                    return 'ประวัติใบขอเบิก_' + ($('#modalRpstName').text() || 'รพ.สต.') + '_' + ($('#modalRpstPeriod').text() || '');
+                                },
+                                footer: true
+                            }
+                        ],
+                        language: {
+                            search: "ค้นหา:",
+                            searchPlaceholder: "เลขที่ใบเบิก, ผู้ขอเบิก...",
+                            lengthMenu: "แสดง _MENU_ รายการ",
+                            info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                            infoEmpty: "ไม่มีข้อมูล",
+                            infoFiltered: "(กรองจาก _MAX_ รายการ)",
+                            emptyTable: "ไม่พบข้อมูล",
+                            zeroRecords: "ไม่พบข้อมูลที่ตรงกับการค้นหา",
+                            paginate: { first: "«", previous: "‹", next: "›", last: "»" }
+                        },
+                        footerCallback: function (row, data, start, end, display) {
+                            var api = this.api();
+                            var intVal = function (i) {
+                                if (typeof i === 'number') return i;
+                                if (typeof i === 'string') {
+                                    var clean = i.replace(/<[^>]*>?/gm, '').replace(/[\$,บาท]/g, '').trim().replace(/,/g, '');
+                                    var m = clean.match(/^([\d\.]+)/);
+                                    return m ? parseFloat(m[1]) : 0;
+                                }
+                                return 0;
+                            };
+                            var total = api.column(5, { search: 'applied' }).data().reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+                            $('#modalRpstReqsFooterVal').text(total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+                        }
+                    });
+                }
+
+                if (filteredItems.length > 0) {
+                    $('#modal_rpst_items_table').DataTable({
+                        pageLength: 10,
+                        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "ทั้งหมด"]],
+                        pagingType: 'full_numbers',
+                        searching: true,
+                        order: [[5, 'desc']],
+                        dom: "<'row g-2 align-items-center mb-3'<'col-12 col-md-5 d-flex align-items-center'l><'col-12 col-md-7 d-flex align-items-center justify-content-md-end gap-2 flex-wrap'f B>>" +
+                             "<'row'<'col-12'tr>>" +
+                             "<'row g-2 align-items-center mt-3'<'col-12 col-md-5'i><'col-12 col-md-7 d-flex justify-content-md-end'p>>",
+                        buttons: [
+                            {
+                                extend: 'excelHtml5',
+                                text: '<i class="fas fa-file-excel me-1.5" style="color: #107c41; font-size: 0.95rem;"></i><span style="color: #15803d; font-weight: 600;">ส่งออก Excel</span>',
+                                className: 'btn btn-sm btn-outline-success rounded-pill shadow-xs btn-excel-custom',
+                                title: function() {
+                                    return 'รายการพัสดุและเวชภัณฑ์ที่เบิก_' + ($('#modalRpstName').text() || 'รพ.สต.') + '_' + ($('#modalRpstPeriod').text() || '');
+                                },
+                                footer: true
+                            }
+                        ],
+                        language: {
+                            search: "ค้นหา:",
+                            searchPlaceholder: "รหัส, ชื่อรายการ...",
+                            lengthMenu: "แสดง _MENU_ รายการ",
+                            info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                            infoEmpty: "ไม่มีข้อมูล",
+                            infoFiltered: "(กรองจาก _MAX_ รายการ)",
+                            emptyTable: "ไม่พบข้อมูล",
+                            zeroRecords: "ไม่พบข้อมูลที่ตรงกับการค้นหา",
+                            paginate: { first: "«", previous: "‹", next: "›", last: "»" }
+                        },
+                        footerCallback: function (row, data, start, end, display) {
+                            var api = this.api();
+                            var intVal = function (i) {
+                                if (typeof i === 'number') return i;
+                                if (typeof i === 'string') {
+                                    var clean = i.replace(/<[^>]*>?/gm, '').replace(/[\$,บาท]/g, '').trim().replace(/,/g, '');
+                                    var m = clean.match(/^([\d\.]+)/);
+                                    return m ? parseFloat(m[1]) : 0;
+                                }
+                                return 0;
+                            };
+                            var totalQty = api.column(4, { search: 'applied' }).data().reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+                            var totalVal = api.column(5, { search: 'applied' }).data().reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+                            $('#modalRpstItemsFooterQty').text(totalQty.toLocaleString());
+                            $('#modalRpstItemsFooterVal').text(totalVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+                        }
+                    });
+                }
+            }
+        }
+
+        function filterRpstModal(whKey) {
+            window.currentRpstModalFilter = whKey || 'all';
+
+            $('.rpst-modal-card').removeClass('active-wh-card');
+            $('.rpst-modal-card[data-wh-key="' + window.currentRpstModalFilter + '"]').addClass('active-wh-card');
+
+            var whLabels = {
+                'all': 'ทุกคลัง (5 คลังหลัก)',
+                'material': 'คลังวัสดุ',
+                'dental': 'คลังทันตกรรม',
+                'medtech': 'คลัง LAB',
+                'physical': 'คลังกายภาพ',
+                'medical': 'คลังวัสดุการแพทย์'
+            };
+
+            if (window.currentRpstModalFilter !== 'all') {
+                $('#rpstModalFilterBanner').removeClass('d-none');
+                $('#rpstModalFilterText').text(whLabels[window.currentRpstModalFilter] || window.currentRpstModalFilter);
+            } else {
+                $('#rpstModalFilterBanner').addClass('d-none');
+            }
+
+            if (window.currentRpstModalData) {
+                renderRpstModalTables(window.currentRpstModalFilter);
+            }
+        }
+
+        function viewRpstDetail(id, name) {
+            window.currentRpstModalFilter = 'all';
+            $('.rpst-modal-card').removeClass('active-wh-card');
+            $('.rpst-modal-card[data-wh-key="all"]').addClass('active-wh-card');
+            $('#rpstModalFilterBanner').addClass('d-none');
+
+            $('#modalRpstName').text(name || 'กำลังโหลด...');
+            $('#modalRpstCode').text('');
+            $('#modalRpstPeriod').text('กำลังโหลด...');
+            $('#modalRpstTotalVal').text('0.00');
+            $('#modalRpstMatVal').text('0.00');
+            $('#modalRpstDenVal').text('0.00');
+            $('#modalRpstMedtechVal').text('0.00');
+            $('#modalRpstPhyVal').text('0.00');
+            $('#modalRpstMedVal').text('0.00');
+            $('#modalRpstReqCount').text('0 ใบ');
+            $('#modalRpstItemsCount').text('0');
+            $('#modalRpstReqsTabCount').text('0');
+            $('#modalRpstReqsBody').html('<tr><td colspan="8" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-info me-2"></div> กำลังโหลดประวัติใบขอเบิก...</td></tr>');
+            $('#modalRpstItemsBody').html('<tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-info me-2"></div> กำลังโหลดรายการสิ่งของที่เบิก...</td></tr>');
+
+            // Switch to First Tab (ประวัติใบขอเบิก)
+            var reqTab = document.querySelector('#modal-rpst-reqs-tab');
+            if (reqTab && window.bootstrap) {
+                var tabTrigger = new bootstrap.Tab(reqTab);
+                tabTrigger.show();
+            }
+
+            const modalEl = document.getElementById('rpstDetailModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+
+            const url = '{{ url("backoffice/warehouse/rpst-detail") }}/' + id + '?year_id={{ $year_id }}&month_id={{ $month_id }}';
+            $.get(url, function(res) {
+                window.currentRpstModalData = res;
+                $('#modalRpstName').text(res.rpst_name);
+                $('#modalRpstCode').text('รหัส: ' + (res.rpst_code || '-'));
+                $('#modalRpstPeriod').text(res.period_label || '');
+
+                if (res.summary) {
+                    $('#modalRpstTotalVal').text(Number(res.summary.total_val || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                    $('#modalRpstMatVal').text(Number(res.summary.material || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                    $('#modalRpstDenVal').text(Number(res.summary.dental || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                    $('#modalRpstMedtechVal').text(Number(res.summary.medtech || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                    $('#modalRpstPhyVal').text(Number(res.summary.physical || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                    $('#modalRpstMedVal').text(Number(res.summary.medical || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                    $('#modalRpstReqCount').text(Number(res.summary.req_count || 0).toLocaleString() + ' ใบ');
+                }
+
+                renderRpstModalTables('all');
+
+            }).fail(function() {
+                $('#modalRpstReqsBody').html('<tr><td colspan="8" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>');
+                $('#modalRpstItemsBody').html('<tr><td colspan="6" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>');
+            });
+        }
+
+        function viewRpstItemBreakdown(whKey, itemId, code, name) {
+            $('#modalItemBreakdownName').text(name || 'กำลังโหลด...');
+            $('#modalItemBreakdownCode').text(code ? 'รหัส: ' + code : '-');
+            $('#modalItemBreakdownWarehouse').text('-').attr('style', '');
+            $('#modalItemBreakdownPeriod').text('กำลังโหลด...');
+            $('#modalItemBreakdownRpstCount').text('0 แห่ง');
+            $('#modalItemBreakdownTotalQty').text('0');
+            $('#modalItemBreakdownUnit').text('หน่วย');
+            $('#modalItemBreakdownTotalVal').text('0.00 บาท');
+            $('#modalItemBreakdownWhLabel').text('-');
+            $('#modalItemBreakdownFooterQty').text('0');
+            $('#modalItemBreakdownFooterVal').text('0.00 บาท');
+            $('#modalItemBreakdownFooterReqs').text('0 ใบ');
+
+            if ($.fn.DataTable.isDataTable('#modal_rpst_item_breakdown_table')) {
+                $('#modal_rpst_item_breakdown_table').DataTable().destroy();
+            }
+
+            $('#modalItemBreakdownBody').html('<tr><td colspan="8" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div> กำลังโหลดรายชื่อ รพ.สต. และจำนวนที่เบิก...</td></tr>');
+
+            const modalEl = document.getElementById('rpstItemBreakdownModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+
+            const url = '{{ route("backoffice.warehouse.rpst_item_breakdown") }}?warehouse_key=' + encodeURIComponent(whKey || 'material') +
+                '&item_id=' + encodeURIComponent(itemId || '') +
+                '&code=' + encodeURIComponent(code || '') +
+                '&year_id={{ $year_id }}&month_id={{ $month_id }}';
+
+            $.get(url, function(res) {
+                if (!res || !res.item) {
+                    $('#modalItemBreakdownBody').html('<tr><td colspan="8" class="text-center text-muted py-4">ไม่พบข้อมูล</td></tr>');
+                    return;
+                }
+
+                $('#modalItemBreakdownName').text(res.item.name || name || '-');
+                $('#modalItemBreakdownCode').text('รหัส: ' + (res.item.code || '-'));
+                $('#modalItemBreakdownWarehouse').text(res.item.warehouse_name || '-')
+                    .attr('style', 'background: ' + (res.item.warehouse_color || '#3b82f6') + '18; color: ' + (res.item.warehouse_color || '#3b82f6') + ';');
+                $('#modalItemBreakdownPeriod').text(res.period_label || '');
+                $('#modalItemBreakdownRpstCount').text((res.rpst_count || 0) + ' แห่ง');
+                $('#modalItemBreakdownTotalQty').text(Number(res.item.total_qty || 0).toLocaleString());
+                $('#modalItemBreakdownUnit').text(res.item.unit_name || 'หน่วย');
+                $('#modalItemBreakdownTotalVal').text(Number(res.item.total_val || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+                $('#modalItemBreakdownWhLabel').text(res.item.warehouse_name || '-');
+
+                var tbodyHtml = '';
+                var list = res.rpst_list || [];
+
+                if (list.length === 0) {
+                    tbodyHtml = '<tr><td colspan="8" class="text-center text-muted py-4">ไม่พบประวัติการเบิกของ รพ.สต. ในช่วงเวลานี้</td></tr>';
+                    $('#modalItemBreakdownBody').html(tbodyHtml);
+                } else {
+                    list.forEach(function(rp, idx) {
+                        var rankBadge = (idx === 0) ? 'bg-warning text-dark border border-warning' :
+                                        (idx === 1) ? 'bg-secondary bg-opacity-25 text-dark border' :
+                                        (idx === 2) ? 'bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25' :
+                                        'bg-light text-muted border';
+
+                        tbodyHtml += '<tr>' +
+                            '<td class="text-center"><span class="badge rounded-circle p-1 ' + rankBadge + '" style="width: 20px; height: 20px; line-height: 12px; font-size: 0.68rem;">' + (idx + 1) + '</span></td>' +
+                            '<td class="font-monospace text-muted">' + (rp.rpst_code || '-') + '</td>' +
+                            '<td><div class="fw-bold text-dark">' + (rp.rpst_name || 'รพ.สต.') + '</div></td>' +
+                            '<td class="text-center font-monospace"><span class="fw-bold text-dark fs-6">' + Number(rp.qty || 0).toLocaleString() + '</span> <span class="text-muted small ms-0.5">' + (res.item.unit_name || '') + '</span></td>' +
+                            '<td>' +
+                                '<div class="d-flex align-items-center gap-2">' +
+                                    '<div class="progress flex-grow-1" style="height: 6px; background-color: #e2e8f0; border-radius: 3px;">' +
+                                        '<div class="progress-bar bg-primary rounded" role="progressbar" style="width: ' + (rp.share_pct || 0) + '%;"></div>' +
+                                    '</div>' +
+                                    '<span class="small font-monospace text-muted" style="width: 44px; text-align: right; font-size: 0.74rem;">' + (rp.share_pct || 0) + '%</span>' +
+                                '</div>' +
+                            '</td>' +
+                            '<td class="text-end fw-bold font-monospace text-primary">' + Number(rp.total_val || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>' +
+                            '<td class="text-center"><span class="badge bg-light text-dark border px-2 py-0.5">' + Number(rp.req_count || 0) + ' ใบ</span></td>' +
+                            '<td class="text-center text-muted small font-monospace">' + (rp.last_date || '-') + '</td>' +
+                        '</tr>';
+                    });
+
+                    $('#modalItemBreakdownBody').html(tbodyHtml);
+
+                    $('#modal_rpst_item_breakdown_table').DataTable({
+                        pageLength: 10,
+                        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "ทั้งหมด"]],
+                        order: [[3, 'desc']], // sort by quantity descending
+                        dom: "<'row mb-2'<'col-sm-6'l><'col-sm-6 d-flex justify-content-end align-items-center gap-2'fB>>rt<'row mt-2'<'col-sm-6'i><'col-sm-6'p>>",
+                        buttons: [
+                            {
+                                extend: 'excelHtml5',
+                                text: '<i class="fas fa-file-excel text-success me-1"></i>ส่งออก Excel',
+                                className: 'btn btn-sm btn-outline-success rounded-pill px-3 shadow-xs',
+                                title: function() {
+                                    return 'สถิติการเบิก_' + ($('#modalItemBreakdownName').text() || 'รายการ') + '_' + ($('#modalItemBreakdownPeriod').text() || '');
+                                },
+                                footer: true
+                            }
+                        ],
+                        language: {
+                            search: "ค้นหา รพ.สต.:",
+                            searchPlaceholder: "รหัส, ชื่อ รพ.สต....",
+                            lengthMenu: "แสดง _MENU_ รายการ",
+                            info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รพ.สต.",
+                            infoEmpty: "ไม่มีข้อมูล",
+                            infoFiltered: "(กรองจาก _MAX_ รพ.สต.)",
+                            emptyTable: "ไม่พบข้อมูล",
+                            zeroRecords: "ไม่พบ รพ.สต. ที่ตรงกับการค้นหา",
+                            paginate: { first: "«", previous: "‹", next: "›", last: "»" }
+                        },
+                        footerCallback: function (row, data, start, end, display) {
+                            var api = this.api();
+                            var intVal = function (i) {
+                                if (typeof i === 'number') return i;
+                                if (typeof i === 'string') {
+                                    var clean = i.replace(/<[^>]*>?/gm, '').replace(/[\$,บาท]/g, '').trim().replace(/,/g, '');
+                                    var m = clean.match(/^([\d\.]+)/);
+                                    return m ? parseFloat(m[1]) : 0;
+                                }
+                                return 0;
+                            };
+                            var totalQty = api.column(3, { search: 'applied' }).data().reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+                            var totalVal = api.column(5, { search: 'applied' }).data().reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+                            var totalReqs = api.column(6, { search: 'applied' }).data().reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+
+                            $('#modalItemBreakdownFooterQty').text(totalQty.toLocaleString());
+                            $('#modalItemBreakdownFooterVal').text(totalVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+                            $('#modalItemBreakdownFooterReqs').text(totalReqs.toLocaleString() + ' ใบ');
+                        }
+                    });
+                }
+            }).fail(function() {
+                $('#modalItemBreakdownBody').html('<tr><td colspan="8" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>');
             });
         }
     </script>

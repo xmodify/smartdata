@@ -307,6 +307,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/department-items/{type}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'departmentItems'])->name('backoffice.warehouse.department_items');
         Route::get('/receives/{type}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'receivesList'])->name('backoffice.warehouse.receives_list');
         Route::get('/receive/{type}/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'receiveDetail'])->name('backoffice.warehouse.receive_detail');
+        Route::get('/rpst-detail/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'rpstDetail'])->name('backoffice.warehouse.rpst_detail');
+        Route::get('/rpst-item-breakdown', [App\Http\Controllers\Backoffice\WarehouseController::class, 'rpstItemBreakdown'])->name('backoffice.warehouse.rpst_item_breakdown');
         Route::get('/export-reorder', [App\Http\Controllers\Backoffice\WarehouseController::class, 'exportReorder'])->name('backoffice.warehouse.export_reorder');
     });
 
