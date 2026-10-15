@@ -78,6 +78,13 @@
                 "default": "N",
                 "extra": ""
             },
+            "allow_warehouse": {
+                "type": "char",
+                "length": 1,
+                "nullable": false,
+                "default": "N",
+                "extra": ""
+            },
             "allow_personnel": {
                 "type": "char",
                 "length": 1,

@@ -116,6 +116,9 @@
                                         @if($user->hasAccessAsset())
                                             <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">งานทรัพย์สิน</span>
                                         @endif
+                                        @if($user->hasAccessWarehouse())
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">ระบบคลัง</span>
+                                        @endif
                                         @if($user->hasAccessPersonnel())
                                             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">บุคลากร</span>
                                         @endif
@@ -138,7 +141,7 @@
                                             <span class="badge bg-info-subtle text-primary border border-info-subtle rounded-pill"><img src="{{ asset('images/logo.png') }}" class="rounded-circle me-1" style="width: 14px; height: 14px; object-fit: contain; vertical-align: -2px;">Copilot</span>
                                         @endif
                                         
-                                        @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra() && !$user->hasAccessMophAlert() && !$user->hasAccessCopilot())
+                                        @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessWarehouse() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra() && !$user->hasAccessMophAlert() && !$user->hasAccessCopilot())
                                             <span class="text-muted small">ไม่มีสิทธิ์เข้าถึง</span>
                                         @endif
                                     </div>
@@ -218,6 +221,9 @@
                                         @if($user->hasAccessAsset())
                                             <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">งานทรัพย์สิน</span>
                                         @endif
+                                        @if($user->hasAccessWarehouse())
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">ระบบคลัง</span>
+                                        @endif
                                         @if($user->hasAccessPersonnel())
                                             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">บุคลากร</span>
                                         @endif
@@ -240,7 +246,7 @@
                                             <span class="badge bg-info-subtle text-primary border border-info-subtle rounded-pill"><img src="{{ asset('images/logo.png') }}" class="rounded-circle me-1" style="width: 14px; height: 14px; object-fit: contain; vertical-align: -2px;">Copilot</span>
                                         @endif
                                         
-                                        @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra() && !$user->hasAccessMophAlert() && !$user->hasAccessCopilot())
+                                        @if(!$user->hasAccessHosxpReport() && !$user->hasAccessAsset() && !$user->hasAccessWarehouse() && !$user->hasAccessPersonnel() && !$user->hasAccessIncident() && !$user->hasAccessSkpcard() && !$user->hasAccessLend() && !$user->hasAccessMra() && !$user->hasAccessMophAlert() && !$user->hasAccessCopilot())
                                             <span class="text-muted small">ไม่มีสิทธิ์เข้าถึง</span>
                                         @endif
                                     </div>
@@ -328,7 +334,7 @@
         $(document).on('click', '.edit-user', function() {
             const user = JSON.parse(this.dataset.user);
             const form = document.getElementById('editUserForm');
-            form.action = `{{ url('/') }}/admin/users/${user.id}`;
+            form.action = "{{ route('admin.users.update', ':id') }}".replace(':id', user.id);
             
             document.getElementById('edit_name').value = user.name;
             document.getElementById('edit_email').value = user.email;
@@ -338,6 +344,9 @@
 
             document.getElementById('edit_allow_hosxp_report').checked = user.allow_hosxp_report === 'Y';
             document.getElementById('edit_allow_asset').checked = user.allow_asset === 'Y';
+            if (document.getElementById('edit_allow_warehouse')) {
+                document.getElementById('edit_allow_warehouse').checked = (user.allow_warehouse === 'Y');
+            }
             document.getElementById('edit_allow_personnel').checked = user.allow_personnel === 'Y';
             document.getElementById('edit_allow_incident').checked = user.allow_incident === 'Y';
             document.getElementById('edit_allow_skpcard').checked = user.allow_skpcard === 'Y';

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -17,6 +18,22 @@ class UserController extends Controller
     {
         $users = User::all();
         return view('admin.users.index', compact('users'));
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(User $user)
+    {
+        return redirect()->route('admin.users.index');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(User $user)
+    {
+        return redirect()->route('admin.users.index');
     }
 
     /**
@@ -43,7 +60,7 @@ class UserController extends Controller
             'allow_copilot' => 'nullable|string|in:Y,N',
         ]);
 
-        User::create([
+        $userData = [
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
@@ -60,7 +77,17 @@ class UserController extends Controller
             'allow_mra' => $request->has('allow_mra') ? 'Y' : 'N',
             'allow_moph_alert' => $request->has('allow_moph_alert') ? 'Y' : 'N',
             'allow_copilot' => $request->has('allow_copilot') ? 'Y' : 'N',
-        ]);
+        ];
+
+        // Ensure we only pass attributes that actually exist in the table columns
+        try {
+            $columns = Schema::getColumnListing('users');
+            $userData = array_intersect_key($userData, array_flip($columns));
+        } catch (\Throwable $e) {
+            // Fallback: proceed with data as is
+        }
+
+        User::create($userData);
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
@@ -111,6 +138,14 @@ class UserController extends Controller
             $updateData['password'] = Hash::make($request->password);
         }
 
+        // Ensure we only update attributes that actually exist in the table columns
+        try {
+            $columns = Schema::getColumnListing('users');
+            $updateData = array_intersect_key($updateData, array_flip($columns));
+        } catch (\Throwable $e) {
+            // Fallback: proceed with data as is
+        }
+
         $user->update($updateData);
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
@@ -142,3 +177,4 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'เปลี่ยนรหัสผ่านผู้ใช้เรียบร้อยแล้ว (รหัสผ่านใหม่คือ 12345678)');
     }
 }
+
