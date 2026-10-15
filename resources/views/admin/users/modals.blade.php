@@ -58,6 +58,12 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_warehouse" value="Y" id="add_allow_warehouse">
+                                        <label class="form-check-label small" for="add_allow_warehouse">ระบบคลัง</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="allow_personnel" value="Y" id="add_allow_personnel">
                                         <label class="form-check-label small" for="add_allow_personnel">บุคลากร</label>
                                     </div>
@@ -167,6 +173,12 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="allow_asset" value="Y" id="edit_allow_asset">
                                         <label class="form-check-label small" for="edit_allow_asset">งานทรัพย์สิน</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_warehouse" value="Y" id="edit_allow_warehouse">
+                                        <label class="form-check-label small" for="edit_allow_warehouse">ระบบคลัง</label>
                                     </div>
                                 </div>
                                 <div class="col-6">

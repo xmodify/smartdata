@@ -62,7 +62,9 @@
                     <div class="row g-3">
                         @php
                             $supportItems = [
-                                ['url' => '#', 'label' => 'งานทรัพย์สิน', 'icon' => 'fa-boxes-stacked', 'color' => '#4e73df', 'permission' => 'hasAccessAsset'],
+                                ['url' => '/backoffice/asset', 'label' => 'งานทรัพย์สิน', 'icon' => 'fa-boxes-stacked', 'color' => '#4e73df', 'permission' => 'hasAccessAsset'],
+                                ['url' => '/backoffice/warehouse', 'label' => 'ระบบคลัง', 'icon' => 'fa-warehouse', 'color' => '#f59e0b', 'permission' => 'hasAccessWarehouse'],
+                                ['url' => '/backoffice/salary', 'label' => 'เงินเดือน-ค่าตอบแทน', 'icon' => 'fa-money-bill-wave', 'color' => '#10b981', 'permission' => 'hasAccessPersonnel'],
                                 ['url' => '/backoffice/hrd', 'label' => 'บุคลากร', 'icon' => 'fa-id-card', 'color' => '#1cc88a', 'permission' => 'hasAccessPersonnel'],
                                 ['url' => '/backoffice/incident', 'label' => 'รายงานอุบัติการณ์', 'icon' => 'fa-triangle-exclamation', 'color' => '#e74a3b', 'permission' => 'hasAccessIncident'],
                                 ['url' => '/skpcard', 'label' => 'บัตรสังฆะประชาร่วมใจ', 'icon' => 'fa-address-card', 'color' => '#f6c23e', 'permission' => 'hasAccessSkpcard'],

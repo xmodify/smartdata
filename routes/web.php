@@ -298,6 +298,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/backoffice/asset/{decline_id}/pdf', [App\Http\Controllers\Backoffice\AssetController::class, 'pdf'])->name('backoffice.asset.pdf');
     Route::get('/backoffice/asset/software/{article_id}', [App\Http\Controllers\Backoffice\AssetController::class, 'getSoftware'])->name('backoffice.asset.software');
 
+    // Backoffice Warehouse & Requisition Routes
+    Route::prefix('backoffice/warehouse')->group(function () {
+        Route::get('/', [App\Http\Controllers\Backoffice\WarehouseController::class, 'index'])->name('backoffice.warehouse.index');
+        Route::get('/request/{type}/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'requestDetail'])->name('backoffice.warehouse.request_detail');
+        Route::get('/item/{type}/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'itemDetail'])->name('backoffice.warehouse.item_detail');
+        Route::get('/export-reorder', [App\Http\Controllers\Backoffice\WarehouseController::class, 'exportReorder'])->name('backoffice.warehouse.export_reorder');
+    });
+
     // Backoffice Incident Routes
     Route::prefix('backoffice/incident')->group(function () {
         Route::get('/', [App\Http\Controllers\Backoffice\IncidentController::class, 'index'])->name('backoffice.incident.index');

@@ -431,6 +431,12 @@
                                 <i class="fas fa-boxes-stacked me-2" style="color: #4e73df;"></i> งานทรัพย์สิน
                             </a>
                         @endif
+                        @if(auth()->user()->hasAccessWarehouse())
+                            <a href="{{ route('backoffice.warehouse.index') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark {{ request()->routeIs('backoffice.warehouse.*') ? 'active-menu fw-bold' : '' }}">
+                                <i class="fas fa-warehouse me-2" style="color: #f59e0b;"></i> ระบบคลัง
+                            </a>
+                        @endif
                         @if(auth()->user()->hasAccessIncident())
                             <a href="{{ route('backoffice.incident.index') }}"
                                 class="list-group-item list-group-item-action bg-transparent text-dark">

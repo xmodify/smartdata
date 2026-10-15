@@ -26,6 +26,7 @@ class User extends Authenticatable
         'active',
         'allow_hosxp_report',
         'allow_asset',
+        'allow_warehouse',
         'allow_personnel',
         'allow_incident',
         'allow_skpcard',
@@ -66,6 +67,13 @@ class User extends Authenticatable
     public function hasAccessAsset()
     {
         return $this->role === 'admin' || $this->allow_asset === 'Y';
+    }
+
+    public function hasAccessWarehouse()
+    {
+        return $this->role === 'admin' 
+            || ($this->allow_warehouse ?? 'N') === 'Y' 
+            || ($this->allow_asset ?? 'N') === 'Y';
     }
 
     public function hasAccessPersonnel()
