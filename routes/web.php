@@ -303,6 +303,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [App\Http\Controllers\Backoffice\WarehouseController::class, 'index'])->name('backoffice.warehouse.index');
         Route::get('/request/{type}/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'requestDetail'])->name('backoffice.warehouse.request_detail');
         Route::get('/item/{type}/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'itemDetail'])->name('backoffice.warehouse.item_detail');
+        Route::get('/item-departments/{type}/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'itemDepartments'])->name('backoffice.warehouse.item_departments');
+        Route::get('/department-items/{type}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'departmentItems'])->name('backoffice.warehouse.department_items');
         Route::get('/export-reorder', [App\Http\Controllers\Backoffice\WarehouseController::class, 'exportReorder'])->name('backoffice.warehouse.export_reorder');
     });
 

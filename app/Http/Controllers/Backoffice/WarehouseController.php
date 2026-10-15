@@ -125,10 +125,17 @@ class WarehouseController extends Controller
             ];
         }
 
-        // Fetch sub-warehouses (departments) for filter dropdown
+        // Fetch active sub-warehouses (departments) for filter dropdown (excluding closed/inactive)
         $subWarehouses = DB::connection('backoffice')->table('hrd_department_sub_sub')
             ->select('HR_DEPARTMENT_SUB_SUB_ID as id', 'HR_DEPARTMENT_SUB_SUB_NAME as name')
             ->whereNotNull('HR_DEPARTMENT_SUB_SUB_NAME')
+            ->where('HR_DEPARTMENT_SUB_SUB_NAME', '!=', '')
+            ->where(function ($q) {
+                $q->where('ACTIVE', 'True')
+                  ->orWhere('ACTIVE', 'true')
+                  ->orWhere('ACTIVE', '1')
+                  ->orWhere('ACTIVE', 'Y');
+            })
             ->orderBy('HR_DEPARTMENT_SUB_SUB_NAME')
             ->get();
 
@@ -171,7 +178,9 @@ class WarehouseController extends Controller
     private function getOverviewData(int $yearId, $monthId, $subWhId, string $search): array
     {
         $warehouseSummaries = [];
+        $totalHospitalReceive = 0.0;
         $totalHospitalDisbursement = 0.0;
+        $totalHospitalStock = 0.0;
         $totalHospitalRequests = 0;
         $totalPendingCount = 0;
         $totalApproveCount = 0;
@@ -198,16 +207,60 @@ class WarehouseController extends Controller
             ];
         }
 
+        $isMonthlyView = ($monthId !== 'all');
+        $dailyTrend = [];
+        $selectedMonthName = '';
+        $selectedCalYear = $yearId;
+
+        $startMonth = '';
+        $endMonth = '';
+        $targetEndDate = $endGregorian;
+
+        if ($isMonthlyView) {
+            $mInt = (int)$monthId;
+            $selectedMonthName = $this->thaiMonths[$mInt] ?? '';
+            $selectedCalYear = ($mInt >= 10) ? ($yearId - 1) : $yearId;
+            $calGregorianYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mInt, $calGregorianYear);
+            $startMonth = sprintf('%04d-%02d-01', $calGregorianYear, $mInt);
+            $endMonth = sprintf('%04d-%02d-%02d 23:59:59', $calGregorianYear, $mInt, $daysInMonth);
+            $targetEndDate = $endMonth;
+
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $dailyTrend[$d] = [
+                    'day' => $d,
+                    'material' => 0.0,
+                    'dental' => 0.0,
+                    'medtech' => 0.0,
+                    'physical' => 0.0,
+                    'medical' => 0.0,
+                    'total' => 0.0,
+                ];
+            }
+        }
+
         $topSubWhStats = [];
 
         foreach ($this->warehouseConfig as $key => $wh) {
+            $receiveVal = 0.0;
             $disbursementVal = 0.0;
+            $stockVal = 0.0;
             $reqCount = 0;
             $itemsCount = 0;
             $statusCounts = ['Pending' => 0, 'Approve' => 0, 'Verify' => 0, 'Allow' => 0];
 
             if ($wh['type'] === 'supplies') {
                 // General Supplies (Inven 5)
+                // 1. Receive
+                $suppRecQuery = DB::connection('backoffice')->table('warehouse_check_receive')
+                    ->where('RECEIVE_STORE', $wh['store_type'])
+                    ->where('RECEIVE_BUDGET_YEAR', $yearId);
+                if ($monthId !== 'all') {
+                    $suppRecQuery->whereRaw('MONTH(RECEIVE_CHECK_DATE) = ?', [(int)$monthId]);
+                }
+                $receiveVal = (float)$suppRecQuery->sum('RECEIVE_VALUE');
+
+                // 2. Disbursement
                 $query = DB::connection('backoffice')->table('warehouse_request as w')
                     ->where('w.WAREHOUSE_INVEN_ID', $wh['inven_id'])
                     ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId);
@@ -228,6 +281,18 @@ class WarehouseController extends Controller
                         ->whereIn('WAREHOUSE_REQUEST_ID', $reqIds)
                         ->sum('WAREHOUSE_REQUEST_SUB_SUM_PRICE');
                 }
+
+                // 3. Stock for Supplies: Cumulative receive up to targetEndDate minus cumulative disburse up to targetEndDate
+                $suppRecCum = (float)DB::connection('backoffice')->table('warehouse_check_receive')
+                    ->where('RECEIVE_STORE', $wh['store_type'])
+                    ->where('RECEIVE_CHECK_DATE', '<=', substr($targetEndDate, 0, 10))
+                    ->sum('RECEIVE_VALUE');
+                $suppDisbCum = (float)DB::connection('backoffice')->table('warehouse_request as w')
+                    ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+                    ->where('w.WAREHOUSE_INVEN_ID', $wh['inven_id'])
+                    ->where('w.WAREHOUSE_DATE_WANT', '<=', substr($targetEndDate, 0, 10))
+                    ->sum('s.WAREHOUSE_REQUEST_SUB_SUM_PRICE');
+                $stockVal = max(0, $suppRecCum - $suppDisbCum);
 
                 foreach ($reqList as $r) {
                     $st = $r->WAREHOUSE_STATUS ?: 'Pending';
@@ -256,41 +321,100 @@ class WarehouseController extends Controller
                     }
                 }
 
-                // Sub-warehouse distribution
+                // Daily values for chart (if monthly view)
+                if ($isMonthlyView) {
+                    $dailySupp = DB::connection('backoffice')->table('warehouse_request as w')
+                        ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+                        ->where('w.WAREHOUSE_INVEN_ID', $wh['inven_id'])
+                        ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId)
+                        ->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [$mInt]);
+                    if ($subWhId !== 'all') {
+                        $dailySupp->where('w.WAREHOUSE_DEP_SUB_SUB_ID', $subWhId);
+                    }
+                    $dailySuppRows = $dailySupp->select(DB::raw('DAY(w.WAREHOUSE_DATE_WANT) as d'), DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as val'))
+                        ->groupBy(DB::raw('DAY(w.WAREHOUSE_DATE_WANT)'))
+                        ->get();
+                    foreach ($dailySuppRows as $ds) {
+                        $dayNum = (int)$ds->d;
+                        if (isset($dailyTrend[$dayNum])) {
+                            $dailyTrend[$dayNum]['material'] = (float)$ds->val;
+                            $dailyTrend[$dayNum]['total'] += (float)$ds->val;
+                        }
+                    }
+                }
+
+                // Sub-warehouse distribution (General Supplies)
                 $subWhDist = DB::connection('backoffice')->table('warehouse_request as w')
                     ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
                     ->leftJoin('hrd_department_sub_sub as d', 'w.WAREHOUSE_DEP_SUB_SUB_ID', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                    ->leftJoin('warehouse_smallhos as sh', 'w.WAREHOUSE_SMALLHOS', '=', 'sh.WAREHOUSE_SMALLHOS_ID')
                     ->where('w.WAREHOUSE_INVEN_ID', $wh['inven_id'])
-                    ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId)
-                    ->select('w.WAREHOUSE_DEP_SUB_SUB_ID', 'd.HR_DEPARTMENT_SUB_SUB_NAME', DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as val'), DB::raw('count(distinct w.WAREHOUSE_ID) as reqs'))
-                    ->groupBy('w.WAREHOUSE_DEP_SUB_SUB_ID', 'd.HR_DEPARTMENT_SUB_SUB_NAME')
-                    ->get();
-                foreach ($subWhDist as $swd) {
-                    $dId = $swd->WAREHOUSE_DEP_SUB_SUB_ID ?: 0;
-                    $dName = $swd->HR_DEPARTMENT_SUB_SUB_NAME ?: 'ไม่ระบุหน่วยงาน';
-                    if (!isset($topSubWhStats[$dId])) {
-                        $topSubWhStats[$dId] = ['id' => $dId, 'name' => $dName, 'val' => 0.0, 'reqs' => 0];
+                    ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId);
+
+                if ($subWhId !== 'all') {
+                    $subWhDist->where('w.WAREHOUSE_DEP_SUB_SUB_ID', $subWhId);
+                }
+                if ($monthId !== 'all') {
+                    $subWhDist->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId]);
+                }
+
+                $subWhDistRows = $subWhDist->select(
+                    DB::raw("COALESCE(NULLIF(d.HR_DEPARTMENT_SUB_SUB_NAME, ''), NULLIF(sh.WAREHOUSE_SMALLHOS_NAME, ''), 'ฝ่ายบริหารงานทั่วไป/เบิกตรง') as dept_name"),
+                    DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as val'),
+                    DB::raw('count(distinct w.WAREHOUSE_ID) as reqs')
+                )
+                ->groupBy(DB::raw("COALESCE(NULLIF(d.HR_DEPARTMENT_SUB_SUB_NAME, ''), NULLIF(sh.WAREHOUSE_SMALLHOS_NAME, ''), 'ฝ่ายบริหารงานทั่วไป/เบิกตรง')"))
+                ->get();
+
+                foreach ($subWhDistRows as $swd) {
+                    $dName = $swd->dept_name;
+                    if (!isset($topSubWhStats[$dName])) {
+                        $topSubWhStats[$dName] = ['name' => $dName, 'val' => 0.0, 'reqs' => 0];
                     }
-                    $topSubWhStats[$dId]['val'] += (float)$swd->val;
-                    $topSubWhStats[$dId]['reqs'] += (int)$swd->reqs;
+                    $topSubWhStats[$dName]['val'] += (float)$swd->val;
+                    $topSubWhStats[$dName]['reqs'] += (int)$swd->reqs;
                 }
 
             } else {
                 // Clinical supply warehouses (Medicine warehouse module)
+                // 1. Receive
+                $recQuery = DB::connection('backoffice')->table('medicine_warehouse_receive')
+                    ->where('warehouse_id', $wh['warehouse_id']);
+                if ($monthId !== 'all') {
+                    $recQuery->whereBetween('receive_datetime', [$startMonth, $endMonth]);
+                } else {
+                    $recQuery->whereBetween('receive_datetime', [$startGregorian, $endGregorian]);
+                }
+                $receiveVal = (float)$recQuery->sum('value');
+
+                // 2. Disbursement
                 $query = DB::connection('backoffice')->table('medicine_warehouse_request as r')
-                    ->where('r.warehouse_id', $wh['warehouse_id'])
-                    ->whereBetween('r.created_at', [$startGregorian, $endGregorian]);
+                    ->where('r.warehouse_id', $wh['warehouse_id']);
+
+                if ($monthId !== 'all') {
+                    $query->whereBetween('r.created_at', [$startMonth, $endMonth]);
+                } else {
+                    $query->whereBetween('r.created_at', [$startGregorian, $endGregorian]);
+                }
 
                 if ($subWhId !== 'all') {
                     $query->where('r.treasury_id', $subWhId);
-                }
-                if ($monthId !== 'all') {
-                    $query->whereRaw('MONTH(r.created_at) = ?', [(int)$monthId]);
                 }
 
                 $reqList = $query->get(['r.id', 'r.status', 'r.value', 'r.created_at', 'r.treasury_id']);
                 $reqCount = $reqList->count();
                 $disbursementVal = (float)$reqList->sum('value');
+
+                // 3. Stock: Cumulative receive up to targetEndDate minus cumulative disburse up to targetEndDate
+                $medRecCum = (float)DB::connection('backoffice')->table('medicine_warehouse_receive')
+                    ->where('warehouse_id', $wh['warehouse_id'])
+                    ->where('receive_datetime', '<=', $targetEndDate)
+                    ->sum('value');
+                $medDisbCum = (float)DB::connection('backoffice')->table('medicine_warehouse_request')
+                    ->where('warehouse_id', $wh['warehouse_id'])
+                    ->where('created_at', '<=', $targetEndDate)
+                    ->sum('value');
+                $stockVal = max(0, $medRecCum - $medDisbCum);
 
                 foreach ($reqList as $r) {
                     $st = $r->status ?: 'Pending';
@@ -318,26 +442,79 @@ class WarehouseController extends Controller
                     }
                 }
 
-                // Sub-warehouse distribution
-                $subWhDist = DB::connection('backoffice')->table('medicine_warehouse_request as r')
-                    ->leftJoin('hrd_department_sub_sub as d', 'r.treasury_id', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
-                    ->where('r.warehouse_id', $wh['warehouse_id'])
-                    ->whereBetween('r.created_at', [$startGregorian, $endGregorian])
-                    ->select('r.treasury_id', 'd.HR_DEPARTMENT_SUB_SUB_NAME', DB::raw('sum(r.value) as val'), DB::raw('count(*) as reqs'))
-                    ->groupBy('r.treasury_id', 'd.HR_DEPARTMENT_SUB_SUB_NAME')
-                    ->get();
-                foreach ($subWhDist as $swd) {
-                    $dId = $swd->treasury_id ?: 0;
-                    $dName = $swd->HR_DEPARTMENT_SUB_SUB_NAME ?: 'ไม่ระบุหน่วยงาน';
-                    if (!isset($topSubWhStats[$dId])) {
-                        $topSubWhStats[$dId] = ['id' => $dId, 'name' => $dName, 'val' => 0.0, 'reqs' => 0];
+                // Daily values for chart (if monthly view)
+                if ($isMonthlyView) {
+                    $startMonth = sprintf('%04d-%02d-01', $calGregorianYear, $mInt);
+                    $endMonth = sprintf('%04d-%02d-%02d 23:59:59', $calGregorianYear, $mInt, $daysInMonth);
+                    $dailyMed = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+                        ->where('r.warehouse_id', $wh['warehouse_id'])
+                        ->whereBetween('r.created_at', [$startMonth, $endMonth]);
+                    if ($subWhId !== 'all') {
+                        $dailyMed->where('r.treasury_id', $subWhId);
                     }
-                    $topSubWhStats[$dId]['val'] += (float)$swd->val;
-                    $topSubWhStats[$dId]['reqs'] += (int)$swd->reqs;
+                    $dailyMedRows = $dailyMed->select(DB::raw('DAY(r.created_at) as d'), DB::raw('sum(r.value) as val'))
+                        ->groupBy(DB::raw('DAY(r.created_at)'))
+                        ->get();
+                    foreach ($dailyMedRows as $dm) {
+                        $dayNum = (int)$dm->d;
+                        if (isset($dailyTrend[$dayNum])) {
+                            $dailyTrend[$dayNum][$key] = (float)$dm->val;
+                            $dailyTrend[$dayNum]['total'] += (float)$dm->val;
+                        }
+                    }
+                }
+
+                // Sub-warehouse distribution (Clinical Supplies: resolving treasury, creator, small hosp, and internal warehouse)
+                $subWhDistMed = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+                    ->leftJoin('hrd_department_sub_sub as d', 'r.treasury_id', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                    ->leftJoin('hrd_person as creator', 'r.created_by', '=', 'creator.ID')
+                    ->leftJoin('hrd_department_sub_sub as creator_d', 'creator.HR_DEPARTMENT_SUB_SUB_ID', '=', 'creator_d.HR_DEPARTMENT_SUB_SUB_ID')
+                    ->leftJoin('medicine_warehouse as mw', 'r.warehouse_id', '=', 'mw.id')
+                    ->where('r.warehouse_id', $wh['warehouse_id'])
+                    ->whereBetween('r.created_at', [$startGregorian, $endGregorian]);
+
+                if ($subWhId !== 'all') {
+                    $subWhDistMed->where('r.treasury_id', $subWhId);
+                }
+                if ($monthId !== 'all') {
+                    $subWhDistMed->whereRaw('MONTH(r.created_at) = ?', [(int)$monthId]);
+                }
+
+                $subWhDistMedRows = $subWhDistMed->select(
+                    DB::raw("
+                        CASE 
+                            WHEN d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN d.HR_DEPARTMENT_SUB_SUB_NAME
+                            WHEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND creator_d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME
+                            WHEN r.request_by_small_hosp_name IS NOT NULL AND r.request_by_small_hosp_name != '' THEN CONCAT('รพ.สต. (', r.request_by_small_hosp_name, ')')
+                            ELSE CONCAT('ใช้ภายใน', mw.name)
+                        END as dept_name
+                    "),
+                    DB::raw('sum(r.value) as val'),
+                    DB::raw('count(*) as reqs')
+                )
+                ->groupBy(DB::raw("
+                        CASE 
+                            WHEN d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN d.HR_DEPARTMENT_SUB_SUB_NAME
+                            WHEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND creator_d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME
+                            WHEN r.request_by_small_hosp_name IS NOT NULL AND r.request_by_small_hosp_name != '' THEN CONCAT('รพ.สต. (', r.request_by_small_hosp_name, ')')
+                            ELSE CONCAT('ใช้ภายใน', mw.name)
+                        END
+                "))
+                ->get();
+
+                foreach ($subWhDistMedRows as $swd) {
+                    $dName = $swd->dept_name;
+                    if (!isset($topSubWhStats[$dName])) {
+                        $topSubWhStats[$dName] = ['name' => $dName, 'val' => 0.0, 'reqs' => 0];
+                    }
+                    $topSubWhStats[$dName]['val'] += (float)$swd->val;
+                    $topSubWhStats[$dName]['reqs'] += (int)$swd->reqs;
                 }
             }
 
+            $totalHospitalReceive += $receiveVal;
             $totalHospitalDisbursement += $disbursementVal;
+            $totalHospitalStock += $stockVal;
             $totalHospitalRequests += $reqCount;
             $totalPendingCount += ($statusCounts['Pending'] ?? 0);
             $totalApproveCount += ($statusCounts['Approve'] ?? 0);
@@ -348,7 +525,9 @@ class WarehouseController extends Controller
             $warehouseSummaries[$key] = [
                 'config' => $wh,
                 'req_count' => $reqCount,
+                'receive_val' => $receiveVal,
                 'disbursement_val' => $disbursementVal,
+                'stock_val' => $stockVal,
                 'items_count' => $itemsCount,
                 'pending_count' => $statusCounts['Pending'] ?? 0,
                 'approve_count' => $statusCounts['Approve'] ?? 0,
@@ -383,7 +562,9 @@ class WarehouseController extends Controller
         $hospitalMos = 1.8; // Average months of stock in community hospital
 
         return [
+            'totalHospitalReceive' => $totalHospitalReceive,
             'totalHospitalDisbursement' => $totalHospitalDisbursement,
+            'totalHospitalStock' => $totalHospitalStock,
             'totalHospitalRequests' => $totalHospitalRequests,
             'totalPendingCount' => $totalPendingCount,
             'totalApproveCount' => $totalApproveCount,
@@ -397,6 +578,10 @@ class WarehouseController extends Controller
             'warehouseSummaries' => $warehouseSummaries,
             'monthlyTrend' => array_values($monthlyTrend),
             'topSubWhStats' => $topSubWhStats,
+            'isMonthlyView' => $isMonthlyView,
+            'selectedMonthName' => $selectedMonthName,
+            'selectedCalYear' => $selectedCalYear,
+            'dailyTrend' => array_values($dailyTrend),
         ];
     }
 
@@ -415,7 +600,23 @@ class WarehouseController extends Controller
         $stockItems = [];
         $reorderItems = [];
         $monthlyTrend = [];
+        $dailyTrend = [];
         $topSubWhStats = [];
+        $isMonthlyView = ($monthId !== 'all');
+        $selectedMonthName = '';
+        $selectedCalYear = $yearId;
+
+        if ($isMonthlyView) {
+            $mInt = (int)$monthId;
+            $selectedMonthName = $this->thaiMonths[$mInt] ?? '';
+            $selectedCalYear = ($mInt >= 10) ? ($yearId - 1) : $yearId;
+            $calGregorianYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mInt, $calGregorianYear);
+
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $dailyTrend[$d] = ['day' => $d, 'val' => 0.0, 'reqs' => 0];
+            }
+        }
 
         foreach ($this->fiscalMonthOrder as $m) {
             $monthlyTrend[$m] = ['month_id' => $m, 'val' => 0.0, 'reqs' => 0];
@@ -425,6 +626,7 @@ class WarehouseController extends Controller
             // General Supplies
             $query = DB::connection('backoffice')->table('warehouse_request as w')
                 ->leftJoin('hrd_department_sub_sub as d', 'w.WAREHOUSE_DEP_SUB_SUB_ID', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('warehouse_smallhos as sh', 'w.WAREHOUSE_SMALLHOS', '=', 'sh.WAREHOUSE_SMALLHOS_ID')
                 ->where('w.WAREHOUSE_INVEN_ID', $config['inven_id'])
                 ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId);
 
@@ -438,7 +640,8 @@ class WarehouseController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q->where('w.WAREHOUSE_REQUEST_CODE', 'like', "%{$search}%")
                       ->orWhere('w.WAREHOUSE_SAVE_HR_NAME', 'like', "%{$search}%")
-                      ->orWhere('d.HR_DEPARTMENT_SUB_SUB_NAME', 'like', "%{$search}%");
+                      ->orWhere('d.HR_DEPARTMENT_SUB_SUB_NAME', 'like', "%{$search}%")
+                      ->orWhere('sh.WAREHOUSE_SMALLHOS_NAME', 'like', "%{$search}%");
                 });
             }
 
@@ -450,7 +653,7 @@ class WarehouseController extends Controller
                 'w.WAREHOUSE_SAVE_HR_NAME as requester_name',
                 'w.WAREHOUSE_SAVE_HR_POSITION as requester_position',
                 'w.WAREHOUSE_DEP_SUB_SUB_ID as sub_warehouse_id',
-                'd.HR_DEPARTMENT_SUB_SUB_NAME as sub_warehouse_name',
+                DB::raw("COALESCE(NULLIF(d.HR_DEPARTMENT_SUB_SUB_NAME, ''), NULLIF(sh.WAREHOUSE_SMALLHOS_NAME, ''), 'ฝ่ายบริหารงานทั่วไป/เบิกตรง') as sub_warehouse_name"),
                 'w.WAREHOUSE_STATUS as status'
             )->orderBy('w.WAREHOUSE_ID', 'desc')->get();
 
@@ -501,18 +704,91 @@ class WarehouseController extends Controller
                 }
             }
 
+            // Daily Trend (if specific month)
+            if ($isMonthlyView) {
+                $dailyData = DB::connection('backoffice')->table('warehouse_request as w')
+                    ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+                    ->where('w.WAREHOUSE_INVEN_ID', $config['inven_id'])
+                    ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId)
+                    ->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId])
+                    ->select(
+                        DB::raw('DAY(w.WAREHOUSE_DATE_WANT) as d'),
+                        DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as val'),
+                        DB::raw('count(distinct w.WAREHOUSE_ID) as reqs')
+                    )
+                    ->groupBy(DB::raw('DAY(w.WAREHOUSE_DATE_WANT)'))
+                    ->get();
+                foreach ($dailyData as $dd) {
+                    $dNum = (int)$dd->d;
+                    if (isset($dailyTrend[$dNum])) {
+                        $dailyTrend[$dNum]['val'] = (float)$dd->val;
+                        $dailyTrend[$dNum]['reqs'] = (int)$dd->reqs;
+                    }
+                }
+            }
+
             // Top Sub-warehouses
-            $subDist = DB::connection('backoffice')->table('warehouse_request as w')
+            $subDistQuery = DB::connection('backoffice')->table('warehouse_request as w')
                 ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
                 ->leftJoin('hrd_department_sub_sub as d', 'w.WAREHOUSE_DEP_SUB_SUB_ID', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('warehouse_smallhos as sh', 'w.WAREHOUSE_SMALLHOS', '=', 'sh.WAREHOUSE_SMALLHOS_ID')
                 ->where('w.WAREHOUSE_INVEN_ID', $config['inven_id'])
-                ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId)
-                ->select('w.WAREHOUSE_DEP_SUB_SUB_ID as id', 'd.HR_DEPARTMENT_SUB_SUB_NAME as name', DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as val'), DB::raw('count(distinct w.WAREHOUSE_ID) as reqs'))
-                ->groupBy('w.WAREHOUSE_DEP_SUB_SUB_ID', 'd.HR_DEPARTMENT_SUB_SUB_NAME')
-                ->orderByDesc('val')
-                ->limit(6)
-                ->get();
-            $topSubWhStats = $subDist;
+                ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId);
+
+            if ($monthId !== 'all') {
+                $subDistQuery->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId]);
+            }
+            if ($subWhId !== 'all') {
+                $subDistQuery->where('w.WAREHOUSE_DEP_SUB_SUB_ID', $subWhId);
+            }
+
+            $topSubWhStats = $subDistQuery->select(
+                DB::raw("MAX(w.WAREHOUSE_DEP_SUB_SUB_ID) as dept_id"),
+                DB::raw("COALESCE(NULLIF(d.HR_DEPARTMENT_SUB_SUB_NAME, ''), NULLIF(sh.WAREHOUSE_SMALLHOS_NAME, ''), 'ฝ่ายบริหารงานทั่วไป/เบิกตรง') as name"),
+                DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as val'),
+                DB::raw('count(distinct w.WAREHOUSE_ID) as reqs')
+            )
+            ->groupBy(DB::raw("COALESCE(NULLIF(d.HR_DEPARTMENT_SUB_SUB_NAME, ''), NULLIF(sh.WAREHOUSE_SMALLHOS_NAME, ''), 'ฝ่ายบริหารงานทั่วไป/เบิกตรง')"))
+            ->orderByDesc('val')
+            ->limit(20)
+            ->get();
+
+            foreach ($topSubWhStats as $ts) {
+                $ts->share_percent = $totalDisbursement > 0 ? round(((float)$ts->val / $totalDisbursement) * 100, 1) : 0;
+            }
+
+            // Top 20 Disbursed Items (Materials)
+            $top20Query = DB::connection('backoffice')->table('warehouse_request as w')
+                ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+                ->leftJoin('supplies as sup', 's.WAREHOUSE_REQUEST_SUB_DETAIL_ID', '=', 'sup.ID')
+                ->leftJoin('supplies_unit as u', 'sup.SUP_UNIT_ID', '=', 'u.SUP_UNIT_ID')
+                ->where('w.WAREHOUSE_INVEN_ID', $config['inven_id'])
+                ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId);
+
+            if ($monthId !== 'all') {
+                $top20Query->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId]);
+            }
+            if ($subWhId !== 'all') {
+                $top20Query->where('w.WAREHOUSE_DEP_SUB_SUB_ID', $subWhId);
+            }
+
+            $top20DisbursedItems = $top20Query->select(
+                'sup.ID as item_id',
+                'sup.SUP_FSN_NUM as code',
+                'sup.SUP_NAME as name',
+                'u.SUP_UNIT_NAME as unit_name',
+                DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_AMOUNT) as total_qty'),
+                DB::raw('avg(s.WAREHOUSE_REQUEST_SUB_PRICE) as avg_price'),
+                DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as total_val')
+            )
+            ->groupBy('sup.ID', 'sup.SUP_FSN_NUM', 'sup.SUP_NAME', 'u.SUP_UNIT_NAME')
+            ->orderByDesc('total_val')
+            ->limit(20)
+            ->get();
+
+            foreach ($top20DisbursedItems as $tItem) {
+                $tItem->share_percent = $totalDisbursement > 0 ? round(((float)$tItem->total_val / $totalDisbursement) * 100, 1) : 0;
+            }
 
             // Stock Items for Two-Tier Inspection & Reorder
             $storeItems = DB::connection('backoffice')->table('warehouse_store as ws')
@@ -600,6 +876,9 @@ class WarehouseController extends Controller
                 ->leftJoin('hrd_department_sub_sub as d', 'r.treasury_id', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
                 ->leftJoin('hrd_person as p', 'r.request_by', '=', 'p.ID')
                 ->leftJoin('hrd_prefix as pref', 'p.HR_PREFIX_ID', '=', 'pref.HR_PREFIX_ID')
+                ->leftJoin('hrd_person as creator', 'r.created_by', '=', 'creator.ID')
+                ->leftJoin('hrd_department_sub_sub as creator_d', 'creator.HR_DEPARTMENT_SUB_SUB_ID', '=', 'creator_d.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('medicine_warehouse as mw', 'r.warehouse_id', '=', 'mw.id')
                 ->where('r.warehouse_id', $config['warehouse_id'])
                 ->whereBetween('r.created_at', [$startGregorian, $endGregorian]);
 
@@ -613,7 +892,10 @@ class WarehouseController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q->where('r.code', 'like', "%{$search}%")
                       ->orWhere('p.HR_FNAME', 'like', "%{$search}%")
-                      ->orWhere('d.HR_DEPARTMENT_SUB_SUB_NAME', 'like', "%{$search}%");
+                      ->orWhere('creator.HR_FNAME', 'like', "%{$search}%")
+                      ->orWhere('d.HR_DEPARTMENT_SUB_SUB_NAME', 'like', "%{$search}%")
+                      ->orWhere('creator_d.HR_DEPARTMENT_SUB_SUB_NAME', 'like', "%{$search}%")
+                      ->orWhere('r.request_by_small_hosp_name', 'like', "%{$search}%");
                 });
             }
 
@@ -625,7 +907,14 @@ class WarehouseController extends Controller
                 DB::raw("CONCAT(COALESCE(pref.HR_PREFIX_NAME,''), COALESCE(p.HR_FNAME,''), ' ', COALESCE(p.HR_LNAME,'')) as requester_name"),
                 'p.POSITION_IN_WORK as requester_position',
                 'r.treasury_id as sub_warehouse_id',
-                'd.HR_DEPARTMENT_SUB_SUB_NAME as sub_warehouse_name',
+                DB::raw("
+                    CASE 
+                        WHEN d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND creator_d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN r.request_by_small_hosp_name IS NOT NULL AND r.request_by_small_hosp_name != '' THEN CONCAT('รพ.สต. (', r.request_by_small_hosp_name, ')')
+                        ELSE CONCAT('ใช้ภายใน', mw.name)
+                    END as sub_warehouse_name
+                "),
                 'r.status',
                 'r.value as total_value'
             )->orderBy('r.id', 'desc')->get();
@@ -671,16 +960,123 @@ class WarehouseController extends Controller
             }
 
             // Top Sub-warehouses
-            $subDist = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+            $subDistQuery = DB::connection('backoffice')->table('medicine_warehouse_request as r')
                 ->leftJoin('hrd_department_sub_sub as d', 'r.treasury_id', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('hrd_person as creator', 'r.created_by', '=', 'creator.ID')
+                ->leftJoin('hrd_department_sub_sub as creator_d', 'creator.HR_DEPARTMENT_SUB_SUB_ID', '=', 'creator_d.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('medicine_warehouse as mw', 'r.warehouse_id', '=', 'mw.id')
                 ->where('r.warehouse_id', $config['warehouse_id'])
-                ->whereBetween('r.created_at', [$startGregorian, $endGregorian])
-                ->select('r.treasury_id as id', 'd.HR_DEPARTMENT_SUB_SUB_NAME as name', DB::raw('sum(r.value) as val'), DB::raw('count(*) as reqs'))
-                ->groupBy('r.treasury_id', 'd.HR_DEPARTMENT_SUB_SUB_NAME')
-                ->orderByDesc('val')
-                ->limit(6)
-                ->get();
-            $topSubWhStats = $subDist;
+                ->whereBetween('r.created_at', [$startGregorian, $endGregorian]);
+
+            if ($monthId !== 'all') {
+                $subDistQuery->whereRaw('MONTH(r.created_at) = ?', [(int)$monthId]);
+            }
+            if ($subWhId !== 'all') {
+                $subDistQuery->where('r.treasury_id', $subWhId);
+            }
+
+            // Daily Trend (if specific month)
+            if ($isMonthlyView) {
+                $dailyData = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+                    ->where('r.warehouse_id', $config['warehouse_id'])
+                    ->whereBetween('r.created_at', [$startGregorian, $endGregorian])
+                    ->whereRaw('MONTH(r.created_at) = ?', [(int)$monthId])
+                    ->select(
+                        DB::raw('DAY(r.created_at) as d'),
+                        DB::raw('sum(r.value) as val'),
+                        DB::raw('count(*) as reqs')
+                    )
+                    ->groupBy(DB::raw('DAY(r.created_at)'))
+                    ->get();
+                foreach ($dailyData as $dd) {
+                    $dNum = (int)$dd->d;
+                    if (isset($dailyTrend[$dNum])) {
+                        $dailyTrend[$dNum]['val'] = (float)$dd->val;
+                        $dailyTrend[$dNum]['reqs'] = (int)$dd->reqs;
+                    }
+                }
+            }
+
+            // Top Sub-warehouses (Clinical)
+            $subDistQuery = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+                ->leftJoin('hrd_department_sub_sub as d', 'r.treasury_id', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('hrd_person as creator', 'r.created_by', '=', 'creator.ID')
+                ->leftJoin('hrd_department_sub_sub as creator_d', 'creator.HR_DEPARTMENT_SUB_SUB_ID', '=', 'creator_d.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('medicine_warehouse as mw', 'r.warehouse_id', '=', 'mw.id')
+                ->where('r.warehouse_id', $config['warehouse_id'])
+                ->whereBetween('r.created_at', [$startGregorian, $endGregorian]);
+
+            if ($monthId !== 'all') {
+                $subDistQuery->whereRaw('MONTH(r.created_at) = ?', [(int)$monthId]);
+            }
+            if ($subWhId !== 'all') {
+                $subDistQuery->where('r.treasury_id', $subWhId);
+            }
+
+            $topSubWhStats = $subDistQuery->select(
+                DB::raw("MAX(r.treasury_id) as dept_id"),
+                DB::raw("
+                    CASE 
+                        WHEN d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND creator_d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN r.request_by_small_hosp_name IS NOT NULL AND r.request_by_small_hosp_name != '' THEN CONCAT('รพ.สต. (', r.request_by_small_hosp_name, ')')
+                        ELSE CONCAT('ใช้ภายใน', mw.name)
+                    END as name
+                "),
+                DB::raw('sum(r.value) as val'),
+                DB::raw('count(*) as reqs')
+            )
+            ->groupBy(DB::raw("
+                    CASE 
+                        WHEN d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND creator_d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN r.request_by_small_hosp_name IS NOT NULL AND r.request_by_small_hosp_name != '' THEN CONCAT('รพ.สต. (', r.request_by_small_hosp_name, ')')
+                        ELSE CONCAT('ใช้ภายใน', mw.name)
+                    END
+            "))
+            ->orderByDesc('val')
+            ->limit(20)
+            ->get();
+
+            foreach ($topSubWhStats as $ts) {
+                $ts->share_percent = $totalDisbursement > 0 ? round(((float)$ts->val / $totalDisbursement) * 100, 1) : 0;
+            }
+
+            // Top 20 Disbursed Items (Clinical Supplies)
+            $top20Query = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+                ->join('medicine_warehouse_request_list as l', 'r.id', '=', 'l.request_id')
+                ->leftJoin('medicine_drug as d', 'l.medicine_id', '=', 'd.id')
+                ->leftJoin('medicine_unit as mu', function ($j) {
+                    $j->on('d.id', '=', 'mu.drug_id')->where('mu.ranking', 1);
+                })
+                ->leftJoin('medicine_unit_name as mun', 'mu.unit_name_id', '=', 'mun.id')
+                ->where('r.warehouse_id', $config['warehouse_id'])
+                ->whereBetween('r.created_at', [$startGregorian, $endGregorian]);
+
+            if ($monthId !== 'all') {
+                $top20Query->whereRaw('MONTH(r.created_at) = ?', [(int)$monthId]);
+            }
+            if ($subWhId !== 'all') {
+                $top20Query->where('r.treasury_id', $subWhId);
+            }
+
+            $top20DisbursedItems = $top20Query->select(
+                'd.id as item_id',
+                'd.drug_code as code',
+                DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), NULLIF(d.description, ''), d.drug_code) as name"),
+                DB::raw("COALESCE(mun.name, mu.new_unitname, '-') as unit_name"),
+                DB::raw('sum(l.req_qty) as total_qty'),
+                DB::raw('avg(l.unit_price) as avg_price'),
+                DB::raw('sum(l.value) as total_val')
+            )
+            ->groupBy('d.id', 'd.drug_code', DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), NULLIF(d.description, ''), d.drug_code)"), 'mun.name', 'mu.new_unitname')
+            ->orderByDesc('total_val')
+            ->limit(20)
+            ->get();
+
+            foreach ($top20DisbursedItems as $tItem) {
+                $tItem->share_percent = $totalDisbursement > 0 ? round(((float)$tItem->total_val / $totalDisbursement) * 100, 1) : 0;
+            }
 
             // Stock Items for Two-Tier Inspection & Reorder
             $medItems = DB::connection('backoffice')->table('medicine_drug')
@@ -757,8 +1153,13 @@ class WarehouseController extends Controller
             'requests' => $requests,
             'stockItems' => $stockItems,
             'reorderItems' => $reorderItems,
+            'top20DisbursedItems' => $top20DisbursedItems,
             'totalEstimatedBudget' => $totalEstimatedBudget,
             'monthlyTrend' => array_values($monthlyTrend),
+            'dailyTrend' => array_values($dailyTrend),
+            'isMonthlyView' => $isMonthlyView,
+            'selectedMonthName' => $selectedMonthName,
+            'selectedCalYear' => $selectedCalYear,
             'topSubWhStats' => $topSubWhStats,
         ];
     }
@@ -772,10 +1173,15 @@ class WarehouseController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        if ($type === 'material') {
+        if ($type === 'material' || $type === 'supplies') {
             $req = DB::connection('backoffice')->table('warehouse_request as w')
                 ->leftJoin('hrd_department_sub_sub as d', 'w.WAREHOUSE_DEP_SUB_SUB_ID', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('warehouse_smallhos as sh', 'w.WAREHOUSE_SMALLHOS', '=', 'sh.WAREHOUSE_SMALLHOS_ID')
                 ->where('w.WAREHOUSE_ID', $id)
+                ->select(
+                    'w.*',
+                    DB::raw("COALESCE(NULLIF(d.HR_DEPARTMENT_SUB_SUB_NAME, ''), NULLIF(sh.WAREHOUSE_SMALLHOS_NAME, ''), 'ฝ่ายบริหารงานทั่วไป/เบิกตรง') as dept_name")
+                )
                 ->first();
 
             if (!$req) return response()->json(['error' => 'Not found'], 404);
@@ -796,7 +1202,7 @@ class WarehouseController extends Controller
                 'code' => $req->WAREHOUSE_REQUEST_CODE,
                 'req_date' => $req->WAREHOUSE_DATE_WANT,
                 'requester' => $req->WAREHOUSE_SAVE_HR_NAME,
-                'sub_warehouse' => $req->HR_DEPARTMENT_SUB_SUB_NAME ?: 'ไม่ระบุ',
+                'sub_warehouse' => $req->dept_name,
                 'status' => $req->WAREHOUSE_STATUS,
                 'items' => $items,
             ]);
@@ -805,10 +1211,20 @@ class WarehouseController extends Controller
                 ->leftJoin('hrd_department_sub_sub as d', 'r.treasury_id', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
                 ->leftJoin('hrd_person as p', 'r.request_by', '=', 'p.ID')
                 ->leftJoin('hrd_prefix as pref', 'p.HR_PREFIX_ID', '=', 'pref.HR_PREFIX_ID')
+                ->leftJoin('hrd_person as creator', 'r.created_by', '=', 'creator.ID')
+                ->leftJoin('hrd_department_sub_sub as creator_d', 'creator.HR_DEPARTMENT_SUB_SUB_ID', '=', 'creator_d.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('medicine_warehouse as mw', 'r.warehouse_id', '=', 'mw.id')
                 ->where('r.id', $id)
                 ->select(
                     'r.*',
-                    'd.HR_DEPARTMENT_SUB_SUB_NAME',
+                    DB::raw("
+                        CASE 
+                            WHEN d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN d.HR_DEPARTMENT_SUB_SUB_NAME
+                            WHEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND creator_d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME
+                            WHEN r.request_by_small_hosp_name IS NOT NULL AND r.request_by_small_hosp_name != '' THEN CONCAT('รพ.สต. (', r.request_by_small_hosp_name, ')')
+                            ELSE CONCAT('ใช้ภายใน', mw.name)
+                        END as dept_name
+                    "),
                     DB::raw("CONCAT(COALESCE(pref.HR_PREFIX_NAME,''), COALESCE(p.HR_FNAME,''), ' ', COALESCE(p.HR_LNAME,'')) as requester_full_name")
                 )
                 ->first();
@@ -821,7 +1237,7 @@ class WarehouseController extends Controller
                 ->select(
                     'l.id',
                     'd.drug_code as code',
-                    'd.trade_name as name',
+                    DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), NULLIF(d.description, ''), d.drug_code) as name"),
                     'l.req_qty as amount',
                     'l.unit_price as price',
                     'l.value as total'
@@ -831,7 +1247,7 @@ class WarehouseController extends Controller
                 'code' => $req->code,
                 'req_date' => $req->request_date,
                 'requester' => $req->requester_full_name ?: '-',
-                'sub_warehouse' => $req->HR_DEPARTMENT_SUB_SUB_NAME ?: 'ไม่ระบุ',
+                'sub_warehouse' => $req->dept_name,
                 'status' => $req->status,
                 'items' => $items,
             ]);
@@ -847,7 +1263,7 @@ class WarehouseController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        if ($type === 'material') {
+        if ($type === 'material' || $type === 'supplies') {
             $store = DB::connection('backoffice')->table('warehouse_store')
                 ->where('STORE_ID', $id)->first();
             if (!$store) return response()->json(['error' => 'Not found'], 404);
@@ -896,6 +1312,270 @@ class WarehouseController extends Controller
                 'code' => $drug->drug_code,
                 'main_stock' => $mainStock,
                 'sub_stocks' => $subStocks,
+            ]);
+        }
+    }
+
+    /**
+     * AJAX Endpoint: Item Requisition Breakdown Across Departments (Sorted Descending)
+     */
+    public function itemDepartments(Request $request, string $type, int $id)
+    {
+        if (!auth()->user()->hasAccessWarehouse()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $yearId = (int)$request->input('year_id', 2569);
+        $monthId = $request->input('month_id', 'all');
+
+        $startGregorian = ($yearId - 544) . '-10-01';
+        $endGregorian = ($yearId - 543) . '-09-30 23:59:59';
+
+        if ($type === 'material' || $type === 'supplies') {
+            $item = DB::connection('backoffice')->table('supplies as sup')
+                ->leftJoin('supplies_unit as u', 'sup.SUP_UNIT_ID', '=', 'u.SUP_UNIT_ID')
+                ->where('sup.ID', $id)
+                ->select('sup.ID', 'sup.SUP_FSN_NUM as code', 'sup.SUP_NAME as name', 'u.SUP_UNIT_NAME as unit_name')
+                ->first();
+
+            if (!$item) return response()->json(['error' => 'Not found'], 404);
+
+            $query = DB::connection('backoffice')->table('warehouse_request as w')
+                ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+                ->leftJoin('hrd_department_sub_sub as d', 'w.WAREHOUSE_DEP_SUB_SUB_ID', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('warehouse_smallhos as sh', 'w.WAREHOUSE_SMALLHOS', '=', 'sh.WAREHOUSE_SMALLHOS_ID')
+                ->where('s.WAREHOUSE_REQUEST_SUB_DETAIL_ID', $id)
+                ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId);
+
+            if ($monthId !== 'all') {
+                $query->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId]);
+            }
+
+            $depts = $query->select(
+                DB::raw("COALESCE(NULLIF(d.HR_DEPARTMENT_SUB_SUB_NAME, ''), NULLIF(sh.WAREHOUSE_SMALLHOS_NAME, ''), 'ฝ่ายบริหารงานทั่วไป/เบิกตรง') as dept_name"),
+                DB::raw('count(distinct w.WAREHOUSE_ID) as req_count'),
+                DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_AMOUNT) as total_qty'),
+                DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as total_val')
+            )
+            ->groupBy(DB::raw("COALESCE(NULLIF(d.HR_DEPARTMENT_SUB_SUB_NAME, ''), NULLIF(sh.WAREHOUSE_SMALLHOS_NAME, ''), 'ฝ่ายบริหารงานทั่วไป/เบิกตรง')"))
+            ->orderByDesc('total_val')
+            ->get();
+
+            $sumVal = (float)$depts->sum('total_val');
+            $sumQty = (float)$depts->sum('total_qty');
+
+            foreach ($depts as $d) {
+                $d->percentage = $sumVal > 0 ? round(((float)$d->total_val / $sumVal) * 100, 1) : 0;
+            }
+
+            return response()->json([
+                'name' => $item->name,
+                'code' => $item->code,
+                'unit' => $item->unit_name ?: 'หน่วย',
+                'sum_val' => $sumVal,
+                'sum_qty' => $sumQty,
+                'departments' => $depts,
+            ]);
+
+        } else {
+            $item = DB::connection('backoffice')->table('medicine_drug as d')
+                ->leftJoin('medicine_unit as mu', function ($j) {
+                    $j->on('d.id', '=', 'mu.drug_id')->where('mu.ranking', 1);
+                })
+                ->leftJoin('medicine_unit_name as mun', 'mu.unit_name_id', '=', 'mun.id')
+                ->where('d.id', $id)
+                ->select(
+                    'd.id',
+                    'd.drug_code as code',
+                    DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), NULLIF(d.description, ''), d.drug_code) as name"),
+                    DB::raw("COALESCE(mun.name, mu.new_unitname, '-') as unit_name")
+                )
+                ->first();
+
+            if (!$item) return response()->json(['error' => 'Not found'], 404);
+
+            $query = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+                ->join('medicine_warehouse_request_list as l', 'r.id', '=', 'l.request_id')
+                ->leftJoin('hrd_department_sub_sub as d', 'r.treasury_id', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('hrd_person as creator', 'r.created_by', '=', 'creator.ID')
+                ->leftJoin('hrd_department_sub_sub as creator_d', 'creator.HR_DEPARTMENT_SUB_SUB_ID', '=', 'creator_d.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('medicine_warehouse as mw', 'r.warehouse_id', '=', 'mw.id')
+                ->where('l.medicine_id', $id)
+                ->whereBetween('r.created_at', [$startGregorian, $endGregorian]);
+
+            if ($monthId !== 'all') {
+                $query->whereRaw('MONTH(r.created_at) = ?', [(int)$monthId]);
+            }
+
+            $depts = $query->select(
+                DB::raw("
+                    CASE 
+                        WHEN d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND creator_d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN r.request_by_small_hosp_name IS NOT NULL AND r.request_by_small_hosp_name != '' THEN CONCAT('รพ.สต. (', r.request_by_small_hosp_name, ')')
+                        ELSE CONCAT('ใช้ภายใน', mw.name)
+                    END as dept_name
+                "),
+                DB::raw('count(distinct r.id) as req_count'),
+                DB::raw('sum(l.req_qty) as total_qty'),
+                DB::raw('sum(l.value) as total_val')
+            )
+            ->groupBy(DB::raw("
+                    CASE 
+                        WHEN d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND creator_d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN r.request_by_small_hosp_name IS NOT NULL AND r.request_by_small_hosp_name != '' THEN CONCAT('รพ.สต. (', r.request_by_small_hosp_name, ')')
+                        ELSE CONCAT('ใช้ภายใน', mw.name)
+                    END
+            "))
+            ->orderByDesc('total_val')
+            ->get();
+
+            $sumVal = (float)$depts->sum('total_val');
+            $sumQty = (float)$depts->sum('total_qty');
+
+            foreach ($depts as $d) {
+                $d->percentage = $sumVal > 0 ? round(((float)$d->total_val / $sumVal) * 100, 1) : 0;
+            }
+
+            return response()->json([
+                'name' => $item->name,
+                'code' => $item->code,
+                'unit' => $item->unit_name ?: 'หน่วย',
+                'sum_val' => $sumVal,
+                'sum_qty' => $sumQty,
+                'departments' => $depts,
+            ]);
+        }
+    }
+
+    /**
+     * AJAX Endpoint: Get all items disbursed to a specific department/sub-warehouse
+     */
+    public function departmentItems(Request $request, string $type)
+    {
+        if (!auth()->user()->hasAccessWarehouse()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $deptId = $request->input('dept_id');
+        $deptName = $request->input('dept_name');
+        $yearId = (int)$request->input('year_id', 2569);
+        $monthId = $request->input('month_id', 'all');
+
+        $startGregorian = ($yearId - 544) . '-10-01';
+        $endGregorian = ($yearId - 543) . '-09-30 23:59:59';
+
+        if ($type === 'material' || $type === 'supplies') {
+            $invenId = 5;
+            $query = DB::connection('backoffice')->table('warehouse_request as w')
+                ->join('warehouse_request_sub as s', 'w.WAREHOUSE_ID', '=', 's.WAREHOUSE_REQUEST_ID')
+                ->leftJoin('supplies as sup', 's.WAREHOUSE_REQUEST_SUB_DETAIL_ID', '=', 'sup.ID')
+                ->leftJoin('supplies_unit as u', 'sup.SUP_UNIT_ID', '=', 'u.SUP_UNIT_ID')
+                ->leftJoin('hrd_department_sub_sub as d', 'w.WAREHOUSE_DEP_SUB_SUB_ID', '=', 'd.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('warehouse_smallhos as sh', 'w.WAREHOUSE_SMALLHOS', '=', 'sh.WAREHOUSE_SMALLHOS_ID')
+                ->where('w.WAREHOUSE_INVEN_ID', $invenId)
+                ->where('w.WAREHOUSE_BUDGET_YEAR', $yearId);
+
+            if (!empty($deptId) && $deptId !== 'null' && is_numeric($deptId)) {
+                $query->where('w.WAREHOUSE_DEP_SUB_SUB_ID', (int)$deptId);
+            } elseif (!empty($deptName)) {
+                $query->where(DB::raw("COALESCE(NULLIF(d.HR_DEPARTMENT_SUB_SUB_NAME, ''), NULLIF(sh.WAREHOUSE_SMALLHOS_NAME, ''), 'ฝ่ายบริหารงานทั่วไป/เบิกตรง')"), $deptName);
+            }
+
+            if ($monthId !== 'all') {
+                $query->whereRaw('MONTH(w.WAREHOUSE_DATE_WANT) = ?', [(int)$monthId]);
+            }
+
+            $items = $query->select(
+                'sup.ID as item_id',
+                'sup.SUP_FSN_NUM as code',
+                'sup.SUP_NAME as name',
+                'u.SUP_UNIT_NAME as unit_name',
+                DB::raw('count(distinct w.WAREHOUSE_ID) as req_count'),
+                DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_AMOUNT) as total_qty'),
+                DB::raw('avg(s.WAREHOUSE_REQUEST_SUB_PRICE) as avg_price'),
+                DB::raw('sum(s.WAREHOUSE_REQUEST_SUB_SUM_PRICE) as total_val')
+            )
+            ->groupBy('sup.ID', 'sup.SUP_FSN_NUM', 'sup.SUP_NAME', 'u.SUP_UNIT_NAME')
+            ->orderByDesc('total_val')
+            ->get();
+
+            $sumVal = (float)$items->sum('total_val');
+            $sumQty = (float)$items->sum('total_qty');
+            foreach ($items as $it) {
+                $it->percentage = $sumVal > 0 ? round(((float)$it->total_val / $sumVal) * 100, 1) : 0;
+            }
+
+            return response()->json([
+                'dept_name' => $deptName ?: 'ไม่ระบุหน่วยงาน',
+                'sum_val' => $sumVal,
+                'sum_qty' => $sumQty,
+                'items_count' => count($items),
+                'items' => $items,
+            ]);
+        } else {
+            // Medicine / Clinical Supplies
+            $warehouseMap = ['dental' => 2, 'medtech' => 3, 'physical' => 4, 'medical' => 5];
+            $warehouseId = $warehouseMap[$type] ?? 5;
+
+            $query = DB::connection('backoffice')->table('medicine_warehouse_request as r')
+                ->join('medicine_warehouse_request_list as l', 'r.id', '=', 'l.request_id')
+                ->leftJoin('medicine_drug as d', 'l.medicine_id', '=', 'd.id')
+                ->leftJoin('medicine_unit as mu', function ($j) {
+                    $j->on('d.id', '=', 'mu.drug_id')->where('mu.ranking', 1);
+                })
+                ->leftJoin('medicine_unit_name as mun', 'mu.unit_name_id', '=', 'mun.id')
+                ->leftJoin('hrd_department_sub_sub as dept', 'r.treasury_id', '=', 'dept.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('hrd_person as creator', 'r.created_by', '=', 'creator.ID')
+                ->leftJoin('hrd_department_sub_sub as creator_d', 'creator.HR_DEPARTMENT_SUB_SUB_ID', '=', 'creator_d.HR_DEPARTMENT_SUB_SUB_ID')
+                ->leftJoin('medicine_warehouse as mw', 'r.warehouse_id', '=', 'mw.id')
+                ->where('r.warehouse_id', $warehouseId)
+                ->whereBetween('r.created_at', [$startGregorian, $endGregorian]);
+
+            if (!empty($deptId) && $deptId !== 'null' && is_numeric($deptId)) {
+                $query->where('r.treasury_id', (int)$deptId);
+            } elseif (!empty($deptName)) {
+                $query->where(DB::raw("
+                    CASE 
+                        WHEN dept.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND dept.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN dept.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME IS NOT NULL AND creator_d.HR_DEPARTMENT_SUB_SUB_NAME != '' THEN creator_d.HR_DEPARTMENT_SUB_SUB_NAME
+                        WHEN r.request_by_small_hosp_name IS NOT NULL AND r.request_by_small_hosp_name != '' THEN CONCAT('รพ.สต. (', r.request_by_small_hosp_name, ')')
+                        ELSE CONCAT('ใช้ภายใน', mw.name)
+                    END
+                "), $deptName);
+            }
+
+            if ($monthId !== 'all') {
+                $query->whereRaw('MONTH(r.created_at) = ?', [(int)$monthId]);
+            }
+
+            $items = $query->select(
+                'd.id as item_id',
+                'd.drug_code as code',
+                DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), NULLIF(d.description, ''), d.drug_code) as name"),
+                DB::raw("COALESCE(mun.name, mu.new_unitname, '-') as unit_name"),
+                DB::raw('count(distinct r.id) as req_count'),
+                DB::raw('sum(l.req_qty) as total_qty'),
+                DB::raw('avg(l.unit_price) as avg_price'),
+                DB::raw('sum(l.value) as total_val')
+            )
+            ->groupBy('d.id', 'd.drug_code', DB::raw("COALESCE(NULLIF(d.trade_name, ''), NULLIF(d.generic_name, ''), NULLIF(d.description, ''), d.drug_code)"), 'mun.name', 'mu.new_unitname')
+            ->orderByDesc('total_val')
+            ->get();
+
+            $sumVal = (float)$items->sum('total_val');
+            $sumQty = (float)$items->sum('total_qty');
+            foreach ($items as $it) {
+                $it->percentage = $sumVal > 0 ? round(((float)$it->total_val / $sumVal) * 100, 1) : 0;
+            }
+
+            return response()->json([
+                'dept_name' => $deptName ?: 'ไม่ระบุหน่วยงาน',
+                'sum_val' => $sumVal,
+                'sum_qty' => $sumQty,
+                'items_count' => count($items),
+                'items' => $items,
             ]);
         }
     }
