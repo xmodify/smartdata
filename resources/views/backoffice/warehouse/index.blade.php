@@ -14,8 +14,8 @@
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             border: 1px solid #e2e8f0;
             border-radius: 16px;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 0.85rem 1.25rem;
+            margin-bottom: 1.15rem;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
         }
 
@@ -100,34 +100,6 @@
             box-shadow: 0 2px 6px rgba(15, 23, 42, 0.3);
         }
 
-        /* View Mode Pills */
-        .viewmode-container {
-            background: #f1f5f9;
-            padding: 0.35rem;
-            border-radius: 12px;
-            display: inline-flex;
-            gap: 0.35rem;
-            border: 1px solid #e2e8f0;
-        }
-
-        .viewmode-btn {
-            border-radius: 9px;
-            padding: 0.45rem 1rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            color: #64748b;
-        }
-
-        .viewmode-btn.active {
-            background: #ffffff;
-            color: #0f172a;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-        }
 
         /* KPI Cards */
         .wh-kpi-card {
@@ -194,6 +166,51 @@
             border-radius: 12px;
             padding: 0.65rem 0.95rem;
         }
+
+        /* Interactive Warehouse KPI Cards */
+        .wh-kpi-interactive-card {
+            cursor: pointer;
+            transition: all 0.22s ease-in-out;
+            border-radius: 16px;
+            position: relative;
+            background: #ffffff;
+            user-select: none;
+        }
+        .wh-kpi-interactive-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+        }
+        .wh-kpi-interactive-card.active-kpi-card {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+            transform: translateY(-2px);
+        }
+        .wh-kpi-interactive-card.active-card-primary {
+            border-color: #2563eb !important;
+            background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%) !important;
+            outline: 2.5px solid #2563eb;
+        }
+        .wh-kpi-interactive-card.active-card-warning {
+            border-color: #f59e0b !important;
+            background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%) !important;
+            outline: 2.5px solid #f59e0b;
+        }
+        .wh-kpi-interactive-card.active-card-success {
+            border-color: #10b981 !important;
+            background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%) !important;
+            outline: 2.5px solid #10b981;
+        }
+        .wh-kpi-interactive-card.active-card-danger {
+            border-color: #ef4444 !important;
+            background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%) !important;
+            outline: 2.5px solid #ef4444;
+        }
+        .wh-view-section {
+            animation: fadeIn 0.22s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 @endpush
 
@@ -202,27 +219,24 @@
 
     <!-- Header & Filter Bar -->
     <div class="page-header-box">
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="badge bg-warning bg-opacity-15 text-warning fw-bold px-2 py-1 rounded-pill" style="font-size: 0.78rem;">
-                        <i class="fas fa-warehouse me-1"></i> ระบบบริหารงานคลังและเวชภัณฑ์
-                    </span>
-                    <span class="text-muted small">•</span>
-                    <span class="text-muted small">ปีงบประมาณ {{ $year_id }}</span>
-                    <span class="text-muted small">•</span>
-                    <span class="badge bg-info bg-opacity-10 text-info px-2 py-0.5 rounded-pill small">
-                        เกณฑ์มาตรฐาน สธ. / HA
-                    </span>
+        <div class="d-flex flex-wrap flex-xl-nowrap justify-content-between align-items-center gap-3">
+            <!-- Left: Title & Fiscal Year Badge in One Line -->
+            <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center justify-content-center rounded-3 shadow-xs" 
+                     style="width: 38px; height: 38px; font-size: 1.15rem; background-color: #fef3c7; color: #b45309; flex-shrink: 0;">
+                    <i class="fas fa-boxes-stacked"></i>
                 </div>
-                <h4 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
-                    <i class="fas fa-boxes-stacked text-warning"></i>
-                    <span>ระบบบริหารและติดตามคลังพัสดุ - เวชภัณฑ์ (5 คลังหลัก & คลังย่อย)</span>
+                <h4 class="fw-bold text-dark m-0" style="font-size: 1.2rem; white-space: nowrap;">
+                    ระบบบริหารและติดตามคลังพัสดุ - เวชภัณฑ์
                 </h4>
+                <span class="badge rounded-pill px-2.5 py-1 ms-1 d-none d-sm-inline-block" 
+                      style="background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 0.78rem; font-weight: 600;">
+                    <i class="fas fa-calendar-check me-1"></i>ปีงบ {{ $year_id }}
+                </span>
             </div>
 
-            <!-- Main Filter Form -->
-            <form action="{{ route('backoffice.warehouse.index') }}" method="GET" id="warehouseFilterForm" class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Right: Filter Form in One Line -->
+            <form action="{{ route('backoffice.warehouse.index') }}" method="GET" id="warehouseFilterForm" class="d-flex align-items-center gap-2 flex-nowrap mb-0 ms-auto">
                 <input type="hidden" name="tab" value="{{ $tab }}">
                 <input type="hidden" name="month_id" value="{{ $month_id }}">
                 <input type="hidden" name="view_mode" value="{{ $view_mode }}">
@@ -230,7 +244,7 @@
                 <!-- Fiscal Year Selector -->
                 <div class="d-flex align-items-center gap-1">
                     <label class="text-muted small fw-bold text-nowrap mb-0">ปีงบประมาณ:</label>
-                    <select name="year_id" id="year_id" class="form-select form-select-sm fw-bold shadow-sm" style="width: 105px; border-radius: 8px;" onchange="this.form.submit()">
+                    <select name="year_id" id="year_id" class="form-select form-select-sm fw-bold shadow-sm" style="width: 95px; border-radius: 8px;" onchange="this.form.submit()">
                         @foreach($availableYears as $y)
                             <option value="{{ $y }}" {{ $y == $year_id ? 'selected' : '' }}>{{ $y }}</option>
                         @endforeach
@@ -240,7 +254,7 @@
                 <!-- Sub-Warehouse Filter -->
                 <div class="d-flex align-items-center gap-1">
                     <label class="text-muted small fw-bold text-nowrap mb-0">คลังย่อย:</label>
-                    <select name="sub_warehouse_id" id="sub_warehouse_id" class="form-select form-select-sm shadow-sm" style="max-width: 220px; border-radius: 8px;" onchange="this.form.submit()">
+                    <select name="sub_warehouse_id" id="sub_warehouse_id" class="form-select form-select-sm shadow-sm" style="width: 200px; border-radius: 8px;" onchange="this.form.submit()">
                         <option value="all">-- ทุกคลังย่อย (ทุกหน่วยงาน) --</option>
                         @foreach($subWarehouses as $sw)
                             <option value="{{ $sw->id }}" {{ (string)$sw->id === (string)$sub_warehouse_id ? 'selected' : '' }}>
@@ -251,13 +265,13 @@
                 </div>
 
                 <!-- Search Input -->
-                <div class="input-group input-group-sm" style="width: 180px;">
+                <div class="input-group input-group-sm" style="width: 170px;">
                     <input type="text" name="search" class="form-control" placeholder="ค้นหาใบเบิก/พัสดุ..." value="{{ $search }}">
                     <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
                 </div>
 
                 @if($month_id !== 'all' || $sub_warehouse_id !== 'all' || !empty($search))
-                    <a href="{{ route('backoffice.warehouse.index', ['tab' => $tab, 'year_id' => $year_id]) }}" class="btn btn-light btn-sm text-muted shadow-sm" title="รีเซ็ตตัวกรอง">
+                    <a href="{{ route('backoffice.warehouse.index', ['tab' => $tab, 'year_id' => $year_id]) }}" class="btn btn-light btn-sm text-muted border shadow-xs" title="รีเซ็ตตัวกรอง">
                         <i class="fas fa-rotate-left"></i>
                     </a>
                 @endif
@@ -289,46 +303,26 @@
     </ul>
 
     <!-- Month Sub-tabs Navigation Bar -->
-    <div class="month-subtabs-box d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="small fw-bold text-muted d-flex align-items-center gap-1">
-                <i class="fas fa-calendar-alt text-warning"></i> งวดเบิกจ่าย:
-            </span>
-            <div class="d-flex align-items-center gap-1 flex-wrap">
-                <!-- รวมทั้งปี -->
-                <a href="{{ route('backoffice.warehouse.index', array_merge(request()->except('month_id'), ['month_id' => 'all'])) }}"
-                   class="month-chip {{ $month_id === 'all' ? 'active' : '' }}">
-                    <i class="fas fa-calendar-check me-1"></i> รวมทั้งปี
+    <div class="month-subtabs-box d-flex align-items-center gap-2 flex-wrap">
+        <span class="small fw-bold text-muted d-flex align-items-center gap-1">
+            <i class="fas fa-calendar-alt text-warning"></i> งวดเบิกจ่าย:
+        </span>
+        <div class="d-flex align-items-center gap-1 flex-wrap">
+            <!-- รวมทั้งปี -->
+            <a href="{{ route('backoffice.warehouse.index', array_merge(request()->except('month_id'), ['month_id' => 'all'])) }}"
+               class="month-chip {{ $month_id === 'all' ? 'active' : '' }}">
+                <i class="fas fa-calendar-check me-1"></i> รวมทั้งปี
+            </a>
+            <!-- 12 Months -->
+            @foreach($fiscalMonthsList as $fm)
+                @php $isActive = (string)$month_id === (string)$fm['month_id']; @endphp
+                <a href="{{ route('backoffice.warehouse.index', array_merge(request()->except('month_id'), ['month_id' => $fm['month_id']])) }}"
+                   class="month-chip {{ $isActive ? 'active' : '' }}"
+                   title="{{ $fm['name_full'] }} {{ $fm['cal_year'] }}">
+                    {{ $fm['label'] }}
                 </a>
-                <!-- 12 Months -->
-                @foreach($fiscalMonthsList as $fm)
-                    @php $isActive = (string)$month_id === (string)$fm['month_id']; @endphp
-                    <a href="{{ route('backoffice.warehouse.index', array_merge(request()->except('month_id'), ['month_id' => $fm['month_id']])) }}"
-                       class="month-chip {{ $isActive ? 'active' : '' }}"
-                       title="{{ $fm['name_full'] }} {{ $fm['cal_year'] }}">
-                        {{ $fm['label'] }}
-                    </a>
-                @endforeach
-            </div>
+            @endforeach
         </div>
-
-        @if($tab !== 'overview')
-            <!-- Sub-navigation: View Mode Switcher -->
-            <div class="viewmode-container">
-                <a href="{{ route('backoffice.warehouse.index', array_merge(request()->except('view_mode'), ['view_mode' => 'overview'])) }}"
-                   class="viewmode-btn {{ $view_mode === 'overview' ? 'active' : '' }}">
-                    <i class="fas fa-file-invoice"></i> <span>ใบเบิกพัสดุ</span>
-                </a>
-                <a href="{{ route('backoffice.warehouse.index', array_merge(request()->except('view_mode'), ['view_mode' => 'stock'])) }}"
-                   class="viewmode-btn {{ $view_mode === 'stock' ? 'active' : '' }}">
-                    <i class="fas fa-cubes"></i> <span>สต็อกจริง 2 ระดับ</span>
-                </a>
-                <a href="{{ route('backoffice.warehouse.index', array_merge(request()->except('view_mode'), ['view_mode' => 'planner'])) }}"
-                   class="viewmode-btn {{ $view_mode === 'planner' ? 'active' : '' }}">
-                    <i class="fas fa-cart-shopping text-danger"></i> <span>แผนจัดซื้อรอบถัดไป</span>
-                </a>
-            </div>
-        @endif
     </div>
 
     <!-- MAIN BODY CONTENT -->
@@ -339,13 +333,31 @@
         
         <!-- Consolidated 5 Main Warehouses Status (รับเข้า • เบิกจ่าย • คงคลัง) -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-            <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                <i class="fas fa-table-columns text-primary"></i>
-                <span>สรุปเปรียบเทียบ 5 คลังหลัก (รับเข้า • เบิกจ่าย • คงคลัง)</span>
-            </h6>
+            <div>
+                <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                    <i class="fas fa-table-columns text-primary"></i>
+                    <span>สรุปเปรียบเทียบ 5 คลังหลัก (รับเข้า • เบิกจ่าย • คงคลัง)</span>
+                </h6>
+                <div class="text-muted small mt-1 d-flex align-items-center gap-2 flex-wrap" style="font-size: 0.77rem;">
+                    <span>
+                        <i class="fas fa-calendar-alt text-warning me-1"></i>
+                        @if($isMonthlyView ?? false)
+                            <span>ประจำเดือน: <strong class="text-dark">{{ $selectedMonthName }} {{ $selectedCalYear }}</strong></span>
+                        @else
+                            <span>ทั้งปีงบประมาณ: <strong class="text-dark">{{ $year_id }}</strong></span>
+                        @endif
+                    </span>
+                    @if($sub_warehouse_id !== 'all')
+                        <span class="mx-1 text-muted">|</span>
+                        <span class="badge bg-light text-primary border rounded-pill px-2.5 py-0.5">
+                            <i class="fas fa-hospital me-1"></i>คลังย่อย: {{ $selectedSubWhName }}
+                        </span>
+                    @endif
+                </div>
+            </div>
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="badge bg-white text-secondary border shadow-xs px-3 py-2 rounded-pill fw-normal" style="font-size: 0.8rem;">
-                    รวมทั้ง รพ.: 
+                    รวมทั้ง รพ. ({{ ($isMonthlyView ?? false) ? $selectedMonthName : 'ทั้งปี ' . $year_id }}): 
                     <span class="ms-1 text-primary fw-bold"><i class="fas fa-file-arrow-down me-1"></i>รับเข้า {{ number_format($totalHospitalReceive, 2) }} ฿</span>
                     <span class="mx-2 text-muted">|</span>
                     <span class="text-warning fw-bold"><i class="fas fa-file-arrow-up me-1"></i>เบิกจ่าย {{ number_format($totalHospitalDisbursement, 2) }} ฿</span>
@@ -359,18 +371,35 @@
             @foreach($warehouseSummaries as $k => $ws)
                 <div class="col-xl col-md-6">
                     <div class="card wh-kpi-card p-3 h-100 border-top border-4 shadow-sm rounded-4 d-flex flex-column" style="border-top-color: {{ $ws['config']['color'] }} !important; background: #ffffff;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
                             <span class="badge rounded-pill fw-bold" style="background-color: {{ $ws['config']['color'] }}15; color: {{ $ws['config']['color'] }}; font-size: 0.8rem; padding: 6px 10px;">
                                 <i class="fas {{ $ws['config']['icon'] }} me-1"></i> {{ $ws['config']['name'] }}
                             </span>
                             <span class="text-muted small" style="font-size: 0.72rem;">{{ number_format($ws['items_count']) }} รายการ</span>
                         </div>
 
+                        <!-- Card Subtitle: Month / All Year & Sub-Warehouse -->
+                        <div class="d-flex align-items-center justify-content-between text-muted mb-2.5 px-0.5" style="font-size: 0.73rem;">
+                            <span>
+                                <i class="fas fa-calendar-alt me-1 text-secondary"></i>
+                                @if($isMonthlyView ?? false)
+                                    <strong class="text-dark">{{ $selectedMonthName }} {{ $selectedCalYear }}</strong>
+                                @else
+                                    <strong class="text-dark">ทั้งปี {{ $year_id }}</strong>
+                                @endif
+                            </span>
+                            @if($sub_warehouse_id !== 'all')
+                                <span class="badge bg-light text-primary border rounded-pill px-2 py-0.5 text-truncate" style="max-width: 140px;" title="{{ $selectedSubWhName }}">
+                                    <i class="fas fa-hospital me-0.5"></i>{{ Str::limit($selectedSubWhName, 15) }}
+                                </span>
+                            @endif
+                        </div>
+
                         <div class="d-flex flex-column gap-2 mb-3">
                             <!-- รับเข้า -->
                             <div class="p-2 rounded-3 bg-light d-flex justify-content-between align-items-center border border-light">
                                 <span class="text-muted small fw-medium" style="font-size: 0.78rem;">
-                                    <i class="fas fa-file-arrow-down text-primary me-1"></i> รับเข้า
+                                    <i class="fas fa-file-arrow-down text-primary me-1"></i> รับเข้า{{ ($isMonthlyView ?? false) ? ' (' . ($thaiMonthsShort[(int)$month_id] ?? $selectedMonthName) . ')' : ' (ทั้งปี)' }}
                                 </span>
                                 <span class="fw-bold text-dark" style="font-size: 0.86rem;">
                                     {{ number_format($ws['receive_val'], 2) }} <span class="fw-normal text-muted" style="font-size: 0.7rem;">฿</span>
@@ -380,7 +409,7 @@
                             <!-- เบิกจ่าย -->
                             <div class="p-2 rounded-3 bg-light d-flex justify-content-between align-items-center border border-light">
                                 <span class="text-muted small fw-medium" style="font-size: 0.78rem;">
-                                    <i class="fas fa-file-arrow-up text-warning me-1"></i> เบิกจ่าย
+                                    <i class="fas fa-file-arrow-up text-warning me-1"></i> เบิกจ่าย{{ ($isMonthlyView ?? false) ? ' (' . ($thaiMonthsShort[(int)$month_id] ?? $selectedMonthName) . ')' : ' (ทั้งปี)' }}
                                 </span>
                                 <span class="fw-bold text-dark" style="font-size: 0.86rem;">
                                     {{ number_format($ws['disbursement_val'], 2) }} <span class="fw-normal text-muted" style="font-size: 0.7rem;">฿</span>
@@ -390,7 +419,7 @@
                             <!-- คงคลัง -->
                             <div class="p-2 rounded-3 d-flex justify-content-between align-items-center" style="background-color: #ecfdf5; border: 1px solid #a7f3d0;">
                                 <span class="small fw-bold" style="color: #065f46; font-size: 0.78rem;">
-                                    <i class="fas fa-boxes-stacked me-1 text-success"></i> คงคลัง
+                                    <i class="fas fa-boxes-stacked me-1 text-success"></i> คงคลัง{{ ($isMonthlyView ?? false) ? ' (สิ้นเดือน ' . ($thaiMonthsShort[(int)$month_id] ?? $selectedMonthName) . ')' : ' (รวม)' }}
                                 </span>
                                 <span class="fw-bold" style="color: #047857; font-size: 0.88rem;">
                                     {{ number_format($ws['stock_val'], 2) }} <span class="fw-normal" style="font-size: 0.7rem;">฿</span>
@@ -450,7 +479,7 @@
                             <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
                                 @if($isMonthlyView ?? false)
                                     <i class="fas fa-chart-line text-warning"></i>
-                                    <span>แนวโน้มการเบิกจ่ายรายวัน (Daily Trend) ประจำเดือน{{ $selectedMonthName }} {{ $selectedCalYear }}</span>
+                                    <span>แนวโน้มการเบิกจ่ายรายวัน (Daily Trend) ประจำเดือน {{ $selectedMonthName }} {{ $selectedCalYear }}</span>
                                 @else
                                     <i class="fas fa-chart-line text-warning"></i>
                                     <span>แนวโน้มมูลค่าการเบิกจ่าย 12 เดือน ปีงบประมาณ {{ $year_id }}</span>
@@ -484,7 +513,7 @@
                     <div class="card-header bg-white py-3 px-4 border-bottom">
                         <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
                             <i class="fas fa-ranking-star text-warning"></i>
-                            <span>คลังย่อยที่เบิกจ่ายสูงสุด{{ ($isMonthlyView ?? false) ? ' ประจำเดือน' . $selectedMonthName : ' (Top Wards)' }}</span>
+                            <span>คลังย่อยที่เบิกจ่ายสูงสุด {{ ($isMonthlyView ?? false) ? 'ประจำเดือน' . $selectedMonthName : 'ทั้งปีงบประมาณ ' . $year_id }}</span>
                         </h6>
                     </div>
                     <div class="card-body p-3">
@@ -531,120 +560,372 @@
         {{-- SPECIFIC WAREHOUSE TAB: MATERIAL / DENTAL / MEDTECH / PHYSICAL / MEDICAL --}}
         {{-- ========================================================================= --}}
         
-        <!-- KPI Row for Specific Warehouse -->
+        <!-- KPI Row for Specific Warehouse: รับเข้า • เบิกจ่าย • คงคลัง • รายการต้องซื้อด่วน (Interactive Mode Switcher) -->
         <div class="row g-3 mb-4">
-            <!-- 1. Total Disbursement Value -->
+            <!-- 1. Total Receive Value (รับเข้า) -->
             <div class="col-xl-3 col-md-6">
-                <div class="card wh-kpi-card p-3 h-100 border-start border-4" style="border-start-color: {{ $config['color'] }} !important;">
+                <div class="card wh-kpi-card wh-kpi-interactive-card p-3 h-100 border-start border-4 border-primary {{ $view_mode === 'receive' ? 'active-kpi-card active-card-primary' : '' }}" 
+                     id="wh_card_receive" 
+                     onclick="switchWarehouseView('receive')"
+                     title="คลิกเพื่อสลับแสดงข้อมูลการตรวจรับเข้าคลัง">
                     <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="text-muted small fw-bold text-uppercase">มูลค่าเบิกจ่ายสะสม</div>
-                            <h3 class="fw-bold mb-0 mt-1" style="color: {{ $config['color'] }};">
+                        <div class="w-100 me-2">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mb-1">
+                                <div class="text-muted small fw-bold text-uppercase d-flex align-items-center gap-1">
+                                    <i class="fas fa-file-arrow-down text-primary"></i>
+                                    <span>มูลค่ารับเข้า ({{ ($isMonthlyView ?? false) ? $selectedMonthName : 'ทั้งปี ' . $year_id }})</span>
+                                </div>
+                                @if($sub_warehouse_id !== 'all')
+                                    <span class="badge bg-light text-primary border rounded-pill px-2 py-0.5" style="font-size: 0.68rem;" title="{{ $selectedSubWhName }}">
+                                        <i class="fas fa-hospital me-1"></i>{{ Str::limit($selectedSubWhName, 16) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <h3 class="fw-bold text-primary mb-0 mt-1">
+                                {{ number_format($totalReceive, 2) }} <span class="fs-6 fw-normal text-muted">บาท</span>
+                            </h3>
+                            <div class="text-muted small mt-1 d-flex align-items-center justify-content-between flex-wrap gap-1" style="font-size: 0.75rem;">
+                                <span>รวม {{ number_format($totalReceiveCount) }} ใบตรวจรับ</span>
+                                <span class="badge wh-kpi-status-badge {{ $view_mode === 'receive' ? 'bg-primary text-white shadow-xs' : 'bg-light text-muted border' }} px-2 py-0.5 rounded-pill" data-mode="receive" style="font-size: 0.68rem;">
+                                    <i class="fas {{ $view_mode === 'receive' ? 'fa-eye' : 'fa-hand-pointer' }} me-1"></i>{{ $view_mode === 'receive' ? 'กำลังแสดง' : 'คลิกดูข้อมูล' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="wh-icon-box bg-primary bg-opacity-10 text-primary flex-shrink-0">
+                            <i class="fas fa-box-archive"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Total Disbursement Value (เบิกจ่าย) -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card wh-kpi-card wh-kpi-interactive-card p-3 h-100 border-start border-4 border-warning {{ $view_mode === 'overview' ? 'active-kpi-card active-card-warning' : '' }}" 
+                     id="wh_card_overview" 
+                     onclick="switchWarehouseView('overview')"
+                     title="คลิกเพื่อสลับแสดงข้อมูลการเบิกจ่ายและใบเบิก">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="w-100 me-2">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mb-1">
+                                <div class="text-muted small fw-bold text-uppercase d-flex align-items-center gap-1">
+                                    <i class="fas fa-dolly text-warning"></i>
+                                    <span>มูลค่าเบิกจ่าย ({{ ($isMonthlyView ?? false) ? $selectedMonthName : 'ทั้งปี ' . $year_id }})</span>
+                                </div>
+                                @if($sub_warehouse_id !== 'all')
+                                    <span class="badge bg-light text-warning border rounded-pill px-2 py-0.5" style="font-size: 0.68rem;" title="{{ $selectedSubWhName }}">
+                                        <i class="fas fa-hospital me-1"></i>{{ Str::limit($selectedSubWhName, 16) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <h3 class="fw-bold text-warning mb-0 mt-1">
                                 {{ number_format($totalDisbursement, 2) }} <span class="fs-6 fw-normal text-muted">บาท</span>
                             </h3>
-                            <div class="text-muted small mt-1" style="font-size: 0.75rem;">
-                                รวม {{ number_format($totalReqCount) }} ใบเบิก | ปีงบ {{ $year_id }}
+                            <div class="text-muted small mt-1 d-flex align-items-center justify-content-between flex-wrap gap-1" style="font-size: 0.75rem;">
+                                <span>รวม {{ number_format($totalReqCount) }} ใบเบิก</span>
+                                <span class="badge wh-kpi-status-badge {{ $view_mode === 'overview' ? 'bg-warning text-dark shadow-xs' : 'bg-light text-muted border' }} px-2 py-0.5 rounded-pill" data-mode="overview" style="font-size: 0.68rem;">
+                                    <i class="fas {{ $view_mode === 'overview' ? 'fa-eye' : 'fa-hand-pointer' }} me-1"></i>{{ $view_mode === 'overview' ? 'กำลังแสดง' : 'คลิกดูข้อมูล' }}
+                                </span>
                             </div>
                         </div>
-                        <div class="wh-icon-box" style="background-color: {{ $config['color'] }}15; color: {{ $config['color'] }};">
-                            <i class="fas {{ $config['icon'] }}"></i>
+                        <div class="wh-icon-box bg-warning bg-opacity-10 text-warning flex-shrink-0">
+                            <i class="fas fa-boxes-packing"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. Requisitions Pipeline -->
+            <!-- 3. Current Stock Valuation (คงคลัง) -->
             <div class="col-xl-3 col-md-6">
-                <div class="card wh-kpi-card p-3 h-100 border-start border-4 border-warning">
+                <div class="card wh-kpi-card wh-kpi-interactive-card p-3 h-100 border-start border-4 border-success {{ $view_mode === 'stock' ? 'active-kpi-card active-card-success' : '' }}" 
+                     id="wh_card_stock" 
+                     onclick="switchWarehouseView('stock')"
+                     title="คลิกเพื่อสลับแสดงสต็อกจริง 2 ระดับ">
                     <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="text-muted small fw-bold text-uppercase">สถานะใบขอเบิก</div>
-                            <h3 class="fw-bold text-warning mb-0 mt-1">
-                                {{ number_format(($statusCounts['Pending'] ?? 0) + ($statusCounts['Approve'] ?? 0)) }} <span class="fs-6 fw-normal text-muted">เรื่องค้าง</span>
+                        <div class="w-100 me-2">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mb-1">
+                                <div class="text-muted small fw-bold text-uppercase d-flex align-items-center gap-1">
+                                    <i class="fas fa-warehouse text-success"></i>
+                                    <span>มูลค่าคงคลัง ({{ ($isMonthlyView ?? false) ? 'สิ้นเดือน ' . $selectedMonthName : 'ทั้งปี ' . $year_id }})</span>
+                                </div>
+                                @if($sub_warehouse_id !== 'all')
+                                    <span class="badge bg-light text-success border rounded-pill px-2 py-0.5" style="font-size: 0.68rem;" title="{{ $selectedSubWhName }}">
+                                        <i class="fas fa-hospital me-1"></i>{{ Str::limit($selectedSubWhName, 16) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <h3 class="fw-bold text-success mb-0 mt-1">
+                                {{ number_format($totalStockVal, 2) }} <span class="fs-6 fw-normal text-muted">บาท</span>
                             </h3>
-                            <div class="text-muted small mt-1" style="font-size: 0.75rem;">
-                                รอหน.เห็นชอบ {{ $statusCounts['Pending'] ?? 0 }} | รอจ่าย {{ $statusCounts['Approve'] ?? 0 }}
+                            <div class="text-muted small mt-1 d-flex align-items-center justify-content-between flex-wrap gap-1" style="font-size: 0.75rem;">
+                                <span>{{ number_format($catalogItemsCount) }} SKU ({{ $avgMos }} ด.)</span>
+                                <span class="badge wh-kpi-status-badge {{ $view_mode === 'stock' ? 'bg-success text-white shadow-xs' : 'bg-light text-muted border' }} px-2 py-0.5 rounded-pill" data-mode="stock" style="font-size: 0.68rem;">
+                                    <i class="fas {{ $view_mode === 'stock' ? 'fa-eye' : 'fa-hand-pointer' }} me-1"></i>{{ $view_mode === 'stock' ? 'กำลังแสดง' : 'คลิกดูข้อมูล' }}
+                                </span>
                             </div>
                         </div>
-                        <div class="wh-icon-box bg-warning bg-opacity-10 text-warning">
-                            <i class="fas fa-clock-rotate-left"></i>
+                        <div class="wh-icon-box bg-success bg-opacity-10 text-success flex-shrink-0">
+                            <i class="fas fa-cubes"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. Critical Reorder Needed -->
+            <!-- 4. Critical Reorder Needed (รายการต้องซื้อด่วน) -->
             <div class="col-xl-3 col-md-6">
-                <div class="card wh-kpi-card p-3 h-100 border-start border-4 border-danger">
+                <div class="card wh-kpi-card wh-kpi-interactive-card p-3 h-100 border-start border-4 border-danger {{ $view_mode === 'planner' ? 'active-kpi-card active-card-danger' : '' }}" 
+                     id="wh_card_planner" 
+                     onclick="switchWarehouseView('planner')"
+                     title="คลิกเพื่อสลับแสดงข้อเสนอแนะแผนจัดซื้อ">
                     <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="text-muted small fw-bold text-uppercase">🔴 รายการต้องซื้อด่วน (รอบนี้)</div>
+                        <div class="w-100 me-2">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mb-1">
+                                <div class="text-muted small fw-bold text-uppercase d-flex align-items-center gap-1">
+                                    <i class="fas fa-triangle-exclamation text-danger"></i>
+                                    <span class="text-danger">รายการต้องซื้อด่วน ({{ ($isMonthlyView ?? false) ? $selectedMonthName : 'ทั้งปี ' . $year_id }})</span>
+                                </div>
+                                @if($sub_warehouse_id !== 'all')
+                                    <span class="badge bg-light text-danger border rounded-pill px-2 py-0.5" style="font-size: 0.68rem;" title="{{ $selectedSubWhName }}">
+                                        <i class="fas fa-hospital me-1"></i>{{ Str::limit($selectedSubWhName, 16) }}
+                                    </span>
+                                @endif
+                            </div>
                             <h3 class="fw-bold text-danger mb-0 mt-1">
                                 {{ number_format(count($reorderItems)) }} <span class="fs-6 fw-normal text-muted">รายการ</span>
                             </h3>
-                            <div class="text-muted small mt-1" style="font-size: 0.75rem;">
-                                งบประมาณที่ต้องใช้: <strong>{{ number_format($totalEstimatedBudget, 2) }} ฿</strong>
+                            <div class="text-muted small mt-1 d-flex align-items-center justify-content-between flex-wrap gap-1" style="font-size: 0.75rem;">
+                                <span>งบ: {{ number_format($totalEstimatedBudget, 2) }} ฿</span>
+                                <span class="badge wh-kpi-status-badge {{ $view_mode === 'planner' ? 'bg-danger text-white shadow-xs' : 'bg-light text-muted border' }} px-2 py-0.5 rounded-pill" data-mode="planner" style="font-size: 0.68rem;">
+                                    <i class="fas {{ $view_mode === 'planner' ? 'fa-eye' : 'fa-hand-pointer' }} me-1"></i>{{ $view_mode === 'planner' ? 'กำลังแสดง' : 'คลิกดูข้อมูล' }}
+                                </span>
                             </div>
                         </div>
-                        <div class="wh-icon-box bg-danger bg-opacity-10 text-danger">
-                            <i class="fas fa-triangle-exclamation"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. Inventory Turnover & MOS -->
-            <div class="col-xl-3 col-md-6">
-                <div class="card wh-kpi-card p-3 h-100 border-start border-4 border-success">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="text-muted small fw-bold text-uppercase">เกณฑ์มาตรฐาน สธ.</div>
-                            <h3 class="fw-bold text-success mb-0 mt-1">
-                                {{ $config['standard_itr'] }} <span class="fs-6 fw-normal text-muted">รอบ/ปี</span>
-                            </h3>
-                            <div class="text-muted small mt-1" style="font-size: 0.75rem;">
-                                สำรองคลังเป้าหมาย: {{ $config['standard_mos_min'] }} - {{ $config['standard_mos_max'] }} เดือน
-                            </div>
-                        </div>
-                        <div class="wh-icon-box bg-success bg-opacity-10 text-success">
-                            <i class="fas fa-shield-halved"></i>
+                        <div class="wh-icon-box bg-danger bg-opacity-10 text-danger flex-shrink-0">
+                            <i class="fas fa-cart-shopping"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        @if($view_mode === 'overview')
-            {{-- MODE 1: REQUISITION TRACKING & CHARTS --}}
+        <!-- ========================================================================= -->
+        <!-- VIEW 1: GOODS RECEIPT TRACKING (ตรวจรับเข้าคลัง) -->
+        <!-- ========================================================================= -->
+        <div class="wh-view-section" id="view_section_receive" style="{{ $view_mode === 'receive' ? '' : 'display: none;' }}">
             <div class="row g-4 mb-4">
-                <!-- Trend Chart: 12-Month if all year, Daily Trend if specific month -->
+                <!-- Trend Chart: Receive vs Disburse -->
                 <div class="col-xl-8">
                     <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden">
-                        <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                        <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
                             <div>
                                 <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
-                                    <i class="fas fa-chart-line" style="color: {{ $config['color'] }};"></i>
+                                    <i class="fas fa-file-arrow-down text-primary"></i>
                                     @if($isMonthlyView ?? false)
-                                        <span>แนวโน้มการเบิกจ่ายรายวัน - เดือน{{ $selectedMonthName }} {{ $selectedCalYear }}</span>
+                                        <span>แนวโน้มการตรวจรับเข้าคลัง รายวัน - เดือน{{ $selectedMonthName }} {{ $selectedCalYear }}</span>
                                     @else
-                                        <span>แนวโน้มมูลค่าเบิกจ่ายรายเดือน 12 เดือน - {{ $config['full_name'] }}</span>
+                                        <span>แนวโน้มมูลค่าตรวจรับเข้าคลัง 12 เดือน - {{ $config['full_name'] }}</span>
                                     @endif
                                 </h6>
                                 <div class="text-muted small mt-0.5" style="font-size: 0.74rem;">
                                     @if($isMonthlyView ?? false)
-                                        วิเคราะห์การเบิกจ่ายในแต่ละวันของเดือน{{ $selectedMonthName }}
+                                        มูลค่าตรวจรับพัสดุ/เวชภัณฑ์เข้าคลังในแต่ละวันของเดือน{{ $selectedMonthName }} เปรียบเทียบกับยอดเบิกจ่าย
                                     @else
-                                        วิเคราะห์การเบิกจ่ายรายเดือนตลอดปีงบประมาณ {{ $year_id }}
+                                        เปรียบเทียบมูลค่าตรวจรับเข้าคลังกับมูลค่าการเบิกจ่ายรายเดือนตลอดปีงบประมาณ {{ $year_id }}
                                     @endif
                                 </div>
                             </div>
-                            <span class="badge bg-light text-dark border px-2.5 py-1 font-monospace" style="font-size: 0.75rem;">
-                                @if($isMonthlyView ?? false)
-                                    <i class="fas fa-calendar-day me-1 text-primary"></i> รายวัน (Daily)
-                                @else
-                                    <i class="fas fa-calendar me-1 text-warning"></i> 12 เดือน (ต.ค. - ก.ย.)
-                                @endif
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 small">
+                                    <i class="fas fa-circle me-1" style="font-size: 7px;"></i>รับเข้าคลัง
+                                </span>
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 small">
+                                    <i class="fas fa-circle me-1" style="font-size: 7px;"></i>เบิกจ่าย
+                                </span>
+                                <span class="badge bg-light text-dark border px-2.5 py-1 font-monospace" style="font-size: 0.75rem;">
+                                    @if($isMonthlyView ?? false)
+                                        <i class="fas fa-calendar-day me-1 text-primary"></i> รายวัน (Daily)
+                                    @else
+                                        <i class="fas fa-calendar me-1 text-primary"></i> 12 เดือน (ต.ค. - ก.ย.)
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div id="warehouse_receive_chart" style="min-height: 290px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Receive Summary Highlights -->
+                <div class="col-xl-4">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden">
+                        <div class="card-header bg-white py-3 px-4 border-bottom">
+                            <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
+                                <i class="fas fa-clipboard-check text-primary"></i>
+                                <span>สรุปภาพรวมการตรวจรับ</span>
+                            </h6>
+                            <div class="text-muted small mt-0.5" style="font-size: 0.74rem;">
+                                ข้อมูลสะสมงวด{{ ($isMonthlyView ?? false) ? 'เดือน' . $selectedMonthName : 'ปี ' . $year_id }}
+                            </div>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between gap-3">
+                            <div class="p-3 rounded-3 border" style="background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted small fw-bold text-uppercase">มูลค่าตรวจรับสะสมทั้งหมด</div>
+                                        <h3 class="fw-bold text-primary mb-0 mt-1">
+                                            {{ number_format($totalReceive, 2) }} <span class="fs-6 fw-normal text-muted">บาท</span>
+                                        </h3>
+                                    </div>
+                                    <div class="wh-icon-box bg-primary bg-opacity-10 text-primary">
+                                        <i class="fas fa-coins"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-3 rounded-3 border" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted small fw-bold text-uppercase">จำนวนใบตรวจรับ</div>
+                                        <h4 class="fw-bold text-dark mb-0 mt-1">
+                                            {{ number_format($totalReceiveCount) }} <span class="fs-6 fw-normal text-muted">ฉบับ</span>
+                                        </h4>
+                                    </div>
+                                    <div class="wh-icon-box bg-light text-secondary border">
+                                        <i class="fas fa-file-invoice"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-3 rounded-3 border bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted small fw-bold text-uppercase">มูลค่าเฉลี่ยต่อใบตรวจรับ</div>
+                                        <h5 class="fw-bold text-dark mb-0 mt-1">
+                                            {{ $totalReceiveCount > 0 ? number_format($totalReceive / $totalReceiveCount, 2) : '0.00' }} <span class="fs-6 fw-normal text-muted">บาท/ฉบับ</span>
+                                        </h5>
+                                    </div>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                        <i class="fas fa-circle-check me-1"></i>เรียบร้อย
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goods Receipts Table -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white mb-5 overflow-hidden">
+                <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
+                            <i class="fas fa-file-arrow-down text-primary"></i>
+                            <span>ประวัติและรายการใบตรวจรับเข้าคลัง (Goods Receipts)</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-0.5 rounded-pill small">
+                                {{ number_format(count($receives)) }} ฉบับ
                             </span>
+                        </h6>
+                        <div class="text-muted small mt-1">
+                            คลิกปุ่ม <strong>"ดูรายการในใบรับ"</strong> เพื่อตรวจสอบ Lot No., วันหมดอายุ (EXP) และราคาทุกรายการ
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small">มูลค่าตรวจรับรวม:</span>
+                        <span class="fw-bold text-primary font-monospace fs-6">{{ number_format($totalReceive, 2) }} บาท</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="warehouse_receives_table" style="font-size: 0.83rem;">
+                            <thead class="bg-light">
+                                <tr class="text-muted" style="font-size: 0.75rem;">
+                                    <th class="text-center" style="width: 45px;">#</th>
+                                    <th style="width: 130px;">เลขที่ตรวจรับ</th>
+                                    <th style="width: 110px;">วันที่รับ</th>
+                                    <th style="width: 140px;">เลขที่ PO / บิล</th>
+                                    <th>บริษัท / ผู้จัดจำหน่าย</th>
+                                    <th>ผู้ตรวจรับ</th>
+                                    <th class="text-center" style="width: 90px;">จำนวนชนิด</th>
+                                    <th class="text-end" style="width: 130px;">มูลค่า (บาท)</th>
+                                    <th class="text-center" style="width: 120px;">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($receives as $idx => $rec)
+                                    <tr>
+                                        <td class="text-center text-muted">{{ $idx + 1 }}</td>
+                                        <td class="font-monospace fw-bold text-primary">{{ $rec->code ?: '-' }}</td>
+                                        <td class="text-muted small">{{ $rec->receive_date ? substr($rec->receive_date, 0, 10) : '-' }}</td>
+                                        <td class="font-monospace small text-muted">{{ $rec->po_code ?? ($rec->invoice_code ?? '-') }}</td>
+                                        <td>
+                                            <div class="fw-bold text-dark text-truncate" style="max-width: 250px;" title="{{ $rec->vendor_name }}">
+                                                {{ $rec->vendor_name ?: '-' }}
+                                            </div>
+                                        </td>
+                                        <td class="text-muted small">{{ $rec->receiver_name ?: '-' }}</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-light text-dark border px-2">{{ number_format($rec->item_count) }}</span>
+                                        </td>
+                                        <td class="text-end fw-bold font-monospace text-primary">
+                                            {{ number_format($rec->total_value, 2) }}
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 shadow-xs" 
+                                                    style="font-size: 0.74rem;" 
+                                                    onclick="viewReceiveItems('{{ $config['type'] }}', {{ $rec->id }})">
+                                                <i class="fas fa-boxes-stacked me-1"></i>ดูรายการ
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- VIEW 2: REQUISITION TRACKING & CHARTS (เบิกจ่าย) -->
+        <!-- ========================================================================= -->
+        <div class="wh-view-section" id="view_section_overview" style="{{ $view_mode === 'overview' ? '' : 'display: none;' }}">
+            <div class="row g-4 mb-4">
+                <!-- Trend Chart: 12-Month if all year, Daily Trend if specific month -->
+                <div class="col-xl-8">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden">
+                        <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
+                                    <i class="fas fa-chart-line" style="color: {{ $config['color'] }};"></i>
+                                    @if($isMonthlyView ?? false)
+                                        <span>แนวโน้มรับเข้า vs เบิกจ่าย รายวัน - เดือน{{ $selectedMonthName }} {{ $selectedCalYear }}</span>
+                                    @else
+                                        <span>แนวโน้มมูลค่ารับเข้า vs เบิกจ่าย 12 เดือน - {{ $config['full_name'] }}</span>
+                                    @endif
+                                </h6>
+                                <div class="text-muted small mt-0.5" style="font-size: 0.74rem;">
+                                    @if($isMonthlyView ?? false)
+                                        เปรียบเทียบมูลค่ารับเข้าคลังกับมูลค่าการเบิกจ่ายในแต่ละวันของเดือน{{ $selectedMonthName }}
+                                    @else
+                                        เปรียบเทียบมูลค่ารับเข้าคลังกับมูลค่าการเบิกจ่ายรายเดือนตลอดปีงบประมาณ {{ $year_id }}
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 small">
+                                    <i class="fas fa-circle me-1" style="font-size: 7px;"></i>รับเข้า
+                                </span>
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 small">
+                                    <i class="fas fa-circle me-1" style="font-size: 7px;"></i>เบิกจ่าย
+                                </span>
+                                <span class="badge bg-light text-dark border px-2.5 py-1 font-monospace" style="font-size: 0.75rem;">
+                                    @if($isMonthlyView ?? false)
+                                        <i class="fas fa-calendar-day me-1 text-primary"></i> รายวัน (Daily)
+                                    @else
+                                        <i class="fas fa-calendar me-1 text-warning"></i> 12 เดือน (ต.ค. - ก.ย.)
+                                    @endif
+                                </span>
+                            </div>
                         </div>
                         <div class="card-body p-3">
                             <div id="warehouse_single_trend_chart" style="min-height: 280px;"></div>
@@ -920,9 +1201,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- END VIEW 2: REQUISITION TRACKING & CHARTS (เบิกจ่าย) -->
 
-        @elseif($view_mode === 'stock')
-            {{-- MODE 2: TWO-TIER STOCK (MAIN WAREHOUSE VS SUB-WAREHOUSE) --}}
+        <!-- ========================================================================= -->
+        <!-- VIEW 3: TWO-TIER STOCK (สต็อกจริง 2 ระดับ) -->
+        <!-- ========================================================================= -->
+        <div class="wh-view-section" id="view_section_stock" style="{{ $view_mode === 'stock' ? '' : 'display: none;' }}">
             <div class="card border-0 shadow-sm rounded-4 bg-white mb-5 overflow-hidden">
                 <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                     <div>
@@ -1008,9 +1293,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- END VIEW 3: TWO-TIER STOCK -->
 
-        @else
-            {{-- MODE 3: SMART PROCUREMENT PLANNER & REORDER ALERT --}}
+        <!-- ========================================================================= -->
+        <!-- VIEW 4: SMART PROCUREMENT PLANNER & REORDER ALERT (แผนจัดซื้อรอบถัดไป) -->
+        <!-- ========================================================================= -->
+        <div class="wh-view-section" id="view_section_planner" style="{{ $view_mode === 'planner' ? '' : 'display: none;' }}">
             <div class="card border-0 shadow-sm rounded-4 bg-white mb-5 overflow-hidden">
                 <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                     <div>
@@ -1054,7 +1343,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($reorderItems as $idx => $item)
+                                @foreach($reorderItems as $idx => $item)
                                     @php
                                         $badgeClass = $item->status === 'critical' ? 'badge-risk-critical' : 'badge-risk-warning';
                                         $statusText = $item->status === 'critical' ? '🔴 วิกฤต/ต้องซื้อด่วน' : '🟡 สั่งซื้อรอบปกติ';
@@ -1084,20 +1373,14 @@
                                             {{ number_format($item->estimated_budget, 2) }}
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="11" class="text-center text-muted py-4">
-                                            <i class="fas fa-circle-check text-success fs-3 mb-2 d-block"></i>
-                                            สต็อกสินค้าอยู่ในเกณฑ์ปลอดภัยครบทุกรายการ ไม่พบรายการที่ต้องสั่งซื้อด่วนในรอบนี้
-                                        </td>
-                                    </tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-        @endif
+        </div>
+        <!-- END VIEW 4: SMART PROCUREMENT PLANNER -->
 
     @endif
 
@@ -1323,6 +1606,56 @@
     </div>
 </div>
 
+
+<!-- Modal 6: Goods Receive Item Breakdown Modal (รายละเอียดสิ่งของในใบตรวจรับ) -->
+<div class="modal fade" id="receiveDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-primary text-white py-3 px-4">
+                <div class="w-100 me-2">
+                    <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2 mb-1">
+                        <i class="fas fa-box-open"></i>
+                        <span>รายละเอียดใบตรวจรับ: <span id="modalRecDetCode">-</span></span>
+                    </h5>
+                    <div class="text-white-50 small">
+                        <span>ผู้จำหน่าย: <strong id="modalRecDetVendor" class="text-white">-</strong></span>
+                        <span class="mx-2">|</span>
+                        <span>วันที่รับ: <span id="modalRecDetDate" class="text-white">-</span></span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive" style="max-height: 440px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.83rem;">
+                        <thead class="bg-light sticky-top" style="z-index: 1;">
+                            <tr class="text-muted" style="font-size: 0.75rem;">
+                                <th class="text-center" style="width: 45px;">#</th>
+                                <th>รหัส</th>
+                                <th>ชื่อรายการพัสดุ / เวชภัณฑ์</th>
+                                <th class="text-center" style="width: 90px;">จำนวน</th>
+                                <th class="text-end" style="width: 100px;">ราคา/หน่วย</th>
+                                <th class="text-end" style="width: 120px;">มูลค่ารวม (บาท)</th>
+                                <th class="text-center" style="width: 110px;">Lot / EXP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalRecDetItemsBody">
+                            <!-- Populated via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small">ผู้ตรวจรับ: </span>
+                    <strong id="modalRecDetReceiver" class="small text-dark">-</strong>
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">ย้อนกลับ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -1491,40 +1824,49 @@
             @endif
 
             // =========================================================================
-            // 2. Single Warehouse Tab Chart (Daily in Month View, 12-Month in Full Year)
+            // 2. Single Warehouse Tab: Charts & Tables Initialization
             // =========================================================================
-            @if($tab !== 'overview' && $view_mode === 'overview')
+            @if($tab !== 'overview')
                 @if($isMonthlyView ?? false)
                     var dailyTrendData = @json($dailyTrend ?? []);
                     var chartLabels = dailyTrendData.map(function(d) { return 'ว.' + d.day; });
-                    var valSeries = dailyTrendData.map(function(d) { return d.val; });
+                    var recSeries = dailyTrendData.map(function(d) { return d.receive_val || 0; });
+                    var disbSeries = dailyTrendData.map(function(d) { return d.val || 0; });
                     var chartType = 'area';
                 @else
                     var singleTrendData = @json($monthlyTrend ?? []);
                     var chartLabels = ['ต.ค.', 'พ.ย.', 'ธ.ค.', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.'];
-                    var valSeries = singleTrendData.map(function(d) { return d.val; });
+                    var recSeries = singleTrendData.map(function(d) { return d.receive_val || 0; });
+                    var disbSeries = singleTrendData.map(function(d) { return d.val || 0; });
                     var chartType = 'bar';
                 @endif
 
-                var singleOptions = {
-                    series: [{ name: 'มูลค่าเบิกจ่าย (บาท)', data: valSeries }],
+                var commonTrendOptions = {
+                    series: [
+                        { name: 'มูลค่ารับเข้าคลัง (บาท)', data: recSeries },
+                        { name: 'มูลค่าเบิกจ่าย (บาท)', data: disbSeries }
+                    ],
                     chart: {
                         type: chartType,
-                        height: 280,
-                        toolbar: { show: false },
+                        height: 290,
+                        toolbar: { 
+                            show: true,
+                            tools: { download: true, selection: false, zoom: false, zoomin: false, zoomout: false, pan: false, reset: false }
+                        },
                         zoom: { enabled: false },
                         fontFamily: 'inherit'
                     },
-                    colors: ['{{ $config["color"] ?? "#f59e0b" }}'],
+                    colors: ['#0284c7', '{{ $config["color"] ?? "#f59e0b" }}'],
                     @if($isMonthlyView ?? false)
-                        stroke: { curve: 'smooth', width: 2.5 },
+                        stroke: { curve: 'smooth', width: [2.5, 2.5] },
                         fill: {
                             type: 'gradient',
-                            gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [0, 90, 100] }
+                            gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 90, 100] }
                         },
+                        markers: { size: 3.5, strokeColors: '#ffffff', strokeWidth: 1.5, hover: { size: 6 } },
                     @else
                         plotOptions: {
-                            bar: { borderRadius: 6, columnWidth: '45%', distributed: false }
+                            bar: { horizontal: false, columnWidth: '55%', borderRadius: 4, distributed: false }
                         },
                     @endif
                     dataLabels: { enabled: false },
@@ -1534,22 +1876,198 @@
                             formatter: function (value) {
                                 if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M ฿';
                                 if (value >= 1000) return (value / 1000).toFixed(0) + 'K ฿';
-                                return value + ' ฿';
+                                return Number(value).toLocaleString() + ' ฿';
                             }
                         }
                     },
                     tooltip: {
-                        y: { formatter: function (val) { return Number(val).toLocaleString(undefined, {minimumFractionDigits: 2}) + ' บาท'; } }
-                    }
+                        shared: true,
+                        intersect: false,
+                        y: { formatter: function (val) { return Number(val || 0).toLocaleString(undefined, {minimumFractionDigits: 2}) + ' บาท'; } }
+                    },
+                    legend: { position: 'top', horizontalAlign: 'right', fontSize: '12px' }
                 };
 
+                // Chart 1: In Overview Section (Requisitions)
                 var singleChartEl = document.querySelector("#warehouse_single_trend_chart");
                 if (singleChartEl) {
-                    var singleChart = new ApexCharts(singleChartEl, singleOptions);
+                    var singleChart = new ApexCharts(singleChartEl, commonTrendOptions);
                     singleChart.render();
+                }
+
+                // Chart 2: In Receive Section (Goods Receipts)
+                var receiveChartEl = document.querySelector("#warehouse_receive_chart");
+                if (receiveChartEl) {
+                    var receiveChart = new ApexCharts(receiveChartEl, commonTrendOptions);
+                    receiveChart.render();
+                }
+
+                // Initialize DataTables for Clean Pagination & Search
+                if (typeof $.fn.DataTable !== 'undefined') {
+                    $.fn.dataTable.ext.errMode = 'none'; // Suppress alert dialogs for any minor DataTables warnings
+                }
+
+                if ($('#warehouse_receives_table').length && !$.fn.DataTable.isDataTable('#warehouse_receives_table')) {
+                    $('#warehouse_receives_table').DataTable({
+                        pageLength: 15,
+                        language: {
+                            search: "ค้นหาใบตรวจรับ:",
+                            lengthMenu: "แสดง _MENU_ รายการ",
+                            info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                            infoEmpty: "ไม่พบข้อมูล",
+                            emptyTable: "ไม่พบประวัติการตรวจรับเข้าคลังในงวดเวลาที่เลือก",
+                            zeroRecords: "ไม่พบข้อมูลที่ตรงกับการค้นหา",
+                            paginate: { first: "แรก", previous: "ก่อนหน้า", next: "ถัดไป", last: "ท้ายสุด" }
+                        },
+                        order: [[0, 'asc']]
+                    });
+                }
+                if ($('#warehouse_stock_table').length && !$.fn.DataTable.isDataTable('#warehouse_stock_table')) {
+                    $('#warehouse_stock_table').DataTable({
+                        pageLength: 20,
+                        language: {
+                            search: "ค้นหาสต็อกพัสดุ/ยา:",
+                            lengthMenu: "แสดง _MENU_ รายการ",
+                            info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                            infoEmpty: "ไม่พบข้อมูล",
+                            emptyTable: "ไม่พบข้อมูลสต็อกพัสดุ/ยาในคลังนี้",
+                            zeroRecords: "ไม่พบข้อมูลที่ตรงกับการค้นหา",
+                            paginate: { first: "แรก", previous: "ก่อนหน้า", next: "ถัดไป", last: "ท้ายสุด" }
+                        },
+                        order: [[0, 'asc']]
+                    });
+                }
+                if ($('#warehouse_planner_table').length && !$.fn.DataTable.isDataTable('#warehouse_planner_table')) {
+                    $('#warehouse_planner_table').DataTable({
+                        pageLength: 20,
+                        language: {
+                            search: "ค้นหารายการสั่งซื้อ:",
+                            lengthMenu: "แสดง _MENU_ รายการ",
+                            info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                            infoEmpty: "ไม่พบข้อมูล",
+                            emptyTable: "สต็อกสินค้าอยู่ในเกณฑ์ปลอดภัยครบทุกรายการ ไม่พบรายการที่ต้องสั่งซื้อด่วนในรอบนี้",
+                            zeroRecords: "ไม่พบข้อมูลที่ตรงกับการค้นหา",
+                            paginate: { first: "แรก", previous: "ก่อนหน้า", next: "ถัดไป", last: "ท้ายสุด" }
+                        },
+                        order: [[0, 'asc']]
+                    });
                 }
             @endif
         });
+
+        // =========================================================================
+        // Interactive Tab Switching: 4 KPI Cards & Viewmode Buttons
+        // Switches section content instantly on the same page without reload
+        // =========================================================================
+        function switchWarehouseView(mode) {
+            if (!mode) return;
+
+            // 1. Hide all view sections and show the target section
+            $('.wh-view-section').hide();
+            $('#view_section_' + mode).fadeIn(150);
+
+            // 2. Update active style on the 4 top KPI cards
+            $('#wh_card_receive, #wh_card_overview, #wh_card_stock, #wh_card_planner').removeClass(
+                'active-kpi-card active-card-primary active-card-warning active-card-success active-card-danger'
+            );
+
+            if (mode === 'receive') {
+                $('#wh_card_receive').addClass('active-kpi-card active-card-primary');
+            } else if (mode === 'overview') {
+                $('#wh_card_overview').addClass('active-kpi-card active-card-warning');
+            } else if (mode === 'stock') {
+                $('#wh_card_stock').addClass('active-kpi-card active-card-success');
+            } else if (mode === 'planner') {
+                $('#wh_card_planner').addClass('active-kpi-card active-card-danger');
+            }
+
+            // 3. Update badges inside cards
+            $('.wh-kpi-status-badge').each(function() {
+                var bMode = $(this).data('mode');
+                $(this).removeClass('bg-light text-muted border bg-primary bg-warning bg-success bg-danger text-white text-dark shadow-xs');
+                if (bMode === mode) {
+                    var colorClass = (bMode === 'receive') ? 'bg-primary text-white' :
+                                     ((bMode === 'overview') ? 'bg-warning text-dark' :
+                                     ((bMode === 'stock') ? 'bg-success text-white' : 'bg-danger text-white'));
+                    $(this).addClass(colorClass + ' shadow-xs').html('<i class="fas fa-eye me-1"></i>กำลังแสดง');
+                } else {
+                    $(this).addClass('bg-light text-muted border').html('<i class="fas fa-hand-pointer me-1"></i>คลิกดูข้อมูล');
+                }
+            });
+
+
+            // 4. Update browser URL without reloading page
+            if (window.history && window.history.replaceState) {
+                var url = new URL(window.location.href);
+                url.searchParams.set('view_mode', mode);
+                window.history.replaceState({}, '', url.toString());
+            }
+
+            // 5. Trigger resize event for ApexCharts & DataTables adjustments
+            setTimeout(function() {
+                window.dispatchEvent(new Event('resize'));
+                if ($.fn.dataTable) {
+                    $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+                }
+            }, 60);
+        }
+
+        // Keep viewReceivesList as a safe alias to switchWarehouseView('receive')
+        function viewReceivesList(type) {
+            switchWarehouseView('receive');
+        }
+
+        // AJAX: View Goods Receive Items (รายละเอียดสิ่งของในใบตรวจรับ)
+        function viewReceiveItems(type, id) {
+            $('#modalRecDetCode').text('กำลังโหลด...');
+            $('#modalRecDetVendor').text('-');
+            $('#modalRecDetDate').text('-');
+            $('#modalRecDetReceiver').text('-');
+            $('#modalRecDetItemsBody').html('<tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div> กำลังโหลดรายการสิ่งของ...</td></tr>');
+
+            const modalEl = document.getElementById('receiveDetailModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+
+            const url = '{{ url("backoffice/warehouse/receive") }}/' + type + '/' + id;
+            $.get(url, function(res) {
+                $('#modalRecDetCode').text(res.code + (res.po_code ? ' (PO: ' + res.po_code + ')' : ''));
+                $('#modalRecDetVendor').text(res.vendor || '-');
+                $('#modalRecDetDate').text(res.receive_date ? res.receive_date.substring(0, 16) : '-');
+                $('#modalRecDetReceiver').text(res.receiver || '-');
+
+                var html = '';
+                if (res.items && res.items.length > 0) {
+                    var sumVal = 0;
+                    $.each(res.items, function(idx, it) {
+                        var total = parseFloat(it.total || 0);
+                        sumVal += total;
+                        var lotExp = (it.lot_no ? 'Lot: ' + it.lot_no : '') + (it.exp_date ? '<br><span class="text-muted small">EXP: ' + it.exp_date + '</span>' : '');
+                        html += '<tr>' +
+                            '<td class="text-center text-muted">' + (idx + 1) + '</td>' +
+                            '<td class="font-monospace text-muted small">' + (it.code || '-') + '</td>' +
+                            '<td class="fw-bold text-dark">' + (it.name || '-') + '</td>' +
+                            '<td class="text-center font-monospace">' + Number(it.amount || 0).toLocaleString() + (it.unit_name ? ' ' + it.unit_name : '') + '</td>' +
+                            '<td class="text-end text-muted font-monospace">' + Number(it.price || 0).toLocaleString(undefined, {minimumFractionDigits: 2}) + '</td>' +
+                            '<td class="text-end fw-bold text-primary font-monospace">' + total.toLocaleString(undefined, {minimumFractionDigits: 2}) + '</td>' +
+                            '<td class="text-center small font-monospace">' + (lotExp || '-') + '</td>' +
+                        '</tr>';
+                    });
+                    html += '<tr class="bg-light fw-bold">' +
+                        '<td colspan="5" class="text-end">ยอดรวมทั้งสิ้น:</td>' +
+                        '<td class="text-end text-primary font-monospace fs-6">' + sumVal.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' บาท</td>' +
+                        '<td></td>' +
+                    '</tr>';
+                } else {
+                    html = '<tr><td colspan="7" class="text-center text-muted py-3">ไม่พบรายการสิ่งของในใบรับนี้</td></tr>';
+                }
+                $('#modalRecDetItemsBody').html(html);
+            }).fail(function() {
+                $('#modalRecDetItemsBody').html('<tr><td colspan="7" class="text-center text-danger py-3">เกิดข้อผิดพลาดในการโหลดรายการสิ่งของ</td></tr>');
+            });
+        }
 
         // AJAX: View Requisition Detail
         function viewRequestDetail(type, id) {
