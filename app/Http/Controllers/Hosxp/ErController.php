@@ -737,6 +737,240 @@ class ErController extends Controller
         ", [$start_date, $end_date]);
     }
 
+    public function non_doctor(Request $request)
+    {
+        $title = 'รายงานข้อมูลคนไข้รับบริการช่วงเวลา 19.00-08.00 น. (ไม่ใช่แพทย์ตรวจ)';
+        $dates = $this->resolveDateRange($request);
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+        $year_start = $dates['year_start'];
+        $year_end = $dates['year_end'];
+        $table_start_date = $dates['table_start_date'];
+        $table_end_date = $dates['table_end_date'];
+        $start_date = $table_start_date;
+        $end_date = $table_end_date;
+
+        $period_filter = $request->get('period_filter', 'all');
+        $position_filter = $request->get('position_filter', 'all');
+
+        if ($request->ajax()) {
+            $patient_list = $this->fetch_non_doctor_list($table_start_date, $table_end_date, $period_filter, $position_filter);
+            $html = view('hosxp.er.partials._table_non_doctor', compact('patient_list'))->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'table_start_date' => $table_start_date,
+                'table_end_date' => $table_end_date,
+                'start_date_thai' => DateThai($table_start_date),
+                'end_date_thai' => DateThai($table_end_date),
+                'total' => count($patient_list)
+            ]);
+        }
+
+        $patient_list = $this->fetch_non_doctor_list($table_start_date, $table_end_date, $period_filter, $position_filter);
+        $monthly_stats = $this->fetch_non_doctor_monthly($year_start, $year_end);
+        $summary_stats = $this->fetch_non_doctor_summary($year_start, $year_end);
+        $top_diags = $this->fetch_non_doctor_diagtop($year_start, $year_end);
+        $top_staff = $this->fetch_non_doctor_stafftop($year_start, $year_end);
+        $position_types = $this->fetch_non_doctor_positions($year_start, $year_end);
+
+        return view('hosxp.er.non_doctor', compact(
+            'title', 'budget_year_select', 'budget_year', 'year_start', 'year_end',
+            'table_start_date', 'table_end_date', 'start_date', 'end_date',
+            'period_filter', 'position_filter', 'patient_list', 'monthly_stats',
+            'summary_stats', 'top_diags', 'top_staff', 'position_types'
+        ));
+    }
+
+    private function fetch_non_doctor_list($start_date, $end_date, $period = 'all', $position = 'all')
+    {
+        $query = "
+            SELECT 
+                o.vn,
+                o.vstdate,
+                o.vsttime,
+                o.oqueue,
+                o.hn,
+                CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS ptname,
+                v.age_y,
+                CONCAT(o.pttype, ' [', COALESCE(p1.hipdata_code, o.pttype), ']') AS pttype,
+                o1.cc,
+                v.pdx,
+                COALESCE(i.name, '') AS pdx_name,
+                COALESCE(d.name, 'ไม่ระบุ') AS dx_doctor,
+                COALESCE(dp.name, 'ไม่ระบุตำแหน่ง') AS dx_position,
+                COALESCE(ed.name, 'ไม่ระบุ') AS er_doctor,
+                IF(o.an <> '' AND o.an IS NOT NULL, 'Admit', NULL) AS admit,
+                IF(r.vn <> '' AND r.vn IS NOT NULL, CONCAT(r.refer_hospcode, ' [', COALESCE(r.pdx, ''), ']'), NULL) AS refer,
+                CASE 
+                    WHEN e.er_emergency_type = 1 THEN 'Resuscitate' 
+                    WHEN e.er_emergency_type = 2 THEN 'Emergency' 
+                    WHEN e.er_emergency_type = 3 THEN 'Urgency' 
+                    WHEN e.er_emergency_type = 4 THEN 'Semi_Urgency'  
+                    ELSE 'Non_Urgency' 
+                END AS er_emergency_type,
+                CASE 
+                    WHEN TIME(o.vsttime) >= '19:00:00' THEN '19:00-24:00'
+                    ELSE '00:00-08:00'
+                END AS shift_period
+            FROM er_regist e
+            INNER JOIN ovst o ON o.vn = e.vn
+            LEFT JOIN patient p ON p.hn = o.hn
+            LEFT JOIN pttype p1 ON p1.pttype = o.pttype
+            LEFT JOIN opdscreen o1 ON o1.vn = o.vn
+            LEFT JOIN vn_stat v ON v.vn = o.vn
+            LEFT JOIN icd101 i ON i.code = v.pdx
+            LEFT JOIN doctor d ON d.code = v.dx_doctor
+            LEFT JOIN doctor_position dp ON dp.id = d.position_id
+            LEFT JOIN doctor ed ON ed.code = e.er_doctor
+            LEFT JOIN referout r ON r.vn = o.vn
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND (TIME(o.vsttime) >= '19:00:00' OR TIME(o.vsttime) < '08:00:00')
+            AND (d.position_id <> 1 OR d.position_id IS NULL)
+        ";
+
+        $bindings = [$start_date, $end_date];
+
+        if ($period === 'evening') {
+            $query .= " AND TIME(o.vsttime) >= '19:00:00' ";
+        } elseif ($period === 'night') {
+            $query .= " AND TIME(o.vsttime) < '08:00:00' ";
+        }
+
+        if ($position !== 'all' && $position !== '') {
+            if ($position === '0') {
+                $query .= " AND (d.position_id IS NULL OR d.position_id = 0) ";
+            } else {
+                $query .= " AND d.position_id = ? ";
+                $bindings[] = $position;
+            }
+        }
+
+        $query .= " ORDER BY o.vstdate DESC, o.vsttime DESC ";
+
+        return DB::connection('hosxp')->select($query, $bindings);
+    }
+
+    private function fetch_non_doctor_monthly($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select("
+            SELECT 
+                CASE 
+                    WHEN MONTH(o.vstdate) = 10 THEN CONCAT('ต.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 11 THEN CONCAT('พ.ย. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 12 THEN CONCAT('ธ.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 1 THEN CONCAT('ม.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 2 THEN CONCAT('ก.พ. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 3 THEN CONCAT('มี.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 4 THEN CONCAT('เม.ย. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 5 THEN CONCAT('พ.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 6 THEN CONCAT('มิ.ย. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 7 THEN CONCAT('ก.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 8 THEN CONCAT('ส.ค. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                    WHEN MONTH(o.vstdate) = 9 THEN CONCAT('ก.ย. ', RIGHT(YEAR(o.vstdate) + 543, 2))
+                END AS month_year,
+                COUNT(DISTINCT o.vn) AS total_cases,
+                SUM(CASE WHEN TIME(o.vsttime) >= '19:00:00' THEN 1 ELSE 0 END) AS evening_cases,
+                SUM(CASE WHEN TIME(o.vsttime) < '08:00:00' THEN 1 ELSE 0 END) AS night_cases
+            FROM er_regist e
+            INNER JOIN ovst o ON o.vn = e.vn
+            LEFT JOIN vn_stat v ON v.vn = o.vn
+            LEFT JOIN doctor d ON d.code = v.dx_doctor
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND (TIME(o.vsttime) >= '19:00:00' OR TIME(o.vsttime) < '08:00:00')
+            AND (d.position_id <> 1 OR d.position_id IS NULL)
+            GROUP BY YEAR(o.vstdate), MONTH(o.vstdate)
+            ORDER BY YEAR(o.vstdate), MONTH(o.vstdate)
+        ", [$start_date, $end_date]);
+    }
+
+    private function fetch_non_doctor_summary($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->selectOne("
+            SELECT 
+                COUNT(DISTINCT o.vn) AS total_cases,
+                SUM(CASE WHEN TIME(o.vsttime) >= '19:00:00' THEN 1 ELSE 0 END) AS evening_cases,
+                SUM(CASE WHEN TIME(o.vsttime) < '08:00:00' THEN 1 ELSE 0 END) AS night_cases,
+                SUM(CASE WHEN o.an <> '' AND o.an IS NOT NULL THEN 1 ELSE 0 END) AS admit_cases,
+                SUM(CASE WHEN r.vn <> '' AND r.vn IS NOT NULL THEN 1 ELSE 0 END) AS refer_cases,
+                SUM(CASE WHEN e.er_emergency_type = 1 THEN 1 ELSE 0 END) AS level_1,
+                SUM(CASE WHEN e.er_emergency_type = 2 THEN 1 ELSE 0 END) AS level_2,
+                SUM(CASE WHEN e.er_emergency_type = 3 THEN 1 ELSE 0 END) AS level_3,
+                SUM(CASE WHEN e.er_emergency_type = 4 THEN 1 ELSE 0 END) AS level_4,
+                SUM(CASE WHEN e.er_emergency_type = 5 OR e.er_emergency_type IS NULL THEN 1 ELSE 0 END) AS level_5
+            FROM er_regist e
+            INNER JOIN ovst o ON o.vn = e.vn
+            LEFT JOIN vn_stat v ON v.vn = o.vn
+            LEFT JOIN doctor d ON d.code = v.dx_doctor
+            LEFT JOIN referout r ON r.vn = o.vn
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND (TIME(o.vsttime) >= '19:00:00' OR TIME(o.vsttime) < '08:00:00')
+            AND (d.position_id <> 1 OR d.position_id IS NULL)
+        ", [$start_date, $end_date]);
+    }
+
+    private function fetch_non_doctor_diagtop($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select("
+            SELECT CONCAT('[', v.pdx, '] ', COALESCE(i.name, 'ไม่ระบุ')) AS name,
+                   i.tname AS tname,
+                   COUNT(*) AS sum
+            FROM er_regist e
+            INNER JOIN ovst o ON o.vn = e.vn
+            LEFT JOIN vn_stat v ON v.vn = o.vn
+            LEFT JOIN icd101 i ON i.code = v.pdx
+            LEFT JOIN doctor d ON d.code = v.dx_doctor
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND (TIME(o.vsttime) >= '19:00:00' OR TIME(o.vsttime) < '08:00:00')
+            AND (d.position_id <> 1 OR d.position_id IS NULL)
+            AND v.pdx <> '' AND v.pdx IS NOT NULL
+            GROUP BY v.pdx, i.name, i.tname
+            ORDER BY sum DESC
+            LIMIT 10
+        ", [$start_date, $end_date]);
+    }
+
+    private function fetch_non_doctor_stafftop($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select("
+            SELECT COALESCE(d.name, 'ไม่ระบุชื่อ') AS staff_name,
+                   COALESCE(dp.name, 'ไม่ระบุตำแหน่ง') AS position_name,
+                   COUNT(*) AS total_count
+            FROM er_regist e
+            INNER JOIN ovst o ON o.vn = e.vn
+            LEFT JOIN vn_stat v ON v.vn = o.vn
+            LEFT JOIN doctor d ON d.code = v.dx_doctor
+            LEFT JOIN doctor_position dp ON dp.id = d.position_id
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND (TIME(o.vsttime) >= '19:00:00' OR TIME(o.vsttime) < '08:00:00')
+            AND (d.position_id <> 1 OR d.position_id IS NULL)
+            GROUP BY d.code, d.name, dp.name
+            ORDER BY total_count DESC
+            LIMIT 10
+        ", [$start_date, $end_date]);
+    }
+
+    private function fetch_non_doctor_positions($start_date, $end_date)
+    {
+        return DB::connection('hosxp')->select("
+            SELECT 
+                COALESCE(dp.id, 0) AS position_id,
+                COALESCE(dp.name, 'ไม่ระบุตำแหน่ง') AS position_name,
+                COUNT(DISTINCT o.vn) AS total_count
+            FROM er_regist e
+            INNER JOIN ovst o ON o.vn = e.vn
+            LEFT JOIN vn_stat v ON v.vn = o.vn
+            LEFT JOIN doctor d ON d.code = v.dx_doctor
+            LEFT JOIN doctor_position dp ON dp.id = d.position_id
+            WHERE o.vstdate BETWEEN ? AND ?
+            AND (TIME(o.vsttime) >= '19:00:00' OR TIME(o.vsttime) < '08:00:00')
+            AND (d.position_id <> 1 OR d.position_id IS NULL)
+            GROUP BY dp.id, dp.name
+            ORDER BY total_count DESC
+        ", [$start_date, $end_date]);
+    }
+
     private function resolveDateRange(Request $request)
     {
         $budget_year_select = DB::table('budget_year')

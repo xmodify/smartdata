@@ -220,6 +220,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/wait-admit-2h', [App\Http\Controllers\Hosxp\ErController::class, 'wait_admit_2h'])->name('hosxp.er.wait_admit_2h');
         Route::get('/revisit-48h', [App\Http\Controllers\Hosxp\ErController::class, 'revisit_48h'])->name('hosxp.er.revisit_48h');
         Route::get('/top20', [App\Http\Controllers\Hosxp\ErController::class, 'top20'])->name('hosxp.er.top20');
+        Route::get('/non-doctor', [App\Http\Controllers\Hosxp\ErController::class, 'non_doctor'])->name('hosxp.er.non_doctor');
     });
 
     // Refer Routes
@@ -282,6 +283,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/backoffice/hrd', [App\Http\Controllers\Backoffice\HrdController::class, 'index'])->name('backoffice.hrd.index');
     Route::get('/backoffice/hrd/pdf/summary/{id}', [App\Http\Controllers\Backoffice\HrdController::class, 'checkin_indiv_pdf'])->name('backoffice.hrd.pdf.summary');
     Route::get('/backoffice/hrd/pdf/detail/{id}', [App\Http\Controllers\Backoffice\HrdController::class, 'checkin_indiv_detail_pdf'])->name('backoffice.hrd.pdf.detail');
+
+    // Backoffice Salary & Compensation Routes
+    Route::prefix('backoffice/salary')->group(function () {
+        Route::get('/', [App\Http\Controllers\Backoffice\SalaryController::class, 'index'])->name('backoffice.salary.index');
+        Route::get('/person/{id}', [App\Http\Controllers\Backoffice\SalaryController::class, 'personDetail'])->name('backoffice.salary.person_detail');
+        Route::get('/monthly-slip/{personId}/{yearId}/{monthId}', [App\Http\Controllers\Backoffice\SalaryController::class, 'monthlySlip'])->name('backoffice.salary.monthly_slip');
+        Route::get('/slip/{salaryAllId}', [App\Http\Controllers\Backoffice\SalaryController::class, 'slipDetail'])->name('backoffice.salary.slip_detail');
+    });
 
     // Backoffice Asset Routes
     Route::get('/backoffice/asset', [App\Http\Controllers\Backoffice\AssetController::class, 'index'])->name('backoffice.asset.index');

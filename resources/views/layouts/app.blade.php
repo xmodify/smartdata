@@ -420,6 +420,10 @@
                                 class="list-group-item list-group-item-action bg-transparent text-dark">
                                 <i class="fas fa-id-card me-2" style="color: #1cc88a;"></i> งานบุคลากร
                             </a>
+                            <a href="{{ route('backoffice.salary.index') }}"
+                                class="list-group-item list-group-item-action bg-transparent text-dark">
+                                <i class="fas fa-money-bill-wave me-2" style="color: #10b981;"></i> เงินเดือน-ค่าตอบแทน
+                            </a>
                         @endif
                         @if(auth()->user()->hasAccessAsset())
                             <a href="{{ route('backoffice.asset.index') }}"
