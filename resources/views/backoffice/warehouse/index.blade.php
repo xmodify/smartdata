@@ -137,6 +137,7 @@
         }
 
         .wh-nav-tabs .nav-link.active-overview { background: linear-gradient(135deg, #4f46e5, #4338ca) !important; }
+        .wh-nav-tabs .nav-link.active-drug     { background: linear-gradient(135deg, #059669, #047857) !important; }
         .wh-nav-tabs .nav-link.active-material { background: linear-gradient(135deg, #f59e0b, #d97706) !important; }
         .wh-nav-tabs .nav-link.active-dental   { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; }
         .wh-nav-tabs .nav-link.active-medtech  { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; }
@@ -292,6 +293,251 @@
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* MOPH F5 Modal & Tabs Custom Styling */
+        #uploadMophF5Modal .nav-pills .nav-link {
+            color: #4b5563;
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+            font-size: 0.82rem;
+            padding: 0.4rem 0.85rem;
+        }
+        #uploadMophF5Modal .nav-pills .nav-link:hover {
+            background-color: #e5e7eb;
+            color: #111827;
+        }
+        #uploadMophF5Modal .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #059669, #047857) !important;
+            color: #ffffff !important;
+            border-color: #059669 !important;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+        }
+        #uploadMophF5Modal .nav-pills .nav-link.active .badge {
+            background-color: rgba(255, 255, 255, 0.28) !important;
+            color: #ffffff !important;
+        }
+        #uploadMophF5Modal table.dataTable {
+            width: 100% !important;
+            margin-bottom: 0 !important;
+        }
+        #uploadMophF5Modal table.dataTable thead th {
+            font-size: 0.76rem !important;
+            white-space: nowrap !important;
+            background-color: #f8fafc !important;
+            color: #334155 !important;
+            padding: 0.38rem 0.5rem !important;
+        }
+        #uploadMophF5Modal table.dataTable tbody td {
+            font-size: 0.76rem !important;
+            padding: 0.28rem 0.5rem !important;
+            line-height: 1.3 !important;
+        }
+        #uploadMophF5Modal table.dataTable tfoot th {
+            font-size: 0.78rem !important;
+            background-color: #f1f5f9 !important;
+            padding: 0.35rem 0.5rem !important;
+        }
+        #uploadMophF5Modal .dataTables_wrapper .dataTables_filter input {
+            border-radius: 20px !important;
+            padding: 0.22rem 0.75rem !important;
+            font-size: 0.78rem !important;
+        }
+        #uploadMophF5Modal .dataTables_wrapper .dataTables_filter label {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.35rem !important;
+            margin-bottom: 0 !important;
+            font-size: 0.78rem !important;
+            font-weight: 500 !important;
+            color: #4b5563 !important;
+        }
+        #uploadMophF5Modal .dataTables_wrapper .dt-buttons {
+            display: inline-flex !important;
+            align-items: center !important;
+            margin-bottom: 0 !important;
+        }
+        #uploadMophF5Modal .dataTables_wrapper .dataTables_length select {
+            border-radius: 12px !important;
+            padding: 0.22rem 1.6rem 0.22rem 0.6rem !important;
+            font-size: 0.78rem !important;
+        }
+        /* Official Vibrant Microsoft Excel Button Styling */
+        #uploadMophF5Modal .dt-buttons .btn-f5-excel,
+        #uploadMophF5Modal .btn-f5-excel {
+            background: linear-gradient(135deg, #107c41 0%, #15803d 100%) !important;
+            color: #ffffff !important;
+            border: 1px solid #0f5132 !important;
+            font-weight: 600 !important;
+            font-size: 0.78rem !important;
+            padding: 0.28rem 0.9rem !important;
+            border-radius: 50rem !important;
+            box-shadow: 0 2px 4px rgba(16, 124, 65, 0.25) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.35rem !important;
+            transition: all 0.2s ease !important;
+            text-decoration: none !important;
+        }
+        #uploadMophF5Modal .dt-buttons .btn-f5-excel:hover,
+        #uploadMophF5Modal .btn-f5-excel:hover {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 10px rgba(16, 124, 65, 0.35) !important;
+            transform: translateY(-1px);
+        }
+        /* F5 Modal Dialog & Content Layout */
+        #uploadMophF5Modal .modal-dialog {
+            max-width: 92vw !important;
+            width: 92vw !important;
+            height: 88vh !important;
+            margin: 2vh auto !important;
+        }
+        #uploadMophF5Modal .modal-content {
+            height: 100% !important;
+            max-height: 88vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+        #uploadMophF5Modal .modal-body {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 0.65rem 0.85rem !important;
+        }
+        #uploadMophF5Modal .tab-content {
+            flex: 1 1 auto !important;
+            height: 100% !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+        }
+        #uploadMophF5Modal .tab-pane {
+            height: 100% !important;
+            min-height: 0 !important;
+        }
+        #uploadMophF5Modal .tab-pane.active:not(#tab-f5-upload) {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        #tab-f5-upload {
+            overflow-y: auto !important;
+        }
+
+        /* F5 Data Cards (Tabs 1-5) */
+        .f5-data-card {
+            height: 100% !important;
+            min-height: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            padding: 0.65rem 0.85rem !important;
+            background-color: #ffffff;
+        }
+        .f5-data-card .dataTables_wrapper {
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 1 auto !important;
+            height: 100% !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+        }
+
+        /* F5 Scrollable Table Container (with smooth custom scrollbars) */
+        .f5-table-scroll-container {
+            flex: 1 1 auto !important;
+            overflow-y: auto !important;
+            overflow-x: auto !important;
+            min-height: 0 !important;
+            position: relative !important;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background-color: #ffffff;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+        }
+        .f5-table-scroll-container table {
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            width: 100% !important;
+            margin-bottom: 0 !important;
+        }
+        .f5-table-scroll-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .f5-table-scroll-container::-webkit-scrollbar-track {
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+        .f5-table-scroll-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .f5-table-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Sticky Header for all F5 Tables */
+        .f5-table-scroll-container table thead th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10 !important;
+            background-color: #f1f5f9 !important;
+            color: #334155 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+            border-bottom: 2px solid #cbd5e1 !important;
+        }
+
+        /* Sticky Footer for Total Row in F5 Tables */
+        .f5-table-scroll-container table tfoot th {
+            position: sticky !important;
+            bottom: 0 !important;
+            z-index: 9 !important;
+            background-color: #f8fafc !important;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.08) !important;
+            border-top: 2px solid #cbd5e1 !important;
+        }
+
+        /* F5 Pagination & Info Bottom Row - Always pinned at bottom */
+        .f5-dt-bottom-row {
+            flex-shrink: 0 !important;
+            padding-top: 0.35rem !important;
+            padding-bottom: 0.15rem !important;
+            margin-top: 0.25rem !important;
+            margin-bottom: 0 !important;
+            background: #ffffff !important;
+            border-top: 1px solid #f1f5f9 !important;
+        }
+        #uploadMophF5Modal .dataTables_info {
+            font-size: 0.78rem !important;
+            padding-top: 0.2rem !important;
+            padding-bottom: 0.2rem !important;
+            color: #64748b !important;
+            margin: 0 !important;
+        }
+        #uploadMophF5Modal .dataTables_paginate {
+            padding-top: 0.2rem !important;
+            padding-bottom: 0.2rem !important;
+            margin: 0 !important;
+        }
+        #uploadMophF5Modal .dataTables_paginate .pagination {
+            margin-bottom: 0 !important;
+            gap: 2px !important;
+        }
+        #uploadMophF5Modal .dataTables_paginate .page-link {
+            padding: 0.22rem 0.55rem !important;
+            font-size: 0.76rem !important;
+            border-radius: 6px !important;
+            color: #107c41 !important;
+            border-color: #e2e8f0 !important;
+        }
+        #uploadMophF5Modal .dataTables_paginate .page-item.active .page-link {
+            background-color: #107c41 !important;
+            border-color: #107c41 !important;
+            color: #ffffff !important;
+        }
     </style>
 @endpush
 
@@ -377,12 +623,12 @@
 
     <!-- 7 Main Warehouse & Network Tabs Navigation -->
     <ul class="nav wh-nav-tabs mb-3">
-        <!-- Tab 0: ภาพรวม 5 คลัง -->
+        <!-- Tab 0: ภาพรวม 6 คลัง -->
         <li class="nav-item">
             <a class="nav-link {{ $tab === 'overview' ? 'active active-overview' : '' }}" 
                href="{{ route('backoffice.warehouse.index', array_merge(request()->except('tab'), ['tab' => 'overview'])) }}">
                 <i class="fas fa-layer-group"></i>
-                <span>ภาพรวม 5 คลัง</span>
+                <span>ภาพรวม 6 คลัง</span>
             </a>
         </li>
 
@@ -441,7 +687,7 @@
             <div>
                 <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
                     <i class="fas fa-table-columns text-primary"></i>
-                    <span>สรุปเปรียบเทียบ 5 คลังหลัก (รับเข้า • เบิกจ่าย • คงคลัง)</span>
+                    <span>สรุปเปรียบเทียบ 6 คลังหลัก (รับเข้า • เบิกจ่าย • คงคลัง)</span>
                 </h6>
                 <div class="text-muted small mt-1 d-flex align-items-center gap-2 flex-wrap" style="font-size: 0.77rem;">
                     <span>
@@ -592,17 +838,17 @@
                             </h6>
                             <div class="text-muted small mt-0.5" style="font-size: 0.74rem;">
                                 @if($isMonthlyView ?? false)
-                                    เปรียบเทียบการเบิกจ่ายรายวันของ 5 คลังหลัก (ว.1 – ว.{{ count($dailyTrend ?? []) }})
+                                    เปรียบเทียบการเบิกจ่ายรายวันของ 6 คลังหลัก (ว.1 – ว.{{ count($dailyTrend ?? []) }})
                                 @else
-                                    เปรียบเทียบการเบิกจ่ายรายเดือนตลอดปีงบประมาณของ 5 คลังหลัก (ต.ค. - ก.ย.)
+                                    เปรียบเทียบการเบิกจ่ายรายเดือนตลอดปีงบประมาณของ 6 คลังหลัก (ต.ค. - ก.ย.)
                                 @endif
                             </div>
                         </div>
                         <span class="badge bg-light text-muted border px-2.5 py-1 font-monospace" style="font-size: 0.75rem;">
                             @if($isMonthlyView ?? false)
-                                <i class="fas fa-calendar-day me-1 text-primary"></i> รายวัน (Daily) 5 คลัง
+                                <i class="fas fa-calendar-day me-1 text-primary"></i> รายวัน (Daily) 6 คลัง
                             @else
-                                <i class="fas fa-calendar me-1 text-warning"></i> เปรียบเทียบ 5 คลัง (12 เดือน)
+                                <i class="fas fa-calendar me-1 text-warning"></i> เปรียบเทียบ 6 คลัง (12 เดือน)
                             @endif
                         </span>
                     </div>
@@ -1050,9 +1296,34 @@
 
     @else
         {{-- ========================================================================= --}}
-        {{-- SPECIFIC WAREHOUSE TAB: MATERIAL / DENTAL / MEDTECH / PHYSICAL / MEDICAL --}}
+        {{-- SPECIFIC WAREHOUSE TAB: DRUG / MATERIAL / DENTAL / MEDTECH / PHYSICAL / MEDICAL --}}
         {{-- ========================================================================= --}}
         
+        <!-- Warehouse Header & Action Bar -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div>
+                <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                    <span class="badge rounded-pill px-3 py-1.5" style="background-color: {{ $config['color'] }}18; color: {{ $config['color'] }}; font-size: 0.95rem; border: 1px solid {{ $config['color'] }}30;">
+                        <i class="fas {{ $config['icon'] }} me-1.5"></i> {{ $config['full_name'] }}
+                    </span>
+                </h5>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                @if($tab === 'drug')
+                    <button type="button" class="btn btn-success btn-sm rounded-pill px-3 py-1.5 shadow-sm fw-bold d-inline-flex align-items-center gap-2" 
+                            data-bs-toggle="modal" data-bs-target="#uploadMophF5Modal">
+                        <i class="fas fa-cloud-arrow-up"></i>
+                        <span>นำเข้า 5 แฟ้มยา</span>
+                    </button>
+                @endif
+                <a href="{{ route('backoffice.warehouse.export_reorder', ['tab' => $tab, 'year_id' => $year_id]) }}" 
+                   class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1.5 shadow-xs fw-semibold d-inline-flex align-items-center gap-1.5">
+                    <i class="fas fa-file-excel text-success"></i>
+                    <span>ส่งออกแผนจัดซื้อ (CSV)</span>
+                </a>
+            </div>
+        </div>
+
         <!-- KPI Row for Specific Warehouse: รับเข้า • เบิกจ่าย • คงคลัง • รายการต้องซื้อด่วน (Interactive Mode Switcher) -->
         <div class="row g-3 mb-4">
             <!-- 1. Total Receive Value (รับเข้า) -->
@@ -1554,7 +1825,7 @@
                                                 </td>
                                                 <td>
                                                     <a href="javascript:void(0)" 
-                                                       onclick="viewItemDepartments('{{ $config['type'] }}', {{ $tItem->item_id ?? 0 }}, '{{ addslashes($tItem->name) }}')"
+                                                       onclick="viewItemDepartments('{{ $config['type'] }}', '{{ $tItem->item_id ?? 0 }}', '{{ addslashes($tItem->name) }}')"
                                                        class="fw-bold text-dark text-decoration-none hover-primary text-truncate d-block" 
                                                        style="max-width: 180px;" 
                                                        title="{{ $tItem->name }} (คลิกเพื่อดูหน่วยงานที่เบิก)">
@@ -1583,7 +1854,7 @@
                                                     <button type="button" 
                                                             class="btn btn-sm btn-outline-info py-0.5 px-2 rounded-pill shadow-xs" 
                                                             style="font-size: 0.72rem; white-space: nowrap;"
-                                                            onclick="viewItemDepartments('{{ $config['type'] }}', {{ $tItem->item_id ?? 0 }}, '{{ addslashes($tItem->name) }}')"
+                                                            onclick="viewItemDepartments('{{ $config['type'] }}', '{{ $tItem->item_id ?? 0 }}', '{{ addslashes($tItem->name) }}')"
                                                             title="ดูหน่วยงานที่เบิกรายการนี้ (เรียงจากมากไปน้อย)">
                                                         <i class="fas fa-sitemap me-1"></i>ดูหน่วยงาน
                                                     </button>
@@ -2415,6 +2686,531 @@
     </div>
 </div>
 
+<!-- Modal 8: Upload & View MOPH 5 Files (Drug Warehouse INVS) -->
+<div class="modal fade" id="uploadMophF5Modal" tabindex="-1" aria-labelledby="uploadMophF5ModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 92vw; width: 92vw; height: 88vh; margin: 2vh auto;">
+        <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden h-100 d-flex flex-column">
+            
+            <!-- Modal Header -->
+            <div class="modal-header py-2.5 px-4 text-white flex-shrink-0" style="background: linear-gradient(135deg, #059669, #047857);">
+                <div class="d-flex align-items-center gap-2.5">
+                    <div class="d-flex align-items-center justify-content-center bg-white bg-opacity-20 rounded-circle" style="width: 38px; height: 38px;">
+                        <i class="fas fa-file-excel fs-5 text-white"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="modal-title fw-bold m-0" id="uploadMophF5ModalLabel">ศูนย์จัดการและตรวจสอบ 5 แฟ้มยา (INVS Drug Warehouse)</h6>
+                            <span class="badge bg-white bg-opacity-25 text-white fw-normal" style="font-size: 0.72rem;">มาตรฐาน สป.สธ.</span>
+                        </div>
+                        <small class="text-white-50" style="font-size: 0.75rem;">ระบบนำเข้า ตรวจสอบ และดูข้อมูลรายแฟ้ม (druglist, purchaseplan, receipt, distribution, inventory)</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="btnCloseMophF5Modal"></button>
+            </div>
+
+            <!-- Tab Navigation Bar -->
+            <div class="bg-white border-bottom px-4 pt-2 pb-2 flex-shrink-0 shadow-2xs">
+                <ul class="nav nav-pills gap-1 flex-nowrap overflow-auto" id="mophF5ModalNavTabs" role="tablist" style="scrollbar-width: thin;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active px-3 py-1.5 rounded-pill fw-semibold small f5-tab-btn text-nowrap" 
+                                id="tab-f5-upload-tab" data-bs-toggle="pill" data-bs-target="#tab-f5-upload" type="button" role="tab" data-f5-file="upload">
+                            <i class="fas fa-cloud-arrow-up me-1"></i> นำเข้าไฟล์ (Upload)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-3 py-1.5 rounded-pill fw-semibold small f5-tab-btn text-nowrap" 
+                                id="tab-f5-druglist-tab" data-bs-toggle="pill" data-bs-target="#tab-f5-druglist" type="button" role="tab" data-f5-file="druglist">
+                            <i class="fas fa-pills me-1"></i> 1. ทะเบียนยา (druglist)
+                            <span class="badge bg-secondary rounded-pill ms-1 font-monospace" id="f5TabBadge_druglist">{{ number_format($f5TableCounts['druglist'] ?? 0) }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-3 py-1.5 rounded-pill fw-semibold small f5-tab-btn text-nowrap" 
+                                id="tab-f5-purchaseplan-tab" data-bs-toggle="pill" data-bs-target="#tab-f5-purchaseplan" type="button" role="tab" data-f5-file="purchaseplan">
+                            <i class="fas fa-file-invoice-dollar me-1"></i> 2. แผนจัดซื้อ (purchaseplan)
+                            <span class="badge bg-secondary rounded-pill ms-1 font-monospace" id="f5TabBadge_purchaseplan">{{ number_format($f5TableCounts['purchaseplan'] ?? 0) }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-3 py-1.5 rounded-pill fw-semibold small f5-tab-btn text-nowrap" 
+                                id="tab-f5-receipt-tab" data-bs-toggle="pill" data-bs-target="#tab-f5-receipt" type="button" role="tab" data-f5-file="receipt">
+                            <i class="fas fa-truck-ramp-box me-1"></i> 3. รับเข้าคลัง (receipt)
+                            <span class="badge bg-secondary rounded-pill ms-1 font-monospace" id="f5TabBadge_receipt">{{ number_format($f5TableCounts['receipt'] ?? 0) }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-3 py-1.5 rounded-pill fw-semibold small f5-tab-btn text-nowrap" 
+                                id="tab-f5-distribution-tab" data-bs-toggle="pill" data-bs-target="#tab-f5-distribution" type="button" role="tab" data-f5-file="distribution">
+                            <i class="fas fa-boxes-packing me-1"></i> 4. เบิกจ่ายยา (distribution)
+                            <span class="badge bg-secondary rounded-pill ms-1 font-monospace" id="f5TabBadge_distribution">{{ number_format($f5TableCounts['distribution'] ?? 0) }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link px-3 py-1.5 rounded-pill fw-semibold small f5-tab-btn text-nowrap" 
+                                id="tab-f5-inventory-tab" data-bs-toggle="pill" data-bs-target="#tab-f5-inventory" type="button" role="tab" data-f5-file="inventory">
+                            <i class="fas fa-warehouse me-1"></i> 5. ยาคงคลัง (inventory)
+                            <span class="badge bg-secondary rounded-pill ms-1 font-monospace" id="f5TabBadge_inventory">{{ number_format($f5TableCounts['inventory'] ?? 0) }}</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Modal Body (Flex column container without outer scroll) -->
+            <div class="modal-body p-2.5 p-md-3 flex-grow-1 overflow-hidden bg-light bg-opacity-50 d-flex flex-column min-h-0">
+                <div class="tab-content flex-grow-1 h-100 overflow-hidden min-h-0" id="mophF5ModalTabContent">
+                    
+                    <!-- TAB 0: UPLOAD FILES -->
+                    <div class="tab-pane fade show active h-100 overflow-auto" id="tab-f5-upload" role="tabpanel" aria-labelledby="tab-f5-upload-tab">
+                        <form id="mophF5UploadForm" enctype="multipart/form-data">
+                            @csrf
+                            
+                            <!-- File drop / select container -->
+                            <div class="p-4 rounded-4 border-2 border-dashed text-center mb-3 bg-white" id="mophF5Dropzone" 
+                                 style="border-color: #cbd5e1; cursor: pointer; transition: all 0.2s ease;">
+                                <div class="mb-2">
+                                    <i class="fas fa-cloud-arrow-up text-success fa-3x mb-2"></i>
+                                    <h6 class="fw-bold text-dark mb-1">คลิกเลือกไฟล์ หรือลากไฟล์ .xlsx ทั้ง 5 แฟ้มมาวางที่นี่</h6>
+                                    <p class="text-muted small mb-0" style="font-size: 0.82rem;">
+                                        สามารถเลือกไฟล์ทั้ง 5 แฟ้มยาพร้อมกันทีเดียว (กด Ctrl + คลิกเลือกไฟล์ หรือลากคลุมไฟล์)
+                                    </p>
+                                </div>
+                                <input type="file" id="mophF5FileInput" name="files[]" multiple accept=".xlsx,.zip" class="d-none">
+                                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 mt-2 fw-semibold" onclick="$('#mophF5FileInput').click();">
+                                    <i class="fas fa-folder-open me-1"></i> เลือกไฟล์ .xlsx จากคอมพิวเตอร์
+                                </button>
+                            </div>
+
+                            <!-- 5 Files Checklist Status Cards -->
+                            <div class="card border rounded-3 bg-white p-3 mb-3 shadow-2xs">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small fw-bold text-dark">
+                                        <i class="fas fa-list-check me-1 text-primary"></i> แฟ้มมาตรฐาน 5 แฟ้มที่ตรวจพบ:
+                                    </span>
+                                    <span class="badge bg-secondary rounded-pill" id="mophF5CountBadge">เลือก 0 / 5 แฟ้ม</span>
+                                </div>
+                                <div class="row g-2" id="mophF5FileListCards">
+                                    <!-- Druglist -->
+                                    <div class="col-sm-6 col-md-4">
+                                        <div class="p-2 rounded-3 border bg-light d-flex align-items-center gap-2 f5-badge-card" id="badge_druglist">
+                                            <i class="fas fa-circle-question text-muted fs-5 f5-icon"></i>
+                                            <div class="overflow-hidden">
+                                                <div class="fw-bold text-dark small text-truncate">1. ทะเบียนยา (druglist)</div>
+                                                <div class="text-muted f5-filename text-truncate" style="font-size: 0.72rem;">ยังไม่ได้เลือกไฟล์</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Purchaseplan -->
+                                    <div class="col-sm-6 col-md-4">
+                                        <div class="p-2 rounded-3 border bg-light d-flex align-items-center gap-2 f5-badge-card" id="badge_purchaseplan">
+                                            <i class="fas fa-circle-question text-muted fs-5 f5-icon"></i>
+                                            <div class="overflow-hidden">
+                                                <div class="fw-bold text-dark small text-truncate">2. แผนจัดซื้อ (purchaseplan)</div>
+                                                <div class="text-muted f5-filename text-truncate" style="font-size: 0.72rem;">ยังไม่ได้เลือกไฟล์</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Receipt -->
+                                    <div class="col-sm-6 col-md-4">
+                                        <div class="p-2 rounded-3 border bg-light d-flex align-items-center gap-2 f5-badge-card" id="badge_receipt">
+                                            <i class="fas fa-circle-question text-muted fs-5 f5-icon"></i>
+                                            <div class="overflow-hidden">
+                                                <div class="fw-bold text-dark small text-truncate">3. รับเข้าคลัง (receipt)</div>
+                                                <div class="text-muted f5-filename text-truncate" style="font-size: 0.72rem;">ยังไม่ได้เลือกไฟล์</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Distribution -->
+                                    <div class="col-sm-6 col-md-6">
+                                        <div class="p-2 rounded-3 border bg-light d-flex align-items-center gap-2 f5-badge-card" id="badge_distribution">
+                                            <i class="fas fa-circle-question text-muted fs-5 f5-icon"></i>
+                                            <div class="overflow-hidden">
+                                                <div class="fw-bold text-dark small text-truncate">4. เบิกจ่ายยา (distribution)</div>
+                                                <div class="text-muted f5-filename text-truncate" style="font-size: 0.72rem;">ยังไม่ได้เลือกไฟล์</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Inventory -->
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="p-2 rounded-3 border bg-light d-flex align-items-center gap-2 f5-badge-card" id="badge_inventory">
+                                            <i class="fas fa-circle-question text-muted fs-5 f5-icon"></i>
+                                            <div class="overflow-hidden">
+                                                <div class="fw-bold text-dark small text-truncate">5. ยาคงคลัง (inventory)</div>
+                                                <div class="text-muted f5-filename text-truncate" style="font-size: 0.72rem;">ยังไม่ได้เลือกไฟล์</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Upload Progress Bar Container (Hidden by default) -->
+                            <div id="mophF5ProgressContainer" style="display: none;" class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small fw-bold text-dark" id="mophF5ProgressStage">
+                                        <i class="fas fa-spinner fa-spin text-success me-1"></i> กำลังอัปโหลดไฟล์...
+                                    </span>
+                                    <span class="fw-bold text-success font-monospace" id="mophF5ProgressPct">0%</span>
+                                </div>
+                                <div class="progress shadow-xs" style="height: 18px; border-radius: 20px; background-color: #e2e8f0;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success fw-bold" 
+                                         id="mophF5ProgressBar" role="progressbar" style="width: 0%; font-size: 0.75rem;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                </div>
+                                <div class="text-muted small mt-1 text-center" id="mophF5ProgressHint" style="font-size: 0.75rem;">
+                                    กำลังส่งข้อมูลไปยังเซิร์ฟเวอร์...
+                                </div>
+                            </div>
+
+                            <!-- Result Alert Box (Shows complete breakdown on modal without full page reload) -->
+                            <div id="mophF5ResultBox" style="display: none;" class="mb-3"></div>
+
+                            <!-- Tab 0 Bottom Action Bar (Relocated from global modal footer to Tab 0 as requested) -->
+                            <div class="p-3 bg-white border rounded-3 mt-3 d-flex justify-content-between align-items-center shadow-2xs flex-wrap gap-2" id="tab0UploadActionBar">
+                                <div class="d-flex align-items-center gap-2 text-muted small" style="font-size: 0.78rem;">
+                                    <i class="fas fa-circle-info text-primary fs-6"></i>
+                                    <span>ระบบจะตรวจสอบโครงสร้างทั้ง 5 แฟ้มและทำการ Update/Upsert ข้อมูลลงฐานข้อมูลโดยอัตโนมัติ</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-light border rounded-pill px-3" data-bs-dismiss="modal" id="btnCancelMophF5">ยกเลิก</button>
+                                    <button type="button" class="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-xs" id="btnStartUploadMophF5" disabled>
+                                        <i class="fas fa-cloud-arrow-up me-1.5"></i> เริ่มนำเข้าข้อมูล
+                                    </button>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+
+                    <!-- TAB 1: DRUGLIST (ทะเบียนยา) -->
+                    <div class="tab-pane fade h-100 overflow-hidden" id="tab-f5-druglist" role="tabpanel" aria-labelledby="tab-f5-druglist-tab">
+                        <div class="card border rounded-3 bg-white shadow-2xs f5-data-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2.5 pb-2.5 border-bottom flex-wrap gap-2 flex-shrink-0">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge bg-primary px-2.5 py-1.5"><i class="fas fa-pills me-1"></i> แฟ้มที่ 1: ทะเบียนยา (druglist)</span>
+                                    <span class="badge bg-light text-secondary border px-2.5 py-1 small fw-normal">
+                                        <i class="far fa-clock text-primary me-1"></i>อัปเดตล่าสุด: <strong class="f5-last-update text-dark" id="last_update_druglist">{{ $f5LastUpdated['druglist'] ?? '-' }}</strong>
+                                    </span>
+                                    <small class="text-muted d-none d-xl-inline">ข้อมูลรายการยา รหัส GPUID หมวดยา และสถานะ</small>
+                                </div>
+                                <!-- Filter controls for druglist -->
+                                <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <label class="small text-muted fw-semibold text-nowrap"><i class="fas fa-calendar-alt text-primary me-1"></i>งวดรายงาน:</label>
+                                        <select class="form-select form-select-sm rounded-pill f5-filter-select" id="filter_f5_druglist_period" data-file="druglist" style="font-size: 0.78rem; width: auto; min-width: 150px;">
+                                            <option value="all">ทั้งหมด (ทุกงวด)</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <label class="small text-muted fw-semibold text-nowrap"><i class="fas fa-toggle-on text-success me-1"></i>สถานะ:</label>
+                                        <select class="form-select form-select-sm rounded-pill f5-filter-select" id="filter_f5_druglist_status" data-file="druglist" style="font-size: 0.78rem; width: auto;">
+                                            <option value="all">ทั้งหมด</option>
+                                            <option value="1">ใช้งาน (Active)</option>
+                                            <option value="0">ยกเลิก (Inactive)</option>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 btn-f5-reload" data-file="druglist" title="รีเฟรชข้อมูล">
+                                        <i class="fas fa-rotate me-1"></i> โหลดใหม่
+                                    </button>
+                                </div>
+                            </div>
+                            <table id="table_f5_druglist" class="table table-sm table-striped table-hover align-middle w-100 mb-0" style="font-size: 0.8rem;">
+                                <thead class="table-light">
+                                    <tr class="text-nowrap">
+                                        <th class="text-center" style="width: 45px;">#</th>
+                                        <th>รหัสยา (Working Code)</th>
+                                        <th>ชื่อสามัญทางยา (Generic Name)</th>
+                                        <th>GPU ID</th>
+                                        <th class="text-center">NLEM</th>
+                                        <th class="text-center">หมวดยา</th>
+                                        <th class="text-center">หน่วยนับ</th>
+                                        <th class="text-center">สถานะ</th>
+                                        <th class="text-center">วันที่มีผล</th>
+                                        <th class="text-center">งวดรายงาน</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot class="table-light fw-bold">
+                                    <tr>
+                                        <th colspan="10" class="text-muted py-2" id="tfoot_f5_druglist">
+                                            กำลังโหลดข้อมูล...
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: PURCHASEPLAN (แผนจัดซื้อ) -->
+                    <div class="tab-pane fade h-100 overflow-hidden" id="tab-f5-purchaseplan" role="tabpanel" aria-labelledby="tab-f5-purchaseplan-tab">
+                        <div class="card border rounded-3 bg-white shadow-2xs f5-data-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2.5 pb-2.5 border-bottom flex-wrap gap-2 flex-shrink-0">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge bg-info text-dark px-2.5 py-1.5"><i class="fas fa-file-invoice-dollar me-1"></i> แฟ้มที่ 2: แผนจัดซื้อยา (purchaseplan)</span>
+                                    <span class="badge bg-light text-secondary border px-2.5 py-1 small fw-normal">
+                                        <i class="far fa-clock text-info me-1"></i>อัปเดตล่าสุด: <strong class="f5-last-update text-dark" id="last_update_purchaseplan">{{ $f5LastUpdated['purchaseplan'] ?? '-' }}</strong>
+                                    </span>
+                                    <small class="text-muted d-none d-xl-inline">แผนจัดซื้อยาประจำปีงบประมาณและรายไตรมาส (Q1 - Q4)</small>
+                                </div>
+                                <!-- Filter controls for purchaseplan -->
+                                <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <label class="small text-muted fw-semibold text-nowrap"><i class="fas fa-calendar-alt text-info me-1"></i>งวดรายงาน:</label>
+                                        <select class="form-select form-select-sm rounded-pill f5-filter-select" id="filter_f5_purchaseplan_period" data-file="purchaseplan" style="font-size: 0.78rem; width: auto; min-width: 145px;">
+                                            <option value="all">ทั้งหมด (ทุกงวด)</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <label class="small text-muted fw-semibold text-nowrap"><i class="fas fa-calendar-check text-warning me-1"></i>ปีงบประมาณ:</label>
+                                        <select class="form-select form-select-sm rounded-pill f5-filter-select" id="filter_f5_purchaseplan_year" data-file="purchaseplan" style="font-size: 0.78rem; width: auto;">
+                                            <option value="all">ทั้งหมด (ทุกปีงบ)</option>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 btn-f5-reload" data-file="purchaseplan" title="รีเฟรชข้อมูล">
+                                        <i class="fas fa-rotate me-1"></i> โหลดใหม่
+                                    </button>
+                                </div>
+                            </div>
+                            <table id="table_f5_purchaseplan" class="table table-sm table-striped table-hover align-middle w-100 mb-0" style="font-size: 0.8rem;">
+                                <thead class="table-light">
+                                    <tr class="text-nowrap">
+                                        <th class="text-center" style="width: 45px;">#</th>
+                                        <th class="text-center">ปีงบ</th>
+                                        <th>รหัสยา</th>
+                                        <th>ชื่อสามัญทางยา (Generic Name)</th>
+                                        <th class="text-center">GPU ID</th>
+                                        <th class="text-center">NLEM</th>
+                                        <th class="text-center">ขนาดบรรจุ</th>
+                                        <th class="text-center">หน่วย</th>
+                                        <th class="text-end">ราคา/แพ็ค (บาท)</th>
+                                        <th class="text-end text-primary">แผนปีนี้ (จน.)</th>
+                                        <th class="text-end text-success">มูลค่าแผนปีนี้ (บาท)</th>
+                                        <th class="text-end">ใช้ปีก่อน (N-1)</th>
+                                        <th class="text-end">Q1</th>
+                                        <th class="text-end">Q2</th>
+                                        <th class="text-end">Q3</th>
+                                        <th class="text-end">Q4</th>
+                                        <th class="text-center">งวด</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot class="table-light fw-bold">
+                                    <tr>
+                                        <th colspan="9" class="text-end py-2">รวมแผนจัดซื้อทั้งสิ้น:</th>
+                                        <th class="text-end text-primary py-2" id="tfoot_plan_qty">0</th>
+                                        <th class="text-end text-success py-2" id="tfoot_plan_val">0.00 บาท</th>
+                                        <th colspan="6"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: RECEIPT (รับเข้าคลัง) -->
+                    <div class="tab-pane fade h-100 overflow-hidden" id="tab-f5-receipt" role="tabpanel" aria-labelledby="tab-f5-receipt-tab">
+                        <div class="card border rounded-3 bg-white shadow-2xs f5-data-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2.5 pb-2.5 border-bottom flex-wrap gap-2 flex-shrink-0">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge bg-success px-2.5 py-1.5"><i class="fas fa-truck-ramp-box me-1"></i> แฟ้มที่ 3: รับเข้าคลัง (receipt)</span>
+                                    <span class="badge bg-light text-secondary border px-2.5 py-1 small fw-normal">
+                                        <i class="far fa-clock text-success me-1"></i>อัปเดตล่าสุด: <strong class="f5-last-update text-dark" id="last_update_receipt">{{ $f5LastUpdated['receipt'] ?? '-' }}</strong>
+                                    </span>
+                                    <small class="text-muted d-none d-xl-inline">ประวัติการตรวจรับยาเข้าคลัง เลขที่รับ ใบสั่งซื้อ และ Lot/วันหมดอายุ</small>
+                                </div>
+                                <!-- Filter controls for receipt (Period only as requested) -->
+                                <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <label class="small text-muted fw-semibold text-nowrap"><i class="fas fa-calendar-alt text-success me-1"></i>งวดรายงาน:</label>
+                                        <select class="form-select form-select-sm rounded-pill f5-filter-select" id="filter_f5_receipt_period" data-file="receipt" style="font-size: 0.78rem; width: auto; min-width: 150px;">
+                                            <option value="all">ทั้งหมด (ทุกงวด)</option>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 btn-f5-reload" data-file="receipt" title="รีเฟรชข้อมูล">
+                                        <i class="fas fa-rotate me-1"></i> โหลดใหม่
+                                    </button>
+                                </div>
+                            </div>
+                            <table id="table_f5_receipt" class="table table-sm table-striped table-hover align-middle w-100 mb-0" style="font-size: 0.8rem;">
+                                <thead class="table-light">
+                                    <tr class="text-nowrap">
+                                        <th class="text-center" style="width: 45px;">#</th>
+                                        <th class="text-center">วันที่รับ</th>
+                                        <th>เลขที่รับ (RCV NO)</th>
+                                        <th>เลขที่ PO</th>
+                                        <th>รหัสยา</th>
+                                        <th>ชื่อการค้า / รายการยา</th>
+                                        <th>บริษัท / ผู้จัดจำหน่าย</th>
+                                        <th class="text-end text-primary">จำนวนรับ</th>
+                                        <th class="text-center">ขนาด</th>
+                                        <th class="text-center">หน่วย</th>
+                                        <th class="text-end">ราคา/หน่วย (บาท)</th>
+                                        <th class="text-end text-success">มูลค่ารวม (บาท)</th>
+                                        <th>Lot No.</th>
+                                        <th class="text-center">วันหมดอายุ</th>
+                                        <th class="text-center">งวด</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot class="table-light fw-bold">
+                                    <tr>
+                                        <th colspan="7" class="text-end py-2">รวมตรวจรับเข้าคลัง:</th>
+                                        <th class="text-end text-primary py-2" id="tfoot_rcv_qty">0</th>
+                                        <th colspan="3" class="text-end">รวมมูลค่าตรวจรับ:</th>
+                                        <th class="text-end text-success py-2" id="tfoot_rcv_val">0.00 บาท</th>
+                                        <th colspan="3"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: DISTRIBUTION (เบิกจ่ายยา) -->
+                    <div class="tab-pane fade h-100 overflow-hidden" id="tab-f5-distribution" role="tabpanel" aria-labelledby="tab-f5-distribution-tab">
+                        <div class="card border rounded-3 bg-white shadow-2xs f5-data-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2.5 pb-2.5 border-bottom flex-wrap gap-2 flex-shrink-0">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge bg-warning text-dark px-2.5 py-1.5"><i class="fas fa-boxes-packing me-1"></i> แฟ้มที่ 4: เบิกจ่ายยา (distribution)</span>
+                                    <span class="badge bg-light text-secondary border px-2.5 py-1 small fw-normal">
+                                        <i class="far fa-clock text-warning me-1"></i>อัปเดตล่าสุด: <strong class="f5-last-update text-dark" id="last_update_distribution">{{ $f5LastUpdated['distribution'] ?? '-' }}</strong>
+                                    </span>
+                                    <small class="text-muted d-none d-xl-inline">รายการเบิกจ่ายยาตามกลุ่มหน่วยงาน (OPD, IPD, คลังย่อย, รพ.สต.)</small>
+                                </div>
+                                <!-- Filter controls for distribution -->
+                                <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <label class="small text-muted fw-semibold text-nowrap"><i class="fas fa-calendar-alt text-warning me-1"></i>งวดรายงาน:</label>
+                                        <select class="form-select form-select-sm rounded-pill f5-filter-select" id="filter_f5_distribution_period" data-file="distribution" style="font-size: 0.78rem; width: auto; min-width: 145px;">
+                                            <option value="all">ทั้งหมด (ทุกงวด)</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <label class="small text-muted fw-semibold text-nowrap"><i class="fas fa-hospital-user text-primary me-1"></i>กลุ่มแผนก:</label>
+                                        <select class="form-select form-select-sm rounded-pill f5-filter-select" id="filter_f5_distribution_dept" data-file="distribution" style="font-size: 0.78rem; width: auto; max-width: 220px;">
+                                            <option value="all">ทั้งหมด (ทุกกลุ่ม)</option>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 btn-f5-reload" data-file="distribution" title="รีเฟรชข้อมูล">
+                                        <i class="fas fa-rotate me-1"></i> โหลดใหม่
+                                    </button>
+                                </div>
+                            </div>
+                            <table id="table_f5_distribution" class="table table-sm table-striped table-hover align-middle w-100 mb-0" style="font-size: 0.8rem;">
+                                <thead class="table-light">
+                                    <tr class="text-nowrap">
+                                        <th class="text-center" style="width: 45px;">#</th>
+                                        <th class="text-center">งวดรายงาน</th>
+                                        <th>กลุ่มแผนก/หน่วยงานที่เบิก</th>
+                                        <th>รหัสยา</th>
+                                        <th>ชื่อยา / เวชภัณฑ์</th>
+                                        <th class="text-end text-primary">จำนวนที่จ่าย</th>
+                                        <th class="text-center">ขนาด</th>
+                                        <th class="text-center">หน่วย</th>
+                                        <th class="text-end text-success">มูลค่าเบิกจ่าย (บาท)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot class="table-light fw-bold">
+                                    <tr>
+                                        <th colspan="5" class="text-end py-2">รวมเบิกจ่ายทั้งสิ้น:</th>
+                                        <th class="text-end text-primary py-2" id="tfoot_dis_qty">0</th>
+                                        <th colspan="2" class="text-end">รวมมูลค่าเบิกจ่าย:</th>
+                                        <th class="text-end text-success py-2" id="tfoot_dis_val">0.00 บาท</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: INVENTORY (ยาคงคลัง) -->
+                    <div class="tab-pane fade h-100 overflow-hidden" id="tab-f5-inventory" role="tabpanel" aria-labelledby="tab-f5-inventory-tab">
+                        <div class="card border rounded-3 bg-white shadow-2xs f5-data-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2.5 pb-2.5 border-bottom flex-wrap gap-2 flex-shrink-0">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge bg-danger px-2.5 py-1.5"><i class="fas fa-warehouse me-1"></i> แฟ้มที่ 5: ยาคงคลัง (inventory)</span>
+                                    <span class="badge bg-light text-secondary border px-2.5 py-1 small fw-normal">
+                                        <i class="far fa-clock text-danger me-1"></i>อัปเดตล่าสุด: <strong class="f5-last-update text-dark" id="last_update_inventory">{{ $f5LastUpdated['inventory'] ?? '-' }}</strong>
+                                    </span>
+                                    <small class="text-muted d-none d-xl-inline">ยอดคงเหลือในคลังยา Lot Number และวันหมดอายุ</small>
+                                </div>
+                                <!-- Filter controls for inventory -->
+                                <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <label class="small text-muted fw-semibold text-nowrap"><i class="fas fa-calendar-day text-danger me-1"></i>ณ วันที่สำรวจ:</label>
+                                        <select class="form-select form-select-sm rounded-pill f5-filter-select" id="filter_f5_inventory_date" data-file="inventory" style="font-size: 0.78rem; width: auto; min-width: 170px;">
+                                            <option value="latest">ล่าสุด (ณ วันที่ตรวจนับล่าสุด)</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <label class="small text-muted fw-semibold text-nowrap"><i class="fas fa-clock text-warning me-1"></i>วันหมดอายุ:</label>
+                                        <select class="form-select form-select-sm rounded-pill f5-filter-select" id="filter_f5_inventory_expire" data-file="inventory" style="font-size: 0.78rem; width: auto;">
+                                            <option value="all">ทั้งหมด</option>
+                                            <option value="near_exp">ใกล้หมดอายุ (<= 6 เดือน)</option>
+                                            <option value="expired">หมดอายุแล้ว</option>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 btn-f5-reload" data-file="inventory" title="รีเฟรชข้อมูล">
+                                        <i class="fas fa-rotate me-1"></i> โหลดใหม่
+                                    </button>
+                                </div>
+                            </div>
+                            <table id="table_f5_inventory" class="table table-sm table-striped table-hover align-middle w-100 mb-0" style="font-size: 0.8rem;">
+                                <thead class="table-light">
+                                    <tr class="text-nowrap">
+                                        <th class="text-center" style="width: 45px;">#</th>
+                                        <th class="text-center">ณ วันที่</th>
+                                        <th>รหัสยา</th>
+                                        <th>ชื่อการค้า / รายการยา</th>
+                                        <th>ผู้จัดจำหน่าย</th>
+                                        <th class="text-end text-primary">ยอดคงคลัง</th>
+                                        <th class="text-center">ขนาด</th>
+                                        <th class="text-center">หน่วย</th>
+                                        <th class="text-end">ราคา/หน่วย (บาท)</th>
+                                        <th class="text-end text-success">มูลค่าคงคลัง (บาท)</th>
+                                        <th>Lot No.</th>
+                                        <th class="text-center">วันหมดอายุ</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot class="table-light fw-bold">
+                                    <tr>
+                                        <th colspan="5" class="text-end py-2">รวมคงคลังทั้งสิ้น:</th>
+                                        <th class="text-end text-primary py-2" id="tfoot_inv_qty">0</th>
+                                        <th colspan="3" class="text-end">รวมมูลค่าคงคลัง:</th>
+                                        <th class="text-end text-success py-2" id="tfoot_inv_val">0.00 บาท</th>
+                                        <th colspan="2"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Modal Footer (Only shown on the 5 data viewer tabs, hidden on Tab 0 Upload) -->
+            <div class="modal-footer bg-light py-2.5 px-4 d-flex justify-content-between align-items-center border-top flex-shrink-0" id="f5ModalMainFooter" style="display: none;">
+                <div class="d-flex align-items-center gap-2 flex-wrap" id="f5FooterSummaryBadges">
+                    <span class="badge bg-white text-dark border px-2.5 py-1.5 shadow-2xs fw-semibold" id="f5FootSummaryCount">
+                        <i class="fas fa-database text-primary me-1"></i> 0 รายการ
+                    </span>
+                    <span class="badge bg-white text-primary border px-2.5 py-1.5 shadow-2xs fw-semibold" id="f5FootSummaryQty">
+                        <i class="fas fa-boxes me-1"></i> จำนวน: 0
+                    </span>
+                    <span class="badge bg-white text-success border px-2.5 py-1.5 shadow-2xs fw-bold" id="f5FootSummaryVal">
+                        <i class="fas fa-baht-sign me-1"></i> มูลค่ารวม: 0.00 บาท
+                    </span>
+                </div>
+                <div class="d-flex gap-2 align-items-center">
+                    <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold" id="btnSwitchToUpload">
+                        <i class="fas fa-cloud-arrow-up me-1"></i> นำเข้าไฟล์เพิ่ม
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">
+                        <i class="fas fa-xmark me-1"></i> ปิดหน้าต่าง
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -2435,17 +3231,19 @@
             // =========================================================================
             @if($tab === 'overview')
                 @if($isMonthlyView ?? false)
-                    // Monthly View: Daily Area Chart with Gradient across 5 Warehouses (ว.1 - ว.31)
+                    // Monthly View: Daily Area Chart with Gradient across 6 Warehouses (ว.1 - ว.31)
                     var dailyTrendData = @json($dailyTrend ?? []);
                     var chartLabels = dailyTrendData.map(function(d) { return 'ว.' + d.day; });
-                    var matSeries = dailyTrendData.map(function(d) { return d.material; });
-                    var denSeries = dailyTrendData.map(function(d) { return d.dental; });
-                    var medtechSeries = dailyTrendData.map(function(d) { return d.medtech; });
-                    var phySeries = dailyTrendData.map(function(d) { return d.physical; });
-                    var medSeries = dailyTrendData.map(function(d) { return d.medical; });
+                    var drugSeries = dailyTrendData.map(function(d) { return d.drug || 0; });
+                    var matSeries = dailyTrendData.map(function(d) { return d.material || 0; });
+                    var denSeries = dailyTrendData.map(function(d) { return d.dental || 0; });
+                    var medtechSeries = dailyTrendData.map(function(d) { return d.medtech || 0; });
+                    var phySeries = dailyTrendData.map(function(d) { return d.physical || 0; });
+                    var medSeries = dailyTrendData.map(function(d) { return d.medical || 0; });
 
                     var overviewOptions = {
                         series: [
+                            { name: 'คลังยา (INVS)', data: drugSeries },
                             { name: 'คลังวัสดุการแพทย์', data: medSeries },
                             { name: 'คลัง LAB', data: medtechSeries },
                             { name: 'คลังวัสดุ (พัสดุ)', data: matSeries },
@@ -2485,7 +3283,7 @@
                             borderColor: '#f1f1f1',
                             strokeDashArray: 3
                         },
-                        colors: ['#e83e8c', '#8b5cf6', '#f59e0b', '#06b6d4', '#10b981'],
+                        colors: ['#059669', '#ec4899', '#8b5cf6', '#f59e0b', '#06b6d4', '#10b981'],
                         dataLabels: { enabled: false },
                         xaxis: { 
                             categories: chartLabels,
@@ -2508,17 +3306,19 @@
                         legend: { position: 'top', horizontalAlign: 'right', fontSize: '12px' }
                     };
                 @else
-                    // Full Year View: 12-Month Area Chart with Gradient across 5 Warehouses (ต.ค. - ก.ย.)
+                    // Full Year View: 12-Month Area Chart with Gradient across 6 Warehouses (ต.ค. - ก.ย.)
                     var monthlyTrendData = @json($monthlyTrend ?? []);
                     var chartLabels = ['ต.ค.', 'พ.ย.', 'ธ.ค.', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.'];
-                    var matSeries = monthlyTrendData.map(function(d) { return d.material; });
-                    var denSeries = monthlyTrendData.map(function(d) { return d.dental; });
-                    var medtechSeries = monthlyTrendData.map(function(d) { return d.medtech; });
-                    var phySeries = monthlyTrendData.map(function(d) { return d.physical; });
-                    var medSeries = monthlyTrendData.map(function(d) { return d.medical; });
+                    var drugSeries = monthlyTrendData.map(function(d) { return d.drug || 0; });
+                    var matSeries = monthlyTrendData.map(function(d) { return d.material || 0; });
+                    var denSeries = monthlyTrendData.map(function(d) { return d.dental || 0; });
+                    var medtechSeries = monthlyTrendData.map(function(d) { return d.medtech || 0; });
+                    var phySeries = monthlyTrendData.map(function(d) { return d.physical || 0; });
+                    var medSeries = monthlyTrendData.map(function(d) { return d.medical || 0; });
 
                     var overviewOptions = {
                         series: [
+                            { name: 'คลังยา (INVS)', data: drugSeries },
                             { name: 'คลังวัสดุการแพทย์', data: medSeries },
                             { name: 'คลัง LAB', data: medtechSeries },
                             { name: 'คลังวัสดุ (พัสดุ)', data: matSeries },
@@ -2558,7 +3358,7 @@
                             borderColor: '#f1f1f1',
                             strokeDashArray: 3
                         },
-                        colors: ['#e83e8c', '#8b5cf6', '#f59e0b', '#06b6d4', '#10b981'],
+                        colors: ['#059669', '#ec4899', '#8b5cf6', '#f59e0b', '#06b6d4', '#10b981'],
                         dataLabels: { enabled: false },
                         xaxis: { categories: chartLabels },
                         yaxis: {
@@ -3617,5 +4417,646 @@
                 $('#modalItemBreakdownBody').html('<tr><td colspan="8" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>');
             });
         }
+
+        // =========================================================================
+        // MOPH 5 Files (INVS Drug Warehouse) Multi-file Upload, Tabs & DataTables
+        // =========================================================================
+        var selectedF5Files = [];
+        var f5DataTables = {};
+        var f5Loaded = {};
+        var f5Summaries = {};
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            var k = 1024, dm = 1;
+            var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function updateF5Checklist() {
+            var recognized = {
+                druglist: null,
+                purchaseplan: null,
+                receipt: null,
+                distribution: null,
+                inventory: null
+            };
+
+            for (var i = 0; i < selectedF5Files.length; i++) {
+                var f = selectedF5Files[i];
+                var name = f.name.toLowerCase();
+                if (name.indexOf('druglist') !== -1 || name.indexOf('1duglist') !== -1) {
+                    recognized.druglist = f;
+                } else if (name.indexOf('purchaseplan') !== -1 || name.indexOf('1purchaseplan') !== -1) {
+                    recognized.purchaseplan = f;
+                } else if (name.indexOf('receipt') !== -1 || name.indexOf('1receipt') !== -1) {
+                    recognized.receipt = f;
+                } else if (name.indexOf('distribution') !== -1 || name.indexOf('1distribution') !== -1) {
+                    recognized.distribution = f;
+                } else if (name.indexOf('inventory') !== -1 || name.indexOf('1inventory') !== -1) {
+                    recognized.inventory = f;
+                }
+            }
+
+            var recognizedCount = 0;
+            var keys = ['druglist', 'purchaseplan', 'receipt', 'distribution', 'inventory'];
+            for (var k = 0; k < keys.length; k++) {
+                var key = keys[k];
+                var badge = $('#badge_' + key);
+                var f = recognized[key];
+                if (f) {
+                    recognizedCount++;
+                    badge.removeClass('bg-light border-light').addClass('bg-success bg-opacity-10 border-success');
+                    badge.find('.f5-icon').removeClass('fa-circle-question text-muted').addClass('fa-circle-check text-success');
+                    badge.find('.f5-filename').text(f.name + ' (' + formatBytes(f.size) + ')').removeClass('text-muted').addClass('text-success fw-bold');
+                } else {
+                    badge.removeClass('bg-success bg-opacity-10 border-success').addClass('bg-light border-light');
+                    badge.find('.f5-icon').removeClass('fa-circle-check text-success').addClass('fa-circle-question text-muted');
+                    badge.find('.f5-filename').text('ยังไม่ได้เลือกไฟล์').removeClass('text-success fw-bold').addClass('text-muted');
+                }
+            }
+
+            if (selectedF5Files.length > 0) {
+                $('#mophF5CountBadge').text('เลือก ' + recognizedCount + ' / 5 แฟ้ม (' + selectedF5Files.length + ' ไฟล์)').removeClass('bg-secondary').addClass(recognizedCount === 5 ? 'bg-success' : 'bg-primary');
+                $('#btnStartUploadMophF5').prop('disabled', false);
+            } else {
+                $('#mophF5CountBadge').text('เลือก 0 / 5 แฟ้ม').removeClass('bg-success bg-primary').addClass('bg-secondary');
+                $('#btnStartUploadMophF5').prop('disabled', true);
+            }
+        }
+
+        $('#mophF5FileInput').on('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                selectedF5Files = Array.from(this.files);
+                updateF5Checklist();
+            }
+        });
+
+        // Drag and drop events
+        var dropzone = document.getElementById('mophF5Dropzone');
+        if (dropzone) {
+            ['dragenter', 'dragover'].forEach(function(eventName) {
+                dropzone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.style.borderColor = '#059669';
+                    dropzone.style.backgroundColor = '#ecfdf5';
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(function(eventName) {
+                dropzone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.style.borderColor = '#cbd5e1';
+                    dropzone.style.backgroundColor = '#ffffff';
+                }, false);
+            });
+
+            dropzone.addEventListener('drop', function(e) {
+                var dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length > 0) {
+                    selectedF5Files = Array.from(dt.files);
+                    updateF5Checklist();
+                }
+            }, false);
+        }
+
+        // Switch to upload tab from data viewer footer
+        $('#btnSwitchToUpload').on('click', function() {
+            var uploadTabTrigger = document.getElementById('tab-f5-upload-tab');
+            if (uploadTabTrigger) {
+                var tabInstance = bootstrap.Tab.getOrCreateInstance(uploadTabTrigger);
+                tabInstance.show();
+            }
+        });
+
+        // Manual reload button for each table
+        $(document).on('click', '.btn-f5-reload', function() {
+            var file = $(this).data('file');
+            if (file) {
+                loadF5TableData(file, true);
+            }
+        });
+
+        // Handle Tab switching & Divided Footer
+        $('#mophF5ModalNavTabs button[data-bs-toggle="pill"]').on('shown.bs.tab', function(e) {
+            var targetFile = $(e.target).data('f5-file');
+            if (targetFile === 'upload') {
+                // Tab 0: Upload -> Hide modal footer (Tab 0 has its own action bar at bottom)
+                $('#f5ModalMainFooter').hide();
+            } else {
+                // Tabs 1-5: Data tables -> Show modal footer with summaries and buttons
+                $('#f5ModalMainFooter').show();
+
+                // Load Data for this file if not already loaded
+                loadF5TableData(targetFile, false);
+
+                // Auto-adjust column widths for active DataTable
+                setTimeout(function() {
+                    if (f5DataTables[targetFile]) {
+                        f5DataTables[targetFile].columns.adjust().draw(false);
+                    }
+                }, 120);
+            }
+        });
+
+        // Ensure footer visibility when modal opens
+        $('#uploadMophF5Modal').on('show.bs.modal', function() {
+            var activeFile = $('#mophF5ModalNavTabs .nav-link.active').data('f5-file') || 'upload';
+            if (activeFile === 'upload') {
+                $('#f5ModalMainFooter').hide();
+            } else {
+                $('#f5ModalMainFooter').show();
+            }
+        });
+
+        // Helper to update the divided modal footer summary badges
+        function updateModalFooterSummary(file, summary) {
+            if (!summary) return;
+            if (file === 'druglist') {
+                $('#f5FootSummaryCount').html('<i class="fas fa-pills text-primary me-1"></i> รวม ' + (summary.total_items || 0).toLocaleString() + ' รายการ');
+                $('#f5FootSummaryQty').html('<i class="fas fa-circle-check text-success me-1"></i> ใช้งานได้ ' + (summary.total_active || 0).toLocaleString() + ' รายการ');
+                $('#f5FootSummaryVal').html('<i class="fas fa-book-medical text-info me-1"></i> ในบัญชียาหลัก ' + (summary.total_nlem || 0).toLocaleString() + ' รายการ');
+            } else if (file === 'purchaseplan') {
+                $('#f5FootSummaryCount').html('<i class="fas fa-file-invoice-dollar text-info me-1"></i> แผน ' + (summary.total_items || 0).toLocaleString() + ' รายการ');
+                $('#f5FootSummaryQty').html('<i class="fas fa-boxes text-primary me-1"></i> รวม ' + Number(summary.total_qty || 0).toLocaleString() + ' หน่วย');
+                $('#f5FootSummaryVal').html('<i class="fas fa-baht-sign text-success me-1"></i> มูลค่าแผน: ' + Number(summary.total_value || 0).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+            } else if (file === 'receipt') {
+                $('#f5FootSummaryCount').html('<i class="fas fa-truck-ramp-box text-success me-1"></i> ตรวจรับ ' + (summary.total_items || 0).toLocaleString() + ' ใบ');
+                $('#f5FootSummaryQty').html('<i class="fas fa-boxes text-primary me-1"></i> รวม ' + Number(summary.total_qty || 0).toLocaleString() + ' หน่วย');
+                $('#f5FootSummaryVal').html('<i class="fas fa-baht-sign text-success me-1"></i> มูลค่ารับเข้า: ' + Number(summary.total_value || 0).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+            } else if (file === 'distribution') {
+                $('#f5FootSummaryCount').html('<i class="fas fa-boxes-packing text-warning me-1"></i> รายการเบิก ' + (summary.total_items || 0).toLocaleString() + ' รายการ');
+                $('#f5FootSummaryQty').html('<i class="fas fa-boxes text-primary me-1"></i> รวมจ่าย ' + Number(summary.total_qty || 0).toLocaleString() + ' หน่วย');
+                $('#f5FootSummaryVal').html('<i class="fas fa-baht-sign text-success me-1"></i> มูลค่าเบิกจ่าย: ' + Number(summary.total_value || 0).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+            } else if (file === 'inventory') {
+                $('#f5FootSummaryCount').html('<i class="fas fa-warehouse text-danger me-1"></i> รายการยา ' + (summary.total_items || 0).toLocaleString() + ' รายการ');
+                $('#f5FootSummaryQty').html('<i class="fas fa-boxes text-primary me-1"></i> คงคลัง ' + Number(summary.total_qty || 0).toLocaleString() + ' หน่วย');
+                $('#f5FootSummaryVal').html('<i class="fas fa-baht-sign text-success me-1"></i> มูลค่าคงคลัง: ' + Number(summary.total_value || 0).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+            }
+        }
+
+        // Change events for filter selects
+        $(document).on('change', '.f5-filter-select', function() {
+            var file = $(this).data('file');
+            if (file) {
+                loadF5TableData(file, true);
+            }
+        });
+
+        // Load & Initialize DataTables for MOPH 5 files with query filters
+        function loadF5TableData(file, forceReload) {
+            if (!forceReload && f5Loaded[file]) {
+                updateModalFooterSummary(file, f5Summaries[file]);
+                if (f5DataTables[file]) {
+                    f5DataTables[file].columns.adjust().draw(false);
+                }
+                return;
+            }
+
+            var reloadBtn = $('.btn-f5-reload[data-file="' + file + '"]');
+            reloadBtn.find('i').addClass('fa-spin');
+
+            var url = '{{ route("backoffice.warehouse.moph_f5_table_data", ["file" => ":file"]) }}'.replace(':file', file);
+
+            // Read filter parameters
+            var queryParams = {};
+            if (file === 'druglist') {
+                queryParams.period_rpt = $('#filter_f5_druglist_period').val() || 'all';
+                queryParams.status = $('#filter_f5_druglist_status').val() || 'all';
+            } else if (file === 'purchaseplan') {
+                queryParams.period_rpt = $('#filter_f5_purchaseplan_period').val() || 'all';
+                queryParams.yearbudget = $('#filter_f5_purchaseplan_year').val() || 'all';
+            } else if (file === 'receipt') {
+                queryParams.period_rpt = $('#filter_f5_receipt_period').val() || 'all';
+            } else if (file === 'distribution') {
+                queryParams.period_rpt = $('#filter_f5_distribution_period').val() || 'all';
+                queryParams.dis_dept_group = $('#filter_f5_distribution_dept').val() || 'all';
+            } else if (file === 'inventory') {
+                queryParams.date_onhand = $('#filter_f5_inventory_date').val() || 'latest';
+                queryParams.expire_filter = $('#filter_f5_inventory_expire').val() || 'all';
+            }
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                data: queryParams,
+                dataType: 'json',
+                success: function(resp) {
+                    reloadBtn.find('i').removeClass('fa-spin');
+                    if (!resp.success) return;
+
+                    f5Loaded[file] = true;
+                    f5Summaries[file] = resp.summary;
+
+                    // Update latest update timestamp in card header
+                    if (resp.last_updated) {
+                        $('#last_update_' + file).text(resp.last_updated);
+                    }
+
+                    // Dynamically populate filter options if returned and select has only default option
+                    if (resp.filters) {
+                        // Periods dropdown
+                        if (resp.filters.available_periods && resp.filters.available_periods.length > 0) {
+                            var pSelect = $('#filter_f5_' + file + '_period');
+                            if (pSelect.length && pSelect.children('option').length <= 1) {
+                                var curPVal = pSelect.val();
+                                resp.filters.available_periods.forEach(function(item) {
+                                    pSelect.append($('<option>', { value: item.value, text: item.label }));
+                                });
+                                if (curPVal) pSelect.val(curPVal);
+                            }
+                        }
+                        // Years dropdown (purchaseplan)
+                        if (resp.filters.available_years && resp.filters.available_years.length > 0) {
+                            var ySelect = $('#filter_f5_purchaseplan_year');
+                            if (ySelect.length && ySelect.children('option').length <= 1) {
+                                var curYVal = ySelect.val();
+                                resp.filters.available_years.forEach(function(item) {
+                                    ySelect.append($('<option>', { value: item.value, text: item.label }));
+                                });
+                                if (curYVal) ySelect.val(curYVal);
+                            }
+                        }
+                        // Departments dropdown (distribution)
+                        if (resp.filters.available_depts && resp.filters.available_depts.length > 0) {
+                            var dSelect = $('#filter_f5_distribution_dept');
+                            if (dSelect.length && dSelect.children('option').length <= 1) {
+                                var curDVal = dSelect.val();
+                                resp.filters.available_depts.forEach(function(item) {
+                                    dSelect.append($('<option>', { value: item.value, text: item.label }));
+                                });
+                                if (curDVal) dSelect.val(curDVal);
+                            }
+                        }
+                        // Survey Dates dropdown (inventory)
+                        if (resp.filters.available_dates && resp.filters.available_dates.length > 0) {
+                            var dateSelect = $('#filter_f5_inventory_date');
+                            if (dateSelect.length && (dateSelect.children('option').length <= 1 || dateSelect.children('option').first().val() === 'latest')) {
+                                dateSelect.empty();
+                                resp.filters.available_dates.forEach(function(item) {
+                                    dateSelect.append($('<option>', { value: item.value, text: item.label }));
+                                });
+                                if (resp.selected_date) {
+                                    dateSelect.val(resp.selected_date);
+                                }
+                            }
+                        }
+                    }
+
+                    // Update Tab badge
+                    $('#f5TabBadge_' + file).text(Number(resp.count).toLocaleString());
+
+                    // Update Divided Modal Footer
+                    updateModalFooterSummary(file, resp.summary);
+
+                    // Update Table Footer
+                    if (file === 'druglist') {
+                        $('#tfoot_f5_druglist').html('รวมทั้งหมด: ' + (resp.summary.total_items || 0).toLocaleString() + ' รายการ | ใช้งานได้: ' + (resp.summary.total_active || 0).toLocaleString() + ' รายการ | ในบัญชียาหลักแห่งชาติ: ' + (resp.summary.total_nlem || 0).toLocaleString() + ' รายการ');
+                    } else if (file === 'purchaseplan') {
+                        $('#tfoot_plan_qty').text(Number(resp.summary.total_qty || 0).toLocaleString());
+                        $('#tfoot_plan_val').text(Number(resp.summary.total_value || 0).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+                    } else if (file === 'receipt') {
+                        $('#tfoot_rcv_qty').text(Number(resp.summary.total_qty || 0).toLocaleString());
+                        $('#tfoot_rcv_val').text(Number(resp.summary.total_value || 0).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+                    } else if (file === 'distribution') {
+                        $('#tfoot_dis_qty').text(Number(resp.summary.total_qty || 0).toLocaleString());
+                        $('#tfoot_dis_val').text(Number(resp.summary.total_value || 0).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+                    } else if (file === 'inventory') {
+                        $('#tfoot_inv_qty').text(Number(resp.summary.total_qty || 0).toLocaleString());
+                        $('#tfoot_inv_val').text(Number(resp.summary.total_value || 0).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท');
+                    }
+
+                    // Populate or re-initialize DataTable
+                    if (f5DataTables[file]) {
+                        f5DataTables[file].clear().rows.add(resp.data).draw();
+                        f5DataTables[file].columns.adjust().draw(false);
+                    } else {
+                        initF5DataTable(file, resp.data);
+                    }
+                },
+                error: function(err) {
+                    reloadBtn.find('i').removeClass('fa-spin');
+                    console.error('Error loading MOPH F5 table data for ' + file, err);
+                }
+            });
+        }
+
+        // Initialize DataTable per file type (Excel button on the far right after search filter)
+        function initF5DataTable(file, tableData) {
+            var dtConfig = {
+                data: tableData,
+                dom: "<'row mb-2 align-items-center flex-shrink-0'<'col-sm-4 d-flex align-items-center'l><'col-sm-8 d-flex justify-content-end align-items-center gap-2'fB>>" +
+                     "<'f5-table-scroll-container flex-grow-1 overflow-auto position-relative'tr>" +
+                     "<'row f5-dt-bottom-row align-items-center flex-shrink-0'<'col-sm-5'i><'col-sm-7 d-flex justify-content-end'p>>",
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fa-solid fa-file-excel text-white me-1.5 fs-6"></i> Excel',
+                        className: 'btn btn-sm btn-f5-excel shadow-sm',
+                        title: 'MOPH_F5_' + file.toUpperCase() + '_' + new Date().toISOString().slice(0, 10)
+                    }
+                ],
+                pageLength: 20,
+                lengthMenu: [[20, 50, 100, 250, -1], [20, 50, 100, 250, "ทั้งหมด"]],
+                order: [[0, 'asc']],
+                autoWidth: false,
+                scrollX: false,
+                language: {
+                    processing: "กำลังประมวลผล...",
+                    search: "ค้นหาในแฟ้ม:",
+                    lengthMenu: "แสดง _MENU_ รายการ",
+                    info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+                    infoEmpty: "แสดง 0 ถึง 0 จาก 0 รายการ",
+                    infoFiltered: "(ค้นหาจากทั้งหมด _MAX_ รายการ)",
+                    loadingRecords: "กำลังโหลดข้อมูล...",
+                    zeroRecords: "ไม่พบข้อมูลที่ตรงกับคำค้น",
+                    emptyTable: "ไม่มีข้อมูลในตาราง",
+                    paginate: {
+                        first: "แรก",
+                        previous: "ก่อนหน้า",
+                        next: "ถัดไป",
+                        last: "ท้าย"
+                    }
+                }
+            };
+
+            if (file === 'druglist') {
+                dtConfig.columns = [
+                    { data: 'index', className: 'text-center' },
+                    { data: 'working_code', className: 'font-monospace fw-bold' },
+                    { data: 'generic_name' },
+                    { data: 'gpuid', className: 'text-center font-monospace' },
+                    { data: 'nlem', className: 'text-center' },
+                    { data: 'product_cat', className: 'text-center' },
+                    { data: 'base_unit', className: 'text-center' },
+                    { data: 'status_badge', className: 'text-center' },
+                    { data: 'date_status', className: 'text-center' },
+                    { data: 'period_rpt', className: 'text-center' }
+                ];
+            } else if (file === 'purchaseplan') {
+                dtConfig.columns = [
+                    { data: 'index', className: 'text-center' },
+                    { data: 'yearbudget', className: 'text-center' },
+                    { data: 'working_code', className: 'font-monospace' },
+                    { data: 'generic_name' },
+                    { data: 'gpuid', className: 'text-center font-monospace' },
+                    { data: 'nlem', className: 'text-center' },
+                    { data: 'pack_size', className: 'text-center' },
+                    { data: 'base_unit', className: 'text-center' },
+                    { data: 'pack_cost', className: 'text-end', render: function(v) { return Number(v).toLocaleString('th-TH', {minimumFractionDigits: 2}); } },
+                    { data: 'qty_this_year', className: 'text-end fw-semibold text-primary', render: function(v) { return Number(v).toLocaleString(); } },
+                    { data: 'value_this_year', className: 'text-end fw-bold text-success', render: function(v) { return Number(v).toLocaleString('th-TH', {minimumFractionDigits: 2}); } },
+                    { data: 'qty_use_year1', className: 'text-end', render: function(v) { return Number(v).toLocaleString(); } },
+                    { data: 'qty_plan_trimes1', className: 'text-end', render: function(v) { return Number(v).toLocaleString(); } },
+                    { data: 'qty_plan_trimes2', className: 'text-end', render: function(v) { return Number(v).toLocaleString(); } },
+                    { data: 'qty_plan_trimes3', className: 'text-end', render: function(v) { return Number(v).toLocaleString(); } },
+                    { data: 'qty_plan_trimes4', className: 'text-end', render: function(v) { return Number(v).toLocaleString(); } },
+                    { data: 'period_rpt', className: 'text-center' }
+                ];
+            } else if (file === 'receipt') {
+                dtConfig.columns = [
+                    { data: 'index', className: 'text-center' },
+                    { data: 'date_rcv', className: 'text-center text-nowrap' },
+                    { data: 'rcv_no', className: 'font-monospace' },
+                    { data: 'po_no', className: 'font-monospace' },
+                    { data: 'working_code', className: 'font-monospace' },
+                    { data: 'trade_name' },
+                    { data: 'vendor_name' },
+                    { data: 'qty_rcv', className: 'text-end fw-semibold text-primary', render: function(v) { return Number(v).toLocaleString(); } },
+                    { data: 'pack_size', className: 'text-center' },
+                    { data: 'base_unit', className: 'text-center' },
+                    { data: 'pack_cost', className: 'text-end', render: function(v) { return Number(v).toLocaleString('th-TH', {minimumFractionDigits: 2}); } },
+                    { data: 'total_value', className: 'text-end fw-bold text-success', render: function(v) { return Number(v).toLocaleString('th-TH', {minimumFractionDigits: 2}); } },
+                    { data: 'lot_no', className: 'font-monospace' },
+                    { data: 'expire_date', className: 'text-center text-nowrap' },
+                    { data: 'period_rpt', className: 'text-center' }
+                ];
+            } else if (file === 'distribution') {
+                dtConfig.columns = [
+                    { data: 'index', className: 'text-center' },
+                    { data: 'period_rpt', className: 'text-center' },
+                    { data: 'dept_name', className: 'fw-semibold text-dark' },
+                    { data: 'working_code', className: 'font-monospace' },
+                    { data: 'trade_name' },
+                    { data: 'qty_dis', className: 'text-end fw-semibold text-primary', render: function(v) { return Number(v).toLocaleString(); } },
+                    { data: 'pack_size', className: 'text-center' },
+                    { data: 'base_unit', className: 'text-center' },
+                    { data: 'value', className: 'text-end fw-bold text-success', render: function(v) { return Number(v).toLocaleString('th-TH', {minimumFractionDigits: 2}); } }
+                ];
+            } else if (file === 'inventory') {
+                dtConfig.columns = [
+                    { data: 'index', className: 'text-center' },
+                    { data: 'date_onhand', className: 'text-center text-nowrap' },
+                    { data: 'working_code', className: 'font-monospace' },
+                    { data: 'trade_name' },
+                    { data: 'vendor_name' },
+                    { data: 'qty_onhand', className: 'text-end fw-semibold text-primary', render: function(v) { return Number(v).toLocaleString(); } },
+                    { data: 'pack_size', className: 'text-center' },
+                    { data: 'base_unit', className: 'text-center' },
+                    { data: 'pack_cost', className: 'text-end', render: function(v) { return Number(v).toLocaleString('th-TH', {minimumFractionDigits: 2}); } },
+                    { data: 'value_onhand', className: 'text-end fw-bold text-success', render: function(v) { return Number(v).toLocaleString('th-TH', {minimumFractionDigits: 2}); } },
+                    { data: 'lot_no', className: 'font-monospace' },
+                    { data: 'expire_date', className: 'text-center text-nowrap' }
+                ];
+            }
+
+            f5DataTables[file] = $('#table_f5_' + file).DataTable(dtConfig);
+            setTimeout(function() {
+                f5DataTables[file].columns.adjust().draw(false);
+            }, 100);
+        }
+
+        // Quick switch tab button from Result Box
+        $(document).on('click', '.btn-quick-tab', function() {
+            var targetTab = $(this).data('tab-target');
+            if (targetTab) {
+                var tabTrigger = document.querySelector(targetTab);
+                if (tabTrigger) {
+                    var tabInstance = bootstrap.Tab.getOrCreateInstance(tabTrigger);
+                    tabInstance.show();
+                }
+            }
+        });
+
+        // Reset upload form to select new files
+        $(document).on('click', '#btnResetUploadForm', function() {
+            selectedF5Files = [];
+            $('#mophF5FileInput').val('');
+            updateF5Checklist();
+            $('#mophF5ProgressContainer').hide();
+            $('#mophF5ResultBox').hide().empty();
+            $('#btnStartUploadMophF5').prop('disabled', true).html('<i class="fas fa-cloud-arrow-up me-1.5"></i> เริ่มนำเข้าข้อมูล');
+        });
+
+        // Upload Button handler - Stays on modal on success and presents detailed result
+        $('#btnStartUploadMophF5').on('click', function() {
+            if (selectedF5Files.length === 0) return;
+
+            var formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            for (var i = 0; i < selectedF5Files.length; i++) {
+                formData.append('files[]', selectedF5Files[i]);
+            }
+
+            // Lock UI
+            $('#btnStartUploadMophF5').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1.5"></i> กำลังนำเข้า...');
+            $('#btnCancelMophF5, #btnCloseMophF5Modal').prop('disabled', true);
+            $('#mophF5FileInput').prop('disabled', true);
+            $('#mophF5ResultBox').hide().empty();
+            $('#mophF5ProgressContainer').show();
+            $('#mophF5ProgressBar').css('width', '0%').text('0%').attr('aria-valuenow', 0).removeClass('bg-danger').addClass('bg-success progress-bar-animated');
+            $('#mophF5ProgressPct').text('0%');
+            $('#mophF5ProgressStage').html('<i class="fas fa-spinner fa-spin text-success me-1"></i> กำลังอัปโหลดไฟล์...');
+            $('#mophF5ProgressHint').text('กำลังส่งข้อมูลไปยังเซิร์ฟเวอร์...');
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '{{ route("backoffice.warehouse.upload_moph_f5") }}', true);
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    var percent = Math.min(92, Math.round((e.loaded / e.total) * 100));
+                    $('#mophF5ProgressBar').css('width', percent + '%').text(percent + '%').attr('aria-valuenow', percent);
+                    $('#mophF5ProgressPct').text(percent + '%');
+                }
+            });
+
+            xhr.upload.addEventListener('load', function() {
+                $('#mophF5ProgressBar').css('width', '95%').text('95%').attr('aria-valuenow', 95);
+                $('#mophF5ProgressPct').text('95%');
+                $('#mophF5ProgressStage').html('<i class="fas fa-database text-success me-1 fa-spin"></i> กำลังประมวลผลข้อมูลลงฐานข้อมูล (Upserting database rows...)');
+                $('#mophF5ProgressHint').text('กรุณารอสักครู่ ระบบกำลังอ่านข้อมูล XML และบันทึกตาราง moph_f5_* ...');
+            });
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    $('#btnCancelMophF5, #btnCloseMophF5Modal').prop('disabled', false);
+                    $('#mophF5FileInput').prop('disabled', false);
+
+                    if (xhr.status === 200) {
+                        try {
+                            var resp = JSON.parse(xhr.responseText);
+                            if (resp.success) {
+                                $('#mophF5ProgressBar').css('width', '100%').text('100%').attr('aria-valuenow', 100).removeClass('progress-bar-animated');
+                                $('#mophF5ProgressPct').text('100%');
+                                $('#mophF5ProgressStage').html('<i class="fas fa-circle-check text-success me-1"></i> นำเข้าข้อมูลสำเร็จเรียบร้อย!');
+                                $('#mophF5ProgressHint').text('บันทึกและตรวจสอบข้อมูลทั้ง 5 แฟ้มลงฐานข้อมูลเรียบร้อยแล้ว');
+
+                                // Invalidate loaded cache for DataTables so clicking any tab re-fetches
+                                f5Loaded = {};
+
+                                // Update Tab Badges immediately from server counts
+                                if (resp.counts) {
+                                    $('#f5TabBadge_druglist').text(Number(resp.counts.druglist || 0).toLocaleString());
+                                    $('#f5TabBadge_purchaseplan').text(Number(resp.counts.purchaseplan || 0).toLocaleString());
+                                    $('#f5TabBadge_receipt').text(Number(resp.counts.receipt || 0).toLocaleString());
+                                    $('#f5TabBadge_distribution').text(Number(resp.counts.distribution || 0).toLocaleString());
+                                    $('#f5TabBadge_inventory').text(Number(resp.counts.inventory || 0).toLocaleString());
+                                }
+
+                                var r = resp.results;
+                                var fileTypeTitles = {
+                                    'druglist': '1. ทะเบียนยา (druglist)',
+                                    'purchaseplan': '2. แผนจัดซื้อ (purchaseplan)',
+                                    'receipt': '3. รับเข้าคลัง (receipt)',
+                                    'distribution': '4. เบิกจ่ายยา (distribution)',
+                                    'inventory': '5. ยาคงคลัง (inventory)'
+                                };
+                                var fileTypeTabs = {
+                                    'druglist': '#tab-f5-druglist-tab',
+                                    'purchaseplan': '#tab-f5-purchaseplan-tab',
+                                    'receipt': '#tab-f5-receipt-tab',
+                                    'distribution': '#tab-f5-distribution-tab',
+                                    'inventory': '#tab-f5-inventory-tab'
+                                };
+
+                                var html = '<div class="card border-success border-2 shadow-sm rounded-4 overflow-hidden mb-0">';
+                                html += '  <div class="card-header bg-success bg-opacity-10 py-3 px-4 border-0">';
+                                html += '    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">';
+                                html += '      <div class="d-flex align-items-center gap-2">';
+                                html += '        <div class="d-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-xs" style="width: 36px; height: 36px;">';
+                                html += '          <i class="fas fa-check fs-5"></i>';
+                                html += '        </div>';
+                                html += '        <div>';
+                                html += '          <h6 class="fw-bold text-success mb-0">นำเข้าข้อมูล 5 แฟ้มยาสำเร็จเรียบร้อย!</h6>';
+                                html += '          <small class="text-muted">ประมวลผลเสร็จสิ้น ' + (r.files_processed || 0) + ' ไฟล์ รวมทั้งสิ้น ' + Number(r.total_rows_imported || 0).toLocaleString() + ' รายการ</small>';
+                                html += '        </div>';
+                                html += '      </div>';
+                                html += '      <span class="badge bg-success px-3 py-2 rounded-pill"><i class="fas fa-database me-1"></i> อัปเดตฐานข้อมูลแล้ว</span>';
+                                html += '    </div>';
+                                html += '  </div>';
+
+                                html += '  <div class="card-body p-3 p-md-4 bg-white">';
+                                html += '    <div class="row g-2 mb-3">';
+                                if (r.details && r.details.length > 0) {
+                                    for (var j = 0; j < r.details.length; j++) {
+                                        var dt = r.details[j];
+                                        var fTitle = fileTypeTitles[dt.file_type] || dt.table;
+                                        var tabTarget = fileTypeTabs[dt.file_type] || '#tab-f5-druglist-tab';
+                                        html += '      <div class="col-md-6 col-lg-4">';
+                                        html += '        <div class="p-2.5 rounded-3 border bg-light d-flex align-items-center justify-content-between">';
+                                        html += '          <div class="overflow-hidden me-2">';
+                                        html += '            <div class="fw-bold text-dark small text-truncate">' + fTitle + '</div>';
+                                        if (dt.success) {
+                                            html += '            <div class="text-success small fw-semibold"><i class="fas fa-circle-check me-1"></i>+' + Number(dt.rows_imported || 0).toLocaleString() + ' แถว</div>';
+                                        } else {
+                                            html += '            <div class="text-danger small"><i class="fas fa-circle-exclamation me-1"></i>' + (dt.error || 'ผิดพลาด') + '</div>';
+                                        }
+                                        html += '          </div>';
+                                        if (dt.success) {
+                                            html += '          <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2.5 py-1 text-nowrap btn-quick-tab" data-tab-target="' + tabTarget + '" title="คลิกดูตารางแฟ้มนี้">';
+                                            html += '            <i class="fas fa-arrow-right"></i> ดูตาราง';
+                                            html += '          </button>';
+                                        }
+                                        html += '        </div>';
+                                        html += '      </div>';
+                                    }
+                                }
+                                html += '    </div>';
+
+                                html += '    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top">';
+                                html += '      <div class="d-flex align-items-center gap-2">';
+                                html += '        <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-xs btn-quick-tab" data-tab-target="#tab-f5-druglist-tab">';
+                                html += '          <i class="fas fa-table-list me-1.5"></i> ไปดูตารางข้อมูลที่นำเข้า (แฟ้มที่ 1)';
+                                html += '        </button>';
+                                html += '        <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold" id="btnResetUploadForm">';
+                                html += '          <i class="fas fa-cloud-arrow-up me-1.5"></i> นำเข้าไฟล์เพิ่มอีกชุด';
+                                html += '        </button>';
+                                html += '      </div>';
+                                html += '      <button type="button" class="btn btn-light border btn-sm rounded-pill px-3 text-muted" onclick="window.location.reload();" title="รีเฟรชหน้าภาพรวมหลัก">';
+                                html += '        <i class="fas fa-rotate me-1"></i> รีเฟรชหน้าเว็บ';
+                                html += '      </button>';
+                                html += '    </div>';
+
+                                html += '  </div>';
+                                html += '</div>';
+
+                                $('#mophF5ResultBox').html(html).show();
+                                $('#btnStartUploadMophF5').prop('disabled', true).html('<i class="fas fa-check me-1.5"></i> นำเข้าสำเร็จแล้ว');
+                            } else {
+                                throw new Error(resp.message || 'การนำเข้าไม่สำเร็จ');
+                            }
+                        } catch (err) {
+                            $('#mophF5ProgressBar').removeClass('bg-success').addClass('bg-danger');
+                            $('#mophF5ResultBox').html('<div class="alert alert-danger border-0 rounded-3 p-3"><i class="fas fa-circle-exclamation me-1"></i> ' + (err.message || 'เกิดข้อผิดพลาดในการประมวลผล') + '</div>').show();
+                            $('#btnStartUploadMophF5').prop('disabled', false).html('<i class="fas fa-cloud-arrow-up me-1.5"></i> เริ่มนำเข้าข้อมูล');
+                        }
+                    } else {
+                        var errMsg = 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ (HTTP ' + xhr.status + ')';
+                        try {
+                            var errResp = JSON.parse(xhr.responseText);
+                            if (errResp.message) errMsg = errResp.message;
+                        } catch (e) {}
+                        $('#mophF5ProgressBar').removeClass('bg-success').addClass('bg-danger');
+                        $('#mophF5ResultBox').html('<div class="alert alert-danger border-0 rounded-3 p-3"><i class="fas fa-triangle-exclamation me-1"></i> ' + errMsg + '</div>').show();
+                        $('#btnStartUploadMophF5').prop('disabled', false).html('<i class="fas fa-cloud-arrow-up me-1.5"></i> เริ่มนำเข้าข้อมูล');
+                    }
+                }
+            };
+
+            xhr.send(formData);
+        });
     </script>
 @endpush

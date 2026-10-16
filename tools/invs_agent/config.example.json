@@ -1,0 +1,50 @@
+{
+  "hosp_code": "EA0010989",
+  "hosp_name": "โรงพยาบาลหัวตะพาน",
+  "year": 2569,
+  "month": 10,
+  "stock_id": "STOCK1",
+  "account_type": "ED (ยาในบัญชียาหลัก);NED (ยานอกบัญชียาหลัก)",
+  "selection": {
+    "select_all": true,
+    "druglist": true,
+    "druglist_only_changed": false,
+    "purchaseplan": true,
+    "receipt": true,
+    "distribution": true,
+    "inventory": true,
+    "inventory_date": "16/10/2569"
+  },
+  "database": {
+    "host": "127.0.0.1",
+    "port": 1433,
+    "database": "INVS_DB",
+    "username": "sa",
+    "password": "",
+    "encrypt": false,
+    "trust_server_certificate": true
+  },
+  "api": {
+    "url": "http://127.0.0.1/smartdata/api/v1/moph-f5/upload",
+    "token": "",
+    "output_type": "text"
+  },
+  "schedule": {
+    "enabled": false,
+    "daily_time": "01:00",
+    "interval_hours": 0
+  },
+  "telegram": {
+    "enabled": false,
+    "bot_token": "",
+    "chat_id": ""
+  },
+  "output_dir": "./exports",
+  "queries": {
+    "druglist": "",
+    "purchaseplan": "",
+    "receipt": "",
+    "distribution": "",
+    "inventory": ""
+  }
+}

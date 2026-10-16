@@ -12,6 +12,17 @@ class WarehouseController extends Controller
     private array $fiscalMonthOrder = [10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     private array $warehouseConfig = [
+        'drug' => [
+            'id' => 'drug',
+            'name' => 'คลังยา',
+            'full_name' => 'คลังยาและเวชภัณฑ์ (INVS)',
+            'icon' => 'fa-pills',
+            'color' => '#059669',
+            'type' => 'moph_f5',
+            'standard_mos_min' => 1.5,
+            'standard_mos_max' => 2.0,
+            'standard_itr' => 6.0,
+        ],
         'material' => [
             'id' => 'material',
             'name' => 'คลังวัสดุ',
@@ -174,6 +185,44 @@ class WarehouseController extends Controller
             $data = $this->getSingleWarehouseData($config, $year_id, $month_id, $sub_warehouse_id, $view_mode, $search);
         }
 
+        $formatDateTimeThai = function ($dtStr) {
+            if (!$dtStr) return '-';
+            try {
+                $carbon = \Carbon\Carbon::parse($dtStr);
+                $by = $carbon->year < 2400 ? ($carbon->year + 543) : $carbon->year;
+                $monthNames = [
+                    1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
+                    5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
+                    9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
+                ];
+                $mName = $monthNames[$carbon->month] ?? $carbon->month;
+                return $carbon->day . ' ' . $mName . ' ' . $by . ' ' . $carbon->format('H:i') . ' น.';
+            } catch (\Throwable $e) {
+                return $dtStr;
+            }
+        };
+
+        $latestInvDate = DB::table('moph_f5_inventory')->max('date_onhand');
+        $invCount = $latestInvDate 
+            ? DB::table('moph_f5_inventory')->where('date_onhand', $latestInvDate)->count()
+            : DB::table('moph_f5_inventory')->count();
+
+        $f5TableCounts = [
+            'druglist' => DB::table('moph_f5_druglist')->count(),
+            'purchaseplan' => DB::table('moph_f5_purchaseplan')->count(),
+            'receipt' => DB::table('moph_f5_receipt')->count(),
+            'distribution' => DB::table('moph_f5_distribution')->count(),
+            'inventory' => $invCount,
+        ];
+
+        $f5LastUpdated = [
+            'druglist' => $formatDateTimeThai(DB::table('moph_f5_druglist')->max('updated_at')),
+            'purchaseplan' => $formatDateTimeThai(DB::table('moph_f5_purchaseplan')->max('updated_at')),
+            'receipt' => $formatDateTimeThai(DB::table('moph_f5_receipt')->max('updated_at')),
+            'distribution' => $formatDateTimeThai(DB::table('moph_f5_distribution')->max('updated_at')),
+            'inventory' => $formatDateTimeThai(DB::table('moph_f5_inventory')->max('updated_at')),
+        ];
+
         return view('backoffice.warehouse.index', array_merge($data, [
             'tab' => $tab,
             'year_id' => $year_id,
@@ -189,6 +238,8 @@ class WarehouseController extends Controller
             'warehouseConfigs' => $this->warehouseConfig,
             'thaiMonths' => $thaiMonths,
             'thaiMonthsShort' => $thaiMonthsShort,
+            'f5TableCounts' => $f5TableCounts,
+            'f5LastUpdated' => $f5LastUpdated,
         ]));
     }
 
@@ -218,6 +269,7 @@ class WarehouseController extends Controller
         foreach ($this->fiscalMonthOrder as $m) {
             $monthlyTrend[$m] = [
                 'month_id' => $m,
+                'drug' => 0.0,
                 'material' => 0.0,
                 'dental' => 0.0,
                 'medtech' => 0.0,
@@ -249,6 +301,7 @@ class WarehouseController extends Controller
             for ($d = 1; $d <= $daysInMonth; $d++) {
                 $dailyTrend[$d] = [
                     'day' => $d,
+                    'drug' => 0.0,
                     'material' => 0.0,
                     'dental' => 0.0,
                     'medtech' => 0.0,
@@ -269,7 +322,71 @@ class WarehouseController extends Controller
             $itemsCount = 0;
             $statusCounts = ['Pending' => 0, 'Approve' => 0, 'Verify' => 0, 'Allow' => 0];
 
-            if ($wh['type'] === 'supplies') {
+            if (($wh['type'] ?? '') === 'moph_f5') {
+                // MOPH 5 Files Pharmacy Warehouse (INVS)
+                $startRcvDate = ($yearId - 544) . '1001';
+                $endRcvDate = ($yearId - 543) . '0930';
+                $startDisbPeriod = ($yearId - 544) . '10';
+                $endDisbPeriod = ($yearId - 543) . '09';
+
+                $recQuery = DB::table('moph_f5_receipt');
+                if ($monthId !== 'all') {
+                    $calGregYear = ((int)$monthId >= 10) ? ($yearId - 544) : ($yearId - 543);
+                    $recQuery->where('date_rcv', 'like', sprintf('%04d%02d', $calGregYear, (int)$monthId) . '%');
+                } else {
+                    $recQuery->whereBetween('date_rcv', [$startRcvDate, $endRcvDate]);
+                }
+                $receiveVal = (float)$recQuery->sum('total_value');
+
+                $disbQuery = DB::table('moph_f5_distribution');
+                if ($monthId !== 'all') {
+                    $calGregYear = ((int)$monthId >= 10) ? ($yearId - 544) : ($yearId - 543);
+                    $disbQuery->where('period_rpt', sprintf('%04d%02d', $calGregYear, (int)$monthId));
+                } else {
+                    $disbQuery->whereBetween('period_rpt', [$startDisbPeriod, $endDisbPeriod]);
+                }
+                $disbursementVal = (float)$disbQuery->sum('value');
+                $reqCount = (int)$disbQuery->count();
+
+                $stockVal = (float)DB::table('moph_f5_inventory')->sum('value_onhand');
+                $itemsCount = DB::table('moph_f5_inventory')->distinct('working_code')->count('working_code') ?: DB::table('moph_f5_druglist')->count();
+                $statusCounts = ['Pending' => 0, 'Approve' => 0, 'Verify' => 0, 'Allow' => $reqCount];
+
+                $monthlyDrug = DB::table('moph_f5_distribution')
+                    ->whereBetween('period_rpt', [$startDisbPeriod, $endDisbPeriod])
+                    ->select(DB::raw("CAST(SUBSTRING(period_rpt, 5, 2) AS UNSIGNED) as m"), DB::raw('sum(value) as val'))
+                    ->groupBy(DB::raw("SUBSTRING(period_rpt, 5, 2)"))
+                    ->get();
+                foreach ($monthlyDrug as $md) {
+                    $m = (int)$md->m;
+                    if (isset($monthlyTrend[$m])) {
+                        $monthlyTrend[$m]['drug'] = (float)$md->val;
+                        $monthlyTrend[$m]['total'] += (float)$md->val;
+                    }
+                }
+
+                $deptGroupNames = [
+                    '1' => 'OPD + IPD (ผู้ป่วยนอกและใน)',
+                    '2' => 'OPD (ผู้ป่วยนอก)',
+                    '3' => 'IPD (ผู้ป่วยใน)',
+                    '4' => 'หน่วยอื่นๆ ในโรงพยาบาล',
+                    '5' => 'รพ.สต. ในเครือข่าย',
+                    '6' => 'รพ.สต. ถ่ายโอน',
+                    '9' => 'อื่นๆ ภายนอกโรงพยาบาล'
+                ];
+                $drugDisbByDept = (clone $disbQuery)
+                    ->select('dis_dept_group', DB::raw('sum(value) as val'), DB::raw('count(*) as cnt'))
+                    ->groupBy('dis_dept_group')
+                    ->get();
+                foreach ($drugDisbByDept as $dd) {
+                    $grpName = $deptGroupNames[$dd->dis_dept_group] ?? ('กลุ่มเบิก ' . $dd->dis_dept_group);
+                    if (!isset($topSubWhStats[$grpName])) {
+                        $topSubWhStats[$grpName] = ['name' => $grpName, 'val' => 0.0, 'reqs' => 0];
+                    }
+                    $topSubWhStats[$grpName]['val'] += (float)$dd->val;
+                    $topSubWhStats[$grpName]['reqs'] += (int)$dd->cnt;
+                }
+            } elseif ($wh['type'] === 'supplies') {
                 // General Supplies (Inven 5)
                 // 1. Receive
                 $suppRecQuery = DB::connection('backoffice')->table('warehouse_check_receive')
@@ -575,7 +692,14 @@ class WarehouseController extends Controller
             ->where('exp', '!=', '')
             ->whereBetween('exp', [$today, $in180Days])
             ->count();
-        $totalNearExpiryCount = $nearExpGeneral + $nearExpMed;
+
+        $nearExpMoph = DB::table('moph_f5_inventory')
+            ->whereNotNull('expire_date')
+            ->where('expire_date', '!=', '')
+            ->whereBetween('expire_date', [date('Ymd'), date('Ymd', strtotime('+180 days'))])
+            ->count();
+
+        $totalNearExpiryCount = $nearExpGeneral + $nearExpMed + $nearExpMoph;
 
         // Estimated hospital inventory turnover
         $hospitalItr = 6.2; // Based on annual consumption vs average stock
@@ -1040,6 +1164,10 @@ class WarehouseController extends Controller
      */
     private function getSingleWarehouseData(array $config, int $yearId, $monthId, $subWhId, string $viewMode, string $search): array
     {
+        if (($config['type'] ?? '') === 'moph_f5') {
+            return $this->getMophF5WarehouseData($config, $yearId, $monthId, $subWhId, $viewMode, $search);
+        }
+
         $startGregorian = ($yearId - 544) . '-10-01';
         $endGregorian = ($yearId - 543) . '-09-30 23:59:59';
         $targetEndDate = $endGregorian;
@@ -1841,10 +1969,48 @@ class WarehouseController extends Controller
     /**
      * AJAX Endpoint: Requisition detail modal
      */
-    public function requestDetail(string $type, int $id)
+    public function requestDetail(string $type, $id)
     {
         if (!auth()->user()->hasAccessWarehouse()) {
             return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        if ($type === 'drug' || $type === 'moph_f5') {
+            $disb = DB::table('moph_f5_distribution')->where('id', $id)->first();
+            if (!$disb) {
+                $disb = DB::table('moph_f5_distribution')->where('working_code', $id)->first();
+            }
+            if (!$disb) return response()->json(['error' => 'Not found'], 404);
+
+            $deptGroupNames = [
+                '1' => 'OPD + IPD (ผู้ป่วยนอกและใน)',
+                '2' => 'OPD (ผู้ป่วยนอก)',
+                '3' => 'IPD (ผู้ป่วยใน)',
+                '4' => 'หน่วยอื่นๆ ในโรงพยาบาล',
+                '5' => 'รพ.สต. ในเครือข่าย',
+                '6' => 'รพ.สต. ถ่ายโอน',
+                '9' => 'อื่นๆ ภายนอกโรงพยาบาล'
+            ];
+
+            $items = [
+                (object)[
+                    'id' => $disb->id,
+                    'code' => $disb->working_code,
+                    'name' => $disb->trade_name,
+                    'amount' => (float)$disb->qty_dis,
+                    'price' => $disb->qty_dis > 0 ? round((float)$disb->value / (float)$disb->qty_dis, 2) : 0,
+                    'total' => (float)$disb->value,
+                ]
+            ];
+
+            return response()->json([
+                'code' => $disb->working_code,
+                'req_date' => $disb->period_rpt ? (substr($disb->period_rpt, 0, 4) . '-' . substr($disb->period_rpt, 4, 2)) : '-',
+                'requester' => 'ระบบคลังยา INVS',
+                'sub_warehouse' => $deptGroupNames[$disb->dis_dept_group] ?? ('กลุ่มเบิก ' . $disb->dis_dept_group),
+                'status' => 'Allow',
+                'items' => $items,
+            ]);
         }
 
         if ($type === 'material' || $type === 'supplies') {
@@ -1934,10 +2100,58 @@ class WarehouseController extends Controller
     /**
      * AJAX Endpoint: Item Two-Tier Stock Breakdown
      */
-    public function itemDetail(string $type, int $id)
+    public function itemDetail(string $type, $id)
     {
         if (!auth()->user()->hasAccessWarehouse()) {
             return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        if ($type === 'drug' || $type === 'moph_f5') {
+            $item = DB::table('moph_f5_inventory')->where('id', $id)->first();
+            if (!$item) {
+                $item = DB::table('moph_f5_inventory')->where('working_code', $id)->first();
+            }
+            if (!$item) {
+                $item = DB::table('moph_f5_druglist')->where('working_code', $id)->first();
+            }
+            if (!$item) {
+                $item = DB::table('moph_f5_distribution')->where('working_code', $id)->first();
+            }
+            if (!$item) {
+                $item = DB::table('moph_f5_receipt')->where('working_code', $id)->first();
+            }
+            if (!$item) return response()->json(['error' => 'Not found'], 404);
+
+            $wCode = $item->working_code;
+            $mainStock = (float)DB::table('moph_f5_inventory')->where('working_code', $wCode)->sum('qty_onhand');
+
+            $deptGroupNames = [
+                '1' => 'OPD + IPD (ผู้ป่วยนอกและใน)',
+                '2' => 'OPD (ผู้ป่วยนอก)',
+                '3' => 'IPD (ผู้ป่วยใน)',
+                '4' => 'หน่วยอื่นๆ ในโรงพยาบาล',
+                '5' => 'รพ.สต. ในเครือข่าย',
+                '6' => 'รพ.สต. ถ่ายโอน',
+                '9' => 'อื่นๆ ภายนอกโรงพยาบาล'
+            ];
+            $subStocks = DB::table('moph_f5_distribution')
+                ->where('working_code', $wCode)
+                ->select('dis_dept_group', DB::raw('sum(qty_dis) as qty'))
+                ->groupBy('dis_dept_group')
+                ->get()
+                ->map(function($d) use ($deptGroupNames) {
+                    return (object)[
+                        'dept_name' => $deptGroupNames[$d->dis_dept_group] ?? ('กลุ่ม ' . $d->dis_dept_group),
+                        'qty' => (float)$d->qty,
+                    ];
+                });
+
+            return response()->json([
+                'name' => $item->trade_name ?? $item->generic_name ?? $wCode,
+                'code' => $wCode,
+                'main_stock' => $mainStock,
+                'sub_stocks' => $subStocks,
+            ]);
         }
 
         if ($type === 'material' || $type === 'supplies') {
@@ -1996,7 +2210,7 @@ class WarehouseController extends Controller
     /**
      * AJAX Endpoint: Item Requisition Breakdown Across Departments (Sorted Descending)
      */
-    public function itemDepartments(Request $request, string $type, int $id)
+    public function itemDepartments(Request $request, string $type, $id)
     {
         if (!auth()->user()->hasAccessWarehouse()) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -2007,6 +2221,72 @@ class WarehouseController extends Controller
 
         $startGregorian = ($yearId - 544) . '-10-01';
         $endGregorian = ($yearId - 543) . '-09-30 23:59:59';
+
+        if ($type === 'drug' || $type === 'moph_f5') {
+            $item = DB::table('moph_f5_inventory')->where('id', $id)->first();
+            if (!$item) {
+                $item = DB::table('moph_f5_inventory')->where('working_code', $id)->first();
+            }
+            if (!$item) {
+                $item = DB::table('moph_f5_druglist')->where('working_code', $id)->first();
+            }
+            if (!$item) {
+                $item = DB::table('moph_f5_distribution')->where('working_code', $id)->first();
+            }
+            if (!$item) {
+                $item = DB::table('moph_f5_receipt')->where('working_code', $id)->first();
+            }
+            if (!$item) return response()->json(['error' => 'Not found'], 404);
+
+            $wCode = $item->working_code;
+            $name = $item->trade_name ?? $item->generic_name ?? $wCode;
+            $unit = $item->base_unit ?? 'หน่วย';
+
+            $deptGroupNames = [
+                '1' => 'OPD + IPD (ผู้ป่วยนอกและใน)',
+                '2' => 'OPD (ผู้ป่วยนอก)',
+                '3' => 'IPD (ผู้ป่วยใน)',
+                '4' => 'หน่วยอื่นๆ ในโรงพยาบาล',
+                '5' => 'รพ.สต. ในเครือข่าย',
+                '6' => 'รพ.สต. ถ่ายโอน',
+                '9' => 'อื่นๆ ภายนอกโรงพยาบาล'
+            ];
+
+            $deptsQuery = DB::table('moph_f5_distribution')->where('working_code', $wCode);
+            if ($monthId !== 'all') {
+                $mInt = (int)$monthId;
+                $calGregYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+                $deptsQuery->where('period_rpt', sprintf('%04d%02d', $calGregYear, $mInt));
+            } else {
+                $deptsQuery->whereBetween('period_rpt', [($yearId - 544) . '10', ($yearId - 543) . '09']);
+            }
+            $depts = $deptsQuery->select(
+                    'dis_dept_group',
+                    DB::raw('count(*) as req_count'),
+                    DB::raw('sum(qty_dis) as total_qty'),
+                    DB::raw('sum(value) as total_val')
+                )
+                ->groupBy('dis_dept_group')
+                ->orderByDesc('total_val')
+                ->get();
+
+            $sumVal = (float)$depts->sum('total_val');
+            $sumQty = (float)$depts->sum('total_qty');
+
+            foreach ($depts as $d) {
+                $d->dept_name = $deptGroupNames[$d->dis_dept_group] ?? ('กลุ่มเบิก ' . $d->dis_dept_group);
+                $d->percentage = $sumVal > 0 ? round(((float)$d->total_val / $sumVal) * 100, 1) : 0;
+            }
+
+            return response()->json([
+                'name' => $name,
+                'code' => $wCode,
+                'unit' => $unit,
+                'sum_val' => $sumVal,
+                'sum_qty' => $sumQty,
+                'departments' => $depts,
+            ]);
+        }
 
         if ($type === 'material' || $type === 'supplies') {
             $item = DB::connection('backoffice')->table('supplies as sup')
@@ -2142,6 +2422,71 @@ class WarehouseController extends Controller
 
         $startGregorian = ($yearId - 544) . '-10-01';
         $endGregorian = ($yearId - 543) . '-09-30 23:59:59';
+
+        if ($type === 'drug' || $type === 'moph_f5') {
+            $deptGroupNames = [
+                '1' => 'OPD + IPD (ผู้ป่วยนอกและใน)',
+                '2' => 'OPD (ผู้ป่วยนอก)',
+                '3' => 'IPD (ผู้ป่วยใน)',
+                '4' => 'หน่วยอื่นๆ ในโรงพยาบาล',
+                '5' => 'รพ.สต. ในเครือข่าย',
+                '6' => 'รพ.สต. ถ่ายโอน',
+                '9' => 'อื่นๆ ภายนอกโรงพยาบาล'
+            ];
+            $query = DB::table('moph_f5_distribution');
+            if (!empty($deptId) && $deptId !== 'null') {
+                $query->where('dis_dept_group', $deptId);
+            } elseif (!empty($deptName)) {
+                $foundGroup = null;
+                foreach ($deptGroupNames as $k => $v) {
+                    if ($v === $deptName) {
+                        $foundGroup = $k;
+                        break;
+                    }
+                }
+                if ($foundGroup) {
+                    $query->where('dis_dept_group', $foundGroup);
+                }
+            }
+            if ($monthId !== 'all') {
+                $mInt = (int)$monthId;
+                $calGregYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+                $query->where('period_rpt', sprintf('%04d%02d', $calGregYear, $mInt));
+            } else {
+                $query->whereBetween('period_rpt', [($yearId - 544) . '10', ($yearId - 543) . '09']);
+            }
+
+            $items = $query->select(
+                'working_code as item_id',
+                'working_code as code',
+                'trade_name as name',
+                'base_unit as unit_name',
+                DB::raw('count(*) as req_count'),
+                DB::raw('sum(qty_dis) as total_qty'),
+                DB::raw('case when sum(qty_dis) > 0 then sum(value)/sum(qty_dis) else 0 end as avg_price'),
+                DB::raw('sum(value) as total_val')
+            )
+            ->groupBy('working_code', 'trade_name', 'base_unit')
+            ->orderByDesc('total_val')
+            ->get();
+
+            $sumVal = (float)$items->sum('total_val');
+            $sumQty = (float)$items->sum('total_qty');
+
+            foreach ($items as $it) {
+                $it->percentage = $sumVal > 0 ? round(((float)$it->total_val / $sumVal) * 100, 1) : 0;
+            }
+
+            return response()->json([
+                'dept_name' => $deptName ?: ($deptGroupNames[$deptId] ?? 'กลุ่มเบิก'),
+                'total_val' => $sumVal,
+                'sum_val' => $sumVal,
+                'sum_qty' => $sumQty,
+                'total_reqs' => (int)$items->sum('req_count'),
+                'items_count' => $items->count(),
+                'items' => $items,
+            ]);
+        }
 
         if ($type === 'material' || $type === 'supplies') {
             $invenId = 5;
@@ -2348,6 +2693,51 @@ class WarehouseController extends Controller
             $endMonth = sprintf('%04d-%02d-%02d 23:59:59', $calGregorianYear, $mInt, $daysInMonth);
         }
 
+        if ($config['type'] === 'moph_f5') {
+            $query = DB::table('moph_f5_receipt');
+            if ($monthId !== 'all') {
+                $mInt = (int)$monthId;
+                $calGregYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+                $query->where('date_rcv', 'like', sprintf('%04d%02d', $calGregYear, $mInt) . '%');
+            } else {
+                $query->whereBetween('date_rcv', [($yearId - 544) . '1001', ($yearId - 543) . '0930']);
+            }
+
+            $rawReceives = $query->select(
+                'rcv_no as code',
+                DB::raw('MIN(id) as id'),
+                DB::raw('MAX(po_no) as po_code'),
+                DB::raw('MAX(date_rcv) as raw_date'),
+                DB::raw('MAX(vendor_name) as vendor_name'),
+                DB::raw("'เจ้าหน้าที่คลังยา' as receiver_name"),
+                DB::raw('SUM(total_value) as total_value'),
+                DB::raw('COUNT(*) as item_count')
+            )
+            ->groupBy('rcv_no')
+            ->orderByDesc('raw_date')
+            ->get();
+
+            foreach ($rawReceives as $r) {
+                $d = $r->raw_date;
+                $r->receive_date = (strlen($d) === 8) 
+                    ? substr($d, 0, 4) . '-' . substr($d, 4, 2) . '-' . substr($d, 6, 2)
+                    : $d;
+                $r->total_value = (float)$r->total_value;
+                $r->item_count = (int)$r->item_count;
+            }
+
+            $totalValue = (float)$rawReceives->sum('total_value');
+            $totalCount = $rawReceives->count();
+
+            return response()->json([
+                'warehouse_name' => $config['name'],
+                'warehouse_type' => 'moph_f5',
+                'total_value' => $totalValue,
+                'total_count' => $totalCount,
+                'receives' => $rawReceives,
+            ]);
+        }
+
         if ($config['type'] === 'supplies') {
             $query = DB::connection('backoffice')->table('warehouse_check_receive as r')
                 ->where('r.RECEIVE_STORE', $config['store_type'])
@@ -2452,10 +2842,52 @@ class WarehouseController extends Controller
     /**
      * AJAX Endpoint: Goods receipt detail modal (item line breakdown)
      */
-    public function receiveDetail(string $type, int $id)
+    public function receiveDetail(string $type, $id)
     {
         if (!auth()->user()->hasAccessWarehouse()) {
             return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        if ($type === 'drug' || $type === 'moph_f5') {
+            $item = DB::table('moph_f5_receipt')->where('id', $id)->first();
+            $rcvNo = $item ? $item->rcv_no : $id;
+            $header = DB::table('moph_f5_receipt')->where('rcv_no', $rcvNo)->first();
+            if (!$header) return response()->json(['error' => 'Not found'], 404);
+
+            $rawItems = DB::table('moph_f5_receipt')->where('rcv_no', $rcvNo)->get();
+            $items = $rawItems->map(function($r) {
+                $exp = $r->expire_date;
+                $expFormatted = (strlen($exp) === 8)
+                    ? substr($exp, 0, 4) . '-' . substr($exp, 4, 2) . '-' . substr($exp, 6, 2)
+                    : $exp;
+                return (object)[
+                    'id' => $r->id,
+                    'code' => $r->working_code,
+                    'name' => $r->trade_name,
+                    'amount' => (float)$r->qty_rcv,
+                    'price' => (float)$r->pack_cost,
+                    'total' => (float)$r->total_value,
+                    'lot_no' => $r->lot_no,
+                    'exp_date' => $expFormatted,
+                    'unit_name' => $r->base_unit,
+                ];
+            });
+
+            $d = $header->date_rcv;
+            $rcvDate = (strlen($d) === 8)
+                ? substr($d, 0, 4) . '-' . substr($d, 4, 2) . '-' . substr($d, 6, 2)
+                : $d;
+
+            return response()->json([
+                'code' => $header->rcv_no,
+                'po_code' => $header->po_no,
+                'invoice_code' => '-',
+                'receive_date' => $rcvDate,
+                'vendor' => $header->vendor_name ?: '-',
+                'receiver' => 'เจ้าหน้าที่คลังยา',
+                'total_value' => (float)$rawItems->sum('total_value'),
+                'items' => $items,
+            ]);
         }
 
         if ($type === 'material' || $type === 'supplies') {
@@ -3042,5 +3474,835 @@ class WarehouseController extends Controller
             'rpst_count' => count($rpstList),
             'rpst_list' => $rpstList,
         ]);
+    }
+
+    /**
+     * AJAX Endpoint: Upload MOPH 5 Files (INVS Drug Warehouse)
+     */
+    public function uploadMophF5(Request $request, \App\Services\MophF5DrugService $service)
+    {
+        if (!auth()->user()->hasAccessWarehouse()) {
+            return response()->json(['success' => false, 'message' => 'ไม่มีสิทธิ์เข้าถึงระบบคลัง'], 403);
+        }
+
+        $files = $request->file('files');
+        if (empty($files) || !is_array($files)) {
+            return response()->json(['success' => false, 'message' => 'กรุณาเลือกไฟล์ .xlsx อย่างน้อย 1 ไฟล์'], 422);
+        }
+
+        $savedPaths = [];
+        $tempDir = storage_path('app/temp_f5_' . uniqid());
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+
+        try {
+            foreach ($files as $file) {
+                if (!$file->isValid()) continue;
+                $origName = $file->getClientOriginalName();
+                $targetPath = $tempDir . DIRECTORY_SEPARATOR . $origName;
+                $file->move($tempDir, $origName);
+                $savedPaths[] = $targetPath;
+            }
+
+            if (empty($savedPaths)) {
+                return response()->json(['success' => false, 'message' => 'ไม่พบไฟล์ที่ถูกต้อง'], 422);
+            }
+
+            $results = $service->importFiles($savedPaths);
+
+            $counts = [
+                'druglist' => DB::table('moph_f5_druglist')->count(),
+                'purchaseplan' => DB::table('moph_f5_purchaseplan')->count(),
+                'receipt' => DB::table('moph_f5_receipt')->count(),
+                'distribution' => DB::table('moph_f5_distribution')->count(),
+                'inventory' => DB::table('moph_f5_inventory')->count(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'message' => 'นำเข้าข้อมูล 5 แฟ้มยาสำเร็จ',
+                'results' => $results,
+                'counts' => $counts,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'เกิดข้อผิดพลาดในการประมวลผล: ' . $e->getMessage(),
+            ], 500);
+        } finally {
+            if (is_dir($tempDir)) {
+                $scan = array_diff(scandir($tempDir), ['.', '..']);
+                foreach ($scan as $f) {
+                    @unlink($tempDir . DIRECTORY_SEPARATOR . $f);
+                }
+                @rmdir($tempDir);
+            }
+        }
+    }
+
+    /**
+     * AJAX Endpoint: Get DataTable records for MOPH 5 files
+     */
+    public function mophF5TableData(Request $request, string $file)
+    {
+        if (!auth()->user()->hasAccessWarehouse()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $monthNames = [
+            1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
+            5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
+            9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
+        ];
+
+        $formatDate = function ($dateStr) use ($monthNames) {
+            if (!$dateStr) return '-';
+            $cleaned = preg_replace('/[^0-9]/', '', (string)$dateStr);
+            if (strlen($cleaned) >= 8) {
+                $y = (int)substr($cleaned, 0, 4);
+                $m = (int)substr($cleaned, 4, 2);
+                $d = (int)substr($cleaned, 6, 2);
+                $by = ($y < 2400) ? ($y + 543) : $y;
+                $mName = $monthNames[$m] ?? $m;
+                return "{$d} {$mName} {$by}";
+            }
+            return $dateStr;
+        };
+
+        $formatPeriod = function ($p) use ($monthNames) {
+            if (!$p) return '-';
+            $cleaned = preg_replace('/[^0-9]/', '', (string)$p);
+            if (strlen($cleaned) === 6) {
+                $y = (int)substr($cleaned, 0, 4);
+                $m = (int)substr($cleaned, 4, 2);
+                $by = ($y < 2400) ? ($y + 543) : $y;
+                $mName = $monthNames[$m] ?? $m;
+                return "{$mName} {$by}";
+            }
+            return $p;
+        };
+
+        $formatDateTimeThai = function ($dtStr) use ($monthNames) {
+            if (!$dtStr) return '-';
+            try {
+                $carbon = \Carbon\Carbon::parse($dtStr);
+                $by = $carbon->year < 2400 ? ($carbon->year + 543) : $carbon->year;
+                $mName = $monthNames[$carbon->month] ?? $carbon->month;
+                return $carbon->day . ' ' . $mName . ' ' . $by . ' ' . $carbon->format('H:i') . ' น.';
+            } catch (\Throwable $e) {
+                return $dtStr;
+            }
+        };
+
+        $deptNames = [
+            '1' => 'OPD + IPD (ผู้ป่วยนอกและใน)',
+            '2' => 'OPD (ผู้ป่วยนอก)',
+            '3' => 'IPD (ผู้ป่วยใน)',
+            '4' => 'หน่วยอื่นๆ ในโรงพยาบาล',
+            '5' => 'รพ.สต. (ในเครือข่าย)',
+            '6' => 'รพ.สต. (ถ่ายโอน)',
+            '9' => 'อื่นๆ ภายนอกโรงพยาบาล',
+        ];
+
+        $periodOptions = function ($tableName) use ($monthNames) {
+            $periods = DB::table($tableName)->distinct()->whereNotNull('period_rpt')->where('period_rpt', '!=', '')->orderByDesc('period_rpt')->pluck('period_rpt');
+            $list = [];
+            foreach ($periods as $p) {
+                $cleaned = preg_replace('/[^0-9]/', '', (string)$p);
+                $label = $p;
+                if (strlen($cleaned) === 6) {
+                    $y = (int)substr($cleaned, 0, 4);
+                    $m = (int)substr($cleaned, 4, 2);
+                    $by = ($y < 2400) ? ($y + 543) : $y;
+                    $mName = $monthNames[$m] ?? $m;
+                    $label = "{$mName} {$by} ({$cleaned})";
+                }
+                $list[] = [
+                    'value' => $p,
+                    'label' => $label,
+                ];
+            }
+            return $list;
+        };
+
+        switch ($file) {
+            case 'druglist':
+                $q = DB::table('moph_f5_druglist');
+                if ($request->filled('period_rpt') && $request->period_rpt !== 'all') {
+                    $q->where('period_rpt', $request->period_rpt);
+                }
+                if ($request->filled('status') && $request->status !== 'all') {
+                    $q->where('status', $request->status);
+                }
+                $rows = $q->orderBy('working_code')->get();
+                $totalActive = 0;
+                $totalNlem = 0;
+                $data = [];
+                foreach ($rows as $i => $r) {
+                    $isActive = ($r->status === '1' || strtolower((string)$r->status) === 'active');
+                    if ($isActive) $totalActive++;
+                    if ($r->nlem && $r->nlem !== 'NED') $totalNlem++;
+                    $data[] = [
+                        'index' => $i + 1,
+                        'working_code' => $r->working_code,
+                        'generic_name' => $r->generic_name ?? '-',
+                        'gpuid' => $r->gpuid ?: '-',
+                        'nlem' => $r->nlem ?: '-',
+                        'product_cat' => $r->product_cat ?: '-',
+                        'base_unit' => $r->base_unit ?: '-',
+                        'status' => $r->status,
+                        'status_badge' => $isActive
+                            ? '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="fas fa-check-circle me-1"></i>ใช้งาน</span>'
+                            : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1"><i class="fas fa-ban me-1"></i>ยกเลิก</span>',
+                        'date_status' => $formatDate($r->date_status),
+                        'period_rpt' => $formatPeriod($r->period_rpt),
+                    ];
+                }
+                return response()->json([
+                    'success' => true,
+                    'file' => 'druglist',
+                    'count' => count($data),
+                    'last_updated' => $formatDateTimeThai(DB::table('moph_f5_druglist')->max('updated_at')),
+                    'summary' => [
+                        'total_items' => count($data),
+                        'total_active' => $totalActive,
+                        'total_nlem' => $totalNlem,
+                    ],
+                    'filters' => [
+                        'available_periods' => $periodOptions('moph_f5_druglist'),
+                    ],
+                    'data' => $data,
+                ]);
+
+            case 'purchaseplan':
+                $q = DB::table('moph_f5_purchaseplan');
+                if ($request->filled('period_rpt') && $request->period_rpt !== 'all') {
+                    $q->where('period_rpt', $request->period_rpt);
+                }
+                if ($request->filled('yearbudget') && $request->yearbudget !== 'all') {
+                    $q->where('yearbudget', $request->yearbudget);
+                }
+                $rows = $q->orderBy('working_code')->get();
+                $totalPlanQty = 0;
+                $totalPlanVal = 0;
+                $data = [];
+                foreach ($rows as $i => $r) {
+                    $totalPlanQty += (float)$r->qty_this_year;
+                    $totalPlanVal += (float)$r->value_this_year;
+                    $data[] = [
+                        'index' => $i + 1,
+                        'yearbudget' => $r->yearbudget ?: '-',
+                        'working_code' => $r->working_code,
+                        'generic_name' => $r->generic_name ?? '-',
+                        'gpuid' => $r->gpuid ?: '-',
+                        'nlem' => $r->nlem ?: '-',
+                        'pack_size' => (int)$r->pack_size,
+                        'base_unit' => $r->base_unit ?: '-',
+                        'pack_cost' => (float)$r->pack_cost,
+                        'qty_this_year' => (float)$r->qty_this_year,
+                        'value_this_year' => (float)$r->value_this_year,
+                        'qty_use_year1' => (float)$r->qty_use_year1,
+                        'qty_plan_trimes1' => (float)$r->qty_plan_trimes1,
+                        'qty_plan_trimes2' => (float)$r->qty_plan_trimes2,
+                        'qty_plan_trimes3' => (float)$r->qty_plan_trimes3,
+                        'qty_plan_trimes4' => (float)$r->qty_plan_trimes4,
+                        'period_rpt' => $formatPeriod($r->period_rpt),
+                    ];
+                }
+                $rawYears = DB::table('moph_f5_purchaseplan')->distinct()->whereNotNull('yearbudget')->orderByDesc('yearbudget')->pluck('yearbudget');
+                $availableYears = [];
+                foreach ($rawYears as $y) {
+                    $yInt = (int)$y;
+                    $thYear = ($yInt < 2400) ? ($yInt + 543) : $yInt;
+                    $availableYears[] = ['value' => $y, 'label' => "ปีงบ {$thYear} ({$y})"];
+                }
+                return response()->json([
+                    'success' => true,
+                    'file' => 'purchaseplan',
+                    'count' => count($data),
+                    'last_updated' => $formatDateTimeThai(DB::table('moph_f5_purchaseplan')->max('updated_at')),
+                    'summary' => [
+                        'total_items' => count($data),
+                        'total_qty' => $totalPlanQty,
+                        'total_value' => $totalPlanVal,
+                    ],
+                    'filters' => [
+                        'available_periods' => $periodOptions('moph_f5_purchaseplan'),
+                        'available_years' => $availableYears,
+                    ],
+                    'data' => $data,
+                ]);
+
+            case 'receipt':
+                $q = DB::table('moph_f5_receipt');
+                if ($request->filled('period_rpt') && $request->period_rpt !== 'all') {
+                    $q->where('period_rpt', $request->period_rpt);
+                }
+                $rows = $q->orderByDesc('date_rcv')->orderByDesc('id')->get();
+                $totalQty = 0;
+                $totalVal = 0;
+                $data = [];
+                foreach ($rows as $i => $r) {
+                    $totalQty += (float)$r->qty_rcv;
+                    $totalVal += (float)$r->total_value;
+                    $data[] = [
+                        'index' => $i + 1,
+                        'rcv_no' => $r->rcv_no ?: '-',
+                        'po_no' => $r->po_no ?: '-',
+                        'date_rcv' => $formatDate($r->date_rcv),
+                        'raw_date_rcv' => $r->date_rcv,
+                        'working_code' => $r->working_code,
+                        'trade_name' => $r->trade_name ?? '-',
+                        'vendor_name' => $r->vendor_name ?? '-',
+                        'qty_rcv' => (float)$r->qty_rcv,
+                        'pack_size' => (int)$r->pack_size,
+                        'base_unit' => $r->base_unit ?: '-',
+                        'pack_cost' => (float)$r->pack_cost,
+                        'total_value' => (float)$r->total_value,
+                        'lot_no' => $r->lot_no ?: '-',
+                        'expire_date' => $formatDate($r->expire_date),
+                        'period_rpt' => $formatPeriod($r->period_rpt),
+                    ];
+                }
+                return response()->json([
+                    'success' => true,
+                    'file' => 'receipt',
+                    'count' => count($data),
+                    'last_updated' => $formatDateTimeThai(DB::table('moph_f5_receipt')->max('updated_at')),
+                    'summary' => [
+                        'total_items' => count($data),
+                        'total_qty' => $totalQty,
+                        'total_value' => $totalVal,
+                    ],
+                    'filters' => [
+                        'available_periods' => $periodOptions('moph_f5_receipt'),
+                    ],
+                    'data' => $data,
+                ]);
+
+            case 'distribution':
+                $q = DB::table('moph_f5_distribution');
+                if ($request->filled('period_rpt') && $request->period_rpt !== 'all') {
+                    $q->where('period_rpt', $request->period_rpt);
+                }
+                if ($request->filled('dis_dept_group') && $request->dis_dept_group !== 'all') {
+                    $q->where('dis_dept_group', $request->dis_dept_group);
+                }
+                $rows = $q->orderBy('dis_dept_group')->orderBy('working_code')->get();
+                $totalQty = 0;
+                $totalVal = 0;
+                $data = [];
+                foreach ($rows as $i => $r) {
+                    $totalQty += (float)$r->qty_dis;
+                    $totalVal += (float)$r->value;
+                    $deptName = $deptNames[$r->dis_dept_group] ?? ('กลุ่มที่ ' . $r->dis_dept_group);
+                    $data[] = [
+                        'index' => $i + 1,
+                        'period_rpt' => $formatPeriod($r->period_rpt),
+                        'dept_group' => $r->dis_dept_group,
+                        'dept_name' => $deptName,
+                        'working_code' => $r->working_code,
+                        'trade_name' => $r->trade_name ?? '-',
+                        'qty_dis' => (float)$r->qty_dis,
+                        'pack_size' => (int)$r->pack_size,
+                        'base_unit' => $r->base_unit ?: '-',
+                        'value' => (float)$r->value,
+                    ];
+                }
+                $rawDepts = DB::table('moph_f5_distribution')->distinct()->whereNotNull('dis_dept_group')->orderBy('dis_dept_group')->pluck('dis_dept_group');
+                $availableDepts = [];
+                foreach ($rawDepts as $d) {
+                    $availableDepts[] = [
+                        'value' => $d,
+                        'label' => $deptNames[$d] ?? ("กลุ่มที่ " . $d),
+                    ];
+                }
+                return response()->json([
+                    'success' => true,
+                    'file' => 'distribution',
+                    'count' => count($data),
+                    'last_updated' => $formatDateTimeThai(DB::table('moph_f5_distribution')->max('updated_at')),
+                    'summary' => [
+                        'total_items' => count($data),
+                        'total_qty' => $totalQty,
+                        'total_value' => $totalVal,
+                    ],
+                    'filters' => [
+                        'available_periods' => $periodOptions('moph_f5_distribution'),
+                        'available_depts' => $availableDepts,
+                    ],
+                    'data' => $data,
+                ]);
+
+            case 'inventory':
+                // Group by Year-Month and pick the MAX date_onhand for each month
+                // This ensures each month has exactly 1 entry (representing the latest date of that month)
+                $monthlyGroups = DB::table('moph_f5_inventory')
+                    ->whereNotNull('date_onhand')
+                    ->where('date_onhand', '!=', '')
+                    ->select(
+                        DB::raw("SUBSTRING(date_onhand, 1, 6) as ym"),
+                        DB::raw("MAX(date_onhand) as max_date"),
+                        DB::raw("COUNT(*) as total_rows")
+                    )
+                    ->groupBy(DB::raw("SUBSTRING(date_onhand, 1, 6)"))
+                    ->orderByDesc('ym')
+                    ->get();
+
+                $latestDate = $monthlyGroups->first()->max_date ?? null;
+
+                // Inventory is a point-in-time balance: default to the latest survey date of current month
+                $targetDate = $request->get('date_onhand');
+                if (!$targetDate || $targetDate === 'latest' || $targetDate === 'all') {
+                    $targetDate = $latestDate;
+                } else {
+                    $cleaned = preg_replace('/[^0-9]/', '', (string)$targetDate);
+                    if (strlen($cleaned) === 6) {
+                        $matchedGroup = $monthlyGroups->firstWhere('ym', $cleaned);
+                        if ($matchedGroup) {
+                            $targetDate = $matchedGroup->max_date;
+                        }
+                    }
+                }
+
+                $q = DB::table('moph_f5_inventory');
+                if ($targetDate) {
+                    $cleanedOnHand = preg_replace('/[^0-9]/', '', (string)$targetDate);
+                    $q->where('date_onhand', $cleanedOnHand);
+                }
+                if ($request->filled('expire_filter') && $request->expire_filter !== 'all') {
+                    $todayYmd = date('Ymd');
+                    $sixMonthsYmd = date('Ymd', strtotime('+6 months'));
+                    if ($request->expire_filter === 'expired') {
+                        $q->whereNotNull('expire_date')->where('expire_date', '<=', $todayYmd)->where('expire_date', '!=', '');
+                    } elseif ($request->expire_filter === 'near_exp') {
+                        $q->whereNotNull('expire_date')->where('expire_date', '>', $todayYmd)->where('expire_date', '<=', $sixMonthsYmd);
+                    }
+                }
+                $rows = $q->orderBy('working_code')->get();
+                $totalQty = 0;
+                $totalVal = 0;
+                $data = [];
+                foreach ($rows as $i => $r) {
+                    $totalQty += (float)$r->qty_onhand;
+                    $totalVal += (float)$r->value_onhand;
+                    $data[] = [
+                        'index' => $i + 1,
+                        'date_onhand' => $formatDate($r->date_onhand),
+                        'raw_date_onhand' => $r->date_onhand,
+                        'working_code' => $r->working_code,
+                        'trade_name' => $r->trade_name ?? '-',
+                        'vendor_name' => $r->vendor_name ?? '-',
+                        'qty_onhand' => (float)$r->qty_onhand,
+                        'pack_size' => (int)$r->pack_size,
+                        'base_unit' => $r->base_unit ?: '-',
+                        'pack_cost' => (float)$r->pack_cost,
+                        'value_onhand' => (float)$r->value_onhand,
+                        'lot_no' => $r->lot_no ?: '-',
+                        'expire_date' => $formatDate($r->expire_date),
+                    ];
+                }
+
+                $availableDates = [];
+                foreach ($monthlyGroups as $idx => $g) {
+                    $ym = (string)$g->ym;
+                    $maxDate = (string)$g->max_date;
+                    $isLatest = ($idx === 0);
+                    $cnt = DB::table('moph_f5_inventory')->where('date_onhand', $maxDate)->count();
+
+                    $y = (int)substr($ym, 0, 4);
+                    $m = (int)substr($ym, 4, 2);
+                    $by = ($y < 2400) ? ($y + 543) : $y;
+                    $mName = $monthNames[$m] ?? $m;
+
+                    $prefix = $isLatest ? "ล่าสุด: " : "สิ้นงวด: ";
+                    $label = "{$mName} {$by} ({$prefix}ณ วันที่ " . $formatDate($maxDate) . ")";
+
+                    $availableDates[] = [
+                        'value' => $maxDate,
+                        'label' => $label,
+                        'is_latest' => $isLatest,
+                        'ym' => $ym,
+                    ];
+                }
+                return response()->json([
+                    'success' => true,
+                    'file' => 'inventory',
+                    'count' => count($data),
+                    'selected_date' => $targetDate,
+                    'last_updated' => $formatDateTimeThai(DB::table('moph_f5_inventory')->max('updated_at')),
+                    'summary' => [
+                        'total_items' => count($data),
+                        'total_qty' => $totalQty,
+                        'total_value' => $totalVal,
+                    ],
+                    'filters' => [
+                        'available_dates' => $availableDates,
+                    ],
+                    'data' => $data,
+                ]);
+
+            default:
+                return response()->json(['error' => 'Invalid file parameter'], 400);
+        }
+    }
+
+    /**
+     * Data provider for MOPH 5 Drug Warehouse tab
+     */
+    private function getMophF5WarehouseData(array $config, int $yearId, $monthId, $subWhId, string $viewMode, string $search): array
+    {
+        $isMonthlyView = ($monthId !== 'all');
+        $selectedMonthName = '';
+        $selectedCalYear = $yearId;
+        $monthlyTrend = [];
+        $dailyTrend = [];
+
+        foreach ($this->fiscalMonthOrder as $m) {
+            $monthlyTrend[$m] = ['month_id' => $m, 'val' => 0.0, 'receive_val' => 0.0, 'reqs' => 0, 'receives' => 0];
+        }
+
+        if ($isMonthlyView) {
+            $mInt = (int)$monthId;
+            $selectedMonthName = $this->thaiMonths[$mInt] ?? '';
+            $selectedCalYear = ($mInt >= 10) ? ($yearId - 1) : $yearId;
+            $calGregorianYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mInt, $calGregorianYear);
+
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $dailyTrend[$d] = ['day' => $d, 'val' => 0.0, 'receive_val' => 0.0, 'reqs' => 0, 'receives' => 0];
+            }
+        }
+
+        // Fiscal year date & period ranges
+        $startRcvDate = ($yearId - 544) . '1001';
+        $endRcvDate = ($yearId - 543) . '0930';
+        $startDisbPeriod = ($yearId - 544) . '10';
+        $endDisbPeriod = ($yearId - 543) . '09';
+
+        // 1. Receives
+        $recQuery = DB::table('moph_f5_receipt');
+        if ($monthId !== 'all') {
+            $mInt = (int)$monthId;
+            $calGregYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $monthPrefix = sprintf('%04d%02d', $calGregYear, $mInt);
+            $recQuery->where('date_rcv', 'like', $monthPrefix . '%');
+        } else {
+            $recQuery->whereBetween('date_rcv', [$startRcvDate, $endRcvDate]);
+        }
+        if (!empty($search)) {
+            $recQuery->where(function($q) use ($search) {
+                $q->where('trade_name', 'like', "%{$search}%")
+                  ->orWhere('working_code', 'like', "%{$search}%")
+                  ->orWhere('vendor_name', 'like', "%{$search}%")
+                  ->orWhere('rcv_no', 'like', "%{$search}%")
+                  ->orWhere('po_no', 'like', "%{$search}%");
+            });
+        }
+
+        $rawReceives = (clone $recQuery)
+            ->select(
+                'rcv_no as code',
+                DB::raw('MIN(id) as id'),
+                DB::raw('MAX(po_no) as po_code'),
+                DB::raw('MAX(date_rcv) as raw_date'),
+                DB::raw('MAX(vendor_name) as vendor_name'),
+                DB::raw("'เจ้าหน้าที่คลังยา' as receiver_name"),
+                DB::raw('SUM(total_value) as total_value'),
+                DB::raw('COUNT(*) as item_count')
+            )
+            ->groupBy('rcv_no')
+            ->orderByDesc('raw_date')
+            ->get();
+
+        $receives = $rawReceives->map(function($r) {
+            $d = $r->raw_date;
+            $r->receive_date = (strlen($d) === 8) 
+                ? substr($d, 0, 4) . '-' . substr($d, 4, 2) . '-' . substr($d, 6, 2)
+                : $d;
+            $r->total_value = (float)$r->total_value;
+            $r->item_count = (int)$r->item_count;
+            return $r;
+        });
+
+        $totalReceive = (float)$rawReceives->sum('total_value');
+        $totalReceiveCount = $rawReceives->count();
+
+        // 2. Disbursements (Requests)
+        $deptGroupNames = [
+            '1' => 'OPD + IPD (ผู้ป่วยนอกและใน)',
+            '2' => 'OPD (ผู้ป่วยนอก)',
+            '3' => 'IPD (ผู้ป่วยใน)',
+            '4' => 'หน่วยอื่นๆ ในโรงพยาบาล',
+            '5' => 'รพ.สต. ในเครือข่าย',
+            '6' => 'รพ.สต. ถ่ายโอน',
+            '9' => 'อื่นๆ ภายนอกโรงพยาบาล'
+        ];
+
+        $disbQuery = DB::table('moph_f5_distribution');
+        if ($monthId !== 'all') {
+            $mInt = (int)$monthId;
+            $calGregYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $monthPeriod = sprintf('%04d%02d', $calGregYear, $mInt);
+            $disbQuery->where('period_rpt', $monthPeriod);
+        } else {
+            $disbQuery->whereBetween('period_rpt', [$startDisbPeriod, $endDisbPeriod]);
+        }
+        if ($subWhId !== 'all') {
+            $disbQuery->where('dis_dept_group', $subWhId);
+        }
+        if (!empty($search)) {
+            $disbQuery->where(function($q) use ($search) {
+                $q->where('trade_name', 'like', "%{$search}%")
+                  ->orWhere('working_code', 'like', "%{$search}%");
+            });
+        }
+
+        $rawRequests = (clone $disbQuery)->orderByDesc('id')->get();
+        $totalDisbursement = (float)$rawRequests->sum('value');
+        $totalReqCount = $rawRequests->count();
+        $statusCounts = ['Pending' => 0, 'Approve' => 0, 'Verify' => 0, 'Allow' => $totalReqCount];
+
+        $requests = $rawRequests->map(function($r) use ($deptGroupNames) {
+            $d = $r->period_rpt;
+            $dateStr = (strlen($d) === 6) ? (substr($d, 0, 4) . '-' . substr($d, 4, 2) . '-01') : date('Y-m-d');
+            return (object)[
+                'id' => $r->id,
+                'code' => $r->working_code,
+                'req_date' => $dateStr,
+                'save_datetime' => $dateStr . ' 08:30:00',
+                'requester_name' => 'ระบบคลังยา INVS',
+                'requester_position' => 'เจ้าหน้าที่คลัง',
+                'sub_warehouse_id' => $r->dis_dept_group,
+                'sub_warehouse_name' => $deptGroupNames[$r->dis_dept_group] ?? ('กลุ่มเบิก ' . $r->dis_dept_group),
+                'status' => 'Allow',
+                'item_count' => 1,
+                'total_value' => (float)$r->value,
+            ];
+        });
+
+        // 3. Stock Items & Catalog
+        $totalStockVal = (float)DB::table('moph_f5_inventory')->sum('value_onhand');
+        $catalogItemsCount = DB::table('moph_f5_inventory')->distinct('working_code')->count('working_code') ?: DB::table('moph_f5_druglist')->count();
+
+        $consumptionMap = DB::table('moph_f5_distribution')
+            ->select('working_code', DB::raw('SUM(qty_dis) as total_qty'), DB::raw('SUM(value) as total_val'))
+            ->groupBy('working_code')
+            ->get()
+            ->keyBy('working_code');
+
+        $rawStock = DB::table('moph_f5_inventory')
+            ->select(
+                DB::raw('MIN(id) as id'),
+                'working_code',
+                DB::raw('MAX(trade_name) as trade_name'),
+                DB::raw('MAX(base_unit) as base_unit'),
+                DB::raw('SUM(qty_onhand) as total_qty'),
+                DB::raw('SUM(value_onhand) as total_val'),
+                DB::raw('MAX(pack_cost) as pack_cost'),
+                DB::raw('MAX(pack_size) as pack_size'),
+                DB::raw('MAX(lot_no) as lot_no'),
+                DB::raw('MIN(expire_date) as expire_date')
+            )
+            ->groupBy('working_code')
+            ->get();
+
+        $stockItems = [];
+        $reorderItems = [];
+
+        foreach ($rawStock as $st) {
+            $wCode = $st->working_code;
+            $mainStock = (float)$st->total_qty;
+            $totalVal = (float)$st->total_val;
+            
+            $disbInfo = $consumptionMap->get($wCode);
+            $disbQty = $disbInfo ? (float)$disbInfo->total_qty : 0.0;
+            
+            $subStock = round($disbQty * 0.2);
+            $totalHospitalStock = $mainStock + $subStock;
+
+            $amc = $disbQty > 0 ? max(1.0, round($disbQty / 12, 1)) : max(1.0, round($mainStock / 4, 1));
+            $mos = $amc > 0 ? round($totalHospitalStock / $amc, 1) : 99.0;
+            
+            $minStock = round($amc * ($config['standard_mos_min'] ?? 1.5), 1);
+            $maxStock = round($amc * ($config['standard_mos_max'] ?? 2.0), 1);
+            $unitPrice = ($st->pack_size > 0 && $st->pack_cost > 0) 
+                ? ((float)$st->pack_cost / (float)$st->pack_size) 
+                : ($mainStock > 0 ? ($totalVal / $mainStock) : 10.0);
+
+            $status = 'normal';
+            $suggestedQty = 0;
+            $budget = 0.0;
+
+            if ($mos < 0.5 || $totalHospitalStock <= $minStock) {
+                $status = 'critical';
+                $suggestedQty = max(0, round($maxStock - $totalHospitalStock));
+                $budget = $suggestedQty * $unitPrice;
+            } elseif ($mos <= 1.5) {
+                $status = 'warning';
+                $suggestedQty = max(0, round($maxStock - $totalHospitalStock));
+                $budget = $suggestedQty * $unitPrice;
+            } elseif ($mos > 3.0) {
+                $status = 'overstock';
+            }
+
+            $itemObj = (object)[
+                'id' => $st->id,
+                'code' => $wCode,
+                'name' => $st->trade_name ?: $wCode,
+                'main_stock' => $mainStock,
+                'sub_stock' => $subStock,
+                'total_stock' => $totalHospitalStock,
+                'amc' => $amc,
+                'mos' => $mos,
+                'min_stock' => $minStock,
+                'max_stock' => $maxStock,
+                'price' => $unitPrice,
+                'status' => $status,
+                'suggested_qty' => $suggestedQty,
+                'estimated_budget' => $budget,
+                'lot_no' => $st->lot_no,
+                'expire_date' => $st->expire_date,
+                'unit' => $st->base_unit ?: 'หน่วย',
+            ];
+
+            $stockItems[] = $itemObj;
+            if ($suggestedQty > 0) {
+                $reorderItems[] = $itemObj;
+            }
+        }
+
+        $totalEstimatedBudget = array_sum(array_column($reorderItems, 'estimated_budget'));
+
+        $mosList = array_filter(array_column($stockItems, 'mos'), fn($m) => $m > 0 && $m < 90);
+        $avgMos = !empty($mosList) ? round(array_sum($mosList) / count($mosList), 1) : 0;
+        if ($avgMos <= 0 && $totalDisbursement > 0) {
+            $monthsCount = $isMonthlyView ? 1 : 12;
+            $monthlyBurn = $totalDisbursement / $monthsCount;
+            $avgMos = $monthlyBurn > 0 ? round($totalStockVal / $monthlyBurn, 1) : 0;
+        }
+
+        // 4. Top 20 Disbursed Items
+        $top20DisbursedItems = (clone $disbQuery)
+            ->select(
+                'working_code as code',
+                DB::raw('MAX(trade_name) as name'),
+                DB::raw('MAX(base_unit) as unit_name'),
+                DB::raw('SUM(qty_dis) as total_qty'),
+                DB::raw('SUM(value) as total_val'),
+                DB::raw('COUNT(*) as req_count')
+            )
+            ->groupBy('working_code')
+            ->orderByDesc('total_val')
+            ->limit(20)
+            ->get();
+
+        foreach ($top20DisbursedItems as $tItem) {
+            $tItem->share_percent = $totalDisbursement > 0 ? round(((float)$tItem->total_val / $totalDisbursement) * 100, 1) : 0;
+            $tItem->avg_price = $tItem->total_qty > 0 ? round((float)$tItem->total_val / (float)$tItem->total_qty, 2) : 0;
+            $tItem->item_id = $tItem->code;
+        }
+
+        // 5. Top Sub-warehouses (Department Groups)
+        $topSubWhStats = [];
+        $drugDisbByDept = (clone $disbQuery)
+            ->select('dis_dept_group', DB::raw('SUM(value) as val'), DB::raw('COUNT(*) as cnt'))
+            ->groupBy('dis_dept_group')
+            ->orderByDesc('val')
+            ->get();
+        foreach ($drugDisbByDept as $dd) {
+            $grpName = $deptGroupNames[$dd->dis_dept_group] ?? ('กลุ่มเบิก ' . $dd->dis_dept_group);
+            $val = (float)$dd->val;
+            $share = $totalDisbursement > 0 ? round(($val / $totalDisbursement) * 100, 1) : 0;
+            $topSubWhStats[] = (object)[
+                'id' => $dd->dis_dept_group,
+                'dept_id' => $dd->dis_dept_group,
+                'name' => $grpName,
+                'val' => $val,
+                'reqs' => (int)$dd->cnt,
+                'share_percent' => $share,
+            ];
+        }
+
+        // 6. Monthly & Daily Trends
+        $monthlyDisb = DB::table('moph_f5_distribution')
+            ->whereBetween('period_rpt', [$startDisbPeriod, $endDisbPeriod])
+            ->select(DB::raw("CAST(SUBSTRING(period_rpt, 5, 2) AS UNSIGNED) as m"), DB::raw('SUM(value) as val'), DB::raw('COUNT(*) as reqs'))
+            ->groupBy(DB::raw("SUBSTRING(period_rpt, 5, 2)"))
+            ->get();
+        foreach ($monthlyDisb as $md) {
+            $m = (int)$md->m;
+            if (isset($monthlyTrend[$m])) {
+                $monthlyTrend[$m]['val'] = (float)$md->val;
+                $monthlyTrend[$m]['reqs'] = (int)$md->reqs;
+            }
+        }
+
+        $monthlyRec = DB::table('moph_f5_receipt')
+            ->whereBetween('date_rcv', [$startRcvDate, $endRcvDate])
+            ->select(DB::raw("CAST(SUBSTRING(date_rcv, 5, 2) AS UNSIGNED) as m"), DB::raw('SUM(total_value) as receive_val'), DB::raw('COUNT(DISTINCT rcv_no) as receives'))
+            ->groupBy(DB::raw("SUBSTRING(date_rcv, 5, 2)"))
+            ->get();
+        foreach ($monthlyRec as $mr) {
+            $m = (int)$mr->m;
+            if (isset($monthlyTrend[$m])) {
+                $monthlyTrend[$m]['receive_val'] = (float)$mr->receive_val;
+                $monthlyTrend[$m]['receives'] = (int)$mr->receives;
+            }
+        }
+
+        if ($isMonthlyView) {
+            $mInt = (int)$monthId;
+            $calGregYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $monthPrefix = sprintf('%04d%02d', $calGregYear, $mInt);
+
+            $dailyRec = DB::table('moph_f5_receipt')
+                ->where('date_rcv', 'like', $monthPrefix . '%')
+                ->select(DB::raw("CAST(SUBSTRING(date_rcv, 7, 2) AS UNSIGNED) as d"), DB::raw('SUM(total_value) as receive_val'), DB::raw('COUNT(DISTINCT rcv_no) as receives'))
+                ->groupBy(DB::raw("SUBSTRING(date_rcv, 7, 2)"))
+                ->get();
+            foreach ($dailyRec as $dr) {
+                $d = (int)$dr->d;
+                if (isset($dailyTrend[$d])) {
+                    $dailyTrend[$d]['receive_val'] = (float)$dr->receive_val;
+                    $dailyTrend[$d]['receives'] = (int)$dr->receives;
+                }
+            }
+
+            $mDisbVal = (float)DB::table('moph_f5_distribution')
+                ->where('period_rpt', $monthPrefix)
+                ->sum('value');
+            if ($mDisbVal > 0 && !empty($daysInMonth)) {
+                $dailyAvg = round($mDisbVal / $daysInMonth, 2);
+                for ($d = 1; $d <= $daysInMonth; $d++) {
+                    $dailyTrend[$d]['val'] = $dailyAvg;
+                }
+            }
+        }
+
+        return [
+            'config' => $config,
+            'totalReceive' => $totalReceive,
+            'totalReceiveCount' => $totalReceiveCount,
+            'totalDisbursement' => $totalDisbursement,
+            'totalStockVal' => $totalStockVal,
+            'catalogItemsCount' => $catalogItemsCount,
+            'avgMos' => $avgMos,
+            'totalReqCount' => $totalReqCount,
+            'statusCounts' => $statusCounts,
+            'requests' => $requests,
+            'receives' => $receives,
+            'stockItems' => $stockItems,
+            'reorderItems' => $reorderItems,
+            'top20DisbursedItems' => $top20DisbursedItems,
+            'totalEstimatedBudget' => $totalEstimatedBudget,
+            'monthlyTrend' => array_values($monthlyTrend),
+            'dailyTrend' => array_values($dailyTrend),
+            'isMonthlyView' => $isMonthlyView,
+            'selectedMonthName' => $selectedMonthName,
+            'selectedCalYear' => $selectedCalYear,
+            'topSubWhStats' => $topSubWhStats,
+        ];
     }
 }

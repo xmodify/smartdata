@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ส่งข้อมูล INV Dataset ไปยังกระทรวงสาธารณสุข และ SmartData Platform</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      background-color: #eef2f6;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 13px;
+      color: #334155;
+      user-select: none;
+      margin: 0;
+      padding: 10px;
+    }
+    .window-card {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .window-header {
+      background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+      padding: 6px 14px;
+      border-bottom: 1px solid #cbd5e1;
+      font-weight: 600;
+      font-size: 13px;
+      color: #475569;
+    }
+    .hospital-bar {
+      background: #f8fafc;
+      padding: 10px 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .nav-tabs {
+      border-bottom: 1px solid #cbd5e1;
+      padding-left: 10px;
+      background: #f1f5f9;
+    }
+    .nav-tabs .nav-link {
+      color: #475569;
+      font-size: 12.5px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      padding: 6px 16px;
+      margin-bottom: -1px;
+    }
+    .nav-tabs .nav-link.active {
+      color: #0f172a;
+      background-color: #ffffff;
+      border-color: #cbd5e1 #cbd5e1 #ffffff;
+      font-weight: 600;
+    }
+    .tab-content {
+      padding: 14px;
+      background: #ffffff;
+    }
+    .f5-checkbox-list {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+    }
+    .f5-checkbox-item {
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-invs-api {
+      background: linear-gradient(180deg, #fef08a 0%, #facc15 100%);
+      border: 1px solid #ca8a04;
+      color: #713f12;
+      font-weight: 600;
+      padding: 5px 16px;
+      border-radius: 4px;
+      font-size: 12.5px;
+    }
+    .btn-invs-api:hover {
+      background: linear-gradient(180deg, #facc15 0%, #eab308 100%);
+      color: #422006;
+    }
+    .btn-invs-excel {
+      background: linear-gradient(180deg, #bbf7d0 0%, #4ade80 100%);
+      border: 1px solid #16a34a;
+      color: #14532d;
+      font-weight: 600;
+      padding: 5px 16px;
+      border-radius: 4px;
+      font-size: 12.5px;
+    }
+    .btn-invs-excel:hover {
+      background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+      color: #052e16;
+    }
+    .console-log-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      height: 140px;
+      overflow-y: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 11.5px;
+      padding: 8px;
+      color: #1e293b;
+      white-space: pre-wrap;
+    }
+    .form-control-sm, .form-select-sm {
+      font-size: 12px;
+    }
+    .badge-check {
+      color: #16a34a;
+      font-size: 14px;
+    }
+    /* Thai Calendar Popup */
+    .thai-calendar-popup {
+      position: absolute;
+      top: 100%;
+      left: 60px;
+      z-index: 1080;
+      background: #ffffff;
+      border: 1px solid #94a3b8;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+      width: 275px;
+      padding: 10px;
+      display: none;
+      margin-top: 4px;
+    }
+    .thai-calendar-popup.show {
+      display: block;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      text-align: center;
+    }
+    .cal-day-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      padding: 3px 0;
+    }
+    .cal-day {
+      font-size: 12px;
+      padding: 5px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.12s;
+    }
+    .cal-day:hover {
+      background-color: #e2e8f0;
+      color: #0f172a;
+    }
+    .cal-day.today {
+      border: 1px solid #3b82f6;
+      font-weight: 600;
+    }
+    .cal-day.selected {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+      font-weight: bold;
+    }
+    .cal-day.other-month {
+      color: #cbd5e1;
+      cursor: default;
+    }
+    .cal-day.other-month:hover {
+      background-color: transparent;
+    }
+  </style>
+</head>
+<body>
+
+<div class="window-card">
+  <!-- Title Bar -->
+  <div class="window-header d-flex justify-content-between align-items-center">
+    <div>
+      <i class="fas fa-boxes-stacked text-primary me-1.5"></i>
+      ส่งออกข้อมูล 5 แฟ้มยา INVS
+    </div>
+    <div class="text-muted small">v1.0.0 (Go Native)</div>
+  </div>
+
+  <!-- Hospital Info Bar -->
+  <div class="hospital-bar">
+    <div class="row g-2 align-items-center">
+      <div class="col-auto">
+        <label class="fw-semibold text-secondary">รหัส รพ.</label>
+      </div>
+      <div class="col-sm-2 col-md-2">
+        <input type="text" class="form-control form-control-sm font-monospace fw-bold" id="cfg_hosp_code" value="EA0010989" onchange="saveConfigSilent()">
+      </div>
+      <div class="col-auto">
+        <label class="fw-semibold text-secondary">ชื่อ รพ.</label>
+      </div>
+      <div class="col-sm-6 col-md-6">
+        <input type="text" class="form-control form-control-sm" id="cfg_hosp_name" value="โรงพยาบาลหัวตะพาน" onchange="saveConfigSilent()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <ul class="nav nav-tabs" id="invsTab" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active" id="tab-send-btn" data-bs-toggle="tab" data-bs-target="#tab-send" type="button">
+        <i class="fas fa-paper-plane me-1 text-primary"></i> ส่งข้อมูลใหม่
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="tab-db-btn" data-bs-toggle="tab" data-bs-target="#tab-db" type="button">
+        <i class="fas fa-database me-1 text-info"></i> ตั้งค่า SQL Server
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="tab-api-btn" data-bs-toggle="tab" data-bs-target="#tab-api" type="button">
+        <i class="fas fa-cloud me-1 text-success"></i> ตั้งค่า API & Schedule
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Contents -->
+  <div class="tab-content">
+    
+    <!-- TAB 1: SEND DATA (ส่งข้อมูลใหม่) -->
+    <div class="tab-pane fade show active" id="tab-send">
+      <div class="row g-2 mb-2 align-items-center">
+        <div class="col-auto">
+          <label class="fw-semibold text-secondary">เดือน</label>
+        </div>
+        <div class="col-auto" style="width: 75px;">
+          <input type="number" class="form-control form-control-sm text-center" id="cfg_month" min="1" max="12" value="10" onchange="saveConfigSilent()">
+        </div>
+        <div class="col-auto">
+          <label class="fw-semibold text-secondary">ปี</label>
+        </div>
+        <div class="col-auto" style="width: 90px;">
+          <input type="number" class="form-control form-control-sm text-center font-monospace" id="cfg_year" value="2569" onchange="saveConfigSilent()">
+        </div>
+        <div class="col-auto ms-2">
+          <label class="fw-semibold text-secondary">หน่วยงาน</label>
+        </div>
+        <div class="col-auto" style="min-width: 160px;">
+          <select class="form-select form-select-sm" id="cfg_stock_id" onchange="saveConfigSilent()">
+            <option value="STOCK1" selected>STOCK1 (คลังยาหลัก)</option>
+            <option value="STOCK2">STOCK2 (คลังเวชภัณฑ์มิใช่ยา)</option>
+            <option value="STOCK3">STOCK3 (คลังทันตกรรม)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ประเภทบัญชี: Multi-Select Checkboxes matching INVS -->
+      <div class="row g-2 mb-2 align-items-center">
+        <div class="col-auto">
+          <label class="fw-semibold text-secondary">ประเภทบัญชี</label>
+        </div>
+        <div class="col-md-9 position-relative">
+          <div class="dropdown" id="accountTypeDropdown">
+            <button class="btn btn-sm btn-white border w-100 text-start d-flex justify-content-between align-items-center bg-white shadow-sm" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="accountTypeBtn" style="min-height: 31px;">
+              <span id="accountTypeSummary" class="text-truncate fw-normal text-dark" style="font-size: 13px;">ED (ยาในบัญชียาหลัก);NED (ยานอกบัญชียาหลัก);CM (สารเคมี)</span>
+              <span class="badge bg-warning text-dark ms-2"><i class="fas fa-caret-down"></i></span>
+            </button>
+            <ul class="dropdown-menu shadow p-2 w-100" style="max-height: 280px; overflow-y: auto; font-size: 13px;">
+              <li><h6 class="dropdown-header py-1 text-muted" style="font-size: 11px;">เลือกประเภทบัญชี (เหมือน INVS)</h6></li>
+              <li>
+                <div class="form-check px-3 py-1">
+                  <input class="form-check-input acc-type-chk" type="checkbox" value="ED (ยาในบัญชียาหลัก)" id="acc_ed" checked onchange="updateAccountTypeSummary()">
+                  <label class="form-check-label" for="acc_ed">ED (ยาในบัญชียาหลัก)</label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check px-3 py-1">
+                  <input class="form-check-input acc-type-chk" type="checkbox" value="NED (ยานอกบัญชียาหลัก)" id="acc_ned" checked onchange="updateAccountTypeSummary()">
+                  <label class="form-check-label" for="acc_ned">NED (ยานอกบัญชียาหลัก)</label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check px-3 py-1">
+                  <input class="form-check-input acc-type-chk" type="checkbox" value="NDMS (เวชภัณฑ์มิใช่ยา)" id="acc_ndms" onchange="updateAccountTypeSummary()">
+                  <label class="form-check-label" for="acc_ndms">NDMS (เวชภัณฑ์มิใช่ยา)</label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check px-3 py-1">
+                  <input class="form-check-input acc-type-chk" type="checkbox" value="CM (สารเคมี)" id="acc_cm" checked onchange="updateAccountTypeSummary()">
+                  <label class="form-check-label" for="acc_cm">CM (สารเคมี)</label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check px-3 py-1">
+                  <input class="form-check-input acc-type-chk" type="checkbox" value="LS (วัสดุทางห้องปฏิบัติการ)" id="acc_ls" onchange="updateAccountTypeSummary()">
+                  <label class="form-check-label" for="acc_ls">LS (วัสดุทางห้องปฏิบัติการ)</label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check px-3 py-1">
+                  <input class="form-check-input acc-type-chk" type="checkbox" value="PS (วัสดุทางเภสัชกรรม)" id="acc_ps" onchange="updateAccountTypeSummary()">
+                  <label class="form-check-label" for="acc_ps">PS (วัสดุทางเภสัชกรรม)</label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check px-3 py-1">
+                  <input class="form-check-input acc-type-chk" type="checkbox" value="DS (วัสดุทางทันตกรรม)" id="acc_ds" onchange="updateAccountTypeSummary()">
+                  <label class="form-check-label" for="acc_ds">DS (วัสดุทางทันตกรรม)</label>
+                </div>
+              </li>
+              <li>
+                <div class="form-check px-3 py-1">
+                  <input class="form-check-input acc-type-chk" type="checkbox" value="GMS (วัสดุการแพทย์ทั่วไป)" id="acc_gms" onchange="updateAccountTypeSummary()">
+                  <label class="form-check-label" for="acc_gms">GMS (วัสดุการแพทย์ทั่วไป)</label>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <input type="hidden" id="cfg_account_type" value="ED (ยาในบัญชียาหลัก);NED (ยานอกบัญชียาหลัก);CM (สารเคมี)">
+        </div>
+      </div>
+
+      <!-- 5 Files Checklist -->
+      <div class="f5-checkbox-list">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="chk_all_files" checked onchange="toggleSelectAllFiles(this.checked)">
+          <label class="form-check-label fw-bold text-dark" for="chk_all_files">
+            ทั้งหมดทุกแฟ้ม
+          </label>
+        </div>
+        <div class="ms-3">
+          <div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
+            <div class="form-check me-2">
+              <input class="form-check-input f5-chk" type="checkbox" id="chk_druglist" checked>
+              <label class="form-check-label" for="chk_druglist">1. แฟ้มบัญชีรายการยาของหน่วยงาน (DRUGLIST)</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="chk_druglist_changed">
+              <label class="form-check-label text-muted small" for="chk_druglist_changed">เฉพาะเพิ่ม/ปรับปรุง</label>
+            </div>
+          </div>
+
+          <div class="form-check mb-1.5">
+            <input class="form-check-input f5-chk" type="checkbox" id="chk_receipt" checked>
+            <label class="form-check-label" for="chk_receipt">2. แฟ้มรับเวชภัณฑ์ (RECEIPT)</label>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap position-relative">
+            <div class="form-check">
+              <input class="form-check-input f5-chk" type="checkbox" id="chk_inventory" checked>
+              <label class="form-check-label" for="chk_inventory">3. แฟ้มสถานะคงคลังเวชภัณฑ์ (INVENTORY)</label>
+            </div>
+            <div class="d-flex align-items-center gap-1.5 ms-2 position-relative" id="cfg_inv_date_group">
+              <span class="text-secondary small fw-semibold" style="cursor: pointer; user-select: none;" onclick="toggleCalendar(event)" title="คลิกเพื่อเปิดปฏิทิน">ณ วันที่:</span>
+              <div class="input-group input-group-sm" style="width: 145px;">
+                <input type="text" class="form-control form-control-sm text-center py-0 font-monospace" id="cfg_inv_date" value="16/10/2569" style="cursor: pointer; background: #fff;" onclick="toggleCalendar(event)" title="คลิกเพื่อเลือกวันที่จากปฏิทิน">
+                <button class="btn btn-outline-secondary py-0 px-2" type="button" onclick="toggleCalendar(event)" title="เปิดปฏิทิน">
+                  <i class="far fa-calendar-alt text-primary"></i>
+                </button>
+              </div>
+
+              <!-- Thai Calendar Popup -->
+              <div id="thaiCalendarPopup" class="thai-calendar-popup" onclick="event.stopPropagation()">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                  <button type="button" class="btn btn-sm btn-light py-0 px-2 fw-bold" onclick="calPrevMonth()">&lt;</button>
+                  <div class="d-flex gap-1">
+                    <select id="calMonthSelect" class="form-select form-select-sm py-0 px-1" style="font-size: 11.5px; width: 95px;" onchange="calMonthYearChange()"></select>
+                    <select id="calYearSelect" class="form-select form-select-sm py-0 px-1" style="font-size: 11.5px; width: 75px;" onchange="calMonthYearChange()"></select>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-light py-0 px-2 fw-bold" onclick="calNextMonth()">&gt;</button>
+                </div>
+                <div class="cal-grid mb-1">
+                  <div class="cal-day-header text-danger">อา</div>
+                  <div class="cal-day-header">จ</div>
+                  <div class="cal-day-header">อ</div>
+                  <div class="cal-day-header">พ</div>
+                  <div class="cal-day-header">พฤ</div>
+                  <div class="cal-day-header">ศ</div>
+                  <div class="cal-day-header text-primary">ส</div>
+                </div>
+                <div id="calDaysGrid" class="cal-grid mb-2"></div>
+                <div class="d-flex justify-content-between align-items-center pt-1 border-top">
+                  <button type="button" class="btn btn-outline-secondary py-0 px-1.5" style="font-size: 11px;" onclick="calPickToday()">วันนี้</button>
+                  <button type="button" class="btn btn-outline-primary py-0 px-1.5" style="font-size: 11px;" onclick="calPickEndOfPeriod()">สิ้นงวดเดือน</button>
+                  <button type="button" class="btn btn-light py-0 px-2" style="font-size: 11px;" onclick="closeCalendar()">ปิด</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-check mb-1.5">
+            <input class="form-check-input f5-chk" type="checkbox" id="chk_distribution" checked>
+            <label class="form-check-label" for="chk_distribution">4. แฟ้มจ่ายเวชภัณฑ์ออกจากคลัง (DISTRIBUTION)</label>
+          </div>
+
+          <div class="form-check mb-1">
+            <input class="form-check-input f5-chk" type="checkbox" id="chk_purchaseplan" checked>
+            <label class="form-check-label" for="chk_purchaseplan">5. แฟ้มแผนซื้อ (PURCHASEPLAN)</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- DMSIC / SmartData Token -->
+      <div class="row g-2 mb-2 align-items-center">
+        <div class="col-auto">
+          <label class="fw-semibold text-secondary">DMSIC / SmartData Token</label>
+        </div>
+        <div class="col-md-7 d-flex align-items-center gap-2">
+          <input type="text" class="form-control form-control-sm font-monospace" id="cfg_api_token" placeholder="ใส่ Bearer API Token (ถ้ามี)">
+          <i class="fas fa-circle-check badge-check"></i>
+        </div>
+        <div class="col-auto ms-auto d-flex align-items-center gap-3">
+          <span class="fw-semibold text-secondary small">การรายงานผล</span>
+          <div class="form-check form-check-inline m-0">
+            <input class="form-check-input" type="radio" name="reportType" id="repText" value="text" checked>
+            <label class="form-check-label small" for="repText">Text File</label>
+          </div>
+          <div class="form-check form-check-inline m-0">
+            <input class="form-check-input" type="radio" name="reportType" id="repExcel" value="excel">
+            <label class="form-check-label small" for="repExcel">Excel File</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons & Export Folder Bar -->
+      <div class="d-flex align-items-center gap-2 mb-2.5 flex-wrap">
+        <button type="button" class="btn btn-invs-api" id="btnSyncApi" onclick="executeSyncApi()">
+          <i class="fas fa-hand-holding-hand me-1"></i> ส่งผ่าน API
+        </button>
+        <button type="button" class="btn btn-invs-excel" id="btnExportExcel" onclick="executeExportExcel()">
+          <i class="fa-solid fa-file-excel me-1"></i> ส่งออก Excel
+        </button>
+
+        <!-- โฟลเดอร์ปลายทางสำหรับบันทึก Excel -->
+        <div class="input-group input-group-sm" style="max-width: 460px;">
+          <span class="input-group-text bg-white small text-muted" title="ตำแหน่งโฟลเดอร์สำหรับบันทึกไฟล์ Excel">
+            <i class="fas fa-folder-open text-warning me-1"></i> โฟลเดอร์:
+          </span>
+          <input type="text" class="form-control form-control-sm font-monospace" id="cfg_output_dir" value="./exports" placeholder="./exports" onchange="saveConfigSilent()" title="ตำแหน่งโฟลเดอร์สำหรับบันทึกไฟล์ Excel (พิมพ์ระบุหรือกดเลือกโฟลเดอร์ได้)">
+          <button class="btn btn-outline-secondary" type="button" onclick="chooseExportFolder()" title="กดเพื่อเปิดหน้าต่างเลือกโฟลเดอร์">
+            <i class="fas fa-folder-tree me-1"></i>เลือก
+          </button>
+          <button class="btn btn-outline-primary" type="button" onclick="openExportFolder()" title="เปิดดูโฟลเดอร์ใน Windows Explorer">
+            <i class="fas fa-arrow-up-right-from-square me-1"></i>เปิด
+          </button>
+        </div>
+
+        <span class="text-muted small ms-auto" id="syncStatusHint">พร้อมทำงาน</span>
+      </div>
+
+      <!-- Telegram Alert Bar -->
+      <div class="p-2.5 border rounded bg-light mb-2">
+        <div class="d-flex align-items-center justify-content-between mb-1.5 flex-wrap">
+          <div class="small fw-bold text-dark">
+            <i class="fab fa-telegram text-primary me-1"></i> การแจ้งเตือน Telegram (สำหรับการรันอัตโนมัติด้วย -s)
+          </div>
+          <div>
+            <button type="button" class="btn btn-sm btn-success py-0.5 px-2.5 fw-semibold" style="font-size: 11.5px;" onclick="saveTelegramConfig()">
+              <i class="fas fa-floppy-disk me-1"></i> บันทึก Telegram
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary py-0.5 px-2 ms-1" style="font-size: 11.5px;" onclick="testTelegram()">
+              <i class="fas fa-paper-plane me-1"></i> ทดสอบส่งข้อความ
+            </button>
+          </div>
+        </div>
+        <div class="row g-2 align-items-center">
+          <div class="col-md-5">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white small text-muted" style="font-size: 11px;">Bot Token</span>
+              <input type="password" class="form-control form-control-sm font-monospace" id="cfg_telegram_token" placeholder="ใส่ Bot Token จาก @BotFather">
+              <button class="btn btn-outline-secondary" type="button" onclick="toggleTelegramTokenVisibility()" title="ดู/ซ่อน Bot Token">
+                <i class="fas fa-eye" id="tgEyeIcon"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white small text-muted" style="font-size: 11px;">Chat ID</span>
+              <input type="text" class="form-control form-control-sm font-monospace" id="cfg_telegram_chat" value="-1002572840810" placeholder="-100xxxxxxx">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" id="cfg_telegram_enabled" checked>
+              <label class="form-check-label small" for="cfg_telegram_enabled" style="font-size: 11px;">เปิดแจ้งเตือน</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Console / Logs Box -->
+      <div class="console-log-box" id="consoleLogs">
+[System] โปรแกรม invs_agent พร้อมทำงาน
+[System] อ่านการตั้งค่าจาก config.json เรียบร้อย
+[Ready] เลือกงวด 10/2569 (คลังหลัก: STOCK1)
+      </div>
+    </div>
+
+    <!-- TAB 2: SQL SERVER SETTINGS -->
+    <div class="tab-pane fade" id="tab-db">
+      <h6 class="fw-bold mb-3 text-dark"><i class="fas fa-server text-info me-1.5"></i>ตั้งค่าการเชื่อมต่อ INVS MS SQL Server (Local / Intranet)</h6>
+      
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Server Host / IP</label>
+          <input type="text" class="form-control form-control-sm" id="cfg_db_host" value="127.0.0.1">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">Port</label>
+          <input type="number" class="form-control form-control-sm" id="cfg_db_port" value="1433">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Database Name</label>
+          <input type="text" class="form-control form-control-sm" id="cfg_db_name" value="INVS_DB">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Username</label>
+          <input type="text" class="form-control form-control-sm" id="cfg_db_user" value="sa">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Password</label>
+          <div class="input-group input-group-sm">
+            <input type="password" class="form-control form-control-sm" id="cfg_db_pass" placeholder="••••••••">
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility()" title="ดู/ซ่อนรหัสผ่าน">
+              <i class="fas fa-eye" id="passEyeIcon"></i>
+            </button>
+          </div>
+          <div class="form-text text-muted" style="font-size: 11px;">รหัสผ่านของบัญชี MS SQL Server ใน รพ. (เช่น sa หรือ smartdata)</div>
+        </div>
+        <div class="col-md-4 d-flex align-items-center gap-3 pt-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="cfg_db_trust" checked>
+            <label class="form-check-label small" for="cfg_db_trust">Trust Certificate</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="cfg_db_encrypt">
+            <label class="form-check-label small" for="cfg_db_encrypt">Encrypt SSL</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <button type="button" class="btn btn-sm btn-info text-white fw-semibold" onclick="testDatabaseConnection()">
+          <i class="fas fa-plug me-1"></i> ทดสอบการเชื่อมต่อ SQL Server
+        </button>
+        <button type="button" class="btn btn-sm btn-success fw-semibold" onclick="saveDatabaseConfig()">
+          <i class="fas fa-floppy-disk me-1"></i> บันทึกการตั้งค่า SQL
+        </button>
+        <span class="small" id="dbTestResult"></span>
+      </div>
+
+      <div class="alert alert-light border small text-muted">
+        <i class="fas fa-circle-info text-primary me-1"></i> <strong>คำแนะนำ:</strong> ไดรเวอร์ Pure Go MS SQL Connector เปิดใช้งาน <code>tlsmin=1.0</code> รองรับ MS SQL Server 2008, 2012, 2016, 2019, 2022 ของ รพ. โดยอัตโนมัติ โดยไม่ต้องติดตั้ง ODBC Driver เพิ่มเติม
+      </div>
+    </div>
+
+    <!-- TAB 3: API & SCHEDULE SETTINGS -->
+    <div class="tab-pane fade" id="tab-api">
+      <h6 class="fw-bold mb-3 text-dark"><i class="fas fa-cloud-arrow-up text-success me-1.5"></i>ตั้งค่า SmartData API Endpoint & ระบบตั้งเวลาส่งอัตโนมัติ (Schedule)</h6>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-7">
+          <label class="form-label small fw-semibold">SmartData Upload API URL</label>
+          <input type="text" class="form-control form-control-sm font-monospace" id="cfg_api_url" value="http://127.0.0.1/smartdata/api/v1/moph-f5/upload">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label small fw-semibold">Bearer API Token</label>
+          <input type="text" class="form-control form-control-sm font-monospace" id="cfg_api_token_input" placeholder="ใส่ Bearer API Token (ถ้ามี)">
+        </div>
+      </div>
+
+      <div class="card p-3 border bg-light mb-3">
+        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-clock text-warning me-1"></i>การตั้งเวลาส่งอัตโนมัติ (Schedule Timer)</h6>
+        <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="cfg_sched_enabled" checked>
+            <label class="form-check-label fw-semibold" for="cfg_sched_enabled">เปิดใช้งาน Schedule ส่งข้อมูลอัตโนมัติ</label>
+          </div>
+          <div class="d-flex align-items-center gap-1.5">
+            <span class="small text-secondary">ส่งทุกวันเวลา:</span>
+            <input type="time" class="form-control form-control-sm" id="cfg_sched_time" value="01:00" style="width: 100px;">
+          </div>
+        </div>
+        <div class="text-muted small">
+          <i class="fas fa-terminal text-secondary me-1"></i> <strong>สั่งรันแบบเงียบ (Silent / Task Scheduler):</strong> สามารถตั้งใน Windows Task Scheduler ให้เรียก <code>invs_agent.exe -s</code> เพื่อให้แอบดึงและยิงข้อมูลอัตโนมัติในพื้นหลังโดยไม่เปิดหน้าต่าง
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-success fw-semibold" onclick="testApiConnection()">
+          <i class="fas fa-circle-check me-1"></i> ทดสอบการเชื่อมต่อ API
+        </button>
+        <button type="button" class="btn btn-sm btn-success fw-semibold" onclick="saveApiConfig()">
+          <i class="fas fa-floppy-disk me-1"></i> บันทึกการตั้งค่า API & Schedule
+        </button>
+        <span class="small" id="apiTestResult"></span>
+      </div>
+    </div>
+
+  </div>
+  
+  <!-- System Tray Status Footer -->
+  <div class="px-3 py-2 bg-light border-top d-flex justify-content-between align-items-center text-muted" style="font-size: 11.5px;">
+    <div>
+      <span class="badge bg-success-subtle text-success border border-success-subtle me-1.5"><i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i> รันเบื้องหลัง</span>
+      เมื่อกดปิดหน้าต่าง [X] โปรแกรมจะยังคง<strong>รันอยู่เบื้องหลังที่ถาดไอคอนด้านล่างขวา (System Tray)</strong>
+    </div>
+    <div>
+      หากต้องการปิดโปรแกรม ให้คลิกขวาที่ไอคอนล่างขวาแล้วเลือก <strong>"ออกจากโปรแกรม (Exit)"</strong>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let manualSelectedFiles = [];
+
+  function appendLog(text) {
+    const box = document.getElementById('consoleLogs');
+    const timeStr = new Date().toLocaleTimeString('th-TH');
+    box.innerText += `\n[${timeStr}] ${text}`;
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function toggleSelectAllFiles(checked) {
+    document.querySelectorAll('.f5-chk').forEach(el => el.checked = checked);
+  }
+
+  function togglePasswordVisibility() {
+    const el = document.getElementById('cfg_db_pass');
+    const icon = document.getElementById('passEyeIcon');
+    if (el.type === 'password') {
+      el.type = 'text';
+      icon.className = 'fas fa-eye-slash';
+    } else {
+      el.type = 'password';
+      icon.className = 'fas fa-eye';
+    }
+  }
+
+  function toggleTelegramTokenVisibility() {
+    const el = document.getElementById('cfg_telegram_token');
+    const icon = document.getElementById('tgEyeIcon');
+    if (el.type === 'password') {
+      el.type = 'text';
+      icon.className = 'fas fa-eye-slash';
+    } else {
+      el.type = 'password';
+      icon.className = 'fas fa-eye';
+    }
+  }
+
+  function updateAccountTypeSummary() {
+    const selected = [];
+    document.querySelectorAll('.acc-type-chk:checked').forEach(chk => {
+      selected.push(chk.value);
+    });
+    const summary = selected.length > 0 ? selected.join(';') : 'ไม่ได้เลือกประเภทบัญชี';
+    document.getElementById('accountTypeSummary').innerText = summary;
+    document.getElementById('cfg_account_type').value = summary;
+    saveConfigSilent();
+  }
+
+  // Load config on startup
+  async function loadConfig() {
+    try {
+      const res = await fetch('/api/config');
+      const cfg = await res.json();
+      
+      document.getElementById('cfg_hosp_code').value = cfg.hosp_code || 'EA0010989';
+      document.getElementById('cfg_hosp_name').value = cfg.hosp_name || 'โรงพยาบาลหัวตะพาน';
+      document.getElementById('cfg_month').value = cfg.month || 10;
+      document.getElementById('cfg_year').value = cfg.year || 2569;
+      document.getElementById('cfg_stock_id').value = cfg.stock_id || 'STOCK1';
+      
+      // Setup Account Type Checkboxes & Summary
+      const accTypeVal = cfg.account_type || 'ED (ยาในบัญชียาหลัก);NED (ยานอกบัญชียาหลัก);CM (สารเคมี)';
+      document.getElementById('cfg_account_type').value = accTypeVal;
+      document.getElementById('accountTypeSummary').innerText = accTypeVal;
+      
+      document.querySelectorAll('.acc-type-chk').forEach(chk => {
+        const code = chk.value.split(' ')[0]; // e.g. "ED", "NED", "NDMS", "CM"
+        if (code === 'ED') {
+          // Check if "ED" exists and not just as part of "NED"
+          const withoutNed = accTypeVal.replace(/NED/g, '');
+          chk.checked = withoutNed.includes('ED');
+        } else {
+          chk.checked = accTypeVal.includes(code);
+        }
+      });
+      
+      if (cfg.selection) {
+        document.getElementById('chk_all_files').checked = cfg.selection.select_all !== false;
+        document.getElementById('chk_druglist').checked = cfg.selection.druglist !== false;
+        document.getElementById('chk_druglist_changed').checked = !!cfg.selection.druglist_only_changed;
+        document.getElementById('chk_receipt').checked = cfg.selection.receipt !== false;
+        document.getElementById('chk_inventory').checked = cfg.selection.inventory !== false;
+        document.getElementById('chk_distribution').checked = cfg.selection.distribution !== false;
+        document.getElementById('chk_purchaseplan').checked = cfg.selection.purchaseplan !== false;
+        document.getElementById('cfg_inv_date').value = cfg.selection.inventory_date || '16/10/2569';
+      }
+
+      if (cfg.database) {
+        document.getElementById('cfg_db_host').value = cfg.database.host || '127.0.0.1';
+        document.getElementById('cfg_db_port').value = cfg.database.port || 1433;
+        document.getElementById('cfg_db_name').value = cfg.database.database || 'INVS_DB';
+        document.getElementById('cfg_db_user').value = cfg.database.username || 'sa';
+        document.getElementById('cfg_db_pass').value = cfg.database.password || '';
+        document.getElementById('cfg_db_trust').checked = cfg.database.trust_server_certificate !== false;
+        document.getElementById('cfg_db_encrypt').checked = !!cfg.database.encrypt;
+      }
+
+      if (cfg.api) {
+        document.getElementById('cfg_api_url').value = cfg.api.url || 'http://127.0.0.1/smartdata/api/v1/moph-f5/upload';
+        document.getElementById('cfg_api_token').value = cfg.api.token || '';
+        document.getElementById('cfg_api_token_input').value = cfg.api.token || '';
+      }
+
+      if (cfg.schedule) {
+        document.getElementById('cfg_sched_enabled').checked = cfg.schedule.enabled !== false;
+        document.getElementById('cfg_sched_time').value = cfg.schedule.daily_time || '01:00';
+      }
+
+      if (cfg.telegram) {
+        document.getElementById('cfg_telegram_token').value = cfg.telegram.bot_token || '';
+        document.getElementById('cfg_telegram_chat').value = cfg.telegram.chat_id || '-1002572840810';
+        document.getElementById('cfg_telegram_enabled').checked = cfg.telegram.enabled !== false;
+      }
+
+      if (cfg.output_dir) {
+        document.getElementById('cfg_output_dir').value = cfg.output_dir;
+      }
+    } catch (e) {
+      console.error('load config error:', e);
+    }
+  }
+
+  function getFormData() {
+    return {
+      hosp_code: document.getElementById('cfg_hosp_code').value,
+      hosp_name: document.getElementById('cfg_hosp_name').value,
+      month: parseInt(document.getElementById('cfg_month').value) || 10,
+      year: parseInt(document.getElementById('cfg_year').value) || 2569,
+      stock_id: document.getElementById('cfg_stock_id').value,
+      account_type: document.getElementById('cfg_account_type').value,
+      selection: {
+        select_all: document.getElementById('chk_all_files').checked,
+        druglist: document.getElementById('chk_druglist').checked,
+        druglist_only_changed: document.getElementById('chk_druglist_changed').checked,
+        receipt: document.getElementById('chk_receipt').checked,
+        inventory: document.getElementById('chk_inventory').checked,
+        inventory_date: document.getElementById('cfg_inv_date').value,
+        distribution: document.getElementById('chk_distribution').checked,
+        purchaseplan: document.getElementById('chk_purchaseplan').checked,
+      },
+      database: {
+        host: document.getElementById('cfg_db_host').value,
+        port: parseInt(document.getElementById('cfg_db_port').value) || 1433,
+        database: document.getElementById('cfg_db_name').value,
+        username: document.getElementById('cfg_db_user').value,
+        password: document.getElementById('cfg_db_pass').value,
+        trust_server_certificate: document.getElementById('cfg_db_trust').checked,
+        encrypt: document.getElementById('cfg_db_encrypt').checked,
+      },
+      api: {
+        url: document.getElementById('cfg_api_url').value,
+        token: document.getElementById('cfg_api_token').value,
+        output_type: document.querySelector('input[name="reportType"]:checked').value,
+      },
+      schedule: {
+        enabled: document.getElementById('cfg_sched_enabled').checked,
+        daily_time: document.getElementById('cfg_sched_time').value,
+      },
+      telegram: {
+        enabled: document.getElementById('cfg_telegram_enabled').checked,
+        bot_token: document.getElementById('cfg_telegram_token').value,
+        chat_id: document.getElementById('cfg_telegram_chat').value,
+      },
+      output_dir: document.getElementById('cfg_output_dir').value,
+    };
+  }
+
+  async function saveConfigSilent() {
+    const data = getFormData();
+    try {
+      await fetch('/api/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+    } catch (e) {
+      console.error('silent save error:', e);
+    }
+  }
+
+  async function saveTelegramConfig() {
+    await saveConfigSilent();
+    appendLog('[Telegram] บันทึกการตั้งค่า Telegram Bot Token และ Chat ID เรียบร้อย');
+    alert('บันทึกการตั้งค่า Telegram เรียบร้อยแล้ว');
+  }
+
+  async function saveGeneralConfig() {
+    const data = getFormData();
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      const resp = await res.json();
+      if (resp.success) {
+        appendLog('บันทึกข้อมูลโรงพยาบาลและการตั้งค่าสำเร็จ');
+        alert('บันทึกการตั้งค่าสำเร็จเรียบร้อย');
+      }
+    } catch (e) {
+      appendLog('เกิดข้อผิดพลาดในการบันทึก: ' + e);
+    }
+  }
+
+  async function saveDatabaseConfig() {
+    await saveGeneralConfig();
+  }
+
+  async function saveApiConfig() {
+    // Keep both token fields in sync
+    document.getElementById('cfg_api_token').value = document.getElementById('cfg_api_token_input').value;
+    await saveGeneralConfig();
+  }
+
+  async function testDatabaseConnection() {
+    const el = document.getElementById('dbTestResult');
+    el.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin me-1"></i> กำลังทดสอบ...</span>';
+    appendLog('กำลังทดสอบการเชื่อมต่อ MS SQL Server...');
+
+    try {
+      const data = getFormData();
+      const res = await fetch('/api/test-db', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data.database)
+      });
+      const resp = await res.json();
+      if (resp.success) {
+        el.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-circle-check me-1"></i> เชื่อมต่อสำเร็จ!</span>';
+        appendLog('เชื่อมต่อ SQL Server สำเร็จเรียบร้อย');
+      } else {
+        el.innerHTML = `<span class="text-danger"><i class="fas fa-triangle-exclamation me-1"></i> ${resp.error}</span>`;
+        appendLog('เชื่อมต่อ SQL Server ล้มเหลว: ' + resp.error);
+      }
+    } catch (e) {
+      el.innerHTML = '<span class="text-danger">เกิดข้อผิดพลาด: ' + e + '</span>';
+      appendLog('SQL Test Error: ' + e);
+    }
+  }
+
+  async function testApiConnection() {
+    const el = document.getElementById('apiTestResult');
+    el.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin me-1"></i> กำลังทดสอบ...</span>';
+    appendLog('กำลังทดสอบการเชื่อมต่อ SmartData API...');
+
+    try {
+      const data = getFormData();
+      const res = await fetch('/api/test-api', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ url: data.api.url, token: data.api.token })
+      });
+      const resp = await res.json();
+      if (resp.success) {
+        el.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-circle-check me-1"></i> ติดต่อ API ได้สำเร็จ!</span>';
+        appendLog('ทดสอบติดต่อ SmartData API สำเร็จ (HTTP 200 OK)');
+      } else {
+        el.innerHTML = `<span class="text-danger"><i class="fas fa-triangle-exclamation me-1"></i> ${resp.error}</span>`;
+        appendLog('ติดต่อ SmartData API ไม่ได้: ' + resp.error);
+      }
+    } catch (e) {
+      el.innerHTML = '<span class="text-danger">เกิดข้อผิดพลาด: ' + e + '</span>';
+      appendLog('API Test Error: ' + e);
+    }
+  }
+
+  async function testTelegram() {
+    appendLog('กำลังทดสอบส่งข้อความแจ้งเตือนเข้า Telegram...');
+    try {
+      const data = getFormData();
+      const res = await fetch('/api/test-telegram', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ chat_id: data.telegram.chat_id })
+      });
+      const resp = await res.json();
+      if (resp.success) {
+        appendLog('ส่งข้อความทดสอบ Telegram สำเร็จ');
+        alert('ส่งข้อความทดสอบ Telegram สำเร็จเรียบร้อย');
+      } else {
+        appendLog('ส่ง Telegram ล้มเหลว: ' + resp.error);
+        alert('ส่ง Telegram ล้มเหลว: ' + resp.error);
+      }
+    } catch (e) {
+      appendLog('Telegram Error: ' + e);
+    }
+  }
+
+  async function executeSyncApi() {
+    const btn = document.getElementById('btnSyncApi');
+    const hint = document.getElementById('syncStatusHint');
+    btn.disabled = true;
+    hint.innerHTML = '<i class="fas fa-spinner fa-spin text-primary me-1"></i> กำลังประมวลผลและส่งข้อมูลผ่าน API...';
+    appendLog('เริ่มกระบวนการดึงข้อมูลและส่งผ่าน API...');
+
+    try {
+      const data = getFormData();
+      const res = await fetch('/api/sync-api', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      const resp = await res.json();
+      if (resp.success) {
+        hint.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-circle-check me-1"></i> ส่งข้อมูลสำเร็จแล้ว</span>';
+        appendLog(`[SUCCESS] ส่งข้อมูลเข้า SmartData API สำเร็จเรียบร้อย!`);
+        if (resp.details) {
+          resp.details.forEach(d => appendLog(`- ${d.file}: ${d.rows} รายการ (${d.status})`));
+        }
+      } else {
+        hint.innerHTML = '<span class="text-danger fw-bold"><i class="fas fa-triangle-exclamation me-1"></i> ส่งไม่สำเร็จ</span>';
+        appendLog(`[FAILED] การส่งล้มเหลว: ${resp.error}`);
+      }
+    } catch (e) {
+      hint.innerHTML = '<span class="text-danger">Error: ' + e + '</span>';
+      appendLog('[ERROR] ' + e);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function chooseExportFolder() {
+    appendLog('กำลังเปิดหน้าต่างเลือกโฟลเดอร์สำหรับบันทึกไฟล์ Excel...');
+    try {
+      const pickRes = await fetch('/api/choose-folder');
+      const pickData = await pickRes.json();
+      if (pickData.cancelled) {
+        appendLog('[Folder] ยกเลิกการเลือกโฟลเดอร์');
+        return;
+      }
+      if (pickData.success && pickData.path) {
+        document.getElementById('cfg_output_dir').value = pickData.path;
+        saveConfigSilent();
+        appendLog('[Folder] กำหนดโฟลเดอร์ปลายทาง: ' + pickData.path);
+      } else if (pickData.error) {
+        appendLog('[Folder] ไม่สามารถเปิดหน้าต่างได้ (' + pickData.error + ')');
+        const manual = prompt('ระบุโฟลเดอร์สำหรับบันทึกไฟล์ Excel:', document.getElementById('cfg_output_dir').value || './exports');
+        if (manual) {
+          document.getElementById('cfg_output_dir').value = manual;
+          saveConfigSilent();
+          appendLog('[Folder] กำหนดโฟลเดอร์: ' + manual);
+        }
+      }
+    } catch (e) {
+      appendLog('[Folder Error] ' + e);
+    }
+  }
+
+  async function openExportFolder() {
+    const dir = (document.getElementById('cfg_output_dir').value || './exports').trim();
+    appendLog(`[Folder] กำลังเปิดโฟลเดอร์ "${dir}" ใน Windows Explorer...`);
+    try {
+      const res = await fetch('/api/open-folder?folder=' + encodeURIComponent(dir));
+      const data = await res.json();
+      if (data.success) {
+        appendLog(`[Folder] เปิดโฟลเดอร์สำเร็จ: ${data.path}`);
+      } else {
+        appendLog(`[Folder] ไม่สามารถเปิดโฟลเดอร์: ${data.error || 'Unknown error'}`);
+      }
+    } catch (e) {
+      appendLog('[Folder Error] ' + e);
+    }
+  }
+
+  async function executeExportExcel() {
+    const btn = document.getElementById('btnExportExcel');
+    const hint = document.getElementById('syncStatusHint');
+    const selectedFolder = (document.getElementById('cfg_output_dir').value || './exports').trim();
+
+    btn.disabled = true;
+    hint.innerHTML = '<i class="fas fa-spinner fa-spin text-warning me-1"></i> กำลังสร้างไฟล์ Excel ทั้ง 5 แฟ้ม...';
+    appendLog(`[Export] เริ่มส่งออกไฟล์ Excel ไปยัง: ${selectedFolder}`);
+    appendLog('กำลังดึงข้อมูลจาก INVS MS SQL Server...');
+
+    try {
+      const data = getFormData();
+      data.output_dir = selectedFolder;
+
+      const res = await fetch('/api/export-excel', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      const resp = await res.json();
+      if (resp.success) {
+        hint.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-circle-check me-1"></i> ส่งออก Excel สำเร็จ</span>';
+        appendLog(`[SUCCESS] บันทึกไฟล์ Excel เสร็จสมบูรณ์ (${resp.files ? resp.files.length : 0} แฟ้ม)`);
+        appendLog(`[Path] บันทึกที่: ${resp.output_dir}`);
+        if (resp.files) {
+          resp.files.forEach(f => appendLog(` - ${f.filename} (${f.rows} รายการ)`));
+        }
+        appendLog('[Tip] คุณสามารถกดปุ่ม [เปิด] ข้างช่องโฟลเดอร์เพื่อดูไฟล์ทั้งหมดได้ทันที');
+      } else {
+        hint.innerHTML = '<span class="text-danger fw-bold"><i class="fas fa-triangle-exclamation me-1"></i> เกิดข้อผิดพลาด</span>';
+        appendLog(`[FAILED] สร้าง Excel ล้มเหลว: ${resp.error}`);
+        alert('สร้าง Excel ล้มเหลว: ' + resp.error);
+      }
+    } catch (e) {
+      hint.innerHTML = '<span class="text-danger">Error: ' + e + '</span>';
+      appendLog('[ERROR] ' + e);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // Thai Calendar implementation
+  const thaiMonths = [
+    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+  ];
+  let calViewMonth = 9; // 0-based, 9 = ตุลาคม
+  let calViewYearBE = 2569;
+
+  function initCalendarDropdowns() {
+    const mSelect = document.getElementById('calMonthSelect');
+    const ySelect = document.getElementById('calYearSelect');
+    if (!mSelect || !ySelect) return;
+
+    mSelect.innerHTML = '';
+    thaiMonths.forEach((m, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = m;
+      mSelect.appendChild(opt);
+    });
+
+    ySelect.innerHTML = '';
+    const currentBE = 2569;
+    for (let y = currentBE - 6; y <= currentBE + 6; y++) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      ySelect.appendChild(opt);
+    }
+  }
+
+  function parseCurrentInvDate() {
+    const val = (document.getElementById('cfg_inv_date').value || '').trim();
+    const parts = val.split('/');
+    if (parts.length === 3) {
+      const d = parseInt(parts[0], 10) || 1;
+      const m = parseInt(parts[1], 10) || 1;
+      const y = parseInt(parts[2], 10) || 2569;
+      return { day: d, month: m - 1, yearBE: y };
+    }
+    return { day: 16, month: 9, yearBE: 2569 };
+  }
+
+  function renderCalendar() {
+    const mSelect = document.getElementById('calMonthSelect');
+    const ySelect = document.getElementById('calYearSelect');
+    if (mSelect) mSelect.value = calViewMonth;
+    if (ySelect) ySelect.value = calViewYearBE;
+
+    const grid = document.getElementById('calDaysGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const selected = parseCurrentInvDate();
+    const yearAD = calViewYearBE > 2400 ? (calViewYearBE - 543) : calViewYearBE;
+    
+    // First day of month (0 = Sun, 1 = Mon, ...)
+    const firstDay = new Date(yearAD, calViewMonth, 1).getDay();
+    // Days in current month
+    const daysInMonth = new Date(yearAD, calViewMonth + 1, 0).getDate();
+    // Days in prev month
+    const daysInPrevMonth = new Date(yearAD, calViewMonth, 0).getDate();
+
+    // Leading days from prev month
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-day other-month';
+      cell.textContent = daysInPrevMonth - i;
+      grid.appendChild(cell);
+    }
+
+    // Days in current month
+    const today = new Date();
+    const todayDay = today.getDate();
+    const todayMonth = today.getMonth();
+    const todayYearBE = today.getFullYear() + 543;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-day';
+      cell.textContent = d;
+
+      if (d === todayDay && calViewMonth === todayMonth && calViewYearBE === todayYearBE) {
+        cell.classList.add('today');
+      }
+
+      if (d === selected.day && calViewMonth === selected.month && calViewYearBE === selected.yearBE) {
+        cell.classList.add('selected');
+      }
+
+      cell.onclick = () => {
+        selectCalendarDate(d, calViewMonth, calViewYearBE);
+      };
+
+      grid.appendChild(cell);
+    }
+
+    // Trailing days from next month
+    const totalCells = firstDay + daysInMonth;
+    const remaining = (7 - (totalCells % 7)) % 7;
+    for (let i = 1; i <= remaining; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-day other-month';
+      cell.textContent = i;
+      grid.appendChild(cell);
+    }
+  }
+
+  function toggleCalendar(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById('thaiCalendarPopup');
+    if (!popup) return;
+    if (popup.classList.contains('show')) {
+      popup.classList.remove('show');
+    } else {
+      const cur = parseCurrentInvDate();
+      calViewMonth = cur.month;
+      calViewYearBE = cur.yearBE;
+      initCalendarDropdowns();
+      renderCalendar();
+      popup.classList.add('show');
+    }
+  }
+
+  function closeCalendar() {
+    const popup = document.getElementById('thaiCalendarPopup');
+    if (popup) popup.classList.remove('show');
+  }
+
+  function calPrevMonth() {
+    calViewMonth--;
+    if (calViewMonth < 0) {
+      calViewMonth = 11;
+      calViewYearBE--;
+    }
+    renderCalendar();
+  }
+
+  function calNextMonth() {
+    calViewMonth++;
+    if (calViewMonth > 11) {
+      calViewMonth = 0;
+      calViewYearBE++;
+    }
+    renderCalendar();
+  }
+
+  function calMonthYearChange() {
+    calViewMonth = parseInt(document.getElementById('calMonthSelect').value, 10);
+    calViewYearBE = parseInt(document.getElementById('calYearSelect').value, 10);
+    renderCalendar();
+  }
+
+  function selectCalendarDate(day, monthIdx, yearBE) {
+    const dStr = String(day).padStart(2, '0');
+    const mStr = String(monthIdx + 1).padStart(2, '0');
+    const dateStr = `${dStr}/${mStr}/${yearBE}`;
+    document.getElementById('cfg_inv_date').value = dateStr;
+    saveConfigSilent();
+    closeCalendar();
+    appendLog('[Date] กำหนดวันคงคลังเป็น: ' + dateStr);
+  }
+
+  function calPickToday() {
+    const t = new Date();
+    const d = t.getDate();
+    const m = t.getMonth();
+    const yBE = t.getFullYear() + 543;
+    selectCalendarDate(d, m, yBE);
+  }
+
+  function calPickEndOfPeriod() {
+    const mVal = parseInt(document.getElementById('cfg_month').value, 10) || (calViewMonth + 1);
+    const yVal = parseInt(document.getElementById('cfg_year').value, 10) || calViewYearBE;
+    const yearAD = yVal > 2400 ? (yVal - 543) : yVal;
+    const lastDay = new Date(yearAD, mVal, 0).getDate();
+    selectCalendarDate(lastDay, mVal - 1, yVal);
+  }
+
+  // Close calendar when clicking outside
+  document.addEventListener('click', function(e) {
+    const popup = document.getElementById('thaiCalendarPopup');
+    const input = document.getElementById('cfg_inv_date');
+    if (popup && popup.classList.contains('show')) {
+      if (!popup.contains(e.target) && e.target !== input && !e.target.closest('#cfg_inv_date_group')) {
+        popup.classList.remove('show');
+      }
+    }
+  });
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', loadConfig);
+</script>
+</body>
+</html>

@@ -2145,5 +2145,1035 @@
                 "primary": false
             }
         }
+    },
+    "moph_f5_druglist": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "hosp_code": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "",
+                "extra": ""
+            },
+            "working_code": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "generic_name": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "gpuid": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "nlem": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "product_cat": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "base_unit": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "status": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "date_status": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "period_rpt": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "date_send": {
+                "type": "varchar",
+                "length": 30,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            },
+            "idx_druglist_hosp_code_period": {
+                "columns": [
+                    "hosp_code",
+                    "working_code",
+                    "period_rpt"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_druglist_working_code_index": {
+                "columns": [
+                    "working_code"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_druglist_period_rpt_index": {
+                "columns": [
+                    "period_rpt"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "uniq_f5_druglist": {
+                "columns": [
+                    "hosp_code",
+                    "working_code"
+                ],
+                "unique": true,
+                "primary": false
+            }
+        }
+    },
+    "moph_f5_purchaseplan": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "hosp_code": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "",
+                "extra": ""
+            },
+            "yearbudget": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "working_code": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "generic_name": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "gpuid": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "nlem": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "qty_use_year3": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "qty_use_year2": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "qty_use_year1": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "qty_this_year": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "pack_size": {
+                "type": "int",
+                "length": 11,
+                "nullable": true,
+                "default": "1",
+                "extra": ""
+            },
+            "base_unit": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "pack_cost": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "value_this_year": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "qty_plan_trimes1": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "qty_plan_trimes2": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "qty_plan_trimes3": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "qty_plan_trimes4": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "period_rpt": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "date_send": {
+                "type": "varchar",
+                "length": 30,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            },
+            "idx_plan_hosp_code_period": {
+                "columns": [
+                    "hosp_code",
+                    "working_code",
+                    "period_rpt"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_purchaseplan_yearbudget_index": {
+                "columns": [
+                    "yearbudget"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_purchaseplan_working_code_index": {
+                "columns": [
+                    "working_code"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_purchaseplan_period_rpt_index": {
+                "columns": [
+                    "period_rpt"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "uniq_f5_purchaseplan": {
+                "columns": [
+                    "hosp_code",
+                    "yearbudget",
+                    "working_code",
+                    "period_rpt"
+                ],
+                "unique": true,
+                "primary": false
+            }
+        }
+    },
+    "moph_f5_receipt": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "hosp_code": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "",
+                "extra": ""
+            },
+            "working_code": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "trade_name": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "tpuid": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "vendor_name": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "vendor_tax_id": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "qty_rcv": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "pack_size": {
+                "type": "int",
+                "length": 11,
+                "nullable": true,
+                "default": "1",
+                "extra": ""
+            },
+            "base_unit": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "pack_cost": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "total_value": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "lot_no": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "expire_date": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "rcv_no": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "po_no": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "cnt_no": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "date_rcv": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "buy_method_id": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "co_purchase_id": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "rcv_flag": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "period_rpt": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "date_send": {
+                "type": "varchar",
+                "length": 30,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            },
+            "idx_rcv_hosp_code_period": {
+                "columns": [
+                    "hosp_code",
+                    "working_code",
+                    "period_rpt"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_receipt_working_code_index": {
+                "columns": [
+                    "working_code"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_receipt_expire_date_index": {
+                "columns": [
+                    "expire_date"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_receipt_rcv_no_index": {
+                "columns": [
+                    "rcv_no"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_receipt_date_rcv_index": {
+                "columns": [
+                    "date_rcv"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_receipt_period_rpt_index": {
+                "columns": [
+                    "period_rpt"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "uniq_f5_receipt": {
+                "columns": [
+                    "hosp_code",
+                    "rcv_no",
+                    "working_code",
+                    "lot_no",
+                    "expire_date",
+                    "rcv_flag"
+                ],
+                "unique": true,
+                "primary": false
+            }
+        }
+    },
+    "moph_f5_distribution": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "hosp_code": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "",
+                "extra": ""
+            },
+            "working_code": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "trade_name": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "tpuid": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "qty_dis": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "pack_size": {
+                "type": "int",
+                "length": 11,
+                "nullable": true,
+                "default": "1",
+                "extra": ""
+            },
+            "base_unit": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "value": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "dis_dept_group": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "period_rpt": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "date_send": {
+                "type": "varchar",
+                "length": 30,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            },
+            "idx_dis_hosp_code_period": {
+                "columns": [
+                    "hosp_code",
+                    "working_code",
+                    "period_rpt"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_distribution_working_code_index": {
+                "columns": [
+                    "working_code"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_distribution_dis_dept_group_index": {
+                "columns": [
+                    "dis_dept_group"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_distribution_period_rpt_index": {
+                "columns": [
+                    "period_rpt"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "uniq_f5_distribution": {
+                "columns": [
+                    "hosp_code",
+                    "working_code",
+                    "trade_name",
+                    "pack_size",
+                    "dis_dept_group",
+                    "period_rpt"
+                ],
+                "unique": true,
+                "primary": false
+            }
+        }
+    },
+    "moph_f5_inventory": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "hosp_code": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "",
+                "extra": ""
+            },
+            "working_code": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "trade_name": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "tpuid": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "vendor_name": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "vendor_tax_id": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "qty_onhand": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "pack_size": {
+                "type": "int",
+                "length": 11,
+                "nullable": true,
+                "default": "1",
+                "extra": ""
+            },
+            "base_unit": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "pack_cost": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "value_onhand": {
+                "type": "double",
+                "length": null,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "lot_no": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "expire_date": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "date_onhand": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "date_send": {
+                "type": "varchar",
+                "length": 30,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            },
+            "idx_inv_hosp_code_date": {
+                "columns": [
+                    "hosp_code",
+                    "working_code",
+                    "date_onhand"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_inventory_working_code_index": {
+                "columns": [
+                    "working_code"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_inventory_expire_date_index": {
+                "columns": [
+                    "expire_date"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "moph_f5_inventory_date_onhand_index": {
+                "columns": [
+                    "date_onhand"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "uniq_f5_inventory": {
+                "columns": [
+                    "hosp_code",
+                    "working_code",
+                    "lot_no",
+                    "expire_date",
+                    "date_onhand"
+                ],
+                "unique": true,
+                "primary": false
+            }
+        }
+    },
+    "moph_f5_upload_logs": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "hosp_code": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "period_rpt": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "source": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": false,
+                "default": "web_upload",
+                "extra": ""
+            },
+            "ip_address": {
+                "type": "varchar",
+                "length": 45,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "user_agent": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "files_count": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "rows_imported": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "status": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": "success",
+                "extra": ""
+            },
+            "details": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
     }
 }

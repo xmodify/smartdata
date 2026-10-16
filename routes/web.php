@@ -310,6 +310,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/rpst-detail/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'rpstDetail'])->name('backoffice.warehouse.rpst_detail');
         Route::get('/rpst-item-breakdown', [App\Http\Controllers\Backoffice\WarehouseController::class, 'rpstItemBreakdown'])->name('backoffice.warehouse.rpst_item_breakdown');
         Route::get('/export-reorder', [App\Http\Controllers\Backoffice\WarehouseController::class, 'exportReorder'])->name('backoffice.warehouse.export_reorder');
+        Route::post('/upload-moph-f5', [App\Http\Controllers\Backoffice\WarehouseController::class, 'uploadMophF5'])->name('backoffice.warehouse.upload_moph_f5');
+        Route::get('/moph-f5-table-data/{file}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'mophF5TableData'])->name('backoffice.warehouse.moph_f5_table_data');
     });
 
     // Backoffice Incident Routes
