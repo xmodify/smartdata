@@ -50,9 +50,10 @@ func GenerateExcel(cfg *config.AppConfig, fileType string, rows []map[string]int
 		yearAD -= 543
 	}
 	periodRpt := fmt.Sprintf("%04d%02d", yearAD, cfg.Month)
-	dateSend := time.Now().Format("20060102")
+	dateSend := time.Now().Format("20060102150405")
+	dateSendDate := time.Now().Format("20060102")
 
-	filename := fmt.Sprintf("%s_%s_%s_%s.xlsx", cfg.HospCode, fileType, periodRpt, dateSend)
+	filename := fmt.Sprintf("%s_%s_%s_%s.xlsx", cfg.HospCode, fileType, periodRpt, dateSendDate)
 	outputDir := cfg.OutputDir
 	if outputDir == "" {
 		outputDir = "./exports"
@@ -63,11 +64,20 @@ func GenerateExcel(cfg *config.AppConfig, fileType string, rows []map[string]int
 	f := excelize.NewFile()
 	defer f.Close()
 
-	sheetName := "Sheet1"
-	if fileType == "purchaseplan" {
-		sheetName = "1purchaseplan"
-	} else {
-		sheetName = "1duglist"
+	var sheetName string
+	switch fileType {
+	case "druglist":
+		sheetName = "druglist_template"
+	case "purchaseplan":
+		sheetName = "PURCHASEPLAN Template"
+	case "receipt":
+		sheetName = "receipt template"
+	case "distribution":
+		sheetName = "DISTRIBUTION_template"
+	case "inventory":
+		sheetName = "INVENTORY_template"
+	default:
+		sheetName = "Sheet1"
 	}
 	f.SetSheetName("Sheet1", sheetName)
 
@@ -96,8 +106,16 @@ func GenerateExcel(cfg *config.AppConfig, fileType string, rows []map[string]int
 		for cIdx, colName := range cols {
 			cell, _ := excelize.CoordinatesToCellName(cIdx+1, rowNum)
 			val := row[colName]
-			if val == nil {
-				val = ""
+			if val == nil || val == "" {
+				if colName == "DATE_SEND" {
+					val = dateSend
+				} else if colName == "PERIOD_RPT" {
+					val = periodRpt
+				} else if colName == "HOSP_CODE" {
+					val = cfg.HospCode
+				} else {
+					val = ""
+				}
 			}
 			f.SetCellValue(sheetName, cell, val)
 		}

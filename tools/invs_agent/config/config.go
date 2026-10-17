@@ -2,9 +2,12 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 )
 
 type FileSelection struct {
@@ -28,10 +31,20 @@ type DatabaseConfig struct {
 	TrustServerCertificate bool   `json:"trust_server_certificate"`
 }
 
+type ApiTarget struct {
+	ID         string `json:"id"`                    // Unique identifier
+	Name       string `json:"name"`                  // Server display name (e.g. "SmartData Platform", "DMSIC กระทรวงสาธารณสุข")
+	Url        string `json:"url"`                   // Endpoint URL (e.g. ".../upload")
+	Token      string `json:"token"`                 // Bearer API Token / DMSIC JWE Token
+	Enabled    bool   `json:"enabled"`               // Toggle enable/disable sending
+	OutputType string `json:"output_type,omitempty"` // "text" or "excel" (empty means use global default)
+}
+
 type ApiConfig struct {
-	Url        string `json:"url"`
-	Token      string `json:"token"`
-	OutputType string `json:"output_type"` // "text" or "excel"
+	Url        string      `json:"url"`         // Primary / Legacy fallback URL
+	Token      string      `json:"token"`       // Primary / Legacy fallback Token
+	OutputType string      `json:"output_type"` // "text" or "excel"
+	Servers    []ApiTarget `json:"servers"`     // Multi-server targets
 }
 
 type ScheduleConfig struct {
@@ -117,6 +130,24 @@ func GetDefaultConfig() *AppConfig {
 			Url:        "http://127.0.0.1/smartdata/api/v1/moph-f5/upload",
 			Token:      "",
 			OutputType: "text",
+			Servers: []ApiTarget{
+				{
+					ID:         "smartdata",
+					Name:       "SmartData Platform (คลังข้อมูล รพ./จังหวัด)",
+					Url:        "http://127.0.0.1/smartdata/api/v1/moph-f5/upload",
+					Token:      "",
+					Enabled:    true,
+					OutputType: "text",
+				},
+				{
+					ID:         "dmsic",
+					Name:       "DMSIC กระทรวงสาธารณสุข (MOPH Drug Warehouse)",
+					Url:        "https://dmsic.moph.go.th/api/v1/upload",
+					Token:      "",
+					Enabled:    false,
+					OutputType: "text",
+				},
+			},
 		},
 		Schedule: ScheduleConfig{
 			Enabled:       false,
@@ -141,7 +172,7 @@ func GetDefaultConfig() *AppConfig {
     ISNULL(d.status, '1') AS STATUS,
     CONVERT(VARCHAR(8), ISNULL(d.date_status, GETDATE()), 112) AS DATE_STATUS,
     @PeriodRpt AS PERIOD_RPT,
-    CONVERT(VARCHAR(8), GETDATE(), 112) AS DATE_SEND
+    CONVERT(VARCHAR(8), GETDATE(), 112) + REPLACE(CONVERT(VARCHAR(8), GETDATE(), 108), ':', '') AS DATE_SEND
 FROM inv_drug d
 WHERE d.stock_id = @StockID`,
 			Purchaseplan: `SELECT 
@@ -164,7 +195,7 @@ WHERE d.stock_id = @StockID`,
     ISNULL(p.qty_plan_trimes3, 0) AS QTY_PLAN_TRIMES3,
     ISNULL(p.qty_plan_trimes4, 0) AS QTY_PLAN_TRIMES4,
     @PeriodRpt AS PERIOD_RPT,
-    CONVERT(VARCHAR(8), GETDATE(), 112) AS DATE_SEND
+    CONVERT(VARCHAR(8), GETDATE(), 112) + REPLACE(CONVERT(VARCHAR(8), GETDATE(), 108), ':', '') AS DATE_SEND
 FROM inv_purchaseplan p
 WHERE p.stock_id = @StockID AND p.yearbudget = @YearBudget`,
 			Receipt: `SELECT 
@@ -189,7 +220,7 @@ WHERE p.stock_id = @StockID AND p.yearbudget = @YearBudget`,
     ISNULL(r.co_purchase_id, '') AS CO_PURCHASE_ID,
     ISNULL(r.rcv_flag, '1') AS RCV_FLAG,
     @PeriodRpt AS PERIOD_RPT,
-    CONVERT(VARCHAR(8), GETDATE(), 112) AS DATE_SEND
+    CONVERT(VARCHAR(8), GETDATE(), 112) + REPLACE(CONVERT(VARCHAR(8), GETDATE(), 108), ':', '') AS DATE_SEND
 FROM inv_receipt r
 WHERE r.stock_id = @StockID AND CONVERT(VARCHAR(6), r.date_rcv, 112) = @PeriodRpt`,
 			Distribution: `SELECT 
@@ -203,7 +234,7 @@ WHERE r.stock_id = @StockID AND CONVERT(VARCHAR(6), r.date_rcv, 112) = @PeriodRp
     ISNULL(d.value, 0.0) AS VALUE,
     ISNULL(d.dis_dept_group, 'OPD') AS DIS_DEPT_GROUP,
     @PeriodRpt AS PERIOD_RPT,
-    CONVERT(VARCHAR(8), GETDATE(), 112) AS DATE_SEND
+    CONVERT(VARCHAR(8), GETDATE(), 112) + REPLACE(CONVERT(VARCHAR(8), GETDATE(), 108), ':', '') AS DATE_SEND
 FROM inv_distribution d
 WHERE d.stock_id = @StockID AND d.period_rpt = @PeriodRpt`,
 			Inventory: `SELECT 
@@ -221,7 +252,7 @@ WHERE d.stock_id = @StockID AND d.period_rpt = @PeriodRpt`,
     ISNULL(i.lot_no, '') AS LOT_NO,
     CONVERT(VARCHAR(8), i.expire_date, 112) AS EXPIRE_DATE,
     @DateOnhand AS DATE_ONHAND,
-    CONVERT(VARCHAR(8), GETDATE(), 112) AS DATE_SEND
+    CONVERT(VARCHAR(8), GETDATE(), 112) + REPLACE(CONVERT(VARCHAR(8), GETDATE(), 108), ':', '') AS DATE_SEND
 FROM inv_inventory i
 WHERE i.stock_id = @StockID`,
 		},
@@ -251,8 +282,61 @@ func LoadConfig() (*AppConfig, error) {
 		return currentConfig, err
 	}
 
+	// Migrate / ensure Servers array is populated
+	if len(cfg.Api.Servers) == 0 {
+		var servers []ApiTarget
+		if strings.TrimSpace(cfg.Api.Url) != "" {
+			servers = append(servers, ApiTarget{
+				ID:         "smartdata",
+				Name:       "SmartData Platform (คลังข้อมูล รพ./จังหวัด)",
+				Url:        cfg.Api.Url,
+				Token:      cfg.Api.Token,
+				Enabled:    true,
+				OutputType: cfg.Api.OutputType,
+			})
+		}
+		servers = append(servers, ApiTarget{
+			ID:         "dmsic",
+			Name:       "DMSIC กระทรวงสาธารณสุข (MOPH Drug Warehouse)",
+			Url:        "https://dmsic.moph.go.th/api/v1/upload",
+			Token:      "",
+			Enabled:    false,
+			OutputType: "text",
+		})
+		cfg.Api.Servers = servers
+	}
+
 	currentConfig = cfg
 	return currentConfig, nil
+}
+
+// GetActiveApiTargets returns all enabled server targets, with fallback to legacy single endpoint
+func (cfg *AppConfig) GetActiveApiTargets() []ApiTarget {
+	if cfg == nil {
+		return nil
+	}
+	var active []ApiTarget
+	for _, s := range cfg.Api.Servers {
+		if s.Enabled && strings.TrimSpace(s.Url) != "" {
+			active = append(active, s)
+		}
+	}
+	if len(active) > 0 {
+		return active
+	}
+	if strings.TrimSpace(cfg.Api.Url) != "" {
+		return []ApiTarget{
+			{
+				ID:         "legacy",
+				Name:       "SmartData Platform",
+				Url:        cfg.Api.Url,
+				Token:      cfg.Api.Token,
+				Enabled:    true,
+				OutputType: cfg.Api.OutputType,
+			},
+		}
+	}
+	return nil
 }
 
 // GetConfig returns the active cached config
@@ -285,3 +369,33 @@ func saveConfigLocked(cfg *AppConfig) error {
 	}
 	return os.WriteFile(configPath, data, 0644)
 }
+
+// GetScheduledSyncConfig clones baseCfg and applies dynamic dates for automated schedule (เช่น ตอนตี 1):
+// 1. แฟ้มทั่วไป (DRUGLIST, RECEIPT, DISTRIBUTION, PURCHASEPLAN): ปี และเดือนปัจจุบัน
+// 2. แฟ้ม INVENTORY: ณ วันก่อนหน้า (เมื่อวานเต็มวัน)
+func GetScheduledSyncConfig(baseCfg *AppConfig) *AppConfig {
+	if baseCfg == nil {
+		baseCfg = GetConfig()
+	}
+	cfgCopy := *baseCfg
+	now := time.Now()
+
+	// 1. ปี และเดือนปัจจุบัน
+	if cfgCopy.Year > 2400 {
+		cfgCopy.Year = now.Year() + 543
+	} else {
+		cfgCopy.Year = now.Year()
+	}
+	cfgCopy.Month = int(now.Month())
+
+	// 2. แฟ้ม INVENTORY: ยอดคงคลังสะสม ณ สิ้นวันก่อนหน้า (Yesterday เต็มวัน)
+	yesterday := now.AddDate(0, 0, -1)
+	yYear := yesterday.Year()
+	if cfgCopy.Year > 2400 {
+		yYear += 543
+	}
+	cfgCopy.Selection.InventoryDate = fmt.Sprintf("%02d/%02d/%04d", yesterday.Day(), int(yesterday.Month()), yYear)
+
+	return &cfgCopy
+}
+

@@ -102,6 +102,14 @@ func StartGUIServer(port int) error {
 			http.Error(w, err.Error(), 400)
 			return
 		}
+		if strings.TrimSpace(req.URL) == "" {
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "error": "กรุณากรอก API URL ปลายทางก่อนทดสอบ"})
+			return
+		}
+		if strings.TrimSpace(req.Token) == "" {
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "error": "กรุณากรอก Bearer API Token หรือ DMSIC Token ก่อนกดทดสอบ (ยังไม่ได้ระบุ Token)"})
+			return
+		}
 		err := api.TestApiConnection(req.URL, req.Token)
 		if err != nil {
 			_ = json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "error": err.Error()})
@@ -172,27 +180,44 @@ func StartGUIServer(port int) error {
 			}
 		}
 
-		var uploadResp *api.UploadResponse
-		var uploadErr error
-
-		if len(generatedExcels) > 0 {
-			uploadResp, uploadErr = api.UploadFiles(&cfg, generatedExcels)
-		} else {
-			uploadResp, uploadErr = api.UploadDatasets(&cfg, datasets)
+		results := api.UploadToAllTargets(&cfg, datasets, generatedExcels)
+		var errMsgs []string
+		var successCount int
+		for _, res := range results {
+			if res.Success {
+				successCount++
+			} else {
+				errMsgs = append(errMsgs, fmt.Sprintf("%s (%s)", res.Target.Name, res.Error))
+			}
 		}
 
-		if uploadErr != nil {
-			_ = telegram.SendSyncNotification(&cfg, false, fmt.Sprintf("API Error: %v", uploadErr))
-			_ = json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "error": uploadErr.Error()})
+		if len(results) == 0 {
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "error": "ไม่มี Server ปลายทางที่เปิดใช้งาน"})
 			return
 		}
 
-		_ = telegram.SendSyncNotification(&cfg, true, fmt.Sprintf("ส่งสำเร็จ %d แฟ้ม (%s)", len(selectedFiles), uploadResp.Message))
+		if successCount == 0 && len(errMsgs) > 0 {
+			errStr := strings.Join(errMsgs, "; ")
+			_ = telegram.SendSyncNotification(&cfg, false, fmt.Sprintf("API Error: %s", errStr))
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"error":   errStr,
+				"results": results,
+			})
+			return
+		}
+
+		summaryMsg := fmt.Sprintf("ส่งสำเร็จ %d/%d Server (%d แฟ้ม)", successCount, len(results), len(selectedFiles))
+		if len(errMsgs) > 0 {
+			summaryMsg += fmt.Sprintf(" (ล้มเหลว: %s)", strings.Join(errMsgs, ", "))
+		}
+		_ = telegram.SendSyncNotification(&cfg, true, summaryMsg)
 
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": true,
 			"details": details,
-			"message": uploadResp.Message,
+			"results": results,
+			"message": summaryMsg,
 		})
 	})
 

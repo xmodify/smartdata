@@ -17,7 +17,7 @@ var (
 )
 
 // StartScheduler begins background time checking
-func StartScheduler(syncFunc func() error) {
+func StartScheduler(syncFunc func(*config.AppConfig) error) {
 	schedMutex.Lock()
 	defer schedMutex.Unlock()
 
@@ -65,7 +65,10 @@ func StartScheduler(syncFunc func() error) {
 					lastRun = now
 					log.Printf("[Scheduler] Triggering scheduled sync at %s...", now.Format("2006-01-02 15:04:05"))
 					go func() {
-						if err := syncFunc(); err != nil {
+						schedCfg := config.GetScheduledSyncConfig(config.GetConfig())
+						log.Printf("[Scheduler] Running automated sync - Period: %04d%02d, Inventory Date: %s (Yesterday)",
+							schedCfg.Year, schedCfg.Month, schedCfg.Selection.InventoryDate)
+						if err := syncFunc(schedCfg); err != nil {
 							log.Printf("[Scheduler] Sync execution error: %v", err)
 						} else {
 							log.Printf("[Scheduler] Sync completed successfully.")

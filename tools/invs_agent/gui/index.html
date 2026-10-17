@@ -246,6 +246,11 @@
         <div class="col-auto" style="width: 90px;">
           <input type="number" class="form-control form-control-sm text-center font-monospace" id="cfg_year" value="2569" onchange="saveConfigSilent()">
         </div>
+        <div class="col-auto">
+          <button class="btn btn-outline-secondary btn-sm py-0 px-2" type="button" onclick="setCurrentPeriodAndYesterday()" title="รีเซ็ตเป็น: ปีและเดือนปัจจุบัน + คงคลังเมื่อวาน (ตามรอบ Schedule ตี 1)" style="font-size: 11px;">
+            <i class="fas fa-rotate me-1 text-success"></i>งวดปัจจุบัน & เมื่อวาน
+          </button>
+        </div>
         <div class="col-auto ms-2">
           <label class="fw-semibold text-secondary">หน่วยงาน</label>
         </div>
@@ -363,6 +368,9 @@
                   <i class="far fa-calendar-alt text-primary"></i>
                 </button>
               </div>
+              <button class="btn btn-outline-secondary btn-sm py-0 px-2" type="button" onclick="setYesterdayDate()" title="ตั้งเป็นวันก่อนหน้า (เมื่อวาน) สำหรับตัดยอดเต็มวัน" style="font-size: 11px;">
+                <i class="fas fa-clock-rotate-left me-1 text-primary"></i>เมื่อวาน
+              </button>
 
               <!-- Thai Calendar Popup -->
               <div id="thaiCalendarPopup" class="thai-calendar-popup" onclick="event.stopPropagation()">
@@ -405,16 +413,18 @@
         </div>
       </div>
 
-      <!-- DMSIC / SmartData Token -->
-      <div class="row g-2 mb-2 align-items-center">
-        <div class="col-auto">
-          <label class="fw-semibold text-secondary">DMSIC / SmartData Token</label>
+      <!-- Server Destinations & Reporting Bar in Tab 1 -->
+      <div class="p-2 border rounded bg-light mb-2 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <span class="fw-semibold text-secondary small"><i class="fas fa-server text-primary me-1"></i> ปลายทาง API:</span>
+          <span id="tab1ServerBadges" class="d-flex align-items-center gap-1.5 flex-wrap">
+            <span class="badge bg-secondary">กำลังโหลด...</span>
+          </span>
+          <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 ms-1" style="font-size: 11px;" onclick="goToApiTab()" title="เปิดแท็บเพื่อเพิ่ม/แก้ไข/เปิด-ปิด Server ปลายทาง">
+            <i class="fas fa-sliders me-1"></i>จัดการ Server
+          </button>
         </div>
-        <div class="col-md-7 d-flex align-items-center gap-2">
-          <input type="text" class="form-control form-control-sm font-monospace" id="cfg_api_token" placeholder="ใส่ Bearer API Token (ถ้ามี)">
-          <i class="fas fa-circle-check badge-check"></i>
-        </div>
-        <div class="col-auto ms-auto d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3 ms-auto">
           <span class="fw-semibold text-secondary small">การรายงานผล</span>
           <div class="form-check form-check-inline m-0">
             <input class="form-check-input" type="radio" name="reportType" id="repText" value="text" checked>
@@ -426,6 +436,7 @@
           </div>
         </div>
       </div>
+      <input type="hidden" id="cfg_api_token" value="">
 
       <!-- Action Buttons & Export Folder Bar -->
       <div class="d-flex align-items-center gap-2 mb-2.5 flex-wrap">
@@ -561,19 +572,38 @@
 
     <!-- TAB 3: API & SCHEDULE SETTINGS -->
     <div class="tab-pane fade" id="tab-api">
-      <h6 class="fw-bold mb-3 text-dark"><i class="fas fa-cloud-arrow-up text-success me-1.5"></i>ตั้งค่า SmartData API Endpoint & ระบบตั้งเวลาส่งอัตโนมัติ (Schedule)</h6>
-
-      <div class="row g-3 mb-3">
-        <div class="col-md-7">
-          <label class="form-label small fw-semibold">SmartData Upload API URL</label>
-          <input type="text" class="form-control form-control-sm font-monospace" id="cfg_api_url" value="http://127.0.0.1/smartdata/api/v1/moph-f5/upload">
+      <div class="d-flex align-items-center justify-content-between mb-2.5 flex-wrap gap-2">
+        <div>
+          <h6 class="fw-bold mb-0 text-dark">
+            <i class="fas fa-network-wired text-primary me-1.5"></i>ตั้งค่า Server ปลายทาง API (Multi-Server) & ระบบตั้งเวลาส่งอัตโนมัติ
+          </h6>
+          <div class="text-muted small" style="font-size: 11.5px;">
+            ดึงข้อมูลจาก SQL Server ของ รพ. ครั้งเดียว แล้วกระจายส่งไปหลายปลายทาง (เช่น SmartData, DMSIC กระทรวงสาธารณสุข, สสจ.)
+          </div>
         </div>
-        <div class="col-md-5">
-          <label class="form-label small fw-semibold">Bearer API Token</label>
-          <input type="text" class="form-control form-control-sm font-monospace" id="cfg_api_token_input" placeholder="ใส่ Bearer API Token (ถ้ามี)">
+        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 fw-semibold" onclick="addApiServerRow()">
+          <i class="fas fa-plus-circle me-1"></i> เพิ่ม Server ปลายทาง
+        </button>
+      </div>
+
+      <!-- Multi-Server Destination Cards / List -->
+      <div class="card border mb-3 shadow-sm">
+        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+          <span class="small fw-bold text-secondary">
+            <i class="fas fa-server text-info me-1"></i> รายชื่อ Server ปลายทาง (เปิด/ปิด และกำหนด Token ได้อิสระ)
+          </span>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle" id="serverCountBadge">กำลังโหลด...</span>
+        </div>
+        <div class="card-body p-2" id="apiServersListContainer">
+          <!-- Dynamic Server Rows -->
         </div>
       </div>
 
+      <!-- Hidden inputs for legacy compatibility -->
+      <input type="hidden" id="cfg_api_url" value="">
+      <input type="hidden" id="cfg_api_token_input" value="">
+
+      <!-- Schedule Timer Card -->
       <div class="card p-3 border bg-light mb-3">
         <h6 class="fw-bold text-dark mb-2"><i class="fas fa-clock text-warning me-1"></i>การตั้งเวลาส่งอัตโนมัติ (Schedule Timer)</h6>
         <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
@@ -586,19 +616,24 @@
             <input type="time" class="form-control form-control-sm" id="cfg_sched_time" value="01:00" style="width: 100px;">
           </div>
         </div>
+        <div class="alert alert-info border py-2 px-3 mb-2" style="font-size: 12px;">
+          <i class="fas fa-circle-check text-success me-1"></i>
+          <strong>กฎการดึงข้อมูลอัตโนมัติ (รอบตี 1):</strong>
+          <ul class="mb-0 ps-3 mt-1">
+            <li><strong>แฟ้ม INVENTORY:</strong> ดึงยอดคงคลังสะสม <u>ณ วันก่อนหน้า (เมื่อวานเต็มวัน)</u> โดยอัตโนมัติ เพื่อให้ได้ยอดเต็มวัน</li>
+            <li><strong>แฟ้ม DRUGLIST, RECEIPT, DISTRIBUTION, PURCHASEPLAN:</strong> ดึงตาม <u>ปีและเดือนปัจจุบัน</u> โดยอัตโนมัติ</li>
+          </ul>
+        </div>
         <div class="text-muted small">
           <i class="fas fa-terminal text-secondary me-1"></i> <strong>สั่งรันแบบเงียบ (Silent / Task Scheduler):</strong> สามารถตั้งใน Windows Task Scheduler ให้เรียก <code>invs_agent.exe -s</code> เพื่อให้แอบดึงและยิงข้อมูลอัตโนมัติในพื้นหลังโดยไม่เปิดหน้าต่าง
         </div>
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-sm btn-outline-success fw-semibold" onclick="testApiConnection()">
-          <i class="fas fa-circle-check me-1"></i> ทดสอบการเชื่อมต่อ API
-        </button>
         <button type="button" class="btn btn-sm btn-success fw-semibold" onclick="saveApiConfig()">
-          <i class="fas fa-floppy-disk me-1"></i> บันทึกการตั้งค่า API & Schedule
+          <i class="fas fa-floppy-disk me-1"></i> บันทึกการตั้งค่า Server & Schedule
         </button>
-        <span class="small" id="apiTestResult"></span>
+        <span class="small" id="apiSaveResult"></span>
       </div>
     </div>
 
@@ -619,6 +654,223 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   let manualSelectedFiles = [];
+  let apiServers = [];
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function goToApiTab() {
+    const btn = document.getElementById('tab-api-btn');
+    if (btn) bootstrap.Tab.getOrCreateInstance(btn).show();
+  }
+
+  function updateServerSummaryBadge() {
+    const container = document.getElementById('tab1ServerBadges');
+    if (!container) return;
+    const enabled = apiServers.filter(s => s.enabled && (s.url || '').trim() !== '');
+    if (enabled.length === 0) {
+      container.innerHTML = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="fas fa-triangle-exclamation me-1"></i>ไม่มี Server ที่เปิดใช้งาน</span>';
+      return;
+    }
+    container.innerHTML = enabled.map(s => `
+      <span class="badge bg-success-subtle text-success border border-success-subtle" title="${escapeHtml(s.url)}">
+        <i class="fas fa-circle-check me-1"></i>${escapeHtml(s.name || 'Server')}
+      </span>
+    `).join('');
+  }
+
+  function renderApiServersTable() {
+    const container = document.getElementById('apiServersListContainer');
+    if (!container) return;
+
+    if (apiServers.length === 0) {
+      container.innerHTML = `
+        <div class="text-center text-muted py-4">
+          <i class="fas fa-server fa-2x mb-2 text-secondary"></i>
+          <div>ยังไม่มี Server ปลายทาง</div>
+          <button type="button" class="btn btn-sm btn-primary mt-2" onclick="addApiServerRow()">
+            <i class="fas fa-plus me-1"></i> เพิ่ม Server แรก
+          </button>
+        </div>`;
+      const badge = document.getElementById('serverCountBadge');
+      if (badge) badge.innerText = '0 Server';
+      updateServerSummaryBadge();
+      return;
+    }
+
+    const enabledCount = apiServers.filter(s => s.enabled).length;
+    const badge = document.getElementById('serverCountBadge');
+    if (badge) badge.innerText = `${enabledCount}/${apiServers.length} Server เปิดใช้งาน`;
+    updateServerSummaryBadge();
+
+    let html = '';
+    apiServers.forEach((srv, idx) => {
+      const isChecked = srv.enabled !== false;
+      const cardBorder = isChecked ? 'border-primary' : 'border-secondary opacity-75';
+      const badgeClass = isChecked ? 'bg-primary' : 'bg-secondary';
+
+      html += `
+        <div class="card mb-2.5 ${cardBorder}" id="serverCard_${idx}" style="background: #fafbfc;">
+          <div class="card-header py-1.5 px-3 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" id="srv_enabled_${idx}" ${isChecked ? 'checked' : ''} onchange="onServerToggle(${idx}, this.checked)" title="เปิด/ปิดการส่งไปยัง Server นี้">
+                <label class="form-check-label fw-bold small" for="srv_enabled_${idx}">
+                  <span class="badge ${badgeClass} me-1">#${idx + 1}</span>
+                </label>
+              </div>
+              <input type="text" class="form-control form-control-sm fw-semibold" id="srv_name_${idx}" value="${escapeHtml(srv.name || '')}" placeholder="ชื่อ Server เช่น SmartData หรือ DMSIC" style="max-width: 320px;" oninput="onServerFieldChange(${idx})">
+            </div>
+            <div class="d-flex align-items-center gap-1.5">
+              <button type="button" class="btn btn-sm btn-outline-info py-0.5 px-2.5 fw-semibold" style="font-size: 11.5px;" onclick="testSingleServer(${idx})" id="btnTestSrv_${idx}">
+                <i class="fas fa-plug me-1"></i> ทดสอบ
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger py-0.5 px-2" style="font-size: 11.5px;" onclick="removeApiServerRow(${idx})" title="ลบ Server นี้">
+                <i class="fas fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body p-2.5">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-5">
+                <label class="form-label text-muted mb-0 small" style="font-size: 11px;">Upload API Endpoint URL</label>
+                <input type="text" class="form-control form-control-sm font-monospace" id="srv_url_${idx}" value="${escapeHtml(srv.url || '')}" placeholder="https://.../api/v1/moph-f5/upload" oninput="onServerFieldChange(${idx})">
+              </div>
+              <div class="col-md-5">
+                <label class="form-label text-muted mb-0 small" style="font-size: 11px;">Bearer API Token / DMSIC Token</label>
+                <div class="input-group input-group-sm">
+                  <input type="password" class="form-control form-control-sm font-monospace" id="srv_token_${idx}" value="${escapeHtml(srv.token || '')}" placeholder="ใส่ Token..." oninput="onServerFieldChange(${idx})">
+                  <button class="btn btn-outline-secondary" type="button" onclick="toggleServerTokenVisibility(${idx})" title="ดู/ซ่อน Token">
+                    <i class="fas fa-eye" id="tokenEye_${idx}"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label text-muted mb-0 small" style="font-size: 11px;">รูปแบบส่งออก</label>
+                <select class="form-select form-select-sm" id="srv_out_${idx}" onchange="onServerFieldChange(${idx})">
+                  <option value="text" ${srv.output_type !== 'excel' ? 'selected' : ''}>Text / JSON</option>
+                  <option value="excel" ${srv.output_type === 'excel' ? 'selected' : ''}>Excel File</option>
+                </select>
+              </div>
+            </div>
+            <div class="mt-1.5" id="srv_test_result_${idx}" style="font-size: 11.5px;"></div>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  function addApiServerRow() {
+    apiServers.push({
+      id: 'srv_' + Date.now(),
+      name: 'Server ปลายทางใหม่',
+      url: '',
+      token: '',
+      enabled: true,
+      output_type: 'text'
+    });
+    renderApiServersTable();
+    saveConfigSilent();
+  }
+
+  function removeApiServerRow(idx) {
+    const srv = apiServers[idx];
+    if (confirm(`ต้องการลบ Server "${srv.name || ('Server #' + (idx + 1))}" หรือไม่?`)) {
+      apiServers.splice(idx, 1);
+      renderApiServersTable();
+      saveConfigSilent();
+    }
+  }
+
+  function onServerToggle(idx, checked) {
+    if (apiServers[idx]) {
+      apiServers[idx].enabled = checked;
+      renderApiServersTable();
+      saveConfigSilent();
+    }
+  }
+
+  function onServerFieldChange(idx) {
+    if (!apiServers[idx]) return;
+    const nameEl = document.getElementById(`srv_name_${idx}`);
+    const urlEl = document.getElementById(`srv_url_${idx}`);
+    const tokenEl = document.getElementById(`srv_token_${idx}`);
+    const outEl = document.getElementById(`srv_out_${idx}`);
+    if (nameEl) apiServers[idx].name = nameEl.value;
+    if (urlEl) apiServers[idx].url = urlEl.value;
+    if (tokenEl) apiServers[idx].token = tokenEl.value;
+    if (outEl) apiServers[idx].output_type = outEl.value;
+    updateServerSummaryBadge();
+  }
+
+  function toggleServerTokenVisibility(idx) {
+    const input = document.getElementById(`srv_token_${idx}`);
+    const icon = document.getElementById(`tokenEye_${idx}`);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    } else {
+      input.type = 'password';
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    }
+  }
+
+  async function testSingleServer(idx) {
+    const srv = apiServers[idx];
+    if (!srv) return;
+    const url = (document.getElementById(`srv_url_${idx}`) ? document.getElementById(`srv_url_${idx}`).value : srv.url || '').trim();
+    const token = (document.getElementById(`srv_token_${idx}`) ? document.getElementById(`srv_token_${idx}`).value : srv.token || '').trim();
+    const resEl = document.getElementById(`srv_test_result_${idx}`);
+    const btn = document.getElementById(`btnTestSrv_${idx}`);
+
+    if (!url) {
+      if (resEl) resEl.innerHTML = '<span class="text-danger fw-semibold"><i class="fas fa-triangle-exclamation me-1"></i> กรุณากรอก API URL ปลายทางก่อนทดสอบ</span>';
+      return;
+    }
+
+    if (!token) {
+      if (resEl) resEl.innerHTML = '<span class="text-danger fw-semibold"><i class="fas fa-triangle-exclamation me-1"></i> กรุณากรอก Bearer API Token หรือ DMSIC Token ก่อนกดทดสอบ (ยังไม่ได้ระบุ Token)</span>';
+      appendLog(`[Test API] ⚠️ Server #${idx + 1} (${srv.name || url}): กรุณากรอก Token ก่อนกดทดสอบ`);
+      return;
+    }
+
+    if (btn) btn.disabled = true;
+    if (resEl) resEl.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin me-1"></i> กำลังทดสอบเชื่อมต่อไปยัง Server...</span>';
+    appendLog(`[Test API] กำลังทดสอบเชื่อมต่อไปยัง ${srv.name || url}...`);
+
+    try {
+      const res = await fetch('/api/test-api', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ url, token })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (resEl) resEl.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-circle-check me-1"></i> เชื่อมต่อสำเร็จ! ตอบกลับปกติ (HTTP 200 OK)</span>';
+        appendLog(`[Test API] ✅ เชื่อมต่อ ${srv.name || url} สำเร็จ`);
+      } else {
+        if (resEl) resEl.innerHTML = `<span class="text-danger fw-semibold"><i class="fas fa-triangle-exclamation me-1"></i> ${escapeHtml(data.error || 'เชื่อมต่อไม่สำเร็จ')}</span>`;
+        appendLog(`[Test API] ❌ เชื่อมต่อ ${srv.name || url} ล้มเหลว: ${data.error}`);
+      }
+    } catch (e) {
+      if (resEl) resEl.innerHTML = `<span class="text-danger"><i class="fas fa-triangle-exclamation me-1"></i> Error: ${e}</span>`;
+      appendLog(`[Test API] Error: ${e}`);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
 
   function appendLog(text) {
     const box = document.getElementById('consoleLogs');
@@ -672,10 +924,18 @@
       const res = await fetch('/api/config');
       const cfg = await res.json();
       
+      const now = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(now.getDate() - 1);
+      const yDay = String(yesterday.getDate()).padStart(2, '0');
+      const yMonth = String(yesterday.getMonth() + 1).padStart(2, '0');
+      const yYear = yesterday.getFullYear() + 543;
+      const yesterdayStr = `${yDay}/${yMonth}/${yYear}`;
+
       document.getElementById('cfg_hosp_code').value = cfg.hosp_code || 'EA0010989';
       document.getElementById('cfg_hosp_name').value = cfg.hosp_name || 'โรงพยาบาลหัวตะพาน';
-      document.getElementById('cfg_month').value = cfg.month || 10;
-      document.getElementById('cfg_year').value = cfg.year || 2569;
+      document.getElementById('cfg_month').value = cfg.month || (now.getMonth() + 1);
+      document.getElementById('cfg_year').value = cfg.year || (now.getFullYear() + 543);
       document.getElementById('cfg_stock_id').value = cfg.stock_id || 'STOCK1';
       
       // Setup Account Type Checkboxes & Summary
@@ -702,7 +962,7 @@
         document.getElementById('chk_inventory').checked = cfg.selection.inventory !== false;
         document.getElementById('chk_distribution').checked = cfg.selection.distribution !== false;
         document.getElementById('chk_purchaseplan').checked = cfg.selection.purchaseplan !== false;
-        document.getElementById('cfg_inv_date').value = cfg.selection.inventory_date || '16/10/2569';
+        document.getElementById('cfg_inv_date').value = cfg.selection.inventory_date || yesterdayStr;
       }
 
       if (cfg.database) {
@@ -719,6 +979,30 @@
         document.getElementById('cfg_api_url').value = cfg.api.url || 'http://127.0.0.1/smartdata/api/v1/moph-f5/upload';
         document.getElementById('cfg_api_token').value = cfg.api.token || '';
         document.getElementById('cfg_api_token_input').value = cfg.api.token || '';
+
+        if (Array.isArray(cfg.api.servers) && cfg.api.servers.length > 0) {
+          apiServers = cfg.api.servers;
+        } else {
+          apiServers = [
+            {
+              id: 'smartdata',
+              name: 'SmartData Platform (คลังข้อมูล รพ./จังหวัด)',
+              url: cfg.api.url || 'http://127.0.0.1/smartdata/api/v1/moph-f5/upload',
+              token: cfg.api.token || '',
+              enabled: true,
+              output_type: cfg.api.output_type || 'text'
+            },
+            {
+              id: 'dmsic',
+              name: 'DMSIC กระทรวงสาธารณสุข (MOPH Drug Warehouse)',
+              url: 'https://dmsic.moph.go.th/api/v1/upload',
+              token: '',
+              enabled: false,
+              output_type: 'text'
+            }
+          ];
+        }
+        renderApiServersTable();
       }
 
       if (cfg.schedule) {
@@ -741,6 +1025,22 @@
   }
 
   function getFormData() {
+    // Read latest values from DOM if rendered
+    apiServers.forEach((srv, idx) => {
+      const nameEl = document.getElementById(`srv_name_${idx}`);
+      const urlEl = document.getElementById(`srv_url_${idx}`);
+      const tokenEl = document.getElementById(`srv_token_${idx}`);
+      const chkEl = document.getElementById(`srv_enabled_${idx}`);
+      const outEl = document.getElementById(`srv_out_${idx}`);
+      if (nameEl) srv.name = nameEl.value;
+      if (urlEl) srv.url = urlEl.value;
+      if (tokenEl) srv.token = tokenEl.value;
+      if (chkEl) srv.enabled = chkEl.checked;
+      if (outEl) srv.output_type = outEl.value;
+    });
+
+    const primarySrv = apiServers.find(s => s.enabled) || apiServers[0] || {};
+
     return {
       hosp_code: document.getElementById('cfg_hosp_code').value,
       hosp_name: document.getElementById('cfg_hosp_name').value,
@@ -768,9 +1068,10 @@
         encrypt: document.getElementById('cfg_db_encrypt').checked,
       },
       api: {
-        url: document.getElementById('cfg_api_url').value,
-        token: document.getElementById('cfg_api_token').value,
+        url: primarySrv.url || document.getElementById('cfg_api_url').value,
+        token: primarySrv.token || document.getElementById('cfg_api_token').value,
         output_type: document.querySelector('input[name="reportType"]:checked').value,
+        servers: apiServers,
       },
       schedule: {
         enabled: document.getElementById('cfg_sched_enabled').checked,
@@ -796,6 +1097,24 @@
     } catch (e) {
       console.error('silent save error:', e);
     }
+  }
+
+  function setYesterdayDate() {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const yearBE = d.getFullYear() + 543;
+    document.getElementById('cfg_inv_date').value = `${day}/${month}/${yearBE}`;
+    saveConfigSilent();
+  }
+
+  function setCurrentPeriodAndYesterday() {
+    const now = new Date();
+    document.getElementById('cfg_month').value = now.getMonth() + 1;
+    document.getElementById('cfg_year').value = now.getFullYear() + 543;
+    setYesterdayDate();
+    appendLog(`[Date] ตั้งค่าปี ${now.getFullYear() + 543} เดือน ${now.getMonth() + 1} และคงคลัง ณ สิ้นวันก่อนหน้า เรียบร้อย`);
   }
 
   async function saveTelegramConfig() {
@@ -827,9 +1146,34 @@
   }
 
   async function saveApiConfig() {
-    // Keep both token fields in sync
-    document.getElementById('cfg_api_token').value = document.getElementById('cfg_api_token_input').value;
-    await saveGeneralConfig();
+    const resEl = document.getElementById('apiSaveResult');
+    if (resEl) resEl.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin me-1"></i> กำลังบันทึก...</span>';
+    appendLog('[Config] กำลังบันทึกการตั้งค่า Server ปลายทาง และ Schedule...');
+
+    const data = getFormData();
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      const resp = await res.json();
+      if (resp.success) {
+        if (resEl) {
+          resEl.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-circle-check me-1"></i> บันทึกการตั้งค่า Server & Schedule เรียบร้อย!</span>';
+          setTimeout(() => { resEl.innerHTML = ''; }, 3500);
+        }
+        updateServerSummaryBadge();
+        appendLog(`[Config] ✅ บันทึกการตั้งค่า Server สำเร็จ (${apiServers.length} Server, Schedule: ${data.schedule.enabled ? data.schedule.daily_time : 'ปิด'})`);
+        alert('บันทึกการตั้งค่า Server ปลายทาง และ Schedule เรียบร้อยแล้ว');
+      } else {
+        if (resEl) resEl.innerHTML = `<span class="text-danger"><i class="fas fa-triangle-exclamation me-1"></i> ${resp.error}</span>`;
+        appendLog('[Config] ❌ บันทึกล้มเหลว: ' + resp.error);
+      }
+    } catch (e) {
+      if (resEl) resEl.innerHTML = `<span class="text-danger">Error: ${e}</span>`;
+      appendLog('[Config Error] ' + e);
+    }
   }
 
   async function testDatabaseConnection() {
@@ -860,15 +1204,28 @@
 
   async function testApiConnection() {
     const el = document.getElementById('apiTestResult');
+    const data = getFormData();
+    const url = (data.api && data.api.url ? data.api.url : '').trim();
+    const token = (data.api && data.api.token ? data.api.token : '').trim();
+
+    if (!url) {
+      el.innerHTML = '<span class="text-danger fw-semibold"><i class="fas fa-triangle-exclamation me-1"></i> กรุณากรอก API URL ปลายทางก่อนทดสอบ</span>';
+      return;
+    }
+    if (!token) {
+      el.innerHTML = '<span class="text-danger fw-semibold"><i class="fas fa-triangle-exclamation me-1"></i> กรุณากรอก Bearer API Token ก่อนกดทดสอบ (ยังไม่ได้ระบุ Token)</span>';
+      appendLog('⚠️ ยังไม่ได้ระบุ API Token กรุณากรอก Token ก่อนทดสอบ');
+      return;
+    }
+
     el.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin me-1"></i> กำลังทดสอบ...</span>';
     appendLog('กำลังทดสอบการเชื่อมต่อ SmartData API...');
 
     try {
-      const data = getFormData();
       const res = await fetch('/api/test-api', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ url: data.api.url, token: data.api.token })
+        body: JSON.stringify({ url, token })
       });
       const resp = await res.json();
       if (resp.success) {
@@ -911,7 +1268,7 @@
     const hint = document.getElementById('syncStatusHint');
     btn.disabled = true;
     hint.innerHTML = '<i class="fas fa-spinner fa-spin text-primary me-1"></i> กำลังประมวลผลและส่งข้อมูลผ่าน API...';
-    appendLog('เริ่มกระบวนการดึงข้อมูลและส่งผ่าน API...');
+    appendLog('เริ่มกระบวนการดึงข้อมูลจาก SQL Server และส่งข้อมูลผ่าน API...');
 
     try {
       const data = getFormData();
@@ -922,14 +1279,32 @@
       });
       const resp = await res.json();
       if (resp.success) {
-        hint.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-circle-check me-1"></i> ส่งข้อมูลสำเร็จแล้ว</span>';
-        appendLog(`[SUCCESS] ส่งข้อมูลเข้า SmartData API สำเร็จเรียบร้อย!`);
+        hint.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-circle-check me-1"></i> ส่งข้อมูลสำเร็จ</span>';
+        appendLog(`[SUCCESS] ${resp.message || 'ส่งข้อมูลสำเร็จเรียบร้อย!'}`);
+        if (resp.results && resp.results.length > 0) {
+          resp.results.forEach(r => {
+            const sName = (r.target && r.target.name) ? r.target.name : 'Server';
+            if (r.success) {
+              appendLog(`  ✅ [${sName}]: ${r.message || 'ส่งข้อมูลสำเร็จ'}`);
+            } else {
+              appendLog(`  ❌ [${sName}]: ${r.error || r.message}`);
+            }
+          });
+        }
         if (resp.details) {
-          resp.details.forEach(d => appendLog(`- ${d.file}: ${d.rows} รายการ (${d.status})`));
+          resp.details.forEach(d => appendLog(`- แฟ้ม ${d.file}: ${d.rows} รายการ (${d.status})`));
         }
       } else {
         hint.innerHTML = '<span class="text-danger fw-bold"><i class="fas fa-triangle-exclamation me-1"></i> ส่งไม่สำเร็จ</span>';
         appendLog(`[FAILED] การส่งล้มเหลว: ${resp.error}`);
+        if (resp.results && resp.results.length > 0) {
+          resp.results.forEach(r => {
+            const sName = (r.target && r.target.name) ? r.target.name : 'Server';
+            if (!r.success) {
+              appendLog(`  ❌ [${sName}]: ${r.error || r.message}`);
+            }
+          });
+        }
       }
     } catch (e) {
       hint.innerHTML = '<span class="text-danger">Error: ' + e + '</span>';

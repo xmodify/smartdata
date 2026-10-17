@@ -27,3 +27,4 @@ tools/invs_agent/exports/
 tools/invs_agent/config.json
 tools/invs_agent/diff_compare/
 *.exe~
+*.syso

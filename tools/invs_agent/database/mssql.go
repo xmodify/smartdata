@@ -119,22 +119,27 @@ func ExtractDataset(cfg *config.AppConfig, fileType string) ([]map[string]interf
 		yearBudget -= 543
 	}
 
-	// Format Inventory date to YYYYMMDD in Christian Era
-	dateOnhand := strings.ReplaceAll(cfg.Selection.InventoryDate, "/", "")
-	dateOnhand = strings.ReplaceAll(dateOnhand, "-", "")
-	if len(dateOnhand) == 8 {
+	// Format Inventory date to YYYYMMDD in Christian Era (Default: ยอดสะสมสิ้นวันก่อนหน้า / Yesterday)
+	cleanDate := strings.TrimSpace(strings.ToLower(cfg.Selection.InventoryDate))
+	cleanDate = strings.ReplaceAll(cleanDate, "/", "")
+	cleanDate = strings.ReplaceAll(cleanDate, "-", "")
+
+	var dateOnhand string
+	if cleanDate == "" || cleanDate == "yesterday" || cleanDate == "auto" {
+		dateOnhand = time.Now().AddDate(0, 0, -1).Format("20060102")
+	} else if len(cleanDate) == 8 {
 		// If DDMMYYYY format
-		d := dateOnhand[0:2]
-		m := dateOnhand[2:4]
-		yStr := dateOnhand[4:8]
+		d := cleanDate[0:2]
+		m := cleanDate[2:4]
+		yStr := cleanDate[4:8]
 		var y int
 		fmt.Sscanf(yStr, "%d", &y)
 		if y > 2400 {
 			y -= 543
 		}
 		dateOnhand = fmt.Sprintf("%04d%s%s", y, m, d)
-	} else if len(dateOnhand) == 0 {
-		dateOnhand = time.Now().Format("20060102")
+	} else {
+		dateOnhand = time.Now().AddDate(0, 0, -1).Format("20060102")
 	}
 
 	isEdList := parseIsEdCondition(cfg.AccountType)
@@ -448,7 +453,7 @@ ORDER BY WORKING_CODE`, isEdList)
 			query = cfg.Queries.Purchaseplan
 		} else {
 			query = fmt.Sprintf(`IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'BUYPLAN_C')
-   AND EXISTS (SELECT 1 FROM BUYPLAN_C WHERE YEAR = CAST(@YearBudget AS VARCHAR))
+   AND EXISTS (SELECT 1 FROM BUYPLAN_C WHERE (YEAR = CAST(@YearBudget AS VARCHAR) OR YEAR = CAST((@YearBudget + 543) AS VARCHAR)))
 BEGIN
     SELECT 
         @HospCode AS HOSP_CODE,
@@ -473,7 +478,7 @@ BEGIN
         CONVERT(VARCHAR(8), GETDATE(), 112) AS DATE_SEND
     FROM BUYPLAN_C b
     INNER JOIN DRUG_GN g ON b.WORKING_CODE = g.WORKING_CODE
-    WHERE b.YEAR = CAST(@YearBudget AS VARCHAR)
+    WHERE (b.YEAR = CAST(@YearBudget AS VARCHAR) OR b.YEAR = CAST((@YearBudget + 543) AS VARCHAR))
       AND g.IS_ED IN (%s)
       AND ISNULL(b.HIDE, 'N') = 'N'
 END

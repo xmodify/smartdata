@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"invs_agent/api"
 	"invs_agent/config"
@@ -64,25 +65,26 @@ func main() {
 		return
 	}
 
-	// Mode 3: Silent Mode (-s) or Sync Now
+	// Mode 3: Silent Mode (-s) or Sync Now (เช่น รันผ่าน Windows Task Scheduler ตอนตี 1)
 	if *silentMode || *syncNow {
-		log.Printf("[INVS Agent] Starting automated sync for %s (%s) Period: %04d%02d...",
-			cfg.HospName, cfg.HospCode, cfg.Year, cfg.Month)
-		if err := runFullSync(cfg); err != nil {
+		schedCfg := config.GetScheduledSyncConfig(cfg)
+		log.Printf("[INVS Agent] Starting automated sync for %s (%s) Period: %04d%02d, Inventory Date: %s (Yesterday)...",
+			schedCfg.HospName, schedCfg.HospCode, schedCfg.Year, schedCfg.Month, schedCfg.Selection.InventoryDate)
+		if err := runFullSync(schedCfg); err != nil {
 			log.Printf("[FAILED] Sync error: %v", err)
-			_ = telegram.SendSyncNotification(cfg, false, err.Error())
+			_ = telegram.SendSyncNotification(schedCfg, false, err.Error())
 			os.Exit(1)
 		}
 		log.Printf("[SUCCESS] Sync completed successfully.")
-		_ = telegram.SendSyncNotification(cfg, true, "ซิงค์ข้อมูลเข้า SmartData สำเร็จเรียบร้อย")
+		_ = telegram.SendSyncNotification(schedCfg, true, fmt.Sprintf("ซิงค์ข้อมูลเข้า SmartData สำเร็จเรียบร้อย (งวด %04d%02d คงคลัง ณ วันที่ %s)", schedCfg.Year, schedCfg.Month, schedCfg.Selection.InventoryDate))
 		return
 	}
 
 	// Mode 4: Standing Daemon Mode
 	if *daemonMode {
 		log.Printf("[INVS Agent] Running in background daemon mode. Schedule: %s daily.", cfg.Schedule.DailyTime)
-		scheduler.StartScheduler(func() error {
-			return runFullSync(config.GetConfig())
+		scheduler.StartScheduler(func(c *config.AppConfig) error {
+			return runFullSync(c)
 		})
 		// Block forever
 		select {}
@@ -91,8 +93,8 @@ func main() {
 	// Mode 5: Default GUI Mode (Interactive Desktop Application with System Tray)
 	// Start scheduler in background if enabled
 	if cfg.Schedule.Enabled {
-		scheduler.StartScheduler(func() error {
-			return runFullSync(config.GetConfig())
+		scheduler.StartScheduler(func(c *config.AppConfig) error {
+			return runFullSync(c)
 		})
 	}
 
@@ -111,7 +113,8 @@ func main() {
 			gui.OpenBrowserApp(appURL)
 		},
 		OnSyncNow: func() {
-			_ = runFullSync(config.GetConfig())
+			schedCfg := config.GetScheduledSyncConfig(config.GetConfig())
+			_ = runFullSync(schedCfg)
 		},
 		OnExportExcel: func() {
 			_, _ = runExportExcel(config.GetConfig())
@@ -183,11 +186,21 @@ func runFullSync(cfg *config.AppConfig) error {
 		}
 	}
 
-	if len(generatedExcels) > 0 {
-		_, err := api.UploadFiles(cfg, generatedExcels)
-		return err
+	results := api.UploadToAllTargets(cfg, datasets, generatedExcels)
+	var errMsgs []string
+	var successCount int
+	for _, res := range results {
+		if res.Success {
+			successCount++
+			log.Printf("[Sync API] [%s] SUCCESS: %s", res.Target.Name, res.Message)
+		} else {
+			errMsgs = append(errMsgs, fmt.Sprintf("[%s] %s", res.Target.Name, res.Error))
+			log.Printf("[Sync API] [%s] FAILED: %s", res.Target.Name, res.Error)
+		}
 	}
 
-	_, err := api.UploadDatasets(cfg, datasets)
-	return err
+	if len(errMsgs) > 0 {
+		return fmt.Errorf("ส่งสำเร็จ %d Server, ล้มเหลว %d Server: %s", successCount, len(errMsgs), strings.Join(errMsgs, "; "))
+	}
+	return nil
 }

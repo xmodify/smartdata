@@ -25,15 +25,24 @@ class MophF5ApiController extends Controller
      */
     public function health(Request $request): JsonResponse
     {
+        // ตรวจสอบ Token ก่อนเสมอ
+        if (!$this->verifyApiToken($request)) {
+            return response()->json([
+                'success'    => false,
+                'message'    => 'Unauthorized: Invalid or missing API Token.',
+                'error_code' => 'AUTH_FAILED',
+            ], 401);
+        }
+
         return response()->json([
-            'status' => 'online',
-            'service' => 'SmartData MOPH F5 Drug Warehouse API',
-            'version' => '1.0.0',
-            'timestamp' => now()->toIso8601String(),
-            'client_ip' => $request->ip(),
-            'auth_required' => true,
-            'supported_methods' => ['POST'],
-            'supported_formats' => ['xlsx', 'zip', 'txt', 'csv', 'json'],
+            'status'             => 'online',
+            'service'            => 'SmartData MOPH F5 Drug Warehouse API',
+            'version'            => '1.0.0',
+            'timestamp'          => now()->toIso8601String(),
+            'client_ip'          => $request->ip(),
+            'auth_required'      => true,
+            'supported_methods'  => ['POST'],
+            'supported_formats'  => ['xlsx', 'zip', 'txt', 'csv', 'json'],
         ]);
     }
 
@@ -328,27 +337,31 @@ class MophF5ApiController extends Controller
             return true;
         }
 
-        // 2. Allow in local environment if configured
-        if (app()->environment('local') && !empty($providedToken)) {
-            return true;
-        }
-
-        // 3. DMSIC Specific Token Check (from .env)
+        // 2. DMSIC Specific Token Check (from .env)
         $dmsicConfigToken = env('MOPH_F5_DMSIC_TOKEN');
         if (!empty($dmsicConfigToken) && hash_equals($dmsicConfigToken, (string)$providedToken)) {
             return true;
         }
 
-        // 3. DMSIC JWT Token Format Verification
-        // If DMSIC token format (starts with eyJ... having 3 segments), verify JWT payload structure
+        // 4. DMSIC JWT / JWE Token Format Verification
         if (env('MOPH_F5_ACCEPT_DMSIC_TOKEN', true)) {
             $parts = explode('.', (string)$providedToken);
+            // 4.1 Standard JWS Token (3 segments: header.payload.signature)
             if (count($parts) === 3) {
                 $payloadJson = @base64_decode(strtr($parts[1], '-_', '+/'));
                 if ($payloadJson) {
                     $payload = @json_decode($payloadJson, true);
                     if (is_array($payload)) {
-                        // Valid DMSIC JWT Token payload structure
+                        return true;
+                    }
+                }
+            }
+            // 4.2 JWE Token (5 segments: header.encrypted_key.iv.ciphertext.tag) as issued by MOPH / DMSIC
+            elseif (count($parts) === 5) {
+                $headerJson = @base64_decode(strtr($parts[0], '-_', '+/'));
+                if ($headerJson) {
+                    $header = @json_decode($headerJson, true);
+                    if (is_array($header) && (!empty($header['enc']) || !empty($header['alg']))) {
                         return true;
                     }
                 }
