@@ -202,7 +202,7 @@ class WarehouseController extends Controller
             }
         };
 
-        $latestInvDate = DB::table('moph_f5_inventory')->max('date_onhand');
+        $latestInvDate = $this->getPharmacyInventoryDate($year_id, $month_id);
         $invCount = $latestInvDate 
             ? DB::table('moph_f5_inventory')->where('date_onhand', $latestInvDate)->count()
             : DB::table('moph_f5_inventory')->count();
@@ -241,6 +241,120 @@ class WarehouseController extends Controller
             'f5TableCounts' => $f5TableCounts,
             'f5LastUpdated' => $f5LastUpdated,
         ]));
+    }
+
+    /**
+     * Get the latest data / transaction date for a warehouse up to the target date
+     */
+    protected function getWarehouseLatestDate(array $wh, int $yearId, $monthId = 'all'): ?string
+    {
+        $endGregorian = ($yearId - 543) . '-09-30 23:59:59';
+        $maxDateLimit = substr($endGregorian, 0, 10);
+
+        if ($monthId !== 'all') {
+            $mInt = (int)$monthId;
+            $calGregYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mInt, $calGregYear);
+            $maxDateLimit = sprintf('%04d-%02d-%02d', $calGregYear, $mInt, $daysInMonth);
+        }
+
+        if (($wh['type'] ?? '') === 'moph_f5') {
+            return $this->getPharmacyInventoryDate($yearId, $monthId);
+        }
+
+        if (($wh['type'] ?? '') === 'supplies') {
+            $maxRcv = DB::connection('backoffice')->table('warehouse_check_receive')
+                ->where('RECEIVE_STORE', $wh['store_type'])
+                ->where('RECEIVE_CHECK_DATE', '<=', $maxDateLimit)
+                ->max('RECEIVE_CHECK_DATE');
+
+            $maxReq = DB::connection('backoffice')->table('warehouse_request')
+                ->where('WAREHOUSE_INVEN_ID', $wh['inven_id'])
+                ->where('WAREHOUSE_DATE_WANT', '<=', $maxDateLimit)
+                ->max('WAREHOUSE_DATE_WANT');
+
+            if ($maxRcv && $maxReq) {
+                return max($maxRcv, $maxReq);
+            }
+            return $maxRcv ?: $maxReq;
+        }
+
+        // Clinical supplies (medicine warehouse)
+        $maxRcv = DB::connection('backoffice')->table('medicine_warehouse_receive')
+            ->where('warehouse_id', $wh['warehouse_id'])
+            ->where('receive_datetime', '<=', $maxDateLimit . ' 23:59:59')
+            ->max('receive_datetime');
+
+        $maxReq = DB::connection('backoffice')->table('medicine_warehouse_request')
+            ->where('warehouse_id', $wh['warehouse_id'])
+            ->where('created_at', '<=', $maxDateLimit . ' 23:59:59')
+            ->max('created_at');
+
+        if ($maxRcv && $maxReq) {
+            $latest = max($maxRcv, $maxReq);
+        } else {
+            $latest = $maxRcv ?: $maxReq;
+        }
+
+        return $latest ? substr($latest, 0, 10) : null;
+    }
+
+    /**
+     * Resolve the latest survey date for pharmacy inventory based on year and month filters
+     */
+    protected function getPharmacyInventoryDate(int $yearId, $monthId): ?string
+    {
+        $startInvYmd = ($yearId - 544) . '1001';
+        $endInvYmd = ($yearId - 543) . '0930';
+
+        if ($monthId !== 'all') {
+            $mInt = (int)$monthId;
+            $calGregYear = ($mInt >= 10) ? ($yearId - 544) : ($yearId - 543);
+            $monthPrefix = sprintf('%04d%02d', $calGregYear, $mInt);
+            $targetInvDate = DB::table('moph_f5_inventory')
+                ->where('date_onhand', 'like', $monthPrefix . '%')
+                ->max('date_onhand');
+            if (!$targetInvDate) {
+                $targetInvDate = DB::table('moph_f5_inventory')
+                    ->where('date_onhand', '<=', $monthPrefix . '31')
+                    ->max('date_onhand');
+            }
+        } else {
+            $targetInvDate = DB::table('moph_f5_inventory')
+                ->whereBetween('date_onhand', [$startInvYmd, $endInvYmd])
+                ->max('date_onhand');
+        }
+
+        if (!$targetInvDate) {
+            $targetInvDate = DB::table('moph_f5_inventory')->max('date_onhand');
+        }
+
+        return $targetInvDate;
+    }
+
+    /**
+     * Format a date string (e.g. '20261016' or '2026-10-16') to Thai short format (e.g. '16 ต.ค. 2569')
+     */
+    protected function formatThaiDateShort($dateStr): string
+    {
+        if (!$dateStr) return '-';
+        $cleaned = preg_replace('/[^0-9]/', '', (string)$dateStr);
+        if (strlen($cleaned) >= 8) {
+            $y = (int)substr($cleaned, 0, 4);
+            $m = (int)substr($cleaned, 4, 2);
+            $d = (int)substr($cleaned, 6, 2);
+            $by = ($y < 2400) ? ($y + 543) : $y;
+            $mName = $this->thaiMonthsShort[$m] ?? $m;
+            return "{$d} {$mName} {$by}";
+        }
+        try {
+            $carbon = Carbon::parse($dateStr);
+            $by = $carbon->year < 2400 ? ($carbon->year + 543) : $carbon->year;
+            $mName = $this->thaiMonthsShort[$carbon->month] ?? $carbon->month;
+            return $carbon->day . ' ' . $mName . ' ' . $by;
+        } catch (\Throwable $e) {
+            return (string)$dateStr;
+        }
     }
 
     /**
@@ -348,9 +462,20 @@ class WarehouseController extends Controller
                 $disbursementVal = (float)$disbQuery->sum('value');
                 $reqCount = (int)$disbQuery->count();
 
-                $stockVal = (float)DB::table('moph_f5_inventory')->sum('value_onhand');
-                $itemsCount = DB::table('moph_f5_inventory')->distinct('working_code')->count('working_code') ?: DB::table('moph_f5_druglist')->count();
+                // Point-in-time inventory: use latest survey date within period
+                $targetInvDate = $this->getPharmacyInventoryDate($yearId, $monthId);
+                $invStockQuery = DB::table('moph_f5_inventory');
+                if ($targetInvDate) {
+                    $invStockQuery->where('date_onhand', $targetInvDate);
+                }
+                $stockVal = (float)$invStockQuery->sum('value_onhand');
+                $itemsCount = (clone $invStockQuery)->distinct('working_code')->count('working_code') ?: DB::table('moph_f5_druglist')->count();
                 $statusCounts = ['Pending' => 0, 'Approve' => 0, 'Verify' => 0, 'Allow' => $reqCount];
+                if ($isMonthlyView) {
+                    $whStockDateLabel = 'ณ สิ้นเดือน' . $selectedMonthName;
+                } else {
+                    $whStockDateLabel = $targetInvDate ? ('ณ ' . $this->formatThaiDateShort($targetInvDate)) : 'ณ วันที่ล่าสุด';
+                }
 
                 $monthlyDrug = DB::table('moph_f5_distribution')
                     ->whereBetween('period_rpt', [$startDisbPeriod, $endDisbPeriod])
@@ -430,6 +555,12 @@ class WarehouseController extends Controller
                     ->where('w.WAREHOUSE_DATE_WANT', '<=', substr($targetEndDate, 0, 10))
                     ->sum('s.WAREHOUSE_REQUEST_SUB_SUM_PRICE');
                 $stockVal = max(0, $suppRecCum - $suppDisbCum);
+                if ($isMonthlyView) {
+                    $whStockDateLabel = 'ณ สิ้นเดือน' . $selectedMonthName;
+                } else {
+                    $latestSuppDt = $this->getWarehouseLatestDate($wh, $yearId, 'all');
+                    $whStockDateLabel = $latestSuppDt ? ('ณ ' . $this->formatThaiDateShort($latestSuppDt)) : 'ณ วันที่ล่าสุด';
+                }
 
                 foreach ($reqList as $r) {
                     $st = $r->WAREHOUSE_STATUS ?: 'Pending';
@@ -552,6 +683,12 @@ class WarehouseController extends Controller
                     ->where('created_at', '<=', $targetEndDate)
                     ->sum('value');
                 $stockVal = max(0, $medRecCum - $medDisbCum);
+                if ($isMonthlyView) {
+                    $whStockDateLabel = 'ณ สิ้นเดือน' . $selectedMonthName;
+                } else {
+                    $latestMedDt = $this->getWarehouseLatestDate($wh, $yearId, 'all');
+                    $whStockDateLabel = $latestMedDt ? ('ณ ' . $this->formatThaiDateShort($latestMedDt)) : 'ณ วันที่ล่าสุด';
+                }
 
                 foreach ($reqList as $r) {
                     $st = $r->status ?: 'Pending';
@@ -665,6 +802,7 @@ class WarehouseController extends Controller
                 'receive_val' => $receiveVal,
                 'disbursement_val' => $disbursementVal,
                 'stock_val' => $stockVal,
+                'stock_date_label' => $whStockDateLabel ?? null,
                 'items_count' => $itemsCount,
                 'pending_count' => $statusCounts['Pending'] ?? 0,
                 'approve_count' => $statusCounts['Approve'] ?? 0,
@@ -693,11 +831,15 @@ class WarehouseController extends Controller
             ->whereBetween('exp', [$today, $in180Days])
             ->count();
 
-        $nearExpMoph = DB::table('moph_f5_inventory')
+        $targetDrugInvDate = $this->getPharmacyInventoryDate($yearId, $monthId);
+        $nearExpMophQuery = DB::table('moph_f5_inventory')
             ->whereNotNull('expire_date')
             ->where('expire_date', '!=', '')
-            ->whereBetween('expire_date', [date('Ymd'), date('Ymd', strtotime('+180 days'))])
-            ->count();
+            ->whereBetween('expire_date', [date('Ymd'), date('Ymd', strtotime('+180 days'))]);
+        if ($targetDrugInvDate) {
+            $nearExpMophQuery->where('date_onhand', $targetDrugInvDate);
+        }
+        $nearExpMoph = $nearExpMophQuery->count();
 
         $totalNearExpiryCount = $nearExpGeneral + $nearExpMed + $nearExpMoph;
 
@@ -1268,6 +1410,12 @@ class WarehouseController extends Controller
                 ->where('w.WAREHOUSE_DATE_WANT', '<=', substr($targetEndDate, 0, 10))
                 ->sum('s.WAREHOUSE_REQUEST_SUB_SUM_PRICE');
             $totalStockVal = max(0, $suppRecCum - $suppDisbCum);
+            if ($isMonthlyView) {
+                $stockDateLabel = 'ณ สิ้นเดือน' . $selectedMonthName;
+            } else {
+                $latestSuppDt = $this->getWarehouseLatestDate($config, $yearId, 'all');
+                $stockDateLabel = $latestSuppDt ? ('ณ ' . $this->formatThaiDateShort($latestSuppDt)) : 'ณ วันที่ล่าสุด';
+            }
 
             // 3. Active catalog items
             $catalogItemsCount = DB::connection('backoffice')->table('warehouse_store')
@@ -1617,6 +1765,12 @@ class WarehouseController extends Controller
                 ->where('created_at', '<=', $targetEndDate)
                 ->sum('value');
             $totalStockVal = max(0, $medRecCum - $medDisbCum);
+            if ($isMonthlyView) {
+                $stockDateLabel = 'ณ สิ้นเดือน' . $selectedMonthName;
+            } else {
+                $latestMedDt = $this->getWarehouseLatestDate($config, $yearId, 'all');
+                $stockDateLabel = $latestMedDt ? ('ณ ' . $this->formatThaiDateShort($latestMedDt)) : 'ณ วันที่ล่าสุด';
+            }
 
             // 3. Active catalog items
             $catalogItemsCount = DB::connection('backoffice')->table('medicine_drug')
@@ -1947,6 +2101,7 @@ class WarehouseController extends Controller
             'totalReceiveCount' => $totalReceiveCount,
             'totalDisbursement' => $totalDisbursement,
             'totalStockVal' => $totalStockVal,
+            'stockDateLabel' => $stockDateLabel ?? ($isMonthlyView ? ('ณ สิ้นเดือน' . $selectedMonthName) : 'ณ วันที่ล่าสุด'),
             'catalogItemsCount' => $catalogItemsCount,
             'avgMos' => $avgMos,
             'totalReqCount' => $totalReqCount,
@@ -2123,7 +2278,12 @@ class WarehouseController extends Controller
             if (!$item) return response()->json(['error' => 'Not found'], 404);
 
             $wCode = $item->working_code;
-            $mainStock = (float)DB::table('moph_f5_inventory')->where('working_code', $wCode)->sum('qty_onhand');
+            $latestInvDate = DB::table('moph_f5_inventory')->where('working_code', $wCode)->max('date_onhand') ?: DB::table('moph_f5_inventory')->max('date_onhand');
+            $mainStockQuery = DB::table('moph_f5_inventory')->where('working_code', $wCode);
+            if ($latestInvDate) {
+                $mainStockQuery->where('date_onhand', $latestInvDate);
+            }
+            $mainStock = (float)$mainStockQuery->sum('qty_onhand');
 
             $deptGroupNames = [
                 '1' => 'OPD + IPD (ผู้ป่วยนอกและใน)',
@@ -2225,7 +2385,7 @@ class WarehouseController extends Controller
         if ($type === 'drug' || $type === 'moph_f5') {
             $item = DB::table('moph_f5_inventory')->where('id', $id)->first();
             if (!$item) {
-                $item = DB::table('moph_f5_inventory')->where('working_code', $id)->first();
+                $item = DB::table('moph_f5_inventory')->where('working_code', $id)->orderByDesc('date_onhand')->first();
             }
             if (!$item) {
                 $item = DB::table('moph_f5_druglist')->where('working_code', $id)->first();
@@ -3511,12 +3671,13 @@ class WarehouseController extends Controller
 
             $results = $service->importFiles($savedPaths);
 
+            $latestInv = DB::table('moph_f5_inventory')->max('date_onhand');
             $counts = [
                 'druglist' => DB::table('moph_f5_druglist')->count(),
                 'purchaseplan' => DB::table('moph_f5_purchaseplan')->count(),
                 'receipt' => DB::table('moph_f5_receipt')->count(),
                 'distribution' => DB::table('moph_f5_distribution')->count(),
-                'inventory' => DB::table('moph_f5_inventory')->count(),
+                'inventory' => $latestInv ? DB::table('moph_f5_inventory')->where('date_onhand', $latestInv)->count() : DB::table('moph_f5_inventory')->count(),
             ];
 
             return response()->json([
@@ -4082,9 +4243,21 @@ class WarehouseController extends Controller
             ];
         });
 
-        // 3. Stock Items & Catalog
-        $totalStockVal = (float)DB::table('moph_f5_inventory')->sum('value_onhand');
-        $catalogItemsCount = DB::table('moph_f5_inventory')->distinct('working_code')->count('working_code') ?: DB::table('moph_f5_druglist')->count();
+        // 3. Stock Items & Catalog (คำนวณ ณ วันสำรวจล่าสุด ไม่ใช่ทั้งปี)
+        $targetInvDate = $this->getPharmacyInventoryDate($yearId, $monthId);
+        $invBaseQuery = DB::table('moph_f5_inventory');
+        if ($targetInvDate) {
+            $invBaseQuery->where('date_onhand', $targetInvDate);
+        }
+
+        $totalStockVal = (float)(clone $invBaseQuery)->sum('value_onhand');
+        $catalogItemsCount = (clone $invBaseQuery)->distinct('working_code')->count('working_code') ?: DB::table('moph_f5_druglist')->count();
+
+        if ($isMonthlyView) {
+            $stockDateLabel = 'ณ สิ้นเดือน' . $selectedMonthName;
+        } else {
+            $stockDateLabel = $targetInvDate ? ('ณ ' . $this->formatThaiDateShort($targetInvDate)) : 'ณ วันที่ล่าสุด';
+        }
 
         $consumptionMap = DB::table('moph_f5_distribution')
             ->select('working_code', DB::raw('SUM(qty_dis) as total_qty'), DB::raw('SUM(value) as total_val'))
@@ -4092,8 +4265,16 @@ class WarehouseController extends Controller
             ->get()
             ->keyBy('working_code');
 
-        $rawStock = DB::table('moph_f5_inventory')
-            ->select(
+        $rawStockQuery = (clone $invBaseQuery);
+        if (!empty($search)) {
+            $rawStockQuery->where(function($q) use ($search) {
+                $q->where('working_code', 'like', "%{$search}%")
+                  ->orWhere('trade_name', 'like', "%{$search}%")
+                  ->orWhere('lot_no', 'like', "%{$search}%");
+            });
+        }
+
+        $rawStock = $rawStockQuery->select(
                 DB::raw('MIN(id) as id'),
                 'working_code',
                 DB::raw('MAX(trade_name) as trade_name'),
@@ -4287,6 +4468,8 @@ class WarehouseController extends Controller
             'totalReceiveCount' => $totalReceiveCount,
             'totalDisbursement' => $totalDisbursement,
             'totalStockVal' => $totalStockVal,
+            'stockDateLabel' => $stockDateLabel ?? ($isMonthlyView ? ('ณ สิ้นเดือน' . $selectedMonthName) : 'ณ วันที่ล่าสุด'),
+            'targetInvDate' => $targetInvDate ?? null,
             'catalogItemsCount' => $catalogItemsCount,
             'avgMos' => $avgMos,
             'totalReqCount' => $totalReqCount,

@@ -713,7 +713,7 @@
                     <span class="mx-2 text-muted">|</span>
                     <span class="text-warning fw-bold"><i class="fas fa-file-arrow-up me-1"></i>เบิกจ่าย {{ number_format($totalHospitalDisbursement, 2) }} ฿</span>
                     <span class="mx-2 text-muted">|</span>
-                    <span class="text-success fw-bold"><i class="fas fa-boxes-stacked me-1"></i>คงคลัง {{ number_format($totalHospitalStock, 2) }} ฿</span>
+                    <span class="text-success fw-bold" title="คงคลัง"><i class="fas fa-boxes-stacked me-1"></i>คงคลัง{{ ($isMonthlyView ?? false) ? ' (ณ สิ้นเดือน' . $selectedMonthName . ')' : ' (ณ วันที่ล่าสุด)' }} {{ number_format($totalHospitalStock, 2) }} ฿</span>
                 </span>
             </div>
         </div>
@@ -749,30 +749,30 @@
                         <div class="d-flex flex-column gap-2 mb-3">
                             <!-- รับเข้า -->
                             <div class="p-2 rounded-3 bg-light d-flex justify-content-between align-items-center border border-light">
-                                <span class="text-muted small fw-medium" style="font-size: 0.78rem;">
+                                <span class="text-muted small fw-medium text-truncate me-1" style="font-size: 0.78rem;">
                                     <i class="fas fa-file-arrow-down text-primary me-1"></i> รับเข้า{{ ($isMonthlyView ?? false) ? ' (' . ($thaiMonthsShort[(int)$month_id] ?? $selectedMonthName) . ')' : ' (ทั้งปี)' }}
                                 </span>
-                                <span class="fw-bold text-dark" style="font-size: 0.86rem;">
+                                <span class="fw-bold text-dark text-nowrap" style="font-size: 0.86rem;">
                                     {{ number_format($ws['receive_val'], 2) }} <span class="fw-normal text-muted" style="font-size: 0.7rem;">฿</span>
                                 </span>
                             </div>
 
                             <!-- เบิกจ่าย -->
                             <div class="p-2 rounded-3 bg-light d-flex justify-content-between align-items-center border border-light">
-                                <span class="text-muted small fw-medium" style="font-size: 0.78rem;">
+                                <span class="text-muted small fw-medium text-truncate me-1" style="font-size: 0.78rem;">
                                     <i class="fas fa-file-arrow-up text-warning me-1"></i> เบิกจ่าย{{ ($isMonthlyView ?? false) ? ' (' . ($thaiMonthsShort[(int)$month_id] ?? $selectedMonthName) . ')' : ' (ทั้งปี)' }}
                                 </span>
-                                <span class="fw-bold text-dark" style="font-size: 0.86rem;">
+                                <span class="fw-bold text-dark text-nowrap" style="font-size: 0.86rem;">
                                     {{ number_format($ws['disbursement_val'], 2) }} <span class="fw-normal text-muted" style="font-size: 0.7rem;">฿</span>
                                 </span>
                             </div>
 
                             <!-- คงคลัง -->
                             <div class="p-2 rounded-3 d-flex justify-content-between align-items-center" style="background-color: #ecfdf5; border: 1px solid #a7f3d0;">
-                                <span class="small fw-bold" style="color: #065f46; font-size: 0.78rem;">
-                                    <i class="fas fa-boxes-stacked me-1 text-success"></i> คงคลัง{{ ($isMonthlyView ?? false) ? ' (สิ้นเดือน ' . ($thaiMonthsShort[(int)$month_id] ?? $selectedMonthName) . ')' : ' (รวม)' }}
+                                <span class="small fw-bold text-truncate me-1" style="color: #065f46; font-size: 0.78rem;">
+                                    <i class="fas fa-boxes-stacked me-1 text-success"></i> คงคลัง ({{ $ws['stock_date_label'] ?? 'ณ วันที่ล่าสุด' }})
                                 </span>
-                                <span class="fw-bold" style="color: #047857; font-size: 0.88rem;">
+                                <span class="fw-bold text-nowrap" style="color: #047857; font-size: 0.88rem;">
                                     {{ number_format($ws['stock_val'], 2) }} <span class="fw-normal" style="font-size: 0.7rem;">฿</span>
                                 </span>
                             </div>
@@ -1409,7 +1409,7 @@
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mb-1">
                                 <div class="text-muted small fw-bold text-uppercase d-flex align-items-center gap-1">
                                     <i class="fas fa-warehouse text-success"></i>
-                                    <span>มูลค่าคงคลัง ({{ ($isMonthlyView ?? false) ? 'สิ้นเดือน ' . $selectedMonthName : 'ทั้งปี ' . $year_id }})</span>
+                                    <span>มูลค่าคงคลัง ({{ $stockDateLabel ?? (($isMonthlyView ?? false) ? 'ณ สิ้นเดือน' . $selectedMonthName : 'ณ วันที่ล่าสุด') }})</span>
                                 </div>
                                 @if($sub_warehouse_id !== 'all')
                                     <span class="badge bg-light text-success border rounded-pill px-2 py-0.5" style="font-size: 0.68rem;" title="{{ $selectedSubWhName }}">
@@ -1975,10 +1975,15 @@
             <div class="card border-0 shadow-sm rounded-4 bg-white mb-5 overflow-hidden">
                 <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                     <div>
-                        <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
+                        <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2 flex-wrap">
                             <i class="fas fa-cubes" style="color: {{ $config['color'] }};"></i>
                             <span>ระบบตรวจสอบตัวเลขสต็อกจริง 2 ระดับ (คลังหลัก vs คลังย่อยประจำแผนก)</span>
                             <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2.5 py-0.5 rounded-pill small">Real-time Multi-tier</span>
+                            @if(!empty($stockDateLabel))
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-0.5 rounded-pill small">
+                                    <i class="fas fa-calendar-check me-1"></i>{{ $stockDateLabel }}
+                                </span>
+                            @endif
                         </h6>
                         <div class="text-muted small mt-1">
                             ป้องกันสต็อกหลอกตา (Phantom Stockout) และตรวจนับพัสดุที่เบิกไปเก็บในหอผู้ป่วย
@@ -2067,12 +2072,17 @@
             <div class="card border-0 shadow-sm rounded-4 bg-white mb-5 overflow-hidden">
                 <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                     <div>
-                        <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
+                        <h6 class="m-0 fw-bold text-dark d-flex align-items-center gap-2 flex-wrap">
                             <i class="fas fa-cart-shopping text-danger"></i>
                             <span>ข้อเสนอแนะแผนจัดซื้อพัสดุ/เวชภัณฑ์ ประจำรอบเดือนถัดไป (Smart Reorder Matrix)</span>
                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2.5 py-0.5 rounded-pill small">
                                 อิงเกณฑ์มาตรฐาน สธ.
                             </span>
+                            @if(!empty($stockDateLabel))
+                                <span class="badge bg-light text-secondary border px-2.5 py-0.5 rounded-pill small">
+                                    <i class="fas fa-calendar-check me-1 text-success"></i>สต็อกฐาน: {{ $stockDateLabel }}
+                                </span>
+                            @endif
                         </h6>
                         <div class="text-muted small mt-1">
                             คำนวณจากอัตราการใช้เฉลี่ยจริง (AMC) และเกณฑ์ Min/Max ป้องกันเงินจมและของขาดสต็อก
