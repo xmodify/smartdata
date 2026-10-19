@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"invs_agent/config"
@@ -200,7 +201,7 @@ func UploadToTarget(target config.ApiTarget, cfg *config.AppConfig, datasets map
 	return UploadDatasetsToTarget(target, cfg, datasets)
 }
 
-// UploadToAllTargets sends data to all enabled targets and returns per-target results
+// UploadToAllTargets sends data to all enabled targets concurrently in parallel and returns per-target results
 func UploadToAllTargets(cfg *config.AppConfig, datasets map[string][]map[string]interface{}, excelFiles []string) []TargetUploadResult {
 	targets := cfg.GetActiveApiTargets()
 	if len(targets) == 0 {
@@ -213,25 +214,33 @@ func UploadToAllTargets(cfg *config.AppConfig, datasets map[string][]map[string]
 		}
 	}
 
-	var results []TargetUploadResult
-	for _, target := range targets {
-		resp, err := UploadToTarget(target, cfg, datasets, excelFiles)
-		res := TargetUploadResult{
-			Target: target,
-		}
-		if err != nil {
-			res.Success = false
-			res.Error = err.Error()
-			res.Message = fmt.Sprintf("ส่งไปยัง %s ล้มเหลว: %v", target.Name, err)
-		} else {
-			res.Success = true
-			res.Message = resp.Message
-			if res.Message == "" {
-				res.Message = "ส่งข้อมูลสำเร็จเรียบร้อย"
+	results := make([]TargetUploadResult, len(targets))
+	var wg sync.WaitGroup
+
+	for i, target := range targets {
+		wg.Add(1)
+		go func(idx int, tgt config.ApiTarget) {
+			defer wg.Done()
+			resp, err := UploadToTarget(tgt, cfg, datasets, excelFiles)
+			res := TargetUploadResult{
+				Target: tgt,
 			}
-		}
-		results = append(results, res)
+			if err != nil {
+				res.Success = false
+				res.Error = err.Error()
+				res.Message = fmt.Sprintf("ส่งไปยัง %s ล้มเหลว: %v", tgt.Name, err)
+			} else {
+				res.Success = true
+				res.Message = resp.Message
+				if res.Message == "" {
+					res.Message = "ส่งข้อมูลสำเร็จเรียบร้อย"
+				}
+			}
+			results[idx] = res
+		}(i, target)
 	}
+
+	wg.Wait()
 	return results
 }
 

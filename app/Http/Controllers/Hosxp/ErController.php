@@ -85,20 +85,60 @@ class ErController extends Controller
         $budget_year = $dates['budget_year'];
         $budget_year_select = $dates['budget_year_select'];
 
-        // 1. Patient List for Table (Filtered by independent table date range)
-        $ems_list = DB::connection('hosxp')->select('
+        $ems_type = $request->get('ems_type', 'all');
+        $severity_type = $request->get('severity_type', 'all');
+
+        // Master data for dynamic emergency severity types (1-5)
+        $severity_types = DB::connection('hosxp')->table('er_emergency_type')
+            ->select('er_emergency_type', 'name')
+            ->orderBy('er_emergency_type')
+            ->get()
+            ->keyBy('er_emergency_type');
+
+        // 1. Patient List for Table (Filtered by independent table date range, ems_type, and severity_type)
+        $query_conditions = ['o.vstdate BETWEEN ? AND ?', 'o.ovstist IN ("08", "09", "10", "13")'];
+        $params = [$table_start_date, $table_end_date];
+
+        if ($ems_type !== 'all' && !empty($ems_type)) {
+            $ovstist_map = ['ALS' => '08', 'ILS' => '09', 'FR' => '10', 'BLS' => '13'];
+            if (isset($ovstist_map[$ems_type])) {
+                $query_conditions[] = 'o.ovstist = ?';
+                $params[] = $ovstist_map[$ems_type];
+            }
+        }
+
+        if ($severity_type !== 'all' && !empty($severity_type)) {
+            if ($severity_type === 'null' || $severity_type === 'unspecified') {
+                $query_conditions[] = '(e.er_emergency_type IS NULL OR e.er_emergency_type NOT IN (1, 2, 3, 4, 5))';
+            } elseif (in_array((int)$severity_type, [1, 2, 3, 4, 5])) {
+                $query_conditions[] = 'e.er_emergency_type = ?';
+                $params[] = (int)$severity_type;
+            }
+        }
+
+        $where_clause = implode(' AND ', $query_conditions);
+
+        $ems_list = DB::connection('hosxp')->select("
             SELECT o.vn, o.oqueue, o.vstdate, o.vsttime, o.hn, CONCAT(p.pname, p.fname, SPACE(1), p.lname) AS ptname,
-            v.age_y, CONCAT(o.pttype, " [", p1.hipdata_code, "]") AS pttype, o1.cc, v.pdx, d.`name` AS dx_doctor,
+            v.age_y, CONCAT(o.pttype, ' [', COALESCE(p1.hipdata_code, o.pttype), ']') AS pttype, o1.cc, v.pdx, d.`name` AS dx_doctor,
             CASE 
-                WHEN o.ovstist = "08" THEN "ALS" 
-                WHEN o.ovstist = "09" THEN "ILS" 
-                WHEN o.ovstist = "10" THEN "FR" 
-                WHEN o.ovstist = "13" THEN "BLS" 
+                WHEN o.ovstist = '08' THEN 'ALS' 
+                WHEN o.ovstist = '09' THEN 'ILS' 
+                WHEN o.ovstist = '10' THEN 'FR' 
+                WHEN o.ovstist = '13' THEN 'BLS' 
             END AS ems,
-            IF(o.an <> "", "Admit", NULL) AS admit, CONCAT(r.refer_hospcode, " [", r.pdx, "]") AS refer,
-            CASE WHEN e.er_emergency_type = "1" THEN "Resuscitate" WHEN e.er_emergency_type = "2" THEN "Emergency" 
-            WHEN e.er_emergency_type = "3" THEN "Urgency" WHEN e.er_emergency_type = "4" THEN "Semi_Urgency"  
-            WHEN (e.er_emergency_type = "5" OR e.er_emergency_type IS NULL) THEN "Non_Urgency" END AS er_emergency_type
+            IF(o.an <> '' AND o.an IS NOT NULL, 'Admit', NULL) AS admit, 
+            IF(r.vn <> '' AND r.vn IS NOT NULL, CONCAT(r.refer_hospcode, ' [', COALESCE(r.pdx, ''), ']'), NULL) AS refer,
+            e.er_emergency_type AS emergency_type_id,
+            et.name AS emergency_type_name,
+            CASE 
+                WHEN e.er_emergency_type = 1 THEN 'Resuscitate' 
+                WHEN e.er_emergency_type = 2 THEN 'Emergency' 
+                WHEN e.er_emergency_type = 3 THEN 'Urgency' 
+                WHEN e.er_emergency_type = 4 THEN 'Semi_Urgency'  
+                WHEN e.er_emergency_type = 5 THEN 'Non_Urgency' 
+                ELSE 'Unspecified' 
+            END AS er_emergency_type
             FROM ovst o
             LEFT JOIN patient p ON p.hn=o.hn
             LEFT JOIN pttype p1 ON p1.pttype=o.pttype
@@ -107,14 +147,15 @@ class ErController extends Controller
             LEFT JOIN referout r ON r.vn=o.vn
             LEFT JOIN doctor d ON d.`code`=v.dx_doctor
             LEFT JOIN er_regist e ON e.vn=o.vn
-            WHERE o.vstdate BETWEEN ? AND ?
-            AND o.ovstist IN ("08", "09", "10", "13")
+            LEFT JOIN er_emergency_type et ON et.er_emergency_type=e.er_emergency_type
+            WHERE {$where_clause}
             GROUP BY o.vn
-        ', [$table_start_date, $table_end_date]);
+            ORDER BY o.vstdate DESC, o.vsttime DESC
+        ", $params);
 
         // Check if Ajax request
         if ($request->ajax()) {
-            $html = view('hosxp.er.partials._table_ems', compact('ems_list'))->render();
+            $html = view('hosxp.er.partials._table_ems', compact('ems_list', 'severity_types'))->render();
             return response()->json([
                 'success' => true,
                 'html' => $html,
@@ -122,87 +163,84 @@ class ErController extends Controller
                 'end_date_thai' => DateThai($table_end_date),
                 'table_start_date' => $table_start_date,
                 'table_end_date' => $table_end_date,
-                'total' => count($ems_list)
+                'total' => count($ems_list),
+                'ems_type' => $ems_type,
+                'severity_type' => $severity_type
             ]);
         }
 
-        // 2. Executive Charts (12-month budget year stats)
-        $ems_diag_als = DB::connection('hosxp')->select('
-            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
+        // 2. Executive Charts: Top 20 Diagnoses by EMS Team (ALS, BLS, ILS, FR) in a single fast query
+        $all_ems_team_diags = DB::connection('hosxp')->select('
+            SELECT 
+                ovstist,
+                CONCAT("[", pdx, "] ", name) AS name,
+                count(*) as sum
             FROM (
-                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
+                SELECT v.pdx, i.name, o.ovstist
                 FROM vn_stat v
                 LEFT JOIN icd101 i ON i.code=v.pdx
-                LEFT JOIN ovst o ON o.vn=v.vn
+                INNER JOIN ovst o ON o.vn=v.vn AND o.ovstist IN ("08", "09", "10", "13")
                 WHERE v.vstdate BETWEEN ? AND ?
-                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
-                AND o.ovstist IN ("08")
+                AND (v.pdx <> "" AND v.pdx IS NOT NULL)
                 AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
             ) AS a
-            GROUP BY pdx
-            ORDER BY sum DESC LIMIT 20
+            GROUP BY ovstist, pdx, name
+            ORDER BY ovstist, sum DESC
         ', [$year_start, $year_end]);
 
+        $ems_diag_grouped = [];
+        foreach ($all_ems_team_diags as $row) {
+            $ems_diag_grouped[$row->ovstist][] = $row;
+        }
+
+        $ems_diag_als = array_slice($ems_diag_grouped['08'] ?? [], 0, 20);
         $ems_diag_als_name = array_column($ems_diag_als, 'name');
         $ems_diag_als_sum = array_column($ems_diag_als, 'sum');
 
-        $ems_diag_bls = DB::connection('hosxp')->select('
-            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
-            FROM (
-                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
-                FROM vn_stat v
-                LEFT JOIN icd101 i ON i.code=v.pdx
-                LEFT JOIN ovst o ON o.vn=v.vn
-                WHERE v.vstdate BETWEEN ? AND ?
-                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
-                AND o.ovstist IN ("13")
-                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
-            ) AS a
-            GROUP BY pdx
-            ORDER BY sum DESC LIMIT 20
-        ', [$year_start, $year_end]);
-
+        $ems_diag_bls = array_slice($ems_diag_grouped['13'] ?? [], 0, 20);
         $ems_diag_bls_name = array_column($ems_diag_bls, 'name');
         $ems_diag_bls_sum = array_column($ems_diag_bls, 'sum');
 
-        $ems_diag_ils = DB::connection('hosxp')->select('
-            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
-            FROM (
-                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
-                FROM vn_stat v
-                LEFT JOIN icd101 i ON i.code=v.pdx
-                LEFT JOIN ovst o ON o.vn=v.vn
-                WHERE v.vstdate BETWEEN ? AND ?
-                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
-                AND o.ovstist IN ("09")
-                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
-            ) AS a
-            GROUP BY pdx
-            ORDER BY sum DESC LIMIT 20
-        ', [$year_start, $year_end]);
-
+        $ems_diag_ils = array_slice($ems_diag_grouped['09'] ?? [], 0, 20);
         $ems_diag_ils_name = array_column($ems_diag_ils, 'name');
         $ems_diag_ils_sum = array_column($ems_diag_ils, 'sum');
 
-        $ems_diag_fr = DB::connection('hosxp')->select('
-            SELECT CONCAT("[",pdx,"] " ,name) AS name, count(*) AS sum
-            FROM (
-                SELECT v.vn, v.hn, v.vstdate, v.pdx, i.name 
-                FROM vn_stat v
-                LEFT JOIN icd101 i ON i.code=v.pdx
-                LEFT JOIN ovst o ON o.vn=v.vn
-                WHERE v.vstdate BETWEEN ? AND ?
-                AND (v.pdx <> "" OR v.pdx IS NOT NULL)
-                AND o.ovstist IN ("10")
-                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
-            ) AS a
-            GROUP BY pdx
-            ORDER BY sum DESC LIMIT 20
-        ', [$year_start, $year_end]);
-
+        $ems_diag_fr = array_slice($ems_diag_grouped['10'] ?? [], 0, 20);
         $ems_diag_fr_name = array_column($ems_diag_fr, 'name');
         $ems_diag_fr_sum = array_column($ems_diag_fr, 'sum');
 
+        // 3. Executive Charts: Top 20 Diagnoses by 5 Severity Levels in a single fast query
+        $all_severity_diags = DB::connection('hosxp')->select('
+            SELECT 
+                er_emergency_type,
+                CONCAT("[", pdx, "] ", name) AS name,
+                count(*) as sum
+            FROM (
+                SELECT v.pdx, i.name, e.er_emergency_type
+                FROM vn_stat v
+                LEFT JOIN icd101 i ON i.code=v.pdx
+                INNER JOIN ovst o ON o.vn=v.vn AND o.ovstist IN ("08", "09", "10", "13")
+                INNER JOIN er_regist e ON e.vn=v.vn AND e.er_emergency_type IN (1, 2, 3, 4, 5)
+                WHERE v.vstdate BETWEEN ? AND ?
+                AND (v.pdx <> "" AND v.pdx IS NOT NULL)
+                AND v.pdx NOT LIKE "z%" AND v.pdx NOT IN ("u119")
+            ) AS a
+            GROUP BY er_emergency_type, pdx, name
+            ORDER BY er_emergency_type, sum DESC
+        ', [$year_start, $year_end]);
+
+        $severity_diag_grouped = [];
+        foreach ($all_severity_diags as $row) {
+            $severity_diag_grouped[$row->er_emergency_type][] = $row;
+        }
+
+        $ems_diag_sev1 = array_slice($severity_diag_grouped[1] ?? [], 0, 20);
+        $ems_diag_sev2 = array_slice($severity_diag_grouped[2] ?? [], 0, 20);
+        $ems_diag_sev3 = array_slice($severity_diag_grouped[3] ?? [], 0, 20);
+        $ems_diag_sev4 = array_slice($severity_diag_grouped[4] ?? [], 0, 20);
+        $ems_diag_sev5 = array_slice($severity_diag_grouped[5] ?? [], 0, 20);
+
+        // 4. Monthly Trend (both EMS types and 5 Severity Levels)
         $ems_monthly = DB::connection('hosxp')->select('
             SELECT 
                 CASE 
@@ -219,16 +257,43 @@ class ErController extends Controller
                     WHEN MONTH(o.vstdate) = 8 THEN CONCAT("ส.ค. ", RIGHT(YEAR(o.vstdate) + 543, 2))
                     WHEN MONTH(o.vstdate) = 9 THEN CONCAT("ก.ย. ", RIGHT(YEAR(o.vstdate) + 543, 2))
                 END AS month_year,
-                SUM(CASE WHEN o.ovstist = "08" THEN 1 ELSE 0 END) AS als,
-                SUM(CASE WHEN o.ovstist = "13" THEN 1 ELSE 0 END) AS bls,
-                SUM(CASE WHEN o.ovstist = "09" THEN 1 ELSE 0 END) AS ils,
-                SUM(CASE WHEN o.ovstist = "10" THEN 1 ELSE 0 END) AS fr
+                COUNT(DISTINCT o.vn) AS total_visit,
+                COUNT(DISTINCT CASE WHEN o.ovstist = "08" THEN o.vn END) AS als,
+                COUNT(DISTINCT CASE WHEN o.ovstist = "13" THEN o.vn END) AS bls,
+                COUNT(DISTINCT CASE WHEN o.ovstist = "09" THEN o.vn END) AS ils,
+                COUNT(DISTINCT CASE WHEN o.ovstist = "10" THEN o.vn END) AS fr,
+                COUNT(DISTINCT CASE WHEN e.er_emergency_type = 1 THEN o.vn END) AS level_1,
+                COUNT(DISTINCT CASE WHEN e.er_emergency_type = 2 THEN o.vn END) AS level_2,
+                COUNT(DISTINCT CASE WHEN e.er_emergency_type = 3 THEN o.vn END) AS level_3,
+                COUNT(DISTINCT CASE WHEN e.er_emergency_type = 4 THEN o.vn END) AS level_4,
+                COUNT(DISTINCT CASE WHEN e.er_emergency_type = 5 THEN o.vn END) AS level_5,
+                COUNT(DISTINCT CASE WHEN e.er_emergency_type IS NULL OR e.er_emergency_type NOT IN (1,2,3,4,5) THEN o.vn END) AS level_null
             FROM ovst o
+            LEFT JOIN er_regist e ON e.vn=o.vn
             WHERE o.vstdate BETWEEN ? AND ?
             AND o.ovstist IN ("08", "09", "10", "13")
             GROUP BY YEAR(o.vstdate), MONTH(o.vstdate)
             ORDER BY YEAR(o.vstdate), MONTH(o.vstdate)
         ', [$year_start, $year_end]);
+
+        // 5. Full Year Summary Stats for EMS & Severity
+        $year_summary = [
+            'total' => 0, 'als' => 0, 'bls' => 0, 'ils' => 0, 'fr' => 0,
+            'level_1' => 0, 'level_2' => 0, 'level_3' => 0, 'level_4' => 0, 'level_5' => 0, 'level_null' => 0
+        ];
+        foreach ($ems_monthly as $m) {
+            $year_summary['total'] += (int)$m->total_visit;
+            $year_summary['als'] += (int)$m->als;
+            $year_summary['bls'] += (int)$m->bls;
+            $year_summary['ils'] += (int)$m->ils;
+            $year_summary['fr'] += (int)$m->fr;
+            $year_summary['level_1'] += (int)$m->level_1;
+            $year_summary['level_2'] += (int)$m->level_2;
+            $year_summary['level_3'] += (int)$m->level_3;
+            $year_summary['level_4'] += (int)$m->level_4;
+            $year_summary['level_5'] += (int)$m->level_5;
+            $year_summary['level_null'] += (int)$m->level_null;
+        }
 
         // Backwards compatibility variables
         $start_date = $year_start;
@@ -237,11 +302,13 @@ class ErController extends Controller
         return view('hosxp.er.ems', compact(
             'title', 'budget_year_select', 'budget_year', 'start_date', 'end_date',
             'year_start', 'year_end', 'table_start_date', 'table_end_date',
+            'ems_type', 'severity_type', 'severity_types',
             'ems_diag_als', 'ems_diag_als_name', 'ems_diag_als_sum',
             'ems_diag_bls', 'ems_diag_bls_name', 'ems_diag_bls_sum',
             'ems_diag_ils', 'ems_diag_ils_name', 'ems_diag_ils_sum',
             'ems_diag_fr', 'ems_diag_fr_name', 'ems_diag_fr_sum',
-            'ems_list', 'ems_monthly'
+            'ems_diag_sev1', 'ems_diag_sev2', 'ems_diag_sev3', 'ems_diag_sev4', 'ems_diag_sev5',
+            'ems_list', 'ems_monthly', 'year_summary'
         ));
     }
 

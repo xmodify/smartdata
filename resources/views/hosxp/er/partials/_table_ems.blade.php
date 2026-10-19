@@ -57,18 +57,28 @@
                         @endif
                     </td>
                     <td class="text-center">
-                        @if($row->er_emergency_type === 'Resuscitate')
-                            <span class="badge bg-danger">Resuscitate</span>
-                        @elseif($row->er_emergency_type === 'Emergency')
-                            <span class="badge bg-orange text-white">Emergency</span>
-                        @elseif($row->er_emergency_type === 'Urgency')
-                            <span class="badge bg-warning text-dark">Urgency</span>
-                        @elseif($row->er_emergency_type === 'Semi_Urgency')
-                            <span class="badge bg-primary">Semi_Urgency</span>
-                        @elseif($row->er_emergency_type === 'Non_Urgency')
-                            <span class="badge bg-success">Non_Urgency</span>
+                        @if($row->emergency_type_id == 1 || $row->er_emergency_type === 'Resuscitate')
+                            <span class="badge" style="background-color: #be123c; color: white;">
+                                <i class="fas fa-heartbeat me-1"></i> Resuscitate (กู้ชีพทันที)
+                            </span>
+                        @elseif($row->emergency_type_id == 2 || $row->er_emergency_type === 'Emergency')
+                            <span class="badge text-white" style="background-color: #ea580c;">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Emergency (ฉุกเฉินเร่งด่วน)
+                            </span>
+                        @elseif($row->emergency_type_id == 3 || $row->er_emergency_type === 'Urgency')
+                            <span class="badge text-dark" style="background-color: #facc15;">
+                                <i class="fas fa-bell me-1"></i> Urgency (ด่วนมาก)
+                            </span>
+                        @elseif($row->emergency_type_id == 4 || $row->er_emergency_type === 'Semi_Urgency')
+                            <span class="badge text-white" style="background-color: #2563eb;">
+                                <i class="fas fa-check-circle me-1"></i> Semi Urgency (ด่วน)
+                            </span>
+                        @elseif($row->emergency_type_id == 5 || $row->er_emergency_type === 'Non_Urgency')
+                            <span class="badge text-white" style="background-color: #16a34a;">
+                                <i class="fas fa-smile me-1"></i> Non Urgency (รอได้)
+                            </span>
                         @else
-                            <span class="badge bg-secondary">{{ $row->er_emergency_type }}</span>
+                            <span class="badge bg-secondary text-white">ไม่ระบุระดับ</span>
                         @endif
                     </td>
                 </tr>
