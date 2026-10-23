@@ -204,6 +204,8 @@ Route::middleware(['auth'])->group(function () {
     // PCU Routes
     Route::prefix('hosxp/pcu')->group(function () {
         Route::get('/', [App\Http\Controllers\Hosxp\PcuController::class, 'index'])->name('hosxp.pcu.index');
+        Route::get('/top10-illness', [App\Http\Controllers\Hosxp\PcuController::class, 'top10_illness'])->name('hosxp.pcu.top10_illness');
+        Route::get('/top10-illness/export', [App\Http\Controllers\Hosxp\PcuController::class, 'export_top10_illness'])->name('hosxp.pcu.top10_illness.export');
     });
 
     // CT Scan Routes
