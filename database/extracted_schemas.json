@@ -1110,6 +1110,13 @@
                 "default": "go",
                 "extra": ""
             },
+            "github_token": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
             "created_at": {
                 "type": "timestamp",
                 "length": null,

@@ -61,9 +61,10 @@ class LicenseController extends Controller
             'code' => 'required|string|max:191|unique:license_programs,code',
             'description' => 'nullable|string',
             'language' => 'required|string|in:go,laravel,python,csharp',
+            'github_token' => 'nullable|string|max:255',
         ]);
 
-        LicenseProgram::create($request->only('name', 'code', 'description', 'language'));
+        LicenseProgram::create($request->only('name', 'code', 'description', 'language', 'github_token'));
 
         return redirect()->back()->with('success', 'เพิ่มระบบ/โปรแกรมใหม่สำเร็จ');
     }
@@ -84,9 +85,10 @@ class LicenseController extends Controller
             'code' => 'required|string|max:191|unique:license_programs,code,' . $program->id,
             'description' => 'nullable|string',
             'language' => 'required|string|in:go,laravel,python,csharp',
+            'github_token' => 'nullable|string|max:255',
         ]);
 
-        $program->update($request->only('name', 'code', 'description', 'language'));
+        $program->update($request->only('name', 'code', 'description', 'language', 'github_token'));
 
         return redirect()->back()->with('success', 'แก้ไขข้อมูลระบบสำเร็จ');
     }
@@ -465,7 +467,8 @@ class LicenseController extends Controller
                     'moph_alert_active' => $mophAlert ? $mophAlert->active : 'N',
                     'moph_alert_client_id' => $mophAlert ? $mophAlert->client_id : '',
                     'moph_alert_client_secret' => $mophAlert ? $mophAlert->secret : ''
-                ]
+                ],
+                'github_token' => $program->github_token
             ]);
         }
 
@@ -626,6 +629,7 @@ class LicenseController extends Controller
             'expired_at' => $license->expired_at ? $license->expired_at->toDateString() : null,
             'expires_in_days' => $license->expired_at ? Carbon::now()->diffInDays($license->expired_at, false) : null,
             'signature' => $signature,
+            'github_token' => $program->github_token,
             'verified_at' => Carbon::now()->toIso8601String()
         ]);
     }

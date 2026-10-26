@@ -16,6 +16,7 @@ class LicenseProgram extends Model
         'code',
         'description',
         'language',
+        'github_token',
     ];
 
     /**

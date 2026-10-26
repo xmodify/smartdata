@@ -280,6 +280,7 @@
                                     <th>รหัสโปรแกรม (Program Code)</th>
                                     <th>คำอธิบาย (Description)</th>
                                     <th>ภาษาที่เขียน (Platform)</th>
+                                    <th>GitHub Token</th>
                                     <th class="text-center">จำนวนคีย์ลิขสิทธิ์</th>
                                     <th class="text-end">การจัดการ</th>
                                 </tr>
@@ -303,6 +304,17 @@
                                                 <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 font-monospace">C# (.NET)</span>
                                             @else
                                                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">{{ strtoupper($program->language) }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if(!empty($program->github_token))
+                                                <span class="badge bg-dark text-white px-2 py-1 font-monospace shadow-xs" title="มี GitHub Token บันทึกอยู่">
+                                                    <i class="fab fa-github me-1 text-warning"></i>{{ Str::mask($program->github_token, '*', 4, -4) }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-light text-muted border px-2 py-1">
+                                                    <i class="fab fa-github text-muted me-1"></i>ยังไม่ระบุ
+                                                </span>
                                             @endif
                                         </td>
                                         <td class="text-center">
@@ -339,7 +351,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center py-5 text-muted">
+                                        <td colspan="7" class="text-center py-5 text-muted">
                                             <i class="fas fa-cubes fa-3x mb-3 text-muted-opacity"></i>
                                             <p class="mb-0">ยังไม่มีระบบโปรแกรมลงทะเบียนในระบบ</p>
                                         </td>
@@ -500,7 +512,20 @@
                             <option value="laravel">Laravel</option>
                             <option value="go">Go</option>
                             <option value="python">Python</option>
+                            <option value="csharp">C# (.NET)</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">
+                            <i class="fab fa-github me-1 text-dark"></i>GitHub Personal Access Token (สำหรับดาวน์โหลดอัปเดต / Release)
+                        </label>
+                        <div class="input-group shadow-xs">
+                            <input type="password" name="github_token" id="add_github_token" class="form-control border font-monospace" placeholder="เช่น ghp_xxxx หรือ github_pat_xxxx" autocomplete="new-password">
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('add_github_token', this)">
+                                <i class="far fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted" style="font-size: 0.8rem;">Token สำหรับให้โปรแกรม Client ตรวจสอบและดาวน์โหลดอัปเดต Release จาก GitHub Private Repository</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted">รายละเอียด / คำอธิบายเพิ่มเติม</label>
@@ -817,7 +842,20 @@
                                 <option value="laravel" {{ ($program->language ?? '') === 'laravel' ? 'selected' : '' }}>Laravel</option>
                                 <option value="go" {{ ($program->language ?? 'go') === 'go' ? 'selected' : '' }}>Go</option>
                                 <option value="python" {{ ($program->language ?? '') === 'python' ? 'selected' : '' }}>Python</option>
+                                <option value="csharp" {{ ($program->language ?? '') === 'csharp' ? 'selected' : '' }}>C# (.NET)</option>
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">
+                                <i class="fab fa-github me-1 text-dark"></i>GitHub Personal Access Token
+                            </label>
+                            <div class="input-group shadow-xs">
+                                <input type="password" name="github_token" id="edit_github_token_{{ $program->id }}" class="form-control border font-monospace" value="{{ $program->github_token }}" placeholder="เช่น ghp_xxxx หรือ github_pat_xxxx" autocomplete="new-password">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('edit_github_token_{{ $program->id }}', this)">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.8rem;">Token สำหรับให้โปรแกรม Client ตรวจสอบและดาวน์โหลดอัปเดต Release จาก GitHub Private Repository</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">คำอธิบาย</label>
@@ -889,7 +927,8 @@
 5. สร้าง Laravel Middleware (เช่น CheckLicense) สำหรับคัดกรอง Routes ทั้งหมด หากลิขสิทธิ์ถูกยกเลิก หมดอายุ หรือถูกระงับ ให้แสดงหน้าจอแจ้งเตือนลิขสิทธิ์ผิดพลาดอย่างสวยงาม
 6. การเช็กสิทธิ์ฟังก์ชันย่อย (Module Check): ตรวจเช็กตัวแปร license_type ใน JSON ผลลัพธ์:
    - หาก license_type เท่ากับ "full" ให้ผ่านเข้าใช้งานได้ทุกฟังก์ชัน
-   - หาก license_type เท่ากับ "module" ให้เช็กว่ารหัสโมดูลที่ต้องการใช้งาน (เช่น export_ssop) มีระบุอยู่ในอาเรย์ modules ของ JSON หรือไม่ หากไม่มีให้ปิดการเข้าถึงฟังก์ชันนั้น</textarea>
+   - หาก license_type เท่ากับ "module" ให้เช็กว่ารหัสโมดูลที่ต้องการใช้งาน (เช่น export_ssop) มีระบุอยู่ในอาเรย์ modules ของ JSON หรือไม่ หากไม่มีให้ปิดการเข้าถึงฟังก์ชันนั้น
+7. การรับ GitHub Token เพื่ออัปเดตเวอร์ชัน: ตรวจสอบฟิลด์ github_token ใน JSON ที่ได้รับจาก /license/verify สามารถนำไปแนบเป็น Authorization Header (Bearer Token) ในการเรียก GitHub API เพื่อเช็คหรือดาวน์โหลดไฟล์อัปเดตล่าสุดจาก Private Repository</textarea>
                             <button class="btn btn-sm btn-success position-absolute end-0 bottom-0 m-3" onclick="copyPrompt('prompt_text_{{ $program->id }}')">
                                 <i class="far fa-copy me-1"></i> คัดลอก Prompt สั่งงาน AI
                             </button>
@@ -917,7 +956,8 @@
 5. เขียนคลาสหรือโมดูลตรวจสิทธิ์ใช้งาน และเชื่อมต่อกับอินเทอร์เฟซโปรแกรมของคุณ หากพบว่าสิทธิ์ไม่ผ่าน ให้แสดงหน้าจอปิดกั้นการใช้งานระบบ
 6. ตรวจสอบระดับโมดูลย่อย: ใน JSON ตรวจสอบตัวแปร license_type:
    - หากมีค่าเป็น "full" ให้สิทธิ์การใช้งานผ่านทุกโมดูล
-   - หากมีค่าเป็น "module" ให้เช็กสิทธิ์เฉพาะเจาะจงว่าชื่อรหัสโมดูลที่ต้องการใช้งาน (เช่น export_ssop) มีอยู่ภายในลิสต์ modules หรือไม่ เพื่อใช้ล็อกสิทธิ์ฟีเจอร์ย่อยของโปรเจกต์</textarea>
+   - หากมีค่าเป็น "module" ให้เช็กสิทธิ์เฉพาะเจาะจงว่าชื่อรหัสโมดูลที่ต้องการใช้งาน (เช่น export_ssop) มีอยู่ภายในลิสต์ modules หรือไม่ เพื่อใช้ล็อกสิทธิ์ฟีเจอร์ย่อยของโปรเจกต์
+7. การรับ GitHub Token เพื่ออัปเดตโปรแกรม: ใน JSON มีฟิลด์ github_token สำหรับใช้เป็น Bearer token กับ GitHub API เพื่อเช็กและดาวน์โหลด Release ใหม่จาก Private Repository</textarea>
                             <button class="btn btn-sm btn-success position-absolute end-0 bottom-0 m-3" onclick="copyPrompt('prompt_text_{{ $program->id }}')">
                                 <i class="far fa-copy me-1"></i> คัดลอก Prompt สั่งงาน AI
                             </button>
@@ -946,7 +986,8 @@
 5. สร้างหน้าเมนู Console หรือหน้าต่างให้ป้อนคีย์ลิขสิทธิ์และแสดงสถานะให้สวยงาม
 6. ตรวจสอบรหัสโมดูลย่อย (Module Checking): นำข้อมูล license_type และอาเรย์ modules จาก JSON ผลลัพธ์:
    - หาก license_type เป็น "full" ถือว่าได้สิทธิ์ครบทุกฟังก์ชันของโปรแกรม
-   - หาก license_type เป็น "module" ให้ทำการเช็คว่ารหัสโมดูลที่ใช้ (เช่น export_ssop) มีระบุอยู่ใน slice/array modules หรือไม่เพื่ออนุญาตการทำงาน</textarea>
+   - หาก license_type เป็น "module" ให้ทำการเช็คว่ารหัสโมดูลที่ใช้ (เช่น export_ssop) มีระบุอยู่ใน slice/array modules หรือไม่เพื่ออนุญาตการทำงาน
+7. การรับ GitHub Token เพื่ออัปเดตโปรแกรม: ใน JSON Response มีฟิลด์ github_token สำหรับแนบ Header "Authorization: Bearer <github_token>" เพื่อเช็คและดาวน์โหลดอัปเดตจาก Private Repository บน GitHub</textarea>
                             <button class="btn btn-sm btn-success position-absolute end-0 bottom-0 m-3" onclick="copyPrompt('prompt_text_{{ $program->id }}')">
                                 <i class="far fa-copy me-1"></i> คัดลอก Prompt สั่งงาน AI
                             </button>
@@ -1052,6 +1093,25 @@
         }, function(err) {
             console.error('ไม่สามารถคัดลอกข้อความได้: ', err);
         });
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (icon) {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        } else {
+            input.type = 'password';
+            if (icon) {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
