@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('license_programs', function (Blueprint $table) {
-            $table->string('github_token', 255)->nullable()->after('language');
-        });
+        if (Schema::hasTable('license_programs')) {
+            Schema::table('license_programs', function (Blueprint $table) {
+                if (!Schema::hasColumn('license_programs', 'github_token')) {
+                    $table->string('github_token', 255)->nullable()->after('language');
+                }
+            });
+        }
     }
 
     /**
@@ -21,8 +25,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('license_programs', function (Blueprint $table) {
-            $table->dropColumn('github_token');
-        });
+        if (Schema::hasTable('license_programs')) {
+            Schema::table('license_programs', function (Blueprint $table) {
+                if (Schema::hasColumn('license_programs', 'github_token')) {
+                    $table->dropColumn('github_token');
+                }
+            });
+        }
     }
 };
