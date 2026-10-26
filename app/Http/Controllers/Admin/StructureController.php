@@ -182,7 +182,7 @@ class StructureController extends Controller
             switch ($step) {
                 case 'run_migrations':
                     $output = new BufferedOutput();
-                    Artisan::call('migrate', [], $output);
+                    Artisan::call('migrate', ['--force' => true], $output);
                     return response()->json(['success' => true, 'message' => 'Migrations completed. Output: ' . trim($output->fetch())]);
 
                 case 'sync_seed_data':
@@ -260,6 +260,21 @@ class StructureController extends Controller
                 $colObj = $tableBlueprint->date($column);
             } elseif ($type === 'time') {
                 $colObj = $tableBlueprint->time($column);
+            } elseif ($type === 'double') {
+                if ($length && strpos($length, ',') !== false) {
+                    list($precision, $scale) = explode(',', $length);
+                    $colObj = $tableBlueprint->double($column, (int)$precision, (int)$scale);
+                } else {
+                    $colObj = $tableBlueprint->double($column);
+                }
+            } elseif ($type === 'float') {
+                $colObj = $tableBlueprint->float($column);
+            } elseif ($type === 'tinyint') {
+                $colObj = $tableBlueprint->tinyInteger($column);
+            } elseif ($type === 'smallint') {
+                $colObj = $tableBlueprint->smallInteger($column);
+            } elseif ($type === 'datetime') {
+                $colObj = $tableBlueprint->dateTime($column);
             } elseif ($type === 'decimal') {
                 $precision = 10;
                 $scale = 2;
@@ -381,11 +396,26 @@ class StructureController extends Controller
                     if ($current['nullable'] !== $info['nullable']) {
                         $changed = true;
                     }
-                    if (strval($current['default']) !== strval($info['default'])) {
-                        if ($current['extra'] !== 'auto_increment') {
-                            $changed = true;
+
+                    $currDef = $current['default'];
+                    $expDef = $info['default'];
+                    $defaultChanged = false;
+
+                    if ($currDef !== null && $expDef !== null && is_numeric($currDef) && is_numeric($expDef)) {
+                        // Compare numerically for float/decimal/double/int (e.g. '0.00' == '0')
+                        if ((float)$currDef != (float)$expDef) {
+                            $defaultChanged = true;
+                        }
+                    } else {
+                        if (strval($currDef) !== strval($expDef)) {
+                            $defaultChanged = true;
                         }
                     }
+
+                    if ($defaultChanged && ($current['extra'] ?? '') !== 'auto_increment') {
+                        $changed = true;
+                    }
+
                     if ($info['length'] !== null && strval($current['length']) !== strval($info['length'])) {
                         $changed = true;
                     }

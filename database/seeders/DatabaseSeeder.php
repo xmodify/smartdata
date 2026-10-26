@@ -100,16 +100,26 @@ class DatabaseSeeder extends Seeder
                     $masterReferenceTables = ['budget_year', 'lookup_hospcode', 'icd10'];
                     $isMasterTable = in_array($table, $masterReferenceTables);
 
-                    $query = DB::table($table)->where($matchCondition);
-                    if ($query->exists()) {
-                        // If it's a master reference table, sync updated definitions/active status
+                    $existing = DB::table($table)->where($matchCondition)->first();
+                    if ($existing) {
+                        // If it's a master reference table, sync updated definitions/active status only if changed
                         if ($isMasterTable) {
-                            $updateData = $data;
-                            if (Schema::hasColumn($table, 'updated_at')) {
-                                $updateData['updated_at'] = now();
+                            $needsUpdate = false;
+                            foreach ($data as $k => $v) {
+                                if (property_exists($existing, $k) && strval($existing->$k) !== strval($v)) {
+                                    $needsUpdate = true;
+                                    break;
+                                }
                             }
-                            $query->update($updateData);
-                            $updatedCount++;
+
+                            if ($needsUpdate) {
+                                $updateData = $data;
+                                if (Schema::hasColumn($table, 'updated_at')) {
+                                    $updateData['updated_at'] = now();
+                                }
+                                DB::table($table)->where($matchCondition)->update($updateData);
+                                $updatedCount++;
+                            }
                         }
                         // For all other tables (present and future): PRESERVE EXISTING DATA, NEVER OVERWRITE!
                     } else {
