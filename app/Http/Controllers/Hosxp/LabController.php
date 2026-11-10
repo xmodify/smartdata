@@ -313,6 +313,276 @@ class LabController extends Controller
         ]);
     }
 
+    public function anywhere(Request $request)
+    {
+        $title = 'รายงานการให้บริการ Lab Anywhere';
+        $dates = $this->resolveDateRange($request);
+        $start_date = $dates['start_date'];
+        $end_date = $dates['end_date'];
+        $budget_year = $dates['budget_year'];
+        $budget_year_select = $dates['budget_year_select'];
+
+        // 1. Overall Totals
+        $overall = DB::connection('hosxp')->select('
+            SELECT 
+                COUNT(DISTINCT lh.lab_order_number) as total_orders,
+                COUNT(DISTINCT lh.hn) as total_hn,
+                COUNT(lo.lab_items_code) as total_tests,
+                SUM(CASE WHEN lh.confirm_report = "Y" THEN 1 ELSE 0 END) as confirmed_orders
+            FROM lab_head lh
+            LEFT JOIN lab_order lo ON lo.lab_order_number = lh.lab_order_number
+            WHERE lh.form_name = "28.ใบสั่งตรวจ Lab Anywhere"
+              AND lh.order_date BETWEEN ? AND ?
+        ', [$start_date, $end_date]);
+
+        $total_orders = $overall[0]->total_orders ?? 0;
+        $total_hn = $overall[0]->total_hn ?? 0;
+        $total_tests = $overall[0]->total_tests ?? 0;
+        $confirmed_orders = $overall[0]->confirmed_orders ?? 0;
+        $confirm_pct = $total_orders > 0 ? round(($confirmed_orders / $total_orders) * 100, 1) : 0;
+
+        // 2. Monthly Stats
+        $monthly_stats = DB::connection('hosxp')->select('
+            SELECT 
+                CASE 
+                    WHEN MONTH(lh.order_date)="10" THEN CONCAT("ต.ค. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="11" THEN CONCAT("พ.ย. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="12" THEN CONCAT("ธ.ค. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="1" THEN CONCAT("ม.ค. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="2" THEN CONCAT("ก.พ. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="3" THEN CONCAT("มี.ค. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="4" THEN CONCAT("เม.ย. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="5" THEN CONCAT("พ.ค. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="6" THEN CONCAT("มิ.ย. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="7" THEN CONCAT("ก.ค. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="8" THEN CONCAT("ส.ค. ",RIGHT(YEAR(lh.order_date)+543,2))
+                    WHEN MONTH(lh.order_date)="9" THEN CONCAT("ก.ย. ",RIGHT(YEAR(lh.order_date)+543,2))
+                END AS month_name,
+                YEAR(lh.order_date) AS y,
+                MONTH(lh.order_date) AS m,
+                CONCAT(YEAR(lh.order_date), "-", LPAD(MONTH(lh.order_date), 2, "0")) AS month_key,
+                COUNT(DISTINCT lh.lab_order_number) AS total_orders,
+                COUNT(DISTINCT lh.hn) AS total_hn,
+                COUNT(lo.lab_items_code) AS total_tests,
+                SUM(CASE WHEN lo.lab_items_code = 935 THEN 1 ELSE 0 END) AS fbs_count,
+                SUM(CASE WHEN lo.lab_items_code = 937 THEN 1 ELSE 0 END) AS cr_count,
+                SUM(CASE WHEN lo.lab_items_code = 936 THEN 1 ELSE 0 END) AS bun_count,
+                SUM(CASE WHEN lo.lab_items_code IN (939,940,941,957,938) THEN 1 ELSE 0 END) AS lipid_count,
+                SUM(CASE WHEN lo.lab_items_code = 954 THEN 1 ELSE 0 END) AS hba1c_count,
+                SUM(CASE WHEN lo.lab_items_code = 959 THEN 1 ELSE 0 END) AS hct_count,
+                SUM(CASE WHEN lo.lab_items_code IN (933,554,650) THEN 1 ELSE 0 END) AS alb_count,
+                SUM(CASE WHEN lo.lab_items_code IN (995,996,997,998,33,34,35,36) THEN 1 ELSE 0 END) AS electrolyte_count,
+                SUM(CASE WHEN lo.lab_items_code IN (944,945,947,948,949,950,955) THEN 1 ELSE 0 END) AS lft_count,
+                SUM(CASE WHEN lo.lab_items_code IN (934,953,956,952) THEN 1 ELSE 0 END) AS other_count
+            FROM lab_head lh
+            LEFT JOIN lab_order lo ON lo.lab_order_number = lh.lab_order_number
+            WHERE lh.form_name = "28.ใบสั่งตรวจ Lab Anywhere"
+              AND lh.order_date BETWEEN ? AND ?
+            GROUP BY YEAR(lh.order_date), MONTH(lh.order_date)
+            ORDER BY YEAR(lh.order_date), MONTH(lh.order_date)
+        ', [$start_date, $end_date]);
+
+        // Chart data
+        $months = array_column($monthly_stats, 'month_name');
+        $orders_series = array_map('intval', array_column($monthly_stats, 'total_orders'));
+        $hns_series = array_map('intval', array_column($monthly_stats, 'total_hn'));
+        $tests_series = array_map('intval', array_column($monthly_stats, 'total_tests'));
+
+        // 3. Top 10 Lab Items
+        $top_items = DB::connection('hosxp')->select("
+            SELECT 
+                REPLACE(REPLACE(REPLACE(REPLACE(li.lab_items_name, '_Lab anywhere', ''), '_Lab Anywhere', ''), ' LabAnywhere', ''), '_LabAnywhere', '') AS item_name,
+                COUNT(*) AS total_count
+            FROM lab_head lh
+            JOIN lab_order lo ON lo.lab_order_number = lh.lab_order_number
+            JOIN lab_items li ON li.lab_items_code = lo.lab_items_code
+            WHERE lh.form_name = '28.ใบสั่งตรวจ Lab Anywhere'
+              AND lh.order_date BETWEEN ? AND ?
+            GROUP BY item_name
+            ORDER BY total_count DESC
+            LIMIT 10
+        ", [$start_date, $end_date]);
+        $top_items_names = array_column($top_items, 'item_name');
+        $top_items_counts = array_map('intval', array_column($top_items, 'total_count'));
+
+        // 4. Top 10 Diagnoses (ICD10)
+        $top_diags = DB::connection('hosxp')->select("
+            SELECT 
+                COALESCE(v.pdx, 'ไม่ระบุ') AS pdx,
+                CONCAT(COALESCE(v.pdx, '-'), ': ', COALESCE(i.name, 'ไม่ระบุชื่อโรค')) AS diag_name,
+                COUNT(DISTINCT lh.lab_order_number) AS total_orders
+            FROM lab_head lh
+            LEFT JOIN vn_stat v ON v.vn = lh.vn
+            LEFT JOIN icd101 i ON i.code = v.pdx
+            WHERE lh.form_name = '28.ใบสั่งตรวจ Lab Anywhere'
+              AND lh.order_date BETWEEN ? AND ?
+              AND v.pdx IS NOT NULL AND v.pdx <> ''
+            GROUP BY v.pdx, i.name
+            ORDER BY total_orders DESC
+            LIMIT 10
+        ", [$start_date, $end_date]);
+        $top_diags_names = array_column($top_diags, 'diag_name');
+        $top_diags_counts = array_map('intval', array_column($top_diags, 'total_orders'));
+
+        // 5. Top 10 Ordering Doctors
+        $top_doctors = DB::connection('hosxp')->select("
+            SELECT 
+                COALESCE(d.name, 'ไม่ระบุแพทย์/ผู้สั่ง') AS doctor_name,
+                COUNT(DISTINCT lh.lab_order_number) AS total_orders
+            FROM lab_head lh
+            LEFT JOIN doctor d ON d.code = lh.doctor_code
+            WHERE lh.form_name = '28.ใบสั่งตรวจ Lab Anywhere'
+              AND lh.order_date BETWEEN ? AND ?
+            GROUP BY COALESCE(d.name, 'ไม่ระบุแพทย์/ผู้สั่ง')
+            ORDER BY total_orders DESC
+            LIMIT 10
+        ", [$start_date, $end_date]);
+        $top_doctors_names = array_column($top_doctors, 'doctor_name');
+        $top_doctors_counts = array_map('intval', array_column($top_doctors, 'total_orders'));
+
+        return view('hosxp.lab.anywhere', compact(
+            'title',
+            'budget_year_select',
+            'budget_year',
+            'start_date',
+            'end_date',
+            'total_orders',
+            'total_hn',
+            'total_tests',
+            'confirmed_orders',
+            'confirm_pct',
+            'monthly_stats',
+            'months',
+            'orders_series',
+            'hns_series',
+            'tests_series',
+            'top_items_names',
+            'top_items_counts',
+            'top_diags_names',
+            'top_diags_counts',
+            'top_doctors_names',
+            'top_doctors_counts'
+        ));
+    }
+
+    public function anywhere_patients(Request $request)
+    {
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+        $month_key = $request->input('month_key');
+        $lab_item = $request->input('lab_item');
+
+        if (empty($start_date) || empty($end_date)) {
+            return response()->json(['error' => 'Missing date parameters'], 400);
+        }
+
+        $q_start = $start_date;
+        $q_end = $end_date;
+
+        if (!empty($month_key) && $month_key !== 'all') {
+            $q_start = $month_key . '-01';
+            $q_end = date('Y-m-t', strtotime($q_start));
+        }
+
+        $item_condition = "";
+        $bindings = [$q_start, $q_end];
+
+        if (!empty($lab_item) && $lab_item !== 'all') {
+            if ($lab_item === 'fbs') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code = 935)";
+            } elseif ($lab_item === 'cr') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code = 937)";
+            } elseif ($lab_item === 'bun') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code = 936)";
+            } elseif ($lab_item === 'lipid') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code IN (939,940,941,957,938))";
+            } elseif ($lab_item === 'hba1c') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code = 954)";
+            } elseif ($lab_item === 'hct') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code = 959)";
+            } elseif ($lab_item === 'alb') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code IN (933,554,650))";
+            } elseif ($lab_item === 'electrolyte') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code IN (995,996,997,998,33,34,35,36))";
+            } elseif ($lab_item === 'lft') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code IN (944,945,947,948,949,950,955))";
+            } elseif ($lab_item === 'other') {
+                $item_condition = "AND EXISTS (SELECT 1 FROM lab_order lo WHERE lo.lab_order_number = lh.lab_order_number AND lo.lab_items_code IN (934,953,956,952))";
+            }
+        }
+
+        $query = "
+            SELECT 
+                lh.lab_order_number,
+                DATE_FORMAT(lh.order_date, '%Y-%m-%d') AS order_date,
+                TIME_FORMAT(lh.order_time, '%H:%i') AS order_time,
+                lh.hn,
+                CONCAT(p.pname, p.fname, ' ', p.lname) AS patient_name,
+                v.age_y,
+                IF(p.sex = '1', 'ชาย', IF(p.sex = '2', 'หญิง', 'ไม่ระบุ')) AS sex_name,
+                COALESCE(pt.name, 'ไม่ระบุสิทธิ') AS pttype_name,
+                COALESCE(v.pdx, '-') AS pdx,
+                COALESCE(i.name, '') AS pdx_name,
+                COALESCE(d.name, 'ไม่ระบุแพทย์') AS doctor_name,
+                lh.confirm_report
+            FROM lab_head lh
+            INNER JOIN patient p ON p.hn = lh.hn
+            LEFT JOIN vn_stat v ON v.vn = lh.vn
+            LEFT JOIN pttype pt ON pt.pttype = v.pttype
+            LEFT JOIN icd101 i ON i.code = v.pdx
+            LEFT JOIN doctor d ON d.code = lh.doctor_code
+            WHERE lh.form_name = '28.ใบสั่งตรวจ Lab Anywhere'
+              AND lh.order_date BETWEEN ? AND ?
+              {$item_condition}
+            ORDER BY lh.order_date DESC, lh.order_time DESC
+            LIMIT 1000
+        ";
+
+        $patients = DB::connection('hosxp')->select($query, $bindings);
+
+        if (!empty($patients)) {
+            $orderNumbers = array_column($patients, 'lab_order_number');
+            $inStr = implode(',', $orderNumbers);
+            $results = DB::connection('hosxp')->select("
+                SELECT 
+                    lo.lab_order_number,
+                    li.lab_items_name,
+                    lo.lab_order_result,
+                    li.lab_items_unit
+                FROM lab_order lo
+                JOIN lab_items li ON li.lab_items_code = lo.lab_items_code
+                WHERE lo.lab_order_number IN ($inStr)
+            ");
+            $grouped = [];
+            foreach ($results as $r) {
+                $cleanName = str_ireplace(['_Lab anywhere', '_Lab Anywhere', ' LabAnywhere', '_LabAnywhere'], '', $r->lab_items_name);
+                $val = trim($r->lab_order_result);
+                if ($val !== '') {
+                    $grouped[$r->lab_order_number][] = $cleanName . ': ' . $val . ($r->lab_items_unit ? ' ' . $r->lab_items_unit : '');
+                }
+            }
+            foreach ($patients as $p) {
+                $p->lab_results_text = isset($grouped[$p->lab_order_number]) ? implode(', ', $grouped[$p->lab_order_number]) : '-';
+                if ($p->order_date) {
+                    $thaiFull = DateThai($p->order_date);
+                    $parts = explode(' ', $thaiFull);
+                    if (count($parts) === 3) {
+                        $parts[2] = substr($parts[2], 2);
+                        $p->order_date_thai = implode(' ', $parts);
+                    } else {
+                        $p->order_date_thai = $thaiFull;
+                    }
+                } else {
+                    $p->order_date_thai = '-';
+                }
+            }
+        }
+
+        return response()->json([
+            'patients' => $patients
+        ]);
+    }
+
     private function resolveDateRange(Request $request)
     {
         $budget_year_select = DB::table('budget_year')
