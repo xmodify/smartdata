@@ -34,6 +34,16 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/private'),
             'serve' => true,
+            'visibility' => 'private',
+            // Allow group read/traverse (e.g. backup user in the web server group) for new private files/dirs.
+            'permissions' => [
+                'file' => [
+                    'private' => 0640,
+                ],
+                'dir' => [
+                    'private' => 0750,
+                ],
+            ],
             'throw' => false,
             'report' => false,
         ],
