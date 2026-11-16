@@ -65,7 +65,134 @@ class StructureController extends Controller
             $providerId = null;
         }
 
-        return view('admin.system.index', compact('mophNotifies', 'telegramNotifies', 'mophAlerts', 'staffList', 'providerId'));
+        try {
+            $aopodToken = \App\Models\SysVar::find('aopod_api_token')?->sys_value;
+            $aopodUrl = \App\Models\SysVar::find('aopod_death_api_url')?->sys_value;
+        } catch (\Exception $e) {
+            $aopodToken = $aopodUrl = null;
+        }
+
+        try {
+            $aopodYears = \App\Models\AopodDeath::whereNotNull('death_date')
+                ->selectRaw('DISTINCT YEAR(death_date) as y')->orderByDesc('y')->pluck('y')->all();
+            $aopodYear = request('aopod_year', $aopodYears[0] ?? 'all');
+            if ($aopodYear !== 'all' && !in_array((int) $aopodYear, $aopodYears)) {
+                $aopodYear = $aopodYears[0] ?? 'all';
+            }
+            $aopodQuery = \App\Models\AopodDeath::query();
+            if ($aopodYear !== 'all') {
+                $aopodQuery->whereYear('death_date', (int) $aopodYear);
+            }
+            $aopodDeaths = $aopodQuery->orderByDesc('death_date')->orderByDesc('id')->get();
+            $aopodTotal = \App\Models\AopodDeath::count();
+            $aopodLog = \App\Models\AopodFetchLog::orderByDesc('id')->first();
+            $aopodLastSuccess = \App\Models\AopodFetchLog::where('status', 'success')->orderByDesc('id')->first();
+        } catch (\Exception $e) {
+            $aopodDeaths = collect();
+            $aopodYears = [];
+            $aopodYear = 'all';
+            $aopodTotal = 0;
+            $aopodLog = $aopodLastSuccess = null;
+        }
+
+        return view('admin.system.index', compact('mophNotifies', 'telegramNotifies', 'mophAlerts', 'staffList', 'providerId', 'aopodToken', 'aopodUrl', 'aopodYears', 'aopodYear', 'aopodDeaths', 'aopodTotal', 'aopodLog', 'aopodLastSuccess'));
+    }
+
+    /**
+     * Fetch death data from AOPOD and store locally (with fetch status log).
+     */
+    public function fetch_aopod(Request $request)
+    {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        @set_time_limit(180);
+        try {
+            $log = \App\Services\AopodService::fetch(auth()->user()->name ?? null);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+
+        return response()->json([
+            'success' => $log->status === 'success',
+            'message' => $log->message,
+            'total' => $log->total,
+            'inserted' => $log->inserted,
+            'updated' => $log->updated,
+        ]);
+    }
+
+    /**
+     * Save AOPOD API settings (stored in sys_var).
+     */
+    public function update_aopod(Request $request)
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'aopod_api_token' => 'nullable|string',
+            'aopod_death_api_url' => 'nullable|url|max:500',
+        ]);
+
+        // โครงสร้างตารางสร้างโดยปุ่ม Update Version (database/extracted_schemas.json)
+        if (!Schema::hasTable('sys_var')) {
+            return back()->with('error', 'ยังไม่มีตาราง sys_var กรุณากด Update Version (อัปเกรดโครงสร้างฐานข้อมูล) ก่อน')->with('active_tab', 'aopod');
+        }
+
+        $labels = [
+            'aopod_api_token' => 'AOPOD API Token',
+            'aopod_death_api_url' => 'AOPOD Death API URL',
+        ];
+        foreach ($labels as $key => $label) {
+            \App\Models\SysVar::updateOrCreate(
+                ['sys_name' => $key],
+                ['sys_name_th' => $label, 'sys_value' => trim($validated[$key] ?? '')]
+            );
+        }
+
+        return back()->with('success', 'บันทึกการตั้งค่า AOPOD เรียบร้อยแล้ว')->with('active_tab', 'aopod');
+    }
+
+    /**
+     * Test the AOPOD API connection with the given (or saved) token/URL.
+     */
+    public function test_aopod(Request $request)
+    {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $hasTable = Schema::hasTable('sys_var');
+        $url = trim((string) $request->input('url')) ?: ($hasTable ? \App\Models\SysVar::find('aopod_death_api_url')?->sys_value : null);
+        $token = trim((string) $request->input('token')) ?: ($hasTable ? \App\Models\SysVar::find('aopod_api_token')?->sys_value : null);
+
+        if (!$url || !$token) {
+            return response()->json(['success' => false, 'message' => 'กรุณากรอก Token และ URL ก่อนทดสอบ']);
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::withoutVerifying()
+                ->timeout(20)
+                ->acceptJson()
+                ->withToken($token)
+                ->post($url);
+
+            $json = $response->json();
+            $sample = is_array($json) ? mb_substr(json_encode(array_slice($json, 0, 1), JSON_UNESCAPED_UNICODE), 0, 600) : mb_substr($response->body(), 0, 300);
+
+            return response()->json([
+                'success' => $response->successful(),
+                'message' => $response->successful()
+                    ? 'เชื่อมต่อสำเร็จ (HTTP ' . $response->status() . ')'
+                    : 'เชื่อมต่อไม่สำเร็จ (HTTP ' . $response->status() . ')',
+                'sample' => $sample,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'เชื่อมต่อไม่ได้: ' . $e->getMessage()]);
+        }
     }
 
     /**

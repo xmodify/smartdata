@@ -3182,5 +3182,331 @@
                 "primary": true
             }
         }
+    },
+    "sys_var": {
+        "columns": {
+            "sys_name": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "sys_name_th": {
+                "type": "varchar",
+                "length": 191,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "sys_value": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "sys_name"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
+    },
+    "aopod_deaths": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "uid": {
+                "type": "varchar",
+                "length": 64,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "cid": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "hn": {
+                "type": "varchar",
+                "length": 30,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "sex": {
+                "type": "varchar",
+                "length": 2,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "age": {
+                "type": "int",
+                "length": 11,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "lccaattmm": {
+                "type": "varchar",
+                "length": 15,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "hos_id": {
+                "type": "varchar",
+                "length": 10,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "pname": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "fname": {
+                "type": "varchar",
+                "length": 150,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "lname": {
+                "type": "varchar",
+                "length": 150,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "birthday": {
+                "type": "date",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "death_date": {
+                "type": "date",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "death_time": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "death_place": {
+                "type": "varchar",
+                "length": 255,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "death_cause": {
+                "type": "varchar",
+                "length": 500,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "icd10": {
+                "type": "varchar",
+                "length": 50,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "raw_data": {
+                "type": "longtext",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "fetched_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            },
+            "aopod_deaths_uid_unique": {
+                "columns": [
+                    "uid"
+                ],
+                "unique": true,
+                "primary": false
+            },
+            "aopod_deaths_cid_index": {
+                "columns": [
+                    "cid"
+                ],
+                "unique": false,
+                "primary": false
+            },
+            "aopod_deaths_death_date_index": {
+                "columns": [
+                    "death_date"
+                ],
+                "unique": false,
+                "primary": false
+            }
+        }
+    },
+    "aopod_fetch_logs": {
+        "columns": {
+            "id": {
+                "type": "bigint",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": "auto_increment"
+            },
+            "start_date": {
+                "type": "date",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "end_date": {
+                "type": "date",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "status": {
+                "type": "varchar",
+                "length": 20,
+                "nullable": false,
+                "default": null,
+                "extra": ""
+            },
+            "total": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "inserted": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "updated": {
+                "type": "int",
+                "length": 11,
+                "nullable": false,
+                "default": "0",
+                "extra": ""
+            },
+            "message": {
+                "type": "text",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "fetched_by": {
+                "type": "varchar",
+                "length": 100,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "fetched_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "created_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            },
+            "updated_at": {
+                "type": "timestamp",
+                "length": null,
+                "nullable": true,
+                "default": null,
+                "extra": ""
+            }
+        },
+        "indexes": {
+            "PRIMARY": {
+                "columns": [
+                    "id"
+                ],
+                "unique": true,
+                "primary": true
+            }
+        }
     }
 }

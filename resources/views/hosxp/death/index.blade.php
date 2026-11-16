@@ -168,20 +168,17 @@
                         <i class="fas fa-bed text-danger me-2"></i>
                         {{ $title }}
                     </h5>
-                    <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
+                    <div class="text-muted small mt-1">ข้อมูลปี พ.ศ. {{ $year_be }} (ในสถานพยาบาลจาก HOSxP + นอกสถานพยาบาลจาก AOPOD)</div>
                 </div>
             </div>
 
             <div class="d-flex align-items-center">
                 <form action="" method="GET" class="m-0">
                     <div class="input-group input-group-sm shadow-sm" style="width: 230px; border-radius: 8px; overflow: hidden;">
-                        <span class="input-group-text bg-light text-danger border-end-0 fw-bold" style="font-size: 0.8rem;">เลือก</span>
-                        <select class="form-select border-start-0" name="budget_year" onchange="this.form.submit()" style="font-size: 0.85rem;">
-                            @foreach ($budget_year_select as $row)
-                                <option value="{{ $row->LEAVE_YEAR_ID }}"
-                                    {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>
-                                    {{ $row->LEAVE_YEAR_NAME }}
-                                </option>
+                        <span class="input-group-text bg-light text-danger border-end-0 fw-bold" style="font-size: 0.8rem;">ปี พ.ศ.</span>
+                        <select class="form-select border-start-0" name="year" onchange="this.form.submit()" style="font-size: 0.85rem;">
+                            @foreach ($year_select as $y)
+                                <option value="{{ $y }}" {{ (int) $year_be === (int) $y ? 'selected' : '' }}>{{ $y }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -191,22 +188,29 @@
 
         <!-- Summary Cards -->
         <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card stat-card text-white h-100 shadow-sm" style="background: var(--danger-gradient);">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <div class="small opacity-75">จำนวนผู้เสียชีวิตทั้งหมด</div>
-                                <div class="h2 mb-0 fw-bold">{{ number_format(count($death_list)) }}</div>
-                                <div class="small mt-2"><i class="fas fa-calendar-day"></i> เฉพาะผู้ป่วยใน (1)</div>
-                            </div>
-                            <div class="bg-white bg-opacity-25 p-3 rounded-circle align-self-center">
-                                <i class="fas fa-bed fa-2x"></i>
+            @foreach ([
+                ['cardAll', 'จำนวนผู้เสียชีวิตทั้งหมด', count($death_list), 'danger', 'fa-heartbeat'],
+                ['cardIpd', 'ผู้ป่วยใน (มี AN)', count($death_ipd), 'warning', 'fa-bed'],
+                ['cardOpd', 'ผู้ป่วยนอก (ไม่มี AN)', count($death_opd), 'info', 'fa-walking'],
+                ['cardOut', 'นอกสถานพยาบาล (AOPOD ไม่พบใน HOSxP)', count($death_out), 'secondary', 'fa-house-user'],
+            ] as [$cid, $clabel, $cval, $cgrad, $cicon])
+                <div class="col-md-6 col-xl-3">
+                    <div class="card stat-card text-white h-100 shadow-sm" style="background: var(--{{ $cgrad }}-gradient);">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="small opacity-75">{{ $clabel }}</div>
+                                    <div class="h2 mb-0 fw-bold" id="{{ $cid }}">{{ number_format($cval) }}</div>
+                                    <div class="small mt-2"><i class="fas fa-calendar-day"></i> ตามช่วงวันที่ในตาราง</div>
+                                </div>
+                                <div class="bg-white bg-opacity-25 p-3 rounded-circle align-self-center">
+                                    <i class="fas {{ $cicon }} fa-2x"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endforeach
         </div>
 
         <!-- Charts Row -->
@@ -214,7 +218,7 @@
             <div class="col-xl-7">
                 <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
                     <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                        <h6 class="m-0 fw-bold text-danger">แนวโน้มรายเดือน (ตามช่วงเวลาที่เลือก)</h6>
+                        <h6 class="m-0 fw-bold text-danger">แนวโน้มรายเดือน (ปี พ.ศ. {{ $year_be }})</h6>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -226,7 +230,7 @@
             <div class="col-xl-5">
                 <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
                     <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                        <h6 class="m-0 fw-bold text-warning">แนวโน้ม 5 ปี ย้อนหลัง (ปีงบประมาณ)</h6>
+                        <h6 class="m-0 fw-bold text-warning">แนวโน้ม 5 ปี ย้อนหลัง (ปี พ.ศ.)</h6>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -243,7 +247,7 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <div>
                         <h6 class="m-0 fw-bold text-danger">
-                            <i class="fas fa-user-injured me-1"></i> รายชื่อผู้เสียชีวิต (เฉพาะผู้ป่วยใน)
+                            <i class="fas fa-user-injured me-1"></i> รายชื่อผู้เสียชีวิต
                         </h6>
                         <small class="text-muted">
                             ช่วงวันที่: <span id="displayDateRange" class="fw-bold text-dark">{{ DateThai($table_start_date) }} ถึง {{ DateThai($table_end_date) }}</span>
@@ -277,8 +281,19 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body p-4" id="tableContainer">
-                @include('hosxp.death.partials._table_death')
+            <div class="card-body p-4">
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabAll" type="button">ทั้งหมด <span class="badge bg-danger" id="badgeAll">{{ count($death_list) }}</span></button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabIpd" type="button">ผู้ป่วยใน <span class="badge bg-warning text-dark" id="badgeIpd">{{ count($death_ipd) }}</span></button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOpd" type="button">ผู้ป่วยนอก <span class="badge bg-info" id="badgeOpd">{{ count($death_opd) }}</span></button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOut" type="button">นอกสถานพยาบาล <span class="badge bg-secondary" id="badgeOut">{{ count($death_out) }}</span></button></li>
+                </ul>
+                <div class="tab-content" id="tableContainer">
+                    <div class="tab-pane fade show active" id="tabAll">@include('hosxp.death.partials._table_death', ['death_list' => $death_list, 'tab' => 'all'])</div>
+                    <div class="tab-pane fade" id="tabIpd">@include('hosxp.death.partials._table_death', ['death_list' => $death_ipd, 'tab' => 'ipd'])</div>
+                    <div class="tab-pane fade" id="tabOpd">@include('hosxp.death.partials._table_death', ['death_list' => $death_opd, 'tab' => 'opd'])</div>
+                    <div class="tab-pane fade" id="tabOut">@include('hosxp.death.partials._table_death', ['death_list' => $death_out, 'tab' => 'out'])</div>
+                </div>
             </div>
         </div>
     </div>
@@ -307,15 +322,27 @@
                     data: {
                         labels: monthlyData.map(d => d.label),
                         datasets: [{
-                            label: 'จำนวนผู้เสียชีวิต (ราย)',
-                            data: monthlyData.map(d => d.total_count),
+                            label: 'ในสถานพยาบาล (ราย)',
+                            data: monthlyData.map(d => d.in_count),
                             borderColor: '#e74a3b',
                             backgroundColor: 'rgba(231, 74, 59, 0.1)',
                             fill: true,
                             tension: 0.3,
                             pointBackgroundColor: '#e74a3b',
                             pointBorderColor: '#fff',
-                            pointRadius: 4
+                            pointRadius: 4,
+                            datalabels: { color: '#e74a3b', align: 'top' }
+                        }, {
+                            label: 'นอกสถานพยาบาล (ราย)',
+                            data: monthlyData.map(d => d.out_count),
+                            borderColor: '#6c757d',
+                            backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointBackgroundColor: '#6c757d',
+                            pointBorderColor: '#fff',
+                            pointRadius: 4,
+                            datalabels: { color: '#6c757d', align: 'bottom' }
                         }]
                     },
                     options: {
@@ -325,7 +352,6 @@
                             datalabels: {
                                 anchor: 'end',
                                 align: 'top',
-                                color: '#e74a3b',
                                 font: {
                                     weight: 'bold'
                                 }
@@ -348,10 +374,17 @@
                     data: {
                         labels: yearlyData.map(d => d.year_be),
                         datasets: [{
-                            label: 'จำนวนผู้เสียชีวิต (ราย)',
-                            data: yearlyData.map(d => d.total_count),
+                            label: 'ในสถานพยาบาล (ราย)',
+                            data: yearlyData.map(d => d.in_count),
                             backgroundColor: '#f6c23e',
-                            borderRadius: 8
+                            borderRadius: 6,
+                            datalabels: { color: '#7a5b00' }
+                        }, {
+                            label: 'นอกสถานพยาบาล (ราย)',
+                            data: yearlyData.map(d => d.out_count),
+                            backgroundColor: '#adb5bd',
+                            borderRadius: 6,
+                            datalabels: { color: '#495057' }
                         }]
                     },
                     options: {
@@ -361,7 +394,6 @@
                             datalabels: {
                                 anchor: 'end',
                                 align: 'top',
-                                color: '#f6c23e',
                                 font: {
                                     weight: 'bold'
                                 }
@@ -379,10 +411,10 @@
                 });
 
             function initPatientTable() {
-                if ($.fn.DataTable.isDataTable('#reportTable')) {
-                    $('#reportTable').DataTable().destroy();
-                }
-                $('#reportTable').DataTable({
+                $('.death-table').each(function() {
+                    if ($.fn.DataTable.isDataTable(this)) $(this).DataTable().destroy();
+                });
+                $('.death-table').DataTable({
                     dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center gap-3"fB>>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
                     buttons: [{
                         extend: 'excelHtml5',
@@ -461,17 +493,24 @@
                     url: "{{ route('hosxp.death.index') }}",
                     method: 'GET',
                     data: {
-                        budget_year: "{{ $budget_year }}",
+                        year: "{{ $year_be }}",
                         table_start_date: startDate,
                         table_end_date: endDate
                     },
                     dataType: 'json',
                     success: function(res) {
-                        if (res.success && res.html) {
-                            if ($.fn.DataTable.isDataTable('#reportTable')) {
-                                $('#reportTable').DataTable().destroy();
-                            }
-                            $('#tableContainer').html(res.html);
+                        if (res.success) {
+                            $('.death-table').each(function() {
+                                if ($.fn.DataTable.isDataTable(this)) $(this).DataTable().destroy();
+                            });
+                            $('#tabAll').html(res.html_all);
+                            $('#tabIpd').html(res.html_ipd);
+                            $('#tabOpd').html(res.html_opd);
+                            $('#tabOut').html(res.html_out);
+                            $('#cardOut, #badgeOut').text(res.count_out);
+                            $('#cardAll, #badgeAll').text(res.count_all);
+                            $('#cardIpd, #badgeIpd').text(res.count_ipd);
+                            $('#cardOpd, #badgeOpd').text(res.count_opd);
                             initPatientTable();
                             $('#displayDateRange').text(`${res.start_date_thai} ถึง ${res.end_date_thai}`);
                         }

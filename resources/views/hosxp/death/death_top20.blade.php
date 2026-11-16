@@ -187,7 +187,7 @@
                         <i class="fas fa-book-dead text-danger me-2"></i>
                         {{ $title }}
                     </h5>
-                    <div class="text-muted small mt-1">ข้อมูลปีงบประมาณ {{ $budget_year }}</div>
+                    <div class="text-muted small mt-1">ข้อมูลปี พ.ศ. {{ $year_be }} (ในสถานพยาบาลจาก HOSxP / นอกสถานพยาบาลจาก AOPOD ที่ไม่พบใน HOSxP)</div>
                     <div class="text-danger small fw-bold mt-1">
                         <i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง
                         {{ DateThai($end_date) }}
@@ -214,11 +214,10 @@
                     </div>
                     <div class="input-group input-group-sm shadow-sm input-group-budget"
                         style="border-radius: 8px; overflow: hidden;">
-                        <select class="form-select border-end-0" name="budget_year" style="font-size: 0.8rem;">
-                            @foreach ($budget_year_select as $row)
-                                <option value="{{ $row->LEAVE_YEAR_ID }}"
-                                    {{ (int) $budget_year === (int) $row->LEAVE_YEAR_ID ? 'selected' : '' }}>
-                                    {{ $row->LEAVE_YEAR_NAME }}
+                        <select class="form-select border-end-0" name="year" style="font-size: 0.8rem;">
+                            @foreach ($year_select as $y)
+                                <option value="{{ $y }}" {{ (int) $year_be === (int) $y ? 'selected' : '' }}>
+                                    ปี พ.ศ. {{ $y }}
                                 </option>
                             @endforeach
                         </select>
@@ -229,127 +228,82 @@
                 </form>
             </div>
         </div>
+        @php
+            $panes = [
+                ['id' => 'hospIcd', 'label' => 'ในสถานพยาบาล · 20 อันดับโรค', 'icon' => 'fa-clipboard-list text-danger', 'data' => $diag_icd10, 'col' => 'รหัส - ชื่อโรค (ICD10)', 'color' => '#e74a3b', 'cls' => 'text-danger', 'title' => 'อันดับโรคการเสียชีวิต (ในสถานพยาบาล - HOSxP)'],
+                ['id' => 'hospGrp', 'label' => 'ในสถานพยาบาล · 21 กลุ่มสาเหตุ (รง.504)', 'icon' => 'fa-layer-group text-warning', 'data' => $diag_504, 'col' => 'กลุ่มสาเหตุ (504)', 'color' => '#f6c23e', 'cls' => 'text-warning', 'title' => 'กลุ่มสาเหตุการเสียชีวิต 504 (ในสถานพยาบาล - HOSxP)'],
+                ['id' => 'outIcd', 'label' => 'นอกสถานพยาบาล · 20 อันดับโรค', 'icon' => 'fa-house-user text-secondary', 'data' => $out_icd10, 'col' => 'รหัส - ชื่อโรค (ICD10)', 'color' => '#6c757d', 'cls' => 'text-secondary', 'title' => 'อันดับโรคการเสียชีวิต (นอกสถานพยาบาล - AOPOD ที่ไม่พบใน HOSxP)'],
+                ['id' => 'outGrp', 'label' => 'นอกสถานพยาบาล · 21 กลุ่มสาเหตุ (รง.504)', 'icon' => 'fa-layer-group text-secondary', 'data' => $out_504, 'col' => 'กลุ่มสาเหตุ (504)', 'color' => '#adb5bd', 'cls' => 'text-secondary', 'title' => 'กลุ่มสาเหตุการเสียชีวิต 504 (นอกสถานพยาบาล - AOPOD ที่ไม่พบใน HOSxP)'],
+            ];
+        @endphp
 
         <!-- Tabs -->
         <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs border-0" id="deathTop20Tabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active fw-bold" id="icd10-tab" data-bs-toggle="tab" data-bs-target="#icd10"
-                        type="button" role="tab" aria-controls="icd10" aria-selected="true">
-                        <i class="fas fa-clipboard-list me-1 text-danger"></i> 20 อันดับโรค (Primary Diagnosis)
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link fw-bold" id="grp504-tab" data-bs-toggle="tab" data-bs-target="#grp504"
-                        type="button" role="tab" aria-controls="grp504" aria-selected="false">
-                        <i class="fas fa-layer-group me-1 text-warning"></i> 21 กลุ่มสาเหตุ (รง.504)
-                    </button>
-                </li>
+            <ul class="nav nav-tabs border-0 flex-wrap" id="deathTop20Tabs" role="tablist">
+                @foreach ($panes as $p)
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold {{ $loop->first ? 'active' : '' }}" id="{{ $p['id'] }}-tab"
+                            data-bs-toggle="tab" data-bs-target="#{{ $p['id'] }}" type="button" role="tab"
+                            aria-controls="{{ $p['id'] }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                            <i class="fas {{ $p['icon'] }} me-1"></i> {{ $p['label'] }}
+                        </button>
+                    </li>
+                @endforeach
             </ul>
         </div>
 
         <div class="tab-content" id="deathTop20TabsContent">
-            <!-- ICD10 Tab -->
-            <div class="tab-pane fade show active" id="icd10" role="tabpanel" aria-labelledby="icd10-tab">
-                <div class="row g-4 mb-4">
-                    <div class="col-xl-6">
-                        <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                            <div class="card-header bg-transparent border-0 pt-4 pb-0">
-                                อันดับโรคการเสียชีวิต</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="chart-container">
-                                    <canvas id="chartIcd10"></canvas>
+            @foreach ($panes as $p)
+                <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="{{ $p['id'] }}" role="tabpanel"
+                    aria-labelledby="{{ $p['id'] }}-tab">
+                    <div class="row g-4 mb-4">
+                        <div class="col-xl-6">
+                            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                                <div class="card-header bg-transparent border-0 pt-4 pb-0">
+                                    <h6 class="m-0 fw-bold {{ $p['cls'] }}">{{ $p['title'] }}</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="chart_{{ $p['id'] }}"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-xl-6">
-                        <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                            <div class="card-body p-4">
-                                <div class="table-responsive">
-                                    <table id="tableIcd10" class="table table-hover align-middle" style="width:100%">
-                                        <thead class="bg-light">
-                                            <tr>
-                                                <th>อันดับ</th>
-                                                <th>รหัส - ชื่อโรคส่งต่อ (ICD10)</th>
-                                                <th class="text-end">ชาย</th>
-                                                <th class="text-end">หญิง</th>
-                                                <th class="text-end">รวม</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($diag_icd10 as $index => $row)
+                        <div class="col-xl-6">
+                            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                                <div class="card-body p-4">
+                                    <div class="table-responsive">
+                                        <table id="table_{{ $p['id'] }}" class="death-rank-table table table-hover align-middle" style="width:100%">
+                                            <thead class="bg-light">
                                                 <tr>
-                                                    <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
-                                                    <td>
-                                                        <div class="fw-medium text-dark">{{ $row->name }}</div>
-                                                    </td>
-                                                    <td class="text-end">{{ number_format($row->male) }}</td>
-                                                    <td class="text-end">{{ number_format($row->female) }}</td>
-                                                    <td class="text-end fw-bold text-danger">
-                                                        {{ number_format($row->sum) }}</td>
+                                                    <th>อันดับ</th>
+                                                    <th>{{ $p['col'] }}</th>
+                                                    <th class="text-end">ชาย</th>
+                                                    <th class="text-end">หญิง</th>
+                                                    <th class="text-end">รวม</th>
                                                 </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($p['data'] as $index => $row)
+                                                    <tr>
+                                                        <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
+                                                        <td>
+                                                            <div class="fw-medium text-dark">{{ $row->name }}</div>
+                                                        </td>
+                                                        <td class="text-end">{{ number_format($row->male) }}</td>
+                                                        <td class="text-end">{{ number_format($row->female) }}</td>
+                                                        <td class="text-end fw-bold {{ $p['cls'] }}">{{ number_format($row->sum) }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- 504 Tab -->
-            <div class="tab-pane fade" id="grp504" role="tabpanel" aria-labelledby="grp504-tab">
-                <div class="row g-4 mb-4">
-                    <div class="col-xl-6">
-                        <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                            <div class="card-header bg-transparent border-0 pt-4 pb-0">
-                                กลุ่มอายุ</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="chart-container">
-                                    <canvas id="chart504"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-6">
-                        <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                            <div class="card-body p-4">
-                                <div class="table-responsive">
-                                    <table id="table504" class="table table-hover align-middle" style="width:100%">
-                                        <thead class="bg-light">
-                                            <tr>
-                                                <th>อันดับ</th>
-                                                <th>ชื่อตาราง 504</th>
-                                                <th class="text-end">ชาย</th>
-                                                <th class="text-end">หญิง</th>
-                                                <th class="text-end">รวม</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($diag_504 as $index => $row)
-                                                <tr>
-                                                    <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
-                                                    <td>
-                                                        <div class="fw-medium text-dark">{{ $row->name }}</div>
-                                                    </td>
-                                                    <td class="text-end">{{ number_format($row->male) }}</td>
-                                                    <td class="text-end">{{ number_format($row->female) }}</td>
-                                                    <td class="text-end fw-bold text-warning">
-                                                        {{ number_format($row->sum) }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 
@@ -369,8 +323,12 @@
                 Chart.register(ChartDataLabels);
 
                 // --- Data from PHP ---
-                const icd10Data = @json($diag_icd10);
-                const grp504Data = @json($diag_504);
+                const panes = {
+                    hospIcd: { data: @json($diag_icd10), color: '#e74a3b' },
+                    hospGrp: { data: @json($diag_504), color: '#f6c23e' },
+                    outIcd: { data: @json($out_icd10), color: '#6c757d' },
+                    outGrp: { data: @json($out_504), color: '#adb5bd' }
+                };
 
                 // Chart Config Helper
                 function createBarChart(ctxId, dataLabel, dataArray, color) {
@@ -440,8 +398,9 @@
                 }
 
                 // Initialize Charts
-                if (icd10Data.length > 0) createBarChart('chartIcd10', 'ผู้ป่วย (คน)', icd10Data, '#e74a3b');
-                if (grp504Data.length > 0) createBarChart('chart504', 'ผู้ป่วย (คน)', grp504Data, '#f6c23e');
+                Object.entries(panes).forEach(([id, p]) => {
+                    if (p.data.length > 0) createBarChart('chart_' + id, 'ผู้เสียชีวิต (ราย)', p.data, p.color);
+                });
 
                 // DataTables Init Function
                 function initTable(id) {
@@ -468,8 +427,9 @@
                     });
                 }
 
-                const dtIcd10 = initTable('#tableIcd10');
-                const dt504 = initTable('#table504');
+                $('.death-rank-table').each(function() {
+                    initTable('#' + this.id);
+                });
 
                 // Fix DataTables width inside inactive tabs
                 $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
@@ -533,15 +493,13 @@
                     const startPicker = flatpickr("#start_date", commonConfig);
                     const endPicker = flatpickr("#end_date", commonConfig);
 
-                    // Update start_date and end_date based on budget_year change
-                    $('select[name="budget_year"]').on('change', function() {
+                    // Update start_date and end_date based on year (พ.ศ.) change: 1 ม.ค. - 31 ธ.ค.
+                    $('select[name="year"]').on('change', function() {
                         var selectedYear = parseInt($(this).val());
                         if(!isNaN(selectedYear)) {
-                            // Calculate budget year ranges
-                            var startYear = selectedYear - 544; // Example: 2567 -> 2023
-                            var endYear = selectedYear - 543;   // Example: 2567 -> 2024
-                            var startDateStr = startYear + "-10-01";
-                            var endDateStr = endYear + "-09-30";
+                            var ceYear = selectedYear - 543; // Example: 2569 -> 2026
+                            var startDateStr = ceYear + "-01-01";
+                            var endDateStr = ceYear + "-12-31";
                             
                             setTimeout(() => {
                                 if (typeof startPicker !== 'undefined' && startPicker) startPicker.setDate(startDateStr, true);

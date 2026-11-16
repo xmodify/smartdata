@@ -160,6 +160,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-aopod-btn" data-bs-toggle="pill" data-bs-target="#tab-aopod" type="button" role="tab">
+                <i class="fas fa-plug text-danger"></i> AOPOD API
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="tab-tasks-btn" data-bs-toggle="pill" data-bs-target="#tab-tasks" type="button" role="tab">
                 <i class="fas fa-clock text-secondary"></i> Task Scheduler
             </button>
@@ -530,6 +535,107 @@
         <!-- ========================================== -->
         <!-- TAB 6: SCHEDULED TASKS -->
         <!-- ========================================== -->
+        <div class="tab-pane fade" id="tab-aopod" role="tabpanel">
+            <div class="setting-card p-4">
+                <h5 class="fw-bold mb-1 text-dark"><i class="fas fa-cog text-primary me-2"></i> ตั้งค่าเชื่อมต่อ API (Provincial Settings)</h5>
+                <div class="text-muted small mb-4">กำหนด Token และ API สำหรับเชื่อมต่อระบบกลางของจังหวัด (ใช้ดึงข้อมูลผู้เสียชีวิตนอกสถานพยาบาลที่ไม่ได้ลงใน HOSxP)</div>
+
+                <form method="POST" action="{{ route('admin.aopod.update') }}" id="aopodForm">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">AOPOD API Token</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-shield-alt"></i></span>
+                            <input type="password" name="aopod_api_token" id="aopod_api_token" class="form-control shadow-none font-monospace"
+                                value="{{ $aopodToken }}" autocomplete="off">
+                            <button type="button" class="btn btn-outline-secondary" id="toggleAopodToken" title="ดู/ซ่อน"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">AOPOD Death API URL</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-link"></i></span>
+                            <input type="url" name="aopod_death_api_url" id="aopod_death_api_url" class="form-control shadow-none"
+                                value="{{ $aopodUrl }}" placeholder="https://example.go.th/aopod/api/death-data">
+                        </div>
+                    </div>
+                    <div id="aopodTestResult" class="small mb-3"></div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1 rounded-pill fw-bold"><i class="fas fa-save me-1"></i> บันทึกการตั้งค่า</button>
+                        <button type="button" id="btnTestAopod" class="btn btn-outline-success rounded-pill fw-bold px-4"><i class="fas fa-shield-alt me-1"></i> ทดสอบเชื่อมต่อ API</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- AOPOD fetch + data table -->
+            <div class="setting-card p-4 mt-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1 text-dark"><i class="fas fa-database text-danger me-2"></i> ข้อมูลการเสียชีวิตจาก AOPOD</h5>
+                        <div class="small text-muted">
+                            ทั้งหมด <b id="aopodTotal">{{ number_format($aopodTotal) }}</b> ราย
+                            @if($aopodLastSuccess)
+                                · ดึงสำเร็จล่าสุด <b>{{ $aopodLastSuccess->fetched_at?->format('d/m/') }}{{ $aopodLastSuccess->fetched_at ? $aopodLastSuccess->fetched_at->year + 543 : '' }} {{ $aopodLastSuccess->fetched_at?->format('H:i') }}</b>
+                            @else
+                                · ยังไม่เคยดึงข้อมูล
+                            @endif
+                        </div>
+                        @if($aopodLog && $aopodLog->status === 'failed')
+                            <div class="small text-danger mt-1"><i class="fas fa-exclamation-circle me-1"></i> ครั้งล่าสุดล้มเหลว ({{ $aopodLog->fetched_at?->format('d/m/Y H:i') }}): {{ $aopodLog->message }}</div>
+                        @elseif($aopodLog)
+                            <div class="small text-success mt-1"><i class="fas fa-check-circle me-1"></i> ครั้งล่าสุด: {{ $aopodLog->message }} (ใหม่ {{ $aopodLog->inserted }} / อัปเดต {{ $aopodLog->updated }})</div>
+                        @endif
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="badge bg-light text-dark border">เฉพาะอำเภอหัวตะพาน</span>
+                        <button type="button" id="btnFetchAopod" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold"><i class="fas fa-cloud-download-alt me-1"></i> ดึงข้อมูล</button>
+                    </div>
+                </div>
+                <div id="aopodFetchResult" class="small mb-2"></div>
+
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="small fw-bold text-muted">ปี พ.ศ.</span>
+                    <select id="aopodYearSelect" class="form-select form-select-sm" style="width: 130px;">
+                        <option value="all" {{ $aopodYear === 'all' ? 'selected' : '' }}>ทั้งหมด</option>
+                        @foreach($aopodYears as $y)
+                            <option value="{{ $y }}" {{ (string) $aopodYear === (string) $y ? 'selected' : '' }}>{{ $y + 543 }}</option>
+                        @endforeach
+                    </select>
+                    <span class="small text-muted">แสดง {{ number_format(count($aopodDeaths)) }} ราย</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0" id="aopodTable" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th>เลขบัตรประชาชน</th>
+                                <th>เพศ/อายุ</th>
+                                <th>วันที่เสียชีวิต</th>
+                                <th>รหัสสถานที่ตาย</th>
+                                <th>รหัสพื้นที่</th>
+                                <th>รหัสสาเหตุ (ICD10)</th>
+                                <th>ดึงเมื่อ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($aopodDeaths as $d)
+                                <tr title="{{ $d->raw_data }}">
+                                    <td class="text-center text-muted">{{ $loop->iteration }}</td>
+                                    <td class="font-monospace">{{ $d->cid ?: '-' }}</td>
+                                    <td>{{ $d->sex == '1' ? 'ชาย' : ($d->sex == '2' ? 'หญิง' : '-') }} / {{ $d->age ?? '-' }} ปี</td>
+                                    <td data-order="{{ $d->death_date }}">{{ $d->death_date ? \Carbon\Carbon::parse($d->death_date)->format('d/m/') . (\Carbon\Carbon::parse($d->death_date)->year + 543) : '-' }} {{ $d->death_time }}</td>
+                                    <td>{{ $d->death_place ?: '-' }}</td>
+                                    <td class="font-monospace">{{ $d->lccaattmm ?: '-' }}</td>
+                                    <td>{{ $d->icd10 ?: '-' }}</td>
+                                    <td class="small text-muted" data-order="{{ $d->fetched_at?->format('Y-m-d H:i:s') }}">{{ $d->fetched_at ? $d->fetched_at->format('d/m/') . ($d->fetched_at->year + 543) . ' ' . $d->fetched_at->format('H:i') : '' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="tab-pane fade" id="tab-tasks" role="tabpanel">
             <div class="setting-card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -869,8 +975,108 @@
     </div>
 </div>
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('vendor/datatables/jquery.dataTables.min.css') }}">
+@endpush
+
 @push('scripts')
+<script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
 <script>
+    // AOPOD settings
+    document.addEventListener('DOMContentLoaded', function() {
+        const tokenInput = document.getElementById('aopod_api_token');
+        document.getElementById('toggleAopodToken')?.addEventListener('click', function() {
+            tokenInput.type = tokenInput.type === 'password' ? 'text' : 'password';
+        });
+        document.getElementById('btnTestAopod')?.addEventListener('click', async function() {
+            const btn = this, out = document.getElementById('aopodTestResult');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> กำลังทดสอบ...';
+            out.innerHTML = '';
+            try {
+                const res = await fetch("{{ route('admin.aopod.test') }}", {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+                    body: JSON.stringify({token: tokenInput.value, url: document.getElementById('aopod_death_api_url').value})
+                });
+                const d = await res.json();
+                const box = document.createElement('div');
+                box.className = 'alert py-2 mb-0 ' + (d.success ? 'alert-success' : 'alert-danger');
+                box.textContent = d.message;
+                if (d.sample) {
+                    const pre = document.createElement('pre');
+                    pre.className = 'small mb-0 mt-2 text-break';
+                    pre.style.whiteSpace = 'pre-wrap';
+                    pre.textContent = d.sample;
+                    box.appendChild(pre);
+                }
+                out.appendChild(box);
+            } catch (e) {
+                out.innerHTML = '<div class="alert alert-danger py-2 mb-0">เกิดข้อผิดพลาดในการทดสอบ</div>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        });
+        // ตัวเลือกปี พ.ศ. → โหลดหน้าใหม่พร้อมกลับมาที่แท็บนี้
+        document.getElementById('aopodYearSelect')?.addEventListener('change', function() {
+            localStorage.setItem('smartdata_active_setting_tab', '#tab-aopod');
+            const url = new URL(window.location.href);
+            url.searchParams.set('aopod_year', this.value);
+            window.location.href = url.toString();
+        });
+        if (window.jQuery && jQuery.fn.DataTable && document.getElementById('aopodTable')) {
+            jQuery('#aopodTable').DataTable({
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100],
+                order: [[3, 'desc']],
+                columnDefs: [{ targets: 0, orderable: false }],
+                language: {
+                    search: 'ค้นหา:',
+                    lengthMenu: 'แสดง _MENU_ รายการ',
+                    info: 'แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ',
+                    infoEmpty: 'ไม่มีข้อมูล',
+                    emptyTable: 'ยังไม่มีข้อมูล กดปุ่ม "ดึงข้อมูล"',
+                    zeroRecords: 'ไม่พบข้อมูลที่ค้นหา',
+                    paginate: { previous: 'ก่อนหน้า', next: 'ถัดไป' }
+                },
+                drawCallback: function() {
+                    const api = this.api(), start = api.page.info().start;
+                    api.column(0, { page: 'current' }).nodes().each((cell, i) => { cell.textContent = start + i + 1; });
+                }
+            });
+        }
+        document.getElementById('btnFetchAopod')?.addEventListener('click', async function() {
+            const btn = this, out = document.getElementById('aopodFetchResult');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> กำลังดึง...';
+            out.innerHTML = '';
+            try {
+                const res = await fetch("{{ route('admin.aopod.fetch') }}", {
+                    method: 'POST',
+                    headers: {'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}
+                });
+                const d = await res.json();
+                const box = document.createElement('div');
+                box.className = 'alert py-2 mb-0 ' + (d.success ? 'alert-success' : 'alert-danger');
+                box.textContent = (d.message || 'เกิดข้อผิดพลาด') + (d.success ? ` (เก็บ ${d.total} ราย: ใหม่ ${d.inserted}, อัปเดต ${d.updated})` : '');
+                out.appendChild(box);
+                localStorage.setItem('smartdata_active_setting_tab', '#tab-aopod');
+                setTimeout(() => location.reload(), 1500);
+            } catch (e) {
+                out.innerHTML = '<div class="alert alert-danger py-2 mb-0">เกิดข้อผิดพลาดในการดึงข้อมูล</div>';
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        });
+        @if(session('active_tab') === 'aopod')
+            localStorage.setItem('smartdata_active_setting_tab', '#tab-aopod');
+        @endif
+    });
+
     // Tab Memory Handling (Preserve active tab across reload)
     document.addEventListener('DOMContentLoaded', function() {
         // Load active tab from hash or localStorage

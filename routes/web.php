@@ -96,6 +96,11 @@ Route::middleware(['auth'])->group(function () {
     // Provider ID Settings Route
     Route::put('/admin/provider-id/{providerId}', [App\Http\Controllers\Admin\StructureController::class, 'update_provider_id'])->name('admin.provider_id.update');
 
+    // AOPOD (Provincial death data API) Settings Routes
+    Route::post('/admin/aopod', [App\Http\Controllers\Admin\StructureController::class, 'update_aopod'])->name('admin.aopod.update');
+    Route::post('/admin/aopod/fetch', [App\Http\Controllers\Admin\StructureController::class, 'fetch_aopod'])->name('admin.aopod.fetch');
+    Route::post('/admin/aopod/test', [App\Http\Controllers\Admin\StructureController::class, 'test_aopod'])->name('admin.aopod.test');
+
     // Profile Routes
     Route::put('/profile/password', [App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
