@@ -168,7 +168,7 @@
                         <i class="fas fa-bed text-danger me-2"></i>
                         {{ $title }}
                     </h5>
-                    <div class="text-muted small mt-1">ข้อมูลปี พ.ศ. {{ $year_be }} (ในสถานพยาบาลจาก HOSxP + นอกสถานพยาบาลจาก AOPOD)</div>
+                    <div class="text-muted small mt-1">ข้อมูลปี พ.ศ. {{ $year_be }} (ในสถานพยาบาล = HOSxP, นอกสถานพยาบาล = HOSxP (สถานที่ตาย 2) + AOPOD ที่ไม่พบใน HOSxP)</div>
                 </div>
             </div>
 
@@ -189,19 +189,18 @@
         <!-- Summary Cards -->
         <div class="row g-3 mb-4">
             @foreach ([
-                ['cardAll', 'จำนวนผู้เสียชีวิตทั้งหมด', count($death_list), 'danger', 'fa-heartbeat'],
-                ['cardIpd', 'ผู้ป่วยใน (มี AN)', count($death_ipd), 'warning', 'fa-bed'],
-                ['cardOpd', 'ผู้ป่วยนอก (ไม่มี AN)', count($death_opd), 'info', 'fa-walking'],
-                ['cardOut', 'นอกสถานพยาบาล (AOPOD ไม่พบใน HOSxP)', count($death_out), 'secondary', 'fa-house-user'],
-            ] as [$cid, $clabel, $cval, $cgrad, $cicon])
-                <div class="col-md-6 col-xl-3">
+                ['cardAll', 'จำนวนผู้เสียชีวิตทั้งหมด', count($death_list), 'danger', 'fa-heartbeat', 'ตามช่วงวันที่ในตาราง'],
+                ['cardIn', 'ในสถานพยาบาล', count($death_in), 'warning', 'fa-hospital', 'ผู้ป่วยใน ' . number_format($death_stats['ipd']) . ' · ไม่มี AN ' . number_format($death_stats['opd'])],
+                ['cardOut', 'นอกสถานพยาบาล', count($death_out), 'secondary', 'fa-house-user', 'ลงใน HOSxP ' . number_format($death_stats['out_hosxp']) . ' · เฉพาะ AOPOD ' . number_format($death_stats['out_aopod'])],
+            ] as [$cid, $clabel, $cval, $cgrad, $cicon, $csub])
+                <div class="col-md-4">
                     <div class="card stat-card text-white h-100 shadow-sm" style="background: var(--{{ $cgrad }}-gradient);">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <div class="small opacity-75">{{ $clabel }}</div>
                                     <div class="h2 mb-0 fw-bold" id="{{ $cid }}">{{ number_format($cval) }}</div>
-                                    <div class="small mt-2"><i class="fas fa-calendar-day"></i> ตามช่วงวันที่ในตาราง</div>
+                                    <div class="small mt-2" id="{{ $cid }}Sub"><i class="fas fa-calendar-day"></i> {{ $csub }}</div>
                                 </div>
                                 <div class="bg-white bg-opacity-25 p-3 rounded-circle align-self-center">
                                     <i class="fas {{ $cicon }} fa-2x"></i>
@@ -284,14 +283,12 @@
             <div class="card-body p-4">
                 <ul class="nav nav-tabs mb-3" role="tablist">
                     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabAll" type="button">ทั้งหมด <span class="badge bg-danger" id="badgeAll">{{ count($death_list) }}</span></button></li>
-                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabIpd" type="button">ผู้ป่วยใน <span class="badge bg-warning text-dark" id="badgeIpd">{{ count($death_ipd) }}</span></button></li>
-                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOpd" type="button">ผู้ป่วยนอก <span class="badge bg-info" id="badgeOpd">{{ count($death_opd) }}</span></button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabIn" type="button">ในสถานพยาบาล <span class="badge bg-warning text-dark" id="badgeIn">{{ count($death_in) }}</span></button></li>
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOut" type="button">นอกสถานพยาบาล <span class="badge bg-secondary" id="badgeOut">{{ count($death_out) }}</span></button></li>
                 </ul>
                 <div class="tab-content" id="tableContainer">
                     <div class="tab-pane fade show active" id="tabAll">@include('hosxp.death.partials._table_death', ['death_list' => $death_list, 'tab' => 'all'])</div>
-                    <div class="tab-pane fade" id="tabIpd">@include('hosxp.death.partials._table_death', ['death_list' => $death_ipd, 'tab' => 'ipd'])</div>
-                    <div class="tab-pane fade" id="tabOpd">@include('hosxp.death.partials._table_death', ['death_list' => $death_opd, 'tab' => 'opd'])</div>
+                    <div class="tab-pane fade" id="tabIn">@include('hosxp.death.partials._table_death', ['death_list' => $death_in, 'tab' => 'in'])</div>
                     <div class="tab-pane fade" id="tabOut">@include('hosxp.death.partials._table_death', ['death_list' => $death_out, 'tab' => 'out'])</div>
                 </div>
             </div>
@@ -504,13 +501,13 @@
                                 if ($.fn.DataTable.isDataTable(this)) $(this).DataTable().destroy();
                             });
                             $('#tabAll').html(res.html_all);
-                            $('#tabIpd').html(res.html_ipd);
-                            $('#tabOpd').html(res.html_opd);
+                            $('#tabIn').html(res.html_in);
                             $('#tabOut').html(res.html_out);
-                            $('#cardOut, #badgeOut').text(res.count_out);
                             $('#cardAll, #badgeAll').text(res.count_all);
-                            $('#cardIpd, #badgeIpd').text(res.count_ipd);
-                            $('#cardOpd, #badgeOpd').text(res.count_opd);
+                            $('#cardIn, #badgeIn').text(res.count_in);
+                            $('#cardOut, #badgeOut').text(res.count_out);
+                            $('#cardInSub').html('<i class="fas fa-calendar-day"></i> ผู้ป่วยใน ' + res.stats.ipd + ' · ไม่มี AN ' + res.stats.opd);
+                            $('#cardOutSub').html('<i class="fas fa-calendar-day"></i> ลงใน HOSxP ' + res.stats.out_hosxp + ' · เฉพาะ AOPOD ' + res.stats.out_aopod);
                             initPatientTable();
                             $('#displayDateRange').text(`${res.start_date_thai} ถึง ${res.end_date_thai}`);
                         }

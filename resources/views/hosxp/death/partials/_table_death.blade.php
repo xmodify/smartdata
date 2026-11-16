@@ -16,7 +16,7 @@
         <tbody>
             @foreach ($death_list as $row)
                 @php
-                    $isOut = ($row->dept ?? '') === 'OUT';
+                    $isOut = ($row->dept ?? '') === 'OUT'; // เฉพาะ AOPOD (ไม่พบใน HOSxP)
                     $age = '-';
                     if (isset($row->age) && $row->age !== null && $row->age !== '') {
                         $age = $row->age;
@@ -53,11 +53,13 @@
                     </td>
                     <td class="text-center">
                         @if ($isOut)
-                            <span class="badge bg-secondary">นอกสถานพยาบาล</span>
+                            <span class="badge bg-secondary">นอกสถานพยาบาล (เฉพาะ AOPOD)</span>
+                        @elseif ($row->dept === 'OUTH')
+                            <span class="badge bg-secondary bg-opacity-75">นอกสถานพยาบาล (HOSxP)</span>
                         @elseif ($row->dept === 'IPD')
                             <span class="badge bg-danger">ผู้ป่วยใน</span>
                         @else
-                            <span class="badge bg-info">ผู้ป่วยนอก</span>
+                            <span class="badge bg-info">ในสถานพยาบาล (ไม่มี AN)</span>
                         @endif
                     </td>
                     <td><span class="badge bg-warning bg-opacity-10 text-warning text-dark"

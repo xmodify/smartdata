@@ -187,7 +187,7 @@
                         <i class="fas fa-book-dead text-danger me-2"></i>
                         {{ $title }}
                     </h5>
-                    <div class="text-muted small mt-1">ข้อมูลปี พ.ศ. {{ $year_be }} (ในสถานพยาบาลจาก HOSxP / นอกสถานพยาบาลจาก AOPOD ที่ไม่พบใน HOSxP)</div>
+                    <div class="text-muted small mt-1">ข้อมูลปี พ.ศ. {{ $year_be }} (ในสถานพยาบาล = HOSxP, นอกสถานพยาบาล = HOSxP (สถานที่ตาย 2) + AOPOD ที่ไม่พบใน HOSxP)</div>
                     <div class="text-danger small fw-bold mt-1">
                         <i class="fas fa-calendar-alt me-1"></i> ข้อมูลระหว่างวันที่ {{ DateThai($start_date) }} ถึง
                         {{ DateThai($end_date) }}
@@ -232,8 +232,8 @@
             $panes = [
                 ['id' => 'hospIcd', 'label' => 'ในสถานพยาบาล · 20 อันดับโรค', 'icon' => 'fa-clipboard-list text-danger', 'data' => $diag_icd10, 'col' => 'รหัส - ชื่อโรค (ICD10)', 'color' => '#e74a3b', 'cls' => 'text-danger', 'title' => 'อันดับโรคการเสียชีวิต (ในสถานพยาบาล - HOSxP)'],
                 ['id' => 'hospGrp', 'label' => 'ในสถานพยาบาล · 21 กลุ่มสาเหตุ (รง.504)', 'icon' => 'fa-layer-group text-warning', 'data' => $diag_504, 'col' => 'กลุ่มสาเหตุ (504)', 'color' => '#f6c23e', 'cls' => 'text-warning', 'title' => 'กลุ่มสาเหตุการเสียชีวิต 504 (ในสถานพยาบาล - HOSxP)'],
-                ['id' => 'outIcd', 'label' => 'นอกสถานพยาบาล · 20 อันดับโรค', 'icon' => 'fa-house-user text-secondary', 'data' => $out_icd10, 'col' => 'รหัส - ชื่อโรค (ICD10)', 'color' => '#6c757d', 'cls' => 'text-secondary', 'title' => 'อันดับโรคการเสียชีวิต (นอกสถานพยาบาล - AOPOD ที่ไม่พบใน HOSxP)'],
-                ['id' => 'outGrp', 'label' => 'นอกสถานพยาบาล · 21 กลุ่มสาเหตุ (รง.504)', 'icon' => 'fa-layer-group text-secondary', 'data' => $out_504, 'col' => 'กลุ่มสาเหตุ (504)', 'color' => '#adb5bd', 'cls' => 'text-secondary', 'title' => 'กลุ่มสาเหตุการเสียชีวิต 504 (นอกสถานพยาบาล - AOPOD ที่ไม่พบใน HOSxP)'],
+                ['id' => 'outIcd', 'label' => 'นอกสถานพยาบาล · 20 อันดับโรค', 'icon' => 'fa-house-user text-secondary', 'data' => $out_icd10, 'col' => 'รหัส - ชื่อโรค (ICD10)', 'color' => '#6c757d', 'cls' => 'text-secondary', 'title' => 'อันดับโรคการเสียชีวิต (นอกสถานพยาบาล - HOSxP + AOPOD)'],
+                ['id' => 'outGrp', 'label' => 'นอกสถานพยาบาล · 21 กลุ่มสาเหตุ (รง.504)', 'icon' => 'fa-layer-group text-secondary', 'data' => $out_504, 'col' => 'กลุ่มสาเหตุ (504)', 'color' => '#adb5bd', 'cls' => 'text-secondary', 'title' => 'กลุ่มสาเหตุการเสียชีวิต 504 (นอกสถานพยาบาล - HOSxP + AOPOD)'],
             ];
         @endphp
 
