@@ -253,6 +253,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/hosxp/diagnosis', [App\Http\Controllers\Hosxp\DiagnosisController::class, 'index'])->name('hosxp.diagnosis.index');
     Route::match(['get', 'post'], '/hosxp/diagnosis/{type}', [App\Http\Controllers\Hosxp\DiagnosisController::class, 'report'])->name('hosxp.diagnosis.report');
 
+    // HOSxP Basic Data (ข้อมูลพื้นฐาน HOSxP)
+    Route::get('/hosxp_setting', [App\Http\Controllers\Hosxp\HosxpSettingController::class, 'index'])->name('hosxp.setting.index');
+    Route::get('/hosxp_setting/data/{tab}', [App\Http\Controllers\Hosxp\HosxpSettingController::class, 'data'])->name('hosxp.setting.data');
+    Route::get('/hosxp_setting/export/{tab}', [App\Http\Controllers\Hosxp\HosxpSettingController::class, 'export'])->name('hosxp.setting.export');
+
     Route::resource('/skpcard', App\Http\Controllers\Smartdata\SkpcardController::class)->names([
         'index' => 'skpcard.index',
         'create' => 'skpcard.create',
