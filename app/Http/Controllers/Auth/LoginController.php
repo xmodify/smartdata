@@ -34,14 +34,15 @@ class LoginController extends Controller
             $is2faEnabled = ($smartDataAlert && $smartDataAlert->enable_2fa === 'Y');
 
             if ($is2faEnabled) {
-                // Generate OTP
-                $otp = rand(100000, 999999);
+                // Generate OTP using CSPRNG
+                $otp = random_int(100000, 999999);
                 
                 // Store in session
                 session([
                     '2fa_pending_user_id' => $user->id,
                     '2fa_otp' => $otp,
-                    '2fa_expires_at' => time() + 120
+                    '2fa_expires_at' => time() + 120,
+                    '2fa_attempts' => 0,
                 ]);
 
                 // Send OTP via SmartData Moph Alert to user's CID (username)
@@ -90,15 +91,16 @@ class LoginController extends Controller
             ?: MophAlert::where('active', 'Y')->first();
         $is2faEnabled = ($smartDataAlert && $smartDataAlert->enable_2fa === 'Y');
 
-        // Generate OTP
-        $otp = rand(100000, 999999);
+        // Generate OTP using CSPRNG
+        $otp = random_int(100000, 999999);
 
         if ($is2faEnabled) {
             // Store in 2FA pending session
             session([
                 '2fa_pending_user_id' => $user->id,
                 '2fa_otp' => $otp,
-                '2fa_expires_at' => time() + 120
+                '2fa_expires_at' => time() + 120,
+                '2fa_attempts' => 0,
             ]);
 
             $this->sendMophAlertOTP($user->username, $otp, $smartDataAlert?->id);
@@ -113,7 +115,8 @@ class LoginController extends Controller
             session([
                 'otp_pending_user_id' => $user->id,
                 'otp_code' => $otp,
-                'otp_expires_at' => now()->addSeconds(120)
+                'otp_expires_at' => now()->addSeconds(120),
+                'otp_attempts' => 0,
             ]);
 
             $this->sendMophAlertOTP($user->username, $otp, $smartDataAlert?->id);
@@ -155,9 +158,9 @@ class LoginController extends Controller
             ], 400);
         }
 
-        if (strval($request->otp) === strval($sessionOtp)) {
+        if (hash_equals(strval($sessionOtp), strval($request->otp))) {
             // Clear pending session
-            session()->forget(['otp_pending_user_id', 'otp_code', 'otp_expires_at']);
+            session()->forget(['otp_pending_user_id', 'otp_code', 'otp_expires_at', 'otp_attempts']);
             
             // Login
             Auth::login($user);
@@ -168,6 +171,16 @@ class LoginController extends Controller
                 'redirect' => route('dashboard')
             ]);
         }
+
+        $attempts = (int) session('otp_attempts', 0) + 1;
+        if ($attempts >= 5) {
+            session()->forget(['otp_pending_user_id', 'otp_code', 'otp_expires_at', 'otp_attempts']);
+            return response()->json([
+                'success' => false,
+                'message' => 'กรอกรหัส OTP ผิดเกินจำนวนครั้งที่กำหนด กรุณาขอรหัส OTP ใหม่'
+            ], 429);
+        }
+        session(['otp_attempts' => $attempts]);
 
         return response()->json([
             'success' => false,
@@ -211,9 +224,9 @@ class LoginController extends Controller
             return redirect()->route('login')->withErrors(['otp' => 'รหัส OTP หมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้ง']);
         }
 
-        if (strval($request->otp) === strval($sessionOtp)) {
+        if (hash_equals(strval($sessionOtp), strval($request->otp))) {
             // Success! Clear session
-            session()->forget(['2fa_pending_user_id', '2fa_otp', '2fa_expires_at']);
+            session()->forget(['2fa_pending_user_id', '2fa_otp', '2fa_expires_at', '2fa_attempts']);
 
             $user = User::find($pendingUserId);
             Auth::login($user);
@@ -221,6 +234,13 @@ class LoginController extends Controller
 
             return redirect()->intended(route('dashboard'));
         }
+
+        $attempts = (int) session('2fa_attempts', 0) + 1;
+        if ($attempts >= 5) {
+            session()->forget(['2fa_pending_user_id', '2fa_otp', '2fa_expires_at', '2fa_attempts']);
+            return redirect()->route('login')->withErrors(['otp' => 'กรอกรหัส OTP ผิดเกินจำนวนครั้งที่กำหนด กรุณาเข้าสู่ระบบใหม่อีกครั้ง']);
+        }
+        session(['2fa_attempts' => $attempts]);
 
         return back()->withErrors(['otp' => 'รหัส OTP ไม่ถูกต้อง']);
     }
@@ -304,11 +324,14 @@ class LoginController extends Controller
         $healthIdUrl = $isUat ? 'https://uat-moph.id.th' : 'https://moph.id.th';
 
         $redirectUri = route('login.provider_id.callback');
+        $state = bin2hex(random_bytes(16));
+        session(['provider_id_oauth_state' => $state]);
 
         $url = "{$healthIdUrl}/oauth/redirect?" . http_build_query([
             'client_id' => $config->health_id_client_id,
             'redirect_uri' => $redirectUri,
-            'response_type' => 'code'
+            'response_type' => 'code',
+            'state' => $state,
         ]);
 
         return redirect()->away($url);
@@ -317,6 +340,12 @@ class LoginController extends Controller
     public function handleProviderIdCallback(Request $request)
     {
         try {
+            $expectedState = session()->pull('provider_id_oauth_state');
+            $receivedState = $request->query('state');
+            if (empty($expectedState) || empty($receivedState) || !hash_equals($expectedState, (string) $receivedState)) {
+                return redirect()->route('login')->withErrors(['provider_id' => 'การยืนยันตัวตนไม่ถูกต้อง (Invalid OAuth State) กรุณาลองใหม่อีกครั้ง']);
+            }
+
             $code = $request->query('code');
             if (!$code) {
                 return redirect()->route('login')->withErrors(['provider_id' => 'ไม่ได้รับรหัสความถูกต้อง (Authorization Code) จากระบบ Health ID']);

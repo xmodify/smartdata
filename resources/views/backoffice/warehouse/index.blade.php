@@ -1790,9 +1790,17 @@
                                 </h6>
                                 <div class="text-muted small mt-0.5" style="font-size: 0.74rem;">พัสดุ/เวชภัณฑ์ที่มียอดเบิกจ่ายสะสมสูงสุด</div>
                             </div>
-                            <span class="badge bg-light text-dark border px-2.5 py-1 font-monospace" style="font-size: 0.75rem;">
-                                <i class="fas fa-fire me-1 text-danger"></i> Top 20 รายการ
-                            </span>
+                            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 shadow-xs"
+                                        style="font-size: 0.74rem;"
+                                        onclick="openAllDisbursedItemsModal('{{ $tab }}', '{{ $config['type'] }}')">
+                                    <i class="fas fa-magnifying-glass me-1"></i> ดูทั้งหมด / ค้นหารายตัว
+                                </button>
+                                <span class="badge bg-light text-dark border px-2.5 py-1 font-monospace" style="font-size: 0.75rem;">
+                                    <i class="fas fa-fire me-1 text-danger"></i> Top 20 รายการ
+                                </span>
+                            </div>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive" style="max-height: 560px; overflow-y: auto;">
@@ -2242,6 +2250,69 @@
             </div>
             <div class="modal-footer bg-light py-2 px-3">
                 <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">ปิด</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: All Disbursed Items (Searchable Item-Level Breakdown) -->
+<div class="modal fade" id="allDisbursedItemsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-light py-3 px-4 border-bottom">
+                <div class="w-100 me-2">
+                    <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 mb-1">
+                        <i class="fas fa-list-check text-primary"></i>
+                        <span>รายการเบิกจ่ายรายตัวทั้งหมด: <span id="modalAllDisbWhName" class="text-primary">-</span></span>
+                    </h5>
+                    <div class="text-muted small">ค้นหาด้วยชื่อรายการ หรือรหัสพัสดุ/เวชภัณฑ์</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="p-3 bg-white border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div class="input-group input-group-sm" style="max-width: 380px;">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="allDisbSearchInput" class="form-control border-start-0" placeholder="พิมพ์ชื่อพัสดุ/ยา หรือรหัสเพื่อค้นหา...">
+                        <button type="button" id="allDisbSearchClear" class="btn btn-outline-secondary" title="ล้างคำค้นหา" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-3 small">
+                        <span class="badge bg-light text-dark border px-2.5 py-1.5">
+                            รายการที่แสดง: <strong id="modalAllDisbCount" class="text-primary font-monospace">0</strong> รายการ
+                        </span>
+                        <span class="badge bg-light text-dark border px-2.5 py-1.5">
+                            มูลค่ารวมที่แสดง: <strong id="modalAllDisbTotalVal" class="text-success font-monospace">0.00</strong> บาท
+                        </span>
+                    </div>
+                </div>
+
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.83rem;">
+                        <thead class="bg-light sticky-top" style="z-index: 1;">
+                            <tr class="text-muted" style="font-size: 0.75rem;">
+                                <th class="text-center" style="width: 50px;">#</th>
+                                <th style="width: 130px;">รหัส</th>
+                                <th>รายการพัสดุ / เวชภัณฑ์</th>
+                                <th class="text-end" style="width: 110px;">จำนวนเบิก</th>
+                                <th class="text-end" style="width: 105px;">ราคาเฉลี่ย</th>
+                                <th class="text-end" style="width: 130px;">มูลค่ารวม (บาท)</th>
+                                <th class="text-center" style="width: 80px;">สัดส่วน</th>
+                                <th class="text-center" style="width: 105px;">หน่วยงาน</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalAllDisbTableBody">
+                            <!-- Populated via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-4 d-flex justify-content-between align-items-center">
+                <span class="text-muted small" style="font-size: 0.75rem;">
+                    <i class="fas fa-info-circle me-1 text-primary"></i>แสดงเฉพาะรายการจากใบเบิกที่อนุมัติจ่ายแล้ว (Allow) ตามปีงบ/เดือน/คลังย่อยที่เลือก
+                </span>
+                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
             </div>
         </div>
     </div>
@@ -3922,6 +3993,116 @@
                 $('#modalItemDeptTableBody').html('<tr><td colspan="6" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูลหน่วยงาน</td></tr>');
             });
         }
+
+        let _allDisbItemsCache = [];
+        let _allDisbWarehouseType = '';
+
+        function escapeDisbHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderAllDisbursedItems(keyword) {
+            const q = (keyword || '').trim().toLowerCase();
+            const filtered = q
+                ? _allDisbItemsCache.filter(item =>
+                    String(item.name || '').toLowerCase().includes(q) ||
+                    String(item.code || '').toLowerCase().includes(q)
+                )
+                : _allDisbItemsCache;
+
+            let sumVal = 0;
+            let html = '';
+
+            if (filtered.length > 0) {
+                filtered.forEach(function(item, idx) {
+                    const totalVal = parseFloat(item.total_val || 0);
+                    const totalQty = parseFloat(item.total_qty || 0);
+                    const avgPrice = parseFloat(item.avg_price || 0);
+                    const sharePct = parseFloat(item.share_percent || 0);
+                    sumVal += totalVal;
+
+                    const safeName = escapeDisbHtml(item.name || '-');
+                    const safeCode = escapeDisbHtml(item.code || '-');
+                    const safeUnit = escapeDisbHtml(item.unit_name || '');
+                    const safeId = escapeDisbHtml(item.item_id ?? 0);
+
+                    html += '<tr>' +
+                        '<td class="text-center text-muted font-monospace">' + (idx + 1) + '</td>' +
+                        '<td class="font-monospace small text-muted">' + safeCode + '</td>' +
+                        '<td class="fw-bold text-dark">' + safeName + '</td>' +
+                        '<td class="text-end font-monospace">' + totalQty.toLocaleString() + ' <span class="text-muted small">' + safeUnit + '</span></td>' +
+                        '<td class="text-end font-monospace text-muted">' + avgPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>' +
+                        '<td class="text-end font-monospace fw-bold text-primary">' + totalVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</td>' +
+                        '<td class="text-center font-monospace small text-muted">' + sharePct + '%</td>' +
+                        '<td class="text-center">' +
+                            '<button type="button" class="btn btn-sm btn-outline-info py-0.5 px-2 rounded-pill shadow-xs js-disb-dept-btn" ' +
+                                'style="font-size: 0.72rem; white-space: nowrap;" ' +
+                                'data-type="' + escapeDisbHtml(_allDisbWarehouseType) + '" ' +
+                                'data-id="' + safeId + '" ' +
+                                'data-name="' + safeName + '">' +
+                                '<i class="fas fa-sitemap me-1"></i>ดูหน่วยงาน' +
+                            '</button>' +
+                        '</td>' +
+                    '</tr>';
+                });
+            } else {
+                html = '<tr><td colspan="8" class="text-center text-muted py-4">ไม่พบรายการที่ตรงกับคำค้นหา</td></tr>';
+            }
+
+            $('#modalAllDisbCount').text(filtered.length.toLocaleString());
+            $('#modalAllDisbTotalVal').text(sumVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            $('#modalAllDisbTableBody').html(html);
+        }
+
+        function openAllDisbursedItemsModal(tabKey, warehouseType) {
+            _allDisbItemsCache = [];
+            _allDisbWarehouseType = warehouseType;
+            $('#allDisbSearchInput').val('');
+            $('#allDisbSearchClear').hide();
+            $('#modalAllDisbWhName').text('กำลังโหลด...');
+            $('#modalAllDisbCount').text('-');
+            $('#modalAllDisbTotalVal').text('-');
+            $('#modalAllDisbTableBody').html('<tr><td colspan="8" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div> กำลังโหลดรายการเบิกจ่ายทั้งหมด...</td></tr>');
+
+            const modalEl = document.getElementById('allDisbursedItemsModal');
+            if (modalEl) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+
+            const url = '{{ url("backoffice/warehouse/disbursed-items") }}/' + encodeURIComponent(tabKey) +
+                '?year_id={{ $year_id }}&month_id={{ $month_id }}&sub_warehouse_id={{ $sub_warehouse_id }}';
+
+            $.get(url, function(res) {
+                _allDisbItemsCache = res.items || [];
+                $('#modalAllDisbWhName').text(res.warehouse_name || tabKey);
+                renderAllDisbursedItems('');
+                setTimeout(function() { $('#allDisbSearchInput').trigger('focus'); }, 250);
+            }).fail(function() {
+                $('#modalAllDisbTableBody').html('<tr><td colspan="8" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดรายการเบิกจ่าย</td></tr>');
+            });
+        }
+
+        $(document).on('input', '#allDisbSearchInput', function() {
+            const val = $(this).val();
+            $('#allDisbSearchClear').toggle(val.length > 0);
+            renderAllDisbursedItems(val);
+        });
+
+        $(document).on('click', '#allDisbSearchClear', function() {
+            $('#allDisbSearchInput').val('').trigger('focus');
+            $(this).hide();
+            renderAllDisbursedItems('');
+        });
+
+        $(document).on('click', '.js-disb-dept-btn', function() {
+            const btn = $(this);
+            viewItemDepartments(btn.data('type'), btn.data('id'), btn.data('name'));
+        });
 
         // AJAX: View Sub-Warehouse (Department) Disbursed Items
         function viewDepartmentItems(type, deptId, deptName) {

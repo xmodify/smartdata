@@ -3,21 +3,21 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
+Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
 // OTP & 2FA Login Routes
-Route::post('/login/send-otp', [App\Http\Controllers\Auth\LoginController::class, 'sendOtp'])->name('login.send_otp');
-Route::post('/login/verify-otp-passwordless', [App\Http\Controllers\Auth\LoginController::class, 'verifyOtpPasswordless'])->name('login.verify_otp_passwordless');
+Route::post('/login/send-otp', [App\Http\Controllers\Auth\LoginController::class, 'sendOtp'])->middleware('throttle:5,1')->name('login.send_otp');
+Route::post('/login/verify-otp-passwordless', [App\Http\Controllers\Auth\LoginController::class, 'verifyOtpPasswordless'])->middleware('throttle:10,1')->name('login.verify_otp_passwordless');
 Route::get('/login/verify-2fa', [App\Http\Controllers\Auth\LoginController::class, 'show2faForm'])->name('login.verify_2fa');
-Route::post('/login/verify-2fa', [App\Http\Controllers\Auth\LoginController::class, 'verify2fa']);
+Route::post('/login/verify-2fa', [App\Http\Controllers\Auth\LoginController::class, 'verify2fa'])->middleware('throttle:10,1');
 
 // Provider ID OAuth Login Routes
 Route::get('/login/provider-id', [App\Http\Controllers\Auth\LoginController::class, 'redirectToProviderId'])->name('login.provider_id');
 Route::get('/login/provider-id/callback', [App\Http\Controllers\Auth\LoginController::class, 'handleProviderIdCallback'])->name('login.provider_id.callback');
 
 Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware('throttle:5,1');
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -34,8 +34,6 @@ Route::match(['get', 'post'], '/moph-notify/replication', [App\Http\Controllers\
 Route::match(['get', 'post'], '/moph-notify/backup_hosxp', [App\Http\Controllers\MophNotify\BackupController::class, 'check']);
 Route::match(['get', 'post'], '/moph-notify/audit_emr', [App\Http\Controllers\MophNotify\AuditEmrController::class, 'check']);
 Route::get('/mophnotify/backup_hosxp', [App\Http\Controllers\MophNotify\BackupController::class, 'index'])->name('mophnotify.backup_hosxp');
-Route::get('/dashboard/ipd_wait_dchsummary', [App\Http\Controllers\Dashboard\IpdWaitDchSummaryController::class, 'ipd_non_dchsummary'])->name('ipd.wait_dchsummary');
-Route::get('/dashboard/ipd_wait_dchsummary/diags/{an}', [App\Http\Controllers\Dashboard\IpdWaitDchSummaryController::class, 'get_diags'])->name('ipd.wait_dchsummary.diags');
 Route::get('/dashboard/oapp', [App\Http\Controllers\Dashboard\OappController::class, 'index'])->name('dashboard.oapp');
 
 // Queue Routes (สาธารณะ คนไข้สแกน QR Code ดูได้เลย ไม่ต้อง Login)
@@ -53,7 +51,12 @@ Route::match(['get', 'post'], '/license/verify', [App\Http\Controllers\Admin\Lic
 Route::post('/license/request', [App\Http\Controllers\Admin\LicenseController::class, 'requestActivation'])->name('license.request');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/admin', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/dashboard/ipd_wait_dchsummary', [App\Http\Controllers\Dashboard\IpdWaitDchSummaryController::class, 'ipd_non_dchsummary'])->name('ipd.wait_dchsummary');
+    Route::get('/dashboard/ipd_wait_dchsummary/diags/{an}', [App\Http\Controllers\Dashboard\IpdWaitDchSummaryController::class, 'get_diags'])->name('ipd.wait_dchsummary.diags');
+
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/admin', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+    });
 
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -277,16 +280,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/print',      [App\Http\Controllers\Smartdata\LendController::class, 'printForm'])->name('lend.print');
     });
 
-    Route::put('/admin/users/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('admin.users.reset_password');
-    Route::resource('/admin/users', App\Http\Controllers\Admin\UserController::class)->names([
-        'index' => 'admin.users.index',
-        'create' => 'admin.users.create',
-        'store' => 'admin.users.store',
-        'show' => 'admin.users.show',
-        'edit' => 'admin.users.edit',
-        'update' => 'admin.users.update',
-        'destroy' => 'admin.users.destroy',
-    ]);
+    Route::middleware(['admin'])->group(function () {
+        Route::put('/admin/users/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('admin.users.reset_password');
+        Route::resource('/admin/users', App\Http\Controllers\Admin\UserController::class)->names([
+            'index' => 'admin.users.index',
+            'create' => 'admin.users.create',
+            'store' => 'admin.users.store',
+            'show' => 'admin.users.show',
+            'edit' => 'admin.users.edit',
+            'update' => 'admin.users.update',
+            'destroy' => 'admin.users.destroy',
+        ]);
+    });
 
     // Backoffice HRD Routes
     Route::get('/backoffice/hrd', [App\Http\Controllers\Backoffice\HrdController::class, 'index'])->name('backoffice.hrd.index');
@@ -314,6 +319,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/item/{type}/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'itemDetail'])->name('backoffice.warehouse.item_detail');
         Route::get('/item-departments/{type}/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'itemDepartments'])->name('backoffice.warehouse.item_departments');
         Route::get('/department-items/{type}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'departmentItems'])->name('backoffice.warehouse.department_items');
+        Route::get('/disbursed-items/{type}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'disbursedItems'])->name('backoffice.warehouse.disbursed_items');
         Route::get('/receives/{type}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'receivesList'])->name('backoffice.warehouse.receives_list');
         Route::get('/receive/{type}/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'receiveDetail'])->name('backoffice.warehouse.receive_detail');
         Route::get('/rpst-detail/{id}', [App\Http\Controllers\Backoffice\WarehouseController::class, 'rpstDetail'])->name('backoffice.warehouse.rpst_detail');
@@ -398,28 +404,27 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/knowledge/categories/{id}', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'updateCategory'])->name('admin.ai.knowledge.categories.update');
         Route::delete('/knowledge/categories/{id}', [App\Http\Controllers\Admin\AiKnowledgeController::class, 'destroyCategory'])->name('admin.ai.knowledge.categories.destroy');
     });
-});
-
-Route::get('/debug-log', function () {
-    $logPath = storage_path('logs/laravel.log');
-    if (!file_exists($logPath)) {
-        return 'No log file found.';
-    }
-    try {
-        $file = new SplFileObject($logPath, 'r');
-        $file->seek(PHP_INT_MAX);
-        $last_line = $file->key();
-        
-        $start = max(0, $last_line - 150);
-        $content = '';
-        for ($i = $start; $i < $last_line; $i++) {
-            $file->seek($i);
-            $content .= $file->current();
+    Route::middleware(['admin'])->get('/debug-log', function () {
+        $logPath = storage_path('logs/laravel.log');
+        if (!file_exists($logPath)) {
+            return 'No log file found.';
         }
-        return response($content, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
-    } catch (\Exception $e) {
-        return 'Error reading log: ' . $e->getMessage();
-    }
+        try {
+            $file = new SplFileObject($logPath, 'r');
+            $file->seek(PHP_INT_MAX);
+            $last_line = $file->key();
+            
+            $start = max(0, $last_line - 150);
+            $content = '';
+            for ($i = $start; $i < $last_line; $i++) {
+                $file->seek($i);
+                $content .= $file->current();
+            }
+            return response($content, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+        } catch (\Exception $e) {
+            return 'Error reading log: ' . $e->getMessage();
+        }
+    });
 });
 
 

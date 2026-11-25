@@ -26,6 +26,10 @@ class SecurityHeaders
         // Permissions Policy (Basic restriction)
         $response->headers->set('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
 
+        if ($request->isSecure()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
+
         // Content Security Policy (CSP)
         // Note: Includes 'unsafe-inline' and 'unsafe-eval' for existing application logic compatibility.
         $csp = "default-src 'self'; " .

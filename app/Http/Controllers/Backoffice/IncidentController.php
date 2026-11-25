@@ -1245,10 +1245,12 @@ class IncidentController extends Controller
 
     public function save_rca(Request $request)
     {
+        $request->validate([
+            'incident_id' => 'required',
+            'timeline.*.file' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx',
+        ]);
+
         $incident_id = $request->input('incident_id');
-        if (!$incident_id) {
-            return response()->json(['success' => false, 'message' => 'Incident ID is required'], 400);
-        }
 
         // Process timeline data
         $timeline = [];
@@ -1351,11 +1353,20 @@ class IncidentController extends Controller
             abort(404, 'File not found.');
         }
 
-        $mimeType = mime_content_type($path) ?: 'application/pdf';
+        $mimeType = mime_content_type($path) ?: 'application/octet-stream';
+        $inlineSafeMimes = [
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+        ];
+        $disposition = in_array($mimeType, $inlineSafeMimes, true) ? 'inline' : 'attachment';
 
         return response()->file($path, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . $filename . '"'
+            'Content-Disposition' => $disposition . '; filename="' . rawurlencode($filename) . '"',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
     }
 

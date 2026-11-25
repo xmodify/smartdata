@@ -11,11 +11,19 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    private function ensureAdmin(): void
+    {
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            abort(403, 'Unauthorized.');
+        }
+    }
+
     /**
      * Display a listing of the users.
      */
     public function index()
     {
+        $this->ensureAdmin();
         $users = User::all();
         return view('admin.users.index', compact('users'));
     }
@@ -25,6 +33,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $this->ensureAdmin();
         return redirect()->route('admin.users.index');
     }
 
@@ -33,6 +42,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->ensureAdmin();
         return redirect()->route('admin.users.index');
     }
 
@@ -41,6 +51,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->ensureAdmin();
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
@@ -97,6 +108,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->ensureAdmin();
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
@@ -156,6 +168,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        $this->ensureAdmin();
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot delete yourself.');
         }
@@ -170,6 +183,7 @@ class UserController extends Controller
      */
     public function resetPassword(User $user)
     {
+        $this->ensureAdmin();
         $user->update([
             'password' => Hash::make('12345678')
         ]);

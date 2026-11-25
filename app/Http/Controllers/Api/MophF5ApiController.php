@@ -343,31 +343,6 @@ class MophF5ApiController extends Controller
             return true;
         }
 
-        // 4. DMSIC JWT / JWE Token Format Verification
-        if (env('MOPH_F5_ACCEPT_DMSIC_TOKEN', true)) {
-            $parts = explode('.', (string)$providedToken);
-            // 4.1 Standard JWS Token (3 segments: header.payload.signature)
-            if (count($parts) === 3) {
-                $payloadJson = @base64_decode(strtr($parts[1], '-_', '+/'));
-                if ($payloadJson) {
-                    $payload = @json_decode($payloadJson, true);
-                    if (is_array($payload)) {
-                        return true;
-                    }
-                }
-            }
-            // 4.2 JWE Token (5 segments: header.encrypted_key.iv.ciphertext.tag) as issued by MOPH / DMSIC
-            elseif (count($parts) === 5) {
-                $headerJson = @base64_decode(strtr($parts[0], '-_', '+/'));
-                if ($headerJson) {
-                    $header = @json_decode($headerJson, true);
-                    if (is_array($header) && (!empty($header['enc']) || !empty($header['alg']))) {
-                        return true;
-                    }
-                }
-            }
-        }
-
         return false;
     }
 

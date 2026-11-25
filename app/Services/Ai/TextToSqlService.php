@@ -358,19 +358,34 @@ Schema ข้อมูลที่สามารถใช้ได้:
      */
     protected function validateSqlSafety(string $sql): array
     {
-        $normalized = trim(preg_replace('/\s+/', ' ', $sql));
+        // Strip SQL comments (/* ... */, -- ..., # ...) before inspection to prevent comment-based bypasses
+        $stripped = preg_replace([
+            '/\/\*[\s\S]*?\*\//',
+            '/--[^\r\n]*/',
+            '/#[^\r\n]*/',
+        ], ' ', $sql);
+        $normalized = trim(preg_replace('/\s+/', ' ', (string) $stripped));
 
         // Must start with SELECT or WITH
         if (!preg_match('/^(SELECT|WITH)\b/i', $normalized)) {
             return ['safe' => false, 'reason' => 'อนุญาตเฉพาะคำสั่ง SELECT หรือ WITH (CTE) เท่านั้น'];
         }
 
-        // Dangerous keywords
+        // Disallow multiple statements
+        if (str_contains(rtrim($normalized, '; '), ';')) {
+            return ['safe' => false, 'reason' => 'ไม่อนุญาตให้ส่งคำสั่ง SQL หลายคำสั่งพร้อมกัน'];
+        }
+
+        // Dangerous keywords & sensitive tables
         $forbiddenKeywords = [
             '\bINSERT\b', '\bUPDATE\b', '\bDELETE\b', '\bDROP\b', '\bALTER\b',
             '\bTRUNCATE\b', '\bREPLACE\b', '\bGRANT\b', '\bREVOKE\b', '\bLOCK\b',
-            '\bINTO\s+OUTFILE\b', '\bINTO\s+DUMPFILE\b', '\bLOAD_FILE\b',
-            '\bINFORMATION_SCHEMA\b', '\bSLEEP\b', '\bBENCHMARK\b', '\bEXEC\b', '\bCALL\b'
+            '\bCREATE\b', '\bRENAME\b', '\bSHOW\b', '\bDESCRIBE\b', '\bEXPLAIN\b',
+            '\bUSE\b', '\bSET\b', '\bINTO\s+OUTFILE\b', '\bINTO\s+DUMPFILE\b',
+            '\bLOAD_FILE\b', '\bLOAD\s+DATA\b', '\bINFORMATION_SCHEMA\b',
+            '\bPERFORMANCE_SCHEMA\b', '\bMYSQL\.', '\bSLEEP\b', '\bBENCHMARK\b',
+            '\bEXEC\b', '\bCALL\b',
+            '\b(users|password_reset_tokens|sessions|personal_access_tokens|ai_settings|moph_notify|moph_alert|telegram_notify|provider_id|licenses)\b',
         ];
 
         foreach ($forbiddenKeywords as $pattern) {
